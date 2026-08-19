@@ -1,0 +1,184 @@
+.campagne-detail-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.detail-header-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: var(--neutral-50);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+}
+
+.detail-header-card.is-open {
+  background: linear-gradient(135deg, rgba(2, 132, 199, 0.08), rgba(2, 132, 199, 0.02));
+  border-color: var(--primary-200);
+}
+
+.detail-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  background: var(--primary-600);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.detail-header-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-title {
+  font-size: 1.125rem;
+  font-weight: 800;
+  color: var(--neutral-900);
+  line-height: 1.2;
+}
+
+.detail-code {
+  font-size: 0.75rem;
+  color: var(--neutral-500);
+}
+
+.status-badge-open {
+  padding: 0.35rem 0.875rem;
+  border-radius: var(--radius-full);
+  background: rgba(16, 185, 129, 0.15);
+  color: #059669;
+  font-weight: 700;
+  font-size: 0.8125rem;
+}
+
+.status-badge-closed {
+  padding: 0.35rem 0.875rem;
+  border-radius: var(--radius-full);
+  background: var(--neutral-200);
+  color: var(--neutral-600);
+  font-weight: 700;
+  font-size: 0.8125rem;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.info-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.875rem 1rem;
+  background: var(--neutral-50);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+}
+
+.info-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--neutral-500);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.info-value {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--neutral-800);
+}
+
+.info-value-highlight {
+  font-size: 1rem;
+  color: var(--primary-700);
+}
+
+.tarifs-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.section-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--neutral-800);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tarifs-list {
+  display: flex;
+  flex-direction: column;
+  background: var(--neutral-50);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.tarif-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.875rem;
+}
+
+.t-name {
+  color: var(--neutral-700);
+  font-weight: 500;
+}
+
+.t-price {
+  font-weight: 700;
+  color: var(--primary-700);
+}
+
+.tarif-total-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.875rem 1rem;
+  background: var(--neutral-100);
+  font-weight: 800;
+  color: var(--neutral-900);
+}
+
+.total-amount {
+  color: var(--primary-700);
+  font-size: 1rem;
+}
+
+.empty-tarifs-p {
+  padding: 1rem;
+  font-size: 0.8125rem;
+  color: var(--neutral-500);
+  font-style: italic;
+  margin: 0;
+}
+
+.modal-footer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
+}

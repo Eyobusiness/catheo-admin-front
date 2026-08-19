@@ -1,0 +1,67 @@
+<div class="annees-page">
+  <!-- Topbar Header -->
+  <section class="page-topbar">
+    <div class="topbar-headings">
+      <h2 class="topbar-title">Années Pastorales</h2>
+      <p class="topbar-subtitle">Configuration années paroissiale.</p>
+    </div>
+
+    <div class="topbar-actions">
+      <app-button
+        variant="primary"
+        size="md"
+        icon="plus"
+        (clicked)="openCreateModal()"
+      >
+        Nouvelle Année
+      </app-button>
+    </div>
+  </section>
+
+  <!-- Main Table Card -->
+  <app-card
+    title="Liste des Années de Catéchèse">
+    <!-- Table Controls Toolbar -->
+    <div class="table-subbar">
+      <div class="table-search-box">
+        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input
+          type="text"
+          placeholder="Rechercher..."
+          [value]="searchQuery()"
+          (input)="onSearchChange($event)"
+        />
+      </div>
+      <span class="items-count">{{ filteredAnnees().length }} année(s) trouvée(s)</span>
+    </div>
+
+    <!-- Annee Table Sub-component with Action Icons & Pagination -->
+    <app-annee-table
+      [annees]="filteredAnnees()"
+      (createRequested)="openCreateModal()"
+      (viewRequested)="handleView($event)"
+      (editRequested)="openEditModal($event)"
+      (deleteRequested)="openDeleteModal($event)"
+      (toggleActiveRequested)="handleToggleActive($event)"
+    />
+  </app-card>
+</div>
+
+<!-- Annee Form Modal Sub-component -->
+<app-annee-form-modal
+  [isOpen]="isFormModalOpen()"
+  [isEditing]="isEditing()"
+  [anneeToEdit]="selectedAnnee()"
+  [isLoading]="isLoading()"
+  (formClosed)="closeFormModal()"
+  (formSubmitted)="handleFormSubmit($event)"
+/>
+
+<!-- Annee Delete Modal Sub-component -->
+<app-annee-delete-modal
+  [isOpen]="isDeleteModalOpen()"
+  [itemToDelete]="itemToDelete()"
+  [isLoading]="isLoading()"
+  (modalClosed)="closeDeleteModal()"
+  (confirmed)="handleDeleteConfirm()"
+/>

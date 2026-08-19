@@ -1,0 +1,118 @@
+<div class="table-container">
+  <table class="app-table">
+    <thead>
+      <tr>
+        <th>Profil / Rôle</th>
+        <th>Description</th>
+        <th class="text-center">Permissions</th>
+        <th class="text-center">Comptes Liés</th>
+        <th class="text-center">Statut</th>
+        <th class="text-end">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (profil of profils(); track profil.id) {
+        <tr>
+          <!-- Name & Code -->
+          <td>
+            <div class="profil-identity-cell">
+              <div class="profil-icon-box" [class.system]="profil.is_system">
+                <i class="bi" [class.bi-shield-shaded]="profil.is_system" [class.bi-shield-check]="!profil.is_system"></i>
+              </div>
+              <div class="profil-info">
+                <div class="name-line">
+                  <span class="profil-name">{{ profil.nom }}</span>
+                  @if (profil.is_system) {
+                    <span class="system-badge">Système</span>
+                  }
+                </div>
+                <span class="code-text"><code>{{ profil.code }}</code></span>
+              </div>
+            </div>
+          </td>
+
+          <!-- Description -->
+          <td>
+            <span class="description-text">
+              {{ profil.description || 'Aucune description spécifique' }}
+            </span>
+          </td>
+
+          <!-- Permissions Count -->
+          <td class="text-center">
+            <span class="count-pill perms">
+              <i class="bi bi-key-fill"></i>
+              <strong>{{ profil.total_permissions !== undefined ? profil.total_permissions : profil.permissions.length }}</strong>
+            </span>
+          </td>
+
+          <!-- Users Count -->
+          <td class="text-center">
+            <span class="count-pill users">
+              <i class="bi bi-people-fill"></i>
+              {{ profil.users_count || 0 }} utilisateur(s)
+            </span>
+          </td>
+
+          <!-- Statut Toggle -->
+          <td class="text-center">
+            <button
+              type="button"
+              class="status-toggle-pill"
+              [class.is-active]="profil.statut === 'actif'"
+              [class.is-inactive]="profil.statut === 'inactif'"
+              [disabled]="profil.is_system"
+              (click)="onToggleStatus(profil)"
+              [title]="profil.is_system ? 'Profil système non modifiable' : 'Cliquer pour changer le statut'"
+            >
+              <span class="status-dot"></span>
+              {{ profil.statut === 'actif' ? 'Actif' : 'Inactif' }}
+            </button>
+          </td>
+
+          <!-- Action Buttons -->
+          <td class="text-end">
+            <div class="row-actions">
+              <app-icon-button
+                variant="ghost"
+                size="sm"
+                title="Modifier les droits du profil"
+                ariaLabel="Modifier"
+                (clicked)="onEdit(profil)"
+              >
+                <i class="bi bi-pencil"></i>
+              </app-icon-button>
+
+              @if (!profil.is_system) {
+                <app-icon-button
+                  variant="ghost"
+                  size="sm"
+                  title="Supprimer ce profil"
+                  ariaLabel="Supprimer"
+                  (clicked)="onDelete(profil)"
+                >
+                  <i class="bi bi-trash text-danger"></i>
+                </app-icon-button>
+              }
+            </div>
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="6" class="empty-state-cell">
+            <div class="empty-state">
+              <div class="empty-icon">
+                <i class="bi bi-shield-x"></i>
+              </div>
+              <h4>Aucun profil trouvé</h4>
+              <p>Aucun rôle utilisateur ne correspond à vos critères de recherche.</p>
+              <app-button variant="primary" size="sm" icon="plus" (clicked)="createRequested.emit()">
+                Créer un premier profil
+              </app-button>
+            </div>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

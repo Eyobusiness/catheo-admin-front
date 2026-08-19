@@ -1,0 +1,156 @@
+<div class="mutations-page">
+  <!-- Topbar Header -->
+  <section class="page-topbar">
+    <div class="topbar-headings">
+      <h2 class="topbar-title">Mutations & Transferts</h2>
+      <p class="topbar-subtitle">
+        Historique et gestion des transferts inter-paroissiaux des catéchumènes.
+      </p>
+    </div>
+
+    <div class="topbar-actions">
+      <app-button
+        variant="primary"
+        size="md"
+        icon="plus"
+        (clicked)="openCreateModal()"
+      >
+        Nouveau Transfert
+      </app-button>
+    </div>
+  </section>
+
+  <!-- KPI Summary Banner -->
+  <section class="kpi-banner">
+    <div class="kpi-card">
+      <div class="kpi-icon-box total">
+        <i class="bi bi-arrow-left-right"></i>
+      </div>
+      <div class="kpi-meta">
+        <span class="kpi-label">Total Mutations</span>
+        <span class="kpi-value">{{ stats().total }}</span>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon-box transferts">
+        <i class="bi bi-clock-history"></i>
+      </div>
+      <div class="kpi-meta">
+        <span class="kpi-label">En Demande</span>
+        <span class="kpi-value">{{ stats().demandes }}</span>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon-box classes">
+        <i class="bi bi-check-circle-fill"></i>
+      </div>
+      <div class="kpi-meta">
+        <span class="kpi-label">Approuvés</span>
+        <span class="kpi-value">{{ stats().approuves }}</span>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon-box" style="background: rgba(239, 68, 68, 0.12); color: var(--danger-600);">
+        <i class="bi bi-x-circle-fill"></i>
+      </div>
+      <div class="kpi-meta">
+        <span class="kpi-label">Refusés</span>
+        <span class="kpi-value">{{ stats().refuses }}</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Card with Table -->
+  <app-card
+    title="Historique des Demandes de Mutation"
+  >
+    <!-- Filters Toolbar -->
+    <div class="filters-toolbar">
+      <div class="filters-left">
+        <!-- Search Input -->
+        <div class="search-input-wrapper">
+          <i class="bi bi-search search-icon"></i>
+          <input
+            type="text"
+            class="filter-search-control"
+            placeholder="Rechercher..."
+            [value]="searchQuery()"
+            (input)="onSearchChange($event)"
+          />
+          @if (searchQuery()) {
+            <button class="clear-search-btn" (click)="clearSearch()" title="Effacer">
+              <i class="bi bi-x-circle-fill"></i>
+            </button>
+          }
+        </div>
+
+        <!-- Statut Filter -->
+        <div class="select-wrapper">
+          <i class="bi bi-funnel select-prefix-icon"></i>
+          <select
+            class="filter-select-control"
+            [value]="statusFilter()"
+            (change)="onStatusFilterChange($event)"
+          >
+            <option value="">Tous les statuts</option>
+            <option value="demande">En Demande</option>
+            <option value="approuve">Approuvés</option>
+            <option value="refuse">Refusés</option>
+          </select>
+          <i class="bi bi-chevron-down select-chevron-icon"></i>
+        </div>
+      </div>
+
+      <div class="filters-right">
+        @if (hasActiveFilters()) {
+          <button class="reset-filter-btn" (click)="resetFilters()">
+            <i class="bi bi-arrow-counterclockwise"></i>
+            <span>Réinitialiser</span>
+          </button>
+        }
+        <span class="count-pill">
+          <strong>{{ filteredMutations().length }}</strong> enregistrement(s)
+        </span>
+      </div>
+    </div>
+
+    <!-- Table Sub-component -->
+    <app-mutation-table
+      [mutations]="filteredMutations()"
+      (createRequested)="openCreateModal()"
+      (viewRequested)="openDetailModal($event)"
+      (approveRequested)="handleApprove($event)"
+      (refuseRequested)="handleRefuse($event)"
+      (deleteRequested)="openDeleteModal($event)"
+    />
+  </app-card>
+</div>
+
+<!-- Form Modal -->
+<app-mutation-form-modal
+  [isOpen]="isFormModalOpen()"
+  [catechumenes]="catechumenes()"
+  [annees]="annees()"
+  [isLoading]="isLoading()"
+  (formClosed)="closeModals()"
+  (formSubmitted)="handleFormSubmit($event)"
+/>
+
+<!-- Detail Modal -->
+<app-mutation-detail-modal
+  [isOpen]="isDetailModalOpen()"
+  [mutation]="selectedItem()"
+  (modalClosed)="closeModals()"
+/>
+
+<!-- Delete Confirmation Modal -->
+<app-mutation-delete-modal
+  [isOpen]="isDeleteModalOpen()"
+  [itemToDelete]="itemToDelete()"
+  [isLoading]="isLoading()"
+  (modalClosed)="closeModals()"
+  (confirmed)="handleDeleteConfirm()"
+/>

@@ -1,0 +1,108 @@
+<div class="niveaux-page">
+  <!-- Topbar Header -->
+  <section class="page-topbar">
+    <div class="topbar-headings">
+      
+      <h2 class="topbar-title">Niveaux de Catéchèse</h2>
+      <p class="topbar-subtitle">Configuration des Niveaux.</p>
+    </div>
+
+    <div class="topbar-actions">
+      <app-button
+        variant="primary"
+        size="md"
+        icon="plus"
+        (clicked)="openCreateModal()"
+      >
+        Nouveau Niveau
+      </app-button>
+    </div>
+  </section>
+
+  <!-- Main Table Card -->
+  <app-card
+    title="Liste des Niveaux de Catéchèse">
+    <!-- Table Controls Toolbar (Harmonious Dual Filter Layout) -->
+    <div class="filters-toolbar">
+      <!-- Left Filters Group (Search + Section Filter) -->
+      <div class="filters-left">
+        <!-- Search Input -->
+        <div class="search-input-wrapper">
+          <i class="bi bi-search search-icon"></i>
+          <input
+            type="text"
+            class="filter-search-control"
+            placeholder="Rechercher..."
+            [value]="searchQuery()"
+            (input)="onSearchChange($event)"
+          />
+          @if (searchQuery()) {
+            <button class="clear-search-btn" (click)="clearSearch()" title="Effacer la recherche">
+              <i class="bi bi-x-circle-fill"></i>
+            </button>
+          }
+        </div>
+
+        <!-- Section Filter Dropdown -->
+        <div class="section-select-wrapper">
+          <i class="bi bi-diagram-2 select-prefix-icon"></i>
+          <select
+            class="filter-select-control"
+            [value]="selectedSectionFilter()"
+            (change)="onSectionFilterChange($event)"
+          >
+            <option value="">Toutes les sections</option>
+            @for (sec of sections(); track sec.id) {
+              <option [value]="sec.id">{{ sec.nom }}</option>
+            }
+          </select>
+          <i class="bi bi-chevron-down select-chevron-icon"></i>
+        </div>
+      </div>
+
+      <!-- Right Meta Info & Reset Button -->
+      <div class="filters-right">
+        @if (hasActiveFilters()) {
+          <button class="reset-filter-btn" (click)="resetAllFilters()">
+            <i class="bi bi-arrow-counterclockwise"></i>
+            <span>Réinitialiser</span>
+          </button>
+        }
+        <span class="count-pill">
+          <strong>{{ filteredNiveaux().length }}</strong> niveau(x)
+        </span>
+      </div>
+    </div>
+
+    <!-- Niveau Table Sub-component with Action Icons & Pagination -->
+    <app-niveau-table
+      [niveaux]="filteredNiveaux()"
+      [sections]="sections()"
+      (createRequested)="openCreateModal()"
+      (viewRequested)="handleView($event)"
+      (editRequested)="openEditModal($event)"
+      (deleteRequested)="openDeleteModal($event)"
+      (toggleStatusRequested)="handleToggleStatus($event)"
+    />
+  </app-card>
+</div>
+
+<!-- Niveau Form Modal Sub-component -->
+<app-niveau-form-modal
+  [isOpen]="isFormModalOpen()"
+  [isEditing]="isEditing()"
+  [niveauToEdit]="selectedNiveau()"
+  [sections]="sections()"
+  [isLoading]="isLoading()"
+  (formClosed)="closeFormModal()"
+  (formSubmitted)="handleFormSubmit($event)"
+/>
+
+<!-- Niveau Delete Modal Sub-component -->
+<app-niveau-delete-modal
+  [isOpen]="isDeleteModalOpen()"
+  [itemToDelete]="itemToDelete()"
+  [isLoading]="isLoading()"
+  (modalClosed)="closeDeleteModal()"
+  (confirmed)="handleDeleteConfirm()"
+/>

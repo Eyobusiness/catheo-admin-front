@@ -1,0 +1,195 @@
+<div class="page-container">
+  <!-- Topbar Header -->
+  <header class="topbar">
+    <div>
+      <h2 class="topbar-title">Comptes Utilisateurs</h2>
+      <p class="topbar-subtitle">
+        Gérez les comptes, identifiants et rôles d'accès des administrateurs et intervenants de votre catéchèse
+      </p>
+    </div>
+
+    <div class="topbar-actions">
+      <app-icon-button
+        variant="ghost"
+        size="md"
+        title="Actualiser la liste"
+        ariaLabel="Actualiser"
+        (clicked)="refreshList()"
+      >
+        <i class="bi bi-arrow-clockwise" [class.spin]="isLoading()"></i>
+      </app-icon-button>
+
+      <app-button
+        variant="primary"
+        size="md"
+        icon="person-plus-fill"
+        (clicked)="openCreateModal()"
+      >
+        Nouvel Utilisateur
+      </app-button>
+    </div>
+  </header>
+
+  <!-- KPI Cards -->
+  <section class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon-wrapper primary">
+        <i class="bi bi-people-fill"></i>
+      </div>
+      <div class="stat-content">
+        <span class="stat-label">Total Comptes</span>
+        <h3 class="stat-value">{{ totalCount() }}</h3>
+        <span class="stat-meta">Utilisateurs enregistrés</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon-wrapper success">
+        <i class="bi bi-person-check-fill"></i>
+      </div>
+      <div class="stat-content">
+        <span class="stat-label">Comptes Actifs</span>
+        <h3 class="stat-value">{{ activeCount() }}</h3>
+        <span class="stat-meta success">Accès autorisés</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon-wrapper warning">
+        <i class="bi bi-shield-fill-check"></i>
+      </div>
+      <div class="stat-content">
+        <span class="stat-label">Profils Disponibles</span>
+        <h3 class="stat-value small">{{ profils().length }} Rôles</h3>
+        <span class="stat-meta">Matrice RBAC configurée</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon-wrapper danger">
+        <i class="bi bi-person-slash"></i>
+      </div>
+      <div class="stat-content">
+        <span class="stat-label">Inactifs / Suspendus</span>
+        <h3 class="stat-value">{{ inactiveCount() + suspendedCount() }}</h3>
+        <span class="stat-meta danger">Accès restreints</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content Card -->
+  <main class="page-content">
+    <app-card
+      title="Liste des Utilisateurs"
+      subtitle="Gestion des accès sécurisés et affectation des profils">
+
+      <!-- Toolbar Filters -->
+      <div class="table-toolbar">
+        <div class="toolbar-left">
+          <!-- Search input -->
+          <div class="search-input-wrapper">
+            <i class="bi bi-search search-icon"></i>
+            <input
+              type="text"
+              class="filter-search-control"
+              placeholder="Rechercher par nom, email, téléphone..."
+              [value]="searchQuery()"
+              (input)="onSearchChange($event)"
+            />
+            @if (searchQuery()) {
+              <button
+                type="button"
+                class="clear-search-btn"
+                (click)="clearSearch()"
+                title="Effacer la recherche"
+              >
+                <i class="bi bi-x-circle-fill"></i>
+              </button>
+            }
+          </div>
+
+          <!-- Profil Filter -->
+          <div class="filter-select-wrapper">
+            <i class="bi bi-shield select-prefix-icon"></i>
+            <select
+              class="filter-select-control"
+              [value]="selectedProfilFilter()"
+              (change)="onProfilFilterChange($event)"
+            >
+              <option value="">Tous les profils</option>
+              @for (p of profils(); track p.id) {
+                <option [value]="p.id">{{ p.nom }}</option>
+              }
+            </select>
+            <i class="bi bi-chevron-down select-chevron-icon"></i>
+          </div>
+
+          <!-- Statut Filter -->
+          <div class="filter-select-wrapper">
+            <i class="bi bi-funnel select-prefix-icon"></i>
+            <select
+              class="filter-select-control"
+              [value]="selectedStatutFilter()"
+              (change)="onStatutFilterChange($event)"
+            >
+              <option value="">Tous les statuts</option>
+              <option value="actif">Actifs</option>
+              <option value="inactif">Inactifs</option>
+              <option value="suspendu">Suspendus</option>
+            </select>
+            <i class="bi bi-chevron-down select-chevron-icon"></i>
+          </div>
+
+          @if (searchQuery() || selectedProfilFilter() || selectedStatutFilter()) {
+            <button type="button" class="reset-filter-btn" (click)="resetFilters()">
+              <i class="bi bi-arrow-counterclockwise"></i>
+              Réinitialiser
+            </button>
+          }
+        </div>
+
+        <div class="toolbar-right">
+          <span class="count-badge">
+            <strong>{{ filteredUsers().length }}</strong> utilisateur(s)
+          </span>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <app-user-table
+        [users]="paginatedUsers()"
+        [isLoading]="isLoading()"
+        (createRequested)="openCreateModal()"
+        (editRequested)="openEditModal($event)"
+        (deleteRequested)="openDeleteModal($event)"
+        (statusChanged)="handleStatusChanged($event)"
+      />
+      <app-pagination
+        [totalItems]="filteredUsers().length"
+        [currentPage]="currentPage()"
+        [pageSize]="pageSize()"
+        (pageChange)="onPageChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)"
+      ></app-pagination>
+    </app-card>
+  </main>
+</div>
+
+<!-- Modal Formulaire Utilisateur -->
+<app-user-form-modal
+  [isOpen]="isFormModalOpen()"
+  [isEditing]="isEditing()"
+  [userToEdit]="selectedUser()"
+  [isLoading]="isSaving()"
+  (formClosed)="closeFormModal()"
+  (formSubmitted)="handleFormSubmit($event)"
+/>
+
+<!-- Modal Suppression Utilisateur -->
+<app-user-delete-modal
+  [isOpen]="isDeleteModalOpen()"
+  [user]="itemToDelete()"
+  [isLoading]="isSaving()"
+  (closed)="closeDeleteModal()"
+  (confirmed)="handleDeleteConfirm()"
+/>

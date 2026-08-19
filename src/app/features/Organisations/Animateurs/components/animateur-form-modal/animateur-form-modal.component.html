@@ -1,0 +1,130 @@
+<app-dialog
+  [isOpen]="isOpen()"
+  [title]="isEditing() ? 'Modifier le Catéchiste' : 'Nouveau Catéchiste'"
+  subtitle="Organisation • Corps des Animateurs & Catéchistes"
+  size="md"
+  (closed)="onClose()"
+>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" dialog-body class="animateur-form">
+    <!-- Nom & Prénoms Row -->
+    <div class="form-row col-2">
+      <div class="form-group">
+        <label class="form-label" for="nom">Nom <span class="required">*</span></label>
+        <input
+          id="nom"
+          type="text"
+          formControlName="nom"
+          class="form-control"
+          placeholder="Nom"
+        />
+        @if (form.controls.nom.touched && form.controls.nom.invalid) {
+          <span class="field-error">Le nom est obligatoire.</span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="prenoms">Prénoms <span class="required">*</span></label>
+        <input
+          id="prenoms"
+          type="text"
+          formControlName="prenoms"
+          class="form-control"
+          placeholder="Prénoms"
+        />
+        @if (form.controls.prenoms.touched && form.controls.prenoms.invalid) {
+          <span class="field-error">Les prénoms sont obligatoires.</span>
+        }
+      </div>
+    </div>
+
+    <!-- Sexe & Profession Row -->
+    <div class="form-row col-2">
+      <div class="form-group">
+        <label class="form-label" for="sexe">Sexe <span class="required">*</span></label>
+        <select id="sexe" formControlName="sexe" class="form-control">
+          <option value="M">Masculin (M)</option>
+          <option value="F">Féminin (F)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="profession">Profession</label>
+        <input
+          id="profession"
+          type="text"
+          formControlName="profession"
+          class="form-control"
+          placeholder="Profession"
+        />
+      </div>
+    </div>
+
+    <!-- Téléphone & Email Row -->
+    <div class="form-row col-2">
+      <div class="form-group">
+        <label class="form-label" for="telephone">Téléphone</label>
+        <input
+          id="telephone"
+          type="text"
+          formControlName="telephone"
+          class="form-control"
+          placeholder="Téléphone"
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="email">Email</label>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          class="form-control"
+          placeholder="Email"
+        />
+        @if (form.controls.email.touched && form.controls.email.invalid) {
+          <span class="field-error">Veuillez renseigner un email valide.</span>
+        }
+      </div>
+    </div>
+
+    <!-- Options supplémentaires -->
+    @if (!isEditing()) {
+      <div class="checkbox-card">
+        <label class="checkbox-label" for="createUserAccount">
+          <input
+            id="createUserAccount"
+            type="checkbox"
+            formControlName="create_user_account"
+            class="checkbox-control"
+          />
+          <div class="checkbox-content">
+            <span class="checkbox-title">Créer un compte d'accès utilisateur</span>
+            <span class="checkbox-desc">Permet au catéchiste de se connecter à l'espace avec ses identifiants.</span>
+          </div>
+        </label>
+      </div>
+    } @else {
+      <div class="form-group">
+        <label class="form-label" for="statut">Statut du Catéchiste</label>
+        <select id="statut" formControlName="statut" class="form-control">
+          <option value="actif">Actif</option>
+          <option value="inactif">Inactif</option>
+        </select>
+      </div>
+    }
+  </form>
+
+  <div dialog-footer>
+    <app-button variant="secondary" (clicked)="onClose()">
+      Annuler
+    </app-button>
+    <app-button
+      variant="primary"
+      icon="check"
+      [loading]="isLoading()"
+      (clicked)="onSubmit()"
+    >
+      {{ isEditing() ? 'Enregistrer' : 'Créer' }}
+    </app-button>
+  </div>
+</app-dialog>

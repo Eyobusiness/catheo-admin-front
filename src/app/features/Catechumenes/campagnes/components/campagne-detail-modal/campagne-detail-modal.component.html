@@ -1,0 +1,98 @@
+<app-dialog
+  [isOpen]="isOpen()"
+  title="Détails de la Campagne"
+  size="md"
+  (closed)="onClose()"
+>
+  @if (campagne(); as c) {
+    <div class="campagne-detail-body">
+      <!-- Header Banner -->
+      <div class="detail-header-card" [class.is-open]="c.statut === 'ouverte'">
+        <div class="detail-icon">
+          <i class="bi bi-megaphone-fill"></i>
+        </div>
+        <div class="detail-header-info">
+          <h3 class="detail-title">{{ c.titre }}</h3>
+          <span class="detail-code">Année : {{ c.annee_catechese?.libelle || 'Non définie' }}</span>
+        </div>
+        @switch (c.statut) {
+          @case ('ouverte') {
+            <span class="status-badge-open">Ouverte</span>
+          }
+          @case ('fermee') {
+            <span class="status-badge-closed">Clôturée</span>
+          }
+          @case ('suspendue') {
+            <span class="status-badge-suspended">Suspendue</span>
+          }
+        }
+      </div>
+
+      <!-- Info Grid -->
+      <div class="detail-grid">
+        <div class="info-card">
+          <span class="info-label"><i class="bi bi-calendar-event"></i> Date de Début</span>
+          <span class="info-value">{{ c.date_debut | date:'fullDate' }}</span>
+        </div>
+
+        <div class="info-card">
+          <span class="info-label"><i class="bi bi-calendar-check"></i> Date de Fin</span>
+          <span class="info-value">{{ c.date_fin | date:'fullDate' }}</span>
+        </div>
+
+        <div class="info-card full-width">
+          <span class="info-label"><i class="bi bi-people"></i> Préinscriptions Enregistrées</span>
+          <span class="info-value-highlight">
+            <strong>{{ c.preinscriptions_count || 0 }}</strong> dossiers soumis
+          </span>
+        </div>
+
+        @if (c.description) {
+          <div class="info-card full-width">
+            <span class="info-label"><i class="bi bi-info-circle"></i> Instructions / Description</span>
+            <p class="desc-p">{{ c.description }}</p>
+          </div>
+        }
+      </div>
+
+      <!-- Sections Ouvertes -->
+      <div class="sections-section">
+        <h4 class="section-title">
+          <i class="bi bi-layers-fill"></i>
+          Sections Autorisées
+        </h4>
+
+        <div class="sections-list">
+          @for (sec of c.sections_autorisees; track sec) {
+            <span class="sec-chip">{{ sec }}</span>
+          } @empty {
+            <p class="empty-tarifs-p">Toutes les sections sont autorisées.</p>
+          }
+        </div>
+      </div>
+
+      <!-- Liens publics & QR Code -->
+      @if (c.public_url || c.qr_code_url) {
+        <div class="public-links-section">
+          <h4 class="section-title"><i class="bi bi-share-fill"></i> Accès Public Paroissiens</h4>
+          @if (c.public_url) {
+            <div class="link-row">
+              <span class="link-label">Lien public :</span>
+              <a [href]="c.public_url" target="_blank" class="link-val">{{ c.public_url }}</a>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Footer Actions -->
+      <div class="modal-footer-actions">
+        <app-button variant="ghost" (clicked)="onClose()">
+          Fermer
+        </app-button>
+        <app-button variant="primary" icon="pencil" (clicked)="onEdit()">
+          Modifier la Campagne
+        </app-button>
+      </div>
+    </div>
+  }
+</app-dialog>

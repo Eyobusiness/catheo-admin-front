@@ -1,0 +1,152 @@
+<div class="table-card-wrapper">
+  <div class="table-responsive">
+    <table class="medical-table">
+      <thead>
+        <tr>
+          <th>Animateurs</th>
+          <th>Sexe</th>
+          <th>Téléphone</th>
+          <th>Email</th>
+          <th>Profession</th>
+          <th>Statut</th>
+          <th class="text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (animateur of paginatedAnimateurs(); track animateur.id) {
+          <tr class="table-row">
+            <td>
+              <div class="animateur-name-cell">
+                <div class="animateur-avatar" [class.is-female]="animateur.sexe === 'F'">
+                  <span>{{ getInitials(animateur) }}</span>
+                </div>
+                <div class="animateur-meta">
+                  <span class="animateur-title">{{ animateur.nom }} {{ animateur.prenoms }}</span>
+                  <!-- @if (animateur.matricule) {
+                    <span class="matricule-tag">{{ animateur.matricule }}</span>
+                  } -->
+                </div>
+              </div>
+            </td>
+
+            <td>
+              <span class="sexe-badge" [class.is-female]="animateur.sexe === 'F'">
+                <i [class]="'bi ' + (animateur.sexe === 'F' ? 'bi-gender-female' : 'bi-gender-male')"></i>
+                {{ animateur.sexe === 'F' ? 'Féminin' : 'Masculin' }}
+              </span>
+            </td>
+
+            <td>
+              @if (animateur.telephone) {
+                <div class="contact-item">
+                  <i class="bi bi-telephone"></i>
+                  <span>{{ animateur.telephone }}</span>
+                </div>
+              } @else {
+                <span class="text-muted">—</span>
+              }
+            </td>
+
+            <td>
+              @if (animateur.email) {
+                <div class="contact-item email-item">
+                  <i class="bi bi-envelope"></i>
+                  <span>{{ animateur.email }}</span>
+                </div>
+              } @else {
+                <span class="text-muted">—</span>
+              }
+            </td>
+
+            <td>
+              <span class="profession-text">{{ animateur.profession || '—' }}</span>
+            </td>
+
+            <td>
+              @if (isActif(animateur)) {
+                <span class="active-badge">
+                  <span class="pulse-dot"></span>
+                  Actif
+                </span>
+              } @else {
+                <span class="inactive-badge">Inactif</span>
+              }
+            </td>
+
+            <td class="text-right">
+              <div class="actions-flex">
+                <!-- Action: Bascule statut actif / inactif -->
+                <app-icon-button
+                  [variant]="isActif(animateur) ? 'success' : 'ghost'"
+                  size="sm"
+                  [title]="isActif(animateur) ? 'Catéchiste actif' : 'Activer le catéchiste'"
+                  ariaLabel="Statut"
+                  (clicked)="onToggleStatus(animateur)"
+                >
+                  <i [class]="'bi ' + (isActif(animateur) ? 'bi-check-circle-fill' : 'bi-toggle-off')"></i>
+                </app-icon-button>
+
+                <!-- Action: Voir -->
+                <app-icon-button
+                  variant="info"
+                  size="sm"
+                  title="Voir le profil"
+                  ariaLabel="Voir"
+                  (clicked)="onView(animateur)"
+                >
+                  <i class="bi bi-eye"></i>
+                </app-icon-button>
+
+                <!-- Action: Modifier -->
+                <app-icon-button
+                  variant="primary"
+                  size="sm"
+                  title="Modifier"
+                  ariaLabel="Modifier"
+                  (clicked)="onEdit(animateur)"
+                >
+                  <i class="bi bi-pencil"></i>
+                </app-icon-button>
+
+                <!-- Action: Supprimer -->
+                <app-icon-button
+                  variant="danger"
+                  size="sm"
+                  title="Supprimer"
+                  ariaLabel="Supprimer"
+                  (clicked)="onDelete(animateur)"
+                >
+                  <i class="bi bi-trash3"></i>
+                </app-icon-button>
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="7" class="empty-table-cell">
+              <div class="empty-state-box">
+                <i class="bi bi-person-badge" style="font-size: 2rem;"></i>
+                <p class="empty-title">Aucun animateur / catéchiste trouvé</p>
+                <p class="empty-desc">Enregistrez le premier catéchiste de la paroisse.</p>
+                <app-button variant="primary" size="sm" icon="plus" (clicked)="onCreate()">
+                  Ajouter un Catéchiste
+                </app-button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination intégrée -->
+  @if (animateurs().length > 0) {
+    <app-pagination
+      [totalItems]="animateurs().length"
+      [currentPage]="currentPage()"
+      [pageSize]="pageSize()"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+    />
+  }
+</div>

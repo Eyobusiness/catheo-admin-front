@@ -1,0 +1,104 @@
+<div class="mouvements-page">
+  <!-- Topbar Header -->
+  <section class="page-topbar">
+    <div class="topbar-headings">
+      <h2 class="topbar-title">Mouvements</h2>
+      <p class="topbar-subtitle">Gestion des mouvements</p>
+    </div>
+
+    <div class="topbar-actions">
+      <app-button
+        variant="primary"
+        size="md"
+        icon="plus"
+        (clicked)="openCreateModal()"
+      >
+        Ajouter un Mouvement
+      </app-button>
+    </div>
+  </section>
+
+  <!-- Main Table Card -->
+  <app-card
+    title="Répertoire des Mouvements Paroissiaux">
+    <!-- Table Controls Toolbar -->
+    <div class="filters-toolbar">
+      <!-- Left Filters Group -->
+      <div class="filters-left">
+        <!-- Search Input -->
+        <div class="search-input-wrapper">
+          <i class="bi bi-search search-icon"></i>
+          <input
+            type="text"
+            class="filter-search-control"
+            placeholder="Rechercher un mouve..."
+            [value]="searchQuery()"
+            (input)="onSearchChange($event)"
+          />
+          @if (searchQuery()) {
+            <button class="clear-search-btn" (click)="clearSearch()" title="Effacer la recherche">
+              <i class="bi bi-x-circle-fill"></i>
+            </button>
+          }
+        </div>
+
+        <!-- Statut Filter Dropdown -->
+        <div class="filter-select-wrapper">
+          <i class="bi bi-toggle-on select-prefix-icon"></i>
+          <select
+            class="filter-select-control"
+            [value]="selectedStatutFilter()"
+            (change)="onStatutFilterChange($event)"
+          >
+            <option value="">Tous les statuts</option>
+            <option value="active">Active uniquement</option>
+            <option value="inactive">Inactive uniquement</option>
+          </select>
+          <i class="bi bi-chevron-down select-chevron-icon"></i>
+        </div>
+      </div>
+
+      <!-- Right Meta Info & Reset Button -->
+      <div class="filters-right">
+        @if (hasActiveFilters()) {
+          <button class="reset-filter-btn" (click)="resetAllFilters()">
+            <i class="bi bi-arrow-counterclockwise"></i>
+            <span>Réinitialiser</span>
+          </button>
+        }
+        <span class="count-pill">
+          <strong>{{ filteredMouvements().length }}</strong> mouvement(s)
+        </span>
+      </div>
+    </div>
+
+    <!-- Mouvements Table Sub-component with Action Icons & Pagination -->
+    <app-mouvement-table
+      [mouvements]="filteredMouvements()"
+      (createRequested)="openCreateModal()"
+      (viewRequested)="handleView($event)"
+      (editRequested)="openEditModal($event)"
+      (deleteRequested)="openDeleteModal($event)"
+      (toggleStatusRequested)="handleToggleStatus($event)"
+    />
+  </app-card>
+</div>
+
+<!-- Mouvement Form Modal Sub-component -->
+<app-mouvement-form-modal
+  [isOpen]="isFormModalOpen()"
+  [isEditing]="isEditing()"
+  [mouvementToEdit]="selectedMouvement()"
+  [isLoading]="isLoading()"
+  (formClosed)="closeFormModal()"
+  (formSubmitted)="handleFormSubmit($event)"
+/>
+
+<!-- Mouvement Delete Modal Sub-component -->
+<app-mouvement-delete-modal
+  [isOpen]="isDeleteModalOpen()"
+  [itemToDelete]="itemToDelete()"
+  [isLoading]="isLoading()"
+  (modalClosed)="closeDeleteModal()"
+  (confirmed)="handleDeleteConfirm()"
+/>

@@ -1,0 +1,86 @@
+<app-dialog
+  [isOpen]="isOpen()"
+  [title]="isEditing() ? 'Modifier la Section' : 'Créer une Section'"
+  subtitle="Paroisse Cœur Immaculé de Marie • Organisation"
+  size="md"
+  (closed)="onClose()"
+>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" dialog-body class="section-form">
+    <div class="form-row col-2">
+      <div class="form-group">
+        <label class="form-label" for="nom">Nom <span class="required">*</span></label>
+        <input
+          id="nom"
+          type="text"
+          formControlName="nom"
+          class="form-control"
+          placeholder="Nom"
+        />
+        @if (form.controls.nom.touched && form.controls.nom.invalid) {
+          <span class="field-error">Le nom est obligatoire.</span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="code">Code <span class="required">*</span></label>
+        <input
+          id="code"
+          type="text"
+          formControlName="code"
+          class="form-control"
+          placeholder="Code"
+        />
+        @if (form.controls.code.touched && form.controls.code.invalid) {
+          <span class="field-error">Le code est obligatoire.</span>
+        }
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="description">Description</label>
+      <input
+        id="description"
+        type="text"
+        formControlName="description"
+        class="form-control"
+        placeholder="Description"
+      />
+    </div>
+
+    <div class="form-row col-2">
+      <div class="form-group">
+        <label class="form-label" for="ordre">Ordre <span class="required">*</span></label>
+        <input
+          id="ordre"
+          type="number"
+          formControlName="ordre"
+          class="form-control"
+          placeholder="1"
+          min="1"
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="statut">Statut</label>
+        <select id="statut" formControlName="statut" class="form-control">
+          <option value="actif">Actif (Ouvert)</option>
+          <option value="inactif">Inactif</option>
+        </select>
+      </div>
+    </div>
+  </form>
+
+  <div dialog-footer>
+    <app-button variant="secondary" (clicked)="onClose()">
+      Annuler
+    </app-button>
+    <app-button
+      variant="primary"
+      icon="check"
+      [loading]="isLoading()"
+      (clicked)="onSubmit()"
+    >
+      {{ isEditing() ? 'Enregistrer' : 'Créer' }}
+    </app-button>
+  </div>
+</app-dialog>

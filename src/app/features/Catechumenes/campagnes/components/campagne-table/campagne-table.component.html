@@ -1,0 +1,173 @@
+<div class="table-card-wrapper">
+  <div class="table-responsive">
+    <table class="medical-table">
+      <thead>
+        <tr>
+          <th>Titre de la Campagne</th>
+          <th>Année Pastorale</th>
+          <th>Période</th>
+          <th>Sections Autorisées</th>
+          <th>Demandes</th>
+          <th>Statut</th>
+          <th class="text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (campagne of paginatedCampagnes(); track campagne.id) {
+          <tr class="table-row">
+            <td>
+              <div class="campagne-name-cell">
+                <div class="campagne-icon-box" [class.is-open-icon]="campagne.statut === 'ouverte'">
+                  <i class="bi bi-megaphone-fill"></i>
+                </div>
+                <div class="campagne-meta">
+                  <span class="campagne-title">{{ campagne.titre }}</span>
+                  @if (campagne.public_url) {
+                    <a [href]="campagne.public_url" target="_blank" class="public-link" title="Ouvrir le lien public">
+                      <i class="bi bi-link-45deg"></i> Lien public
+                    </a>
+                  }
+                </div>
+              </div>
+            </td>
+
+            <td>
+              <div class="annee-box">
+                <i class="bi bi-calendar4-week"></i>
+                <span>{{ campagne.annee_catechese?.libelle || 'Année Pastorale' }}</span>
+              </div>
+            </td>
+
+            <td>
+              <div class="date-range-box">
+                <i class="bi bi-calendar-range"></i>
+                <span>{{ campagne.date_debut | date:'dd MMM yyyy' }} &rarr; {{ campagne.date_fin | date:'dd MMM yyyy' }}</span>
+              </div>
+            </td>
+
+            <td>
+              <div class="sections-badges-wrapper">
+                @if (campagne.sections_autorisees && campagne.sections_autorisees.length > 0) {
+                  @for (sec of campagne.sections_autorisees; track sec) {
+                    <span class="section-chip-badge">{{ sec }}</span>
+                  }
+                } @else {
+                  <span class="text-muted-xs">Toutes les sections</span>
+                }
+              </div>
+            </td>
+
+            <td>
+              <div class="count-badge">
+                <i class="bi bi-person-check-fill"></i>
+                <span><strong>{{ campagne.preinscriptions_count || 0 }}</strong> demandes</span>
+              </div>
+            </td>
+
+            <td>
+              @switch (campagne.statut) {
+                @case ('ouverte') {
+                  <span class="badge-open">
+                    <span class="pulse-dot"></span>
+                    Ouverte
+                  </span>
+                }
+                @case ('fermee') {
+                  <span class="badge-closed">Clôturée</span>
+                }
+                @case ('suspendue') {
+                  <span class="badge-suspended">Suspendue</span>
+                }
+                @default {
+                  <span class="badge-closed">{{ campagne.statut }}</span>
+                }
+              }
+            </td>
+
+            <td class="text-right">
+              <div class="actions-flex">
+                <!-- Toggle Statut -->
+                <app-icon-button
+                  [variant]="campagne.statut === 'ouverte' ? 'success' : 'ghost'"
+                  size="sm"
+                  [title]="campagne.statut === 'ouverte' ? 'Clôturer la campagne' : 'Ouvrir la campagne'"
+                  ariaLabel="Statut"
+                  (clicked)="onToggleStatus(campagne)"
+                >
+                  <i [class]="'bi ' + (campagne.statut === 'ouverte' ? 'bi-toggle-on' : 'bi-toggle-off')"></i>
+                </app-icon-button>
+
+                <!-- QR Code & Partage -->
+                <app-icon-button
+                  variant="secondary"
+                  size="sm"
+                  title="Partager le lien & QR Code"
+                  ariaLabel="QR Code"
+                  (clicked)="onQr(campagne)"
+                >
+                  <i class="bi bi-qr-code-scan"></i>
+                </app-icon-button>
+
+                <!-- Voir -->
+                <app-icon-button
+                  variant="info"
+                  size="sm"
+                  title="Voir les détails"
+                  ariaLabel="Voir"
+                  (clicked)="onView(campagne)"
+                >
+                  <i class="bi bi-eye"></i>
+                </app-icon-button>
+
+                <!-- Modifier -->
+                <app-icon-button
+                  variant="primary"
+                  size="sm"
+                  title="Modifier"
+                  ariaLabel="Modifier"
+                  (clicked)="onEdit(campagne)"
+                >
+                  <i class="bi bi-pencil"></i>
+                </app-icon-button>
+
+                <!-- Supprimer -->
+                <app-icon-button
+                  variant="danger"
+                  size="sm"
+                  title="Supprimer"
+                  ariaLabel="Supprimer"
+                  (clicked)="onDelete(campagne)"
+                >
+                  <i class="bi bi-trash3"></i>
+                </app-icon-button>
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="7" class="empty-table-cell">
+              <div class="empty-state-box">
+                <i class="bi bi-megaphone" style="font-size: 2.25rem;"></i>
+                <p class="empty-title">Aucune campagne de préinscription</p>
+                <p class="empty-desc">Créez votre première campagne pour lancer les inscriptions.</p>
+                <app-button variant="primary" size="sm" icon="plus" (clicked)="onCreate()">
+                  Nouvelle Campagne
+                </app-button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (campagnes().length > 0) {
+    <app-pagination
+      [totalItems]="campagnes().length"
+      [currentPage]="currentPage()"
+      [pageSize]="pageSize()"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+    />
+  }
+</div>

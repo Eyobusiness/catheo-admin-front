@@ -1,0 +1,63 @@
+<app-dialog
+  [isOpen]="isOpen()"
+  title="Générer une Nouvelle Sauvegarde"
+  subtitle="Création d'un instantané complet de la base de données SQL"
+  size="md"
+  (closed)="onClose()"
+>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" dialog-body class="create-backup-form">
+    <div class="info-alert-card">
+      <div class="alert-icon">
+        <i class="bi bi-info-circle-fill"></i>
+      </div>
+      <div class="alert-text">
+        <span class="alert-title">Sauvegarde complète et sécurisée</span>
+        <span class="alert-desc">
+          L'instantané inclut l'ensemble des catéchumènes, présences, notes, évaluations, finances, animateurs et configurations.
+        </span>
+      </div>
+    </div>
+
+    <!-- Nom de l'archive -->
+    <div class="form-group">
+      <label class="form-label" for="nom_personnalise">
+        Nom de l'archive de sauvegarde (Optionnel)
+      </label>
+      <div class="input-with-suffix">
+        <input
+          id="nom_personnalise"
+          type="text"
+          formControlName="nom_personnalise"
+          class="form-control"
+          placeholder="catheo_paroisse_cim_backup"
+        />
+        <span class="input-suffix">.sql.gz</span>
+      </div>
+    </div>
+
+    <!-- Type de sauvegarde -->
+    <div class="form-group">
+      <label class="form-label" for="type">
+        Type d'opération
+      </label>
+      <select id="type" formControlName="type" class="form-control">
+        <option value="manuel">Sauvegarde Manuelle ponctuelle</option>
+        <option value="automatique">Sauvegarde Programmée (Système)</option>
+      </select>
+    </div>
+  </form>
+
+  <div dialog-footer>
+    <app-button variant="secondary" (clicked)="onClose()">
+      Annuler
+    </app-button>
+    <app-button
+      variant="primary"
+      icon="database-down"
+      [loading]="isLoading()"
+      (clicked)="onSubmit()"
+    >
+      Lancer la Sauvegarde
+    </app-button>
+  </div>
+</app-dialog>

@@ -1,0 +1,64 @@
+@if (isOpen()) {
+  <div class="confirm-modal-backdrop" (click)="onBackdropClick($event)">
+    <div class="confirm-modal-box" role="dialog" aria-modal="true">
+      <!-- Close X button -->
+      <button
+        type="button"
+        class="modal-close-icon-btn"
+        (click)="onCancel()"
+        [disabled]="isLoading()"
+        aria-label="Fermer"
+      >
+        <i class="bi bi-x-lg"></i>
+      </button>
+
+      <!-- Centered Uniform Icon with Glow -->
+      <div [class]="'confirm-icon-wrapper icon-variant-' + iconType()">
+        <div class="icon-inner">
+          <i [class]="getFormattedIcon()"></i>
+        </div>
+        <div class="icon-pulse-glow"></div>
+      </div>
+
+      <!-- Centered Content -->
+      <div class="confirm-content">
+        <h3 class="confirm-title">{{ title() }}</h3>
+        <p class="confirm-message">{{ message() }}</p>
+
+        @if (warningText()) {
+          <div class="confirm-warning-alert">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <span>{{ warningText() }}</span>
+          </div>
+        }
+      </div>
+
+      <!-- Two Well-Disposed Action Buttons -->
+      <div class="confirm-actions-row">
+        <button
+          type="button"
+          class="btn-action-cancel"
+          (click)="onCancel()"
+          [disabled]="isLoading()"
+        >
+          {{ cancelText() }}
+        </button>
+
+        <button
+          type="button"
+          [class]="'btn-action-confirm btn-confirm-' + confirmVariant()"
+          (click)="onConfirm()"
+          [disabled]="isLoading()"
+        >
+          @if (isLoading()) {
+            <span class="btn-spinner"></span>
+            <span>Traitement...</span>
+          } @else {
+            <i [class]="getFormattedIcon()"></i>
+            <span>{{ confirmText() }}</span>
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

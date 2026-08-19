@@ -1,0 +1,15 @@
+:host {
+  display: contents;
+}
+
+.affectation-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.125rem;
+}
+
+.field-error {
+  font-size: 0.75rem;
+  color: var(--danger-600);
+  margin-top: 0.25rem;
+}

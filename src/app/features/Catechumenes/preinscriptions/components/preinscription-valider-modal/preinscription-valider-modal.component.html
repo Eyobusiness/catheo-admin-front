@@ -1,0 +1,85 @@
+<app-dialog
+  [isOpen]="isOpen()"
+  title="Validation du Dossier de Préinscription"
+  size="md"
+  (closed)="onClose()"
+>
+  @if (preinscription(); as item) {
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="valider-modal-body">
+      <!-- Recap Card -->
+      <div class="candidate-recap-card">
+        <div class="recap-icon">
+          <i class="bi bi-person-check-fill"></i>
+        </div>
+        <div class="recap-meta">
+          <h4 class="candidate-name">{{ item.nom }} {{ item.prenoms }}</h4>
+          <span class="dossier-ref">Dossier: {{ item.code_dossier }}</span>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <!-- Niveau retenu -->
+        <div class="form-group">
+          <label class="form-label" for="val_niveau_id">
+            Niveau de Catéchèse Retenu <span class="required">*</span>
+          </label>
+          <select id="val_niveau_id" formControlName="niveau_id" class="form-control">
+            <option value="">Sélectionner le niveau</option>
+            @for (n of niveaux(); track n.id) {
+              <option [value]="n.id">{{ n.nom }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Classe (Optionnel - sinon passera en statut 'a_affecter') -->
+        <div class="form-group">
+          <label class="form-label" for="val_classe_id">
+            Classe d'affectation immédiate
+          </label>
+          <select id="val_classe_id" formControlName="classe_id" class="form-control">
+            <option value="">Affecter plus tard (Mettre en attente de classe)</option>
+            @for (c of getFilteredClasses(); track c.id) {
+              <option [value]="c.id">{{ c.nom }} ({{ c.effectif_actuel || 0 }}/{{ c.capacite_max }})</option>
+            }
+          </select>
+        </div>
+
+        <!-- Frais Payés -->
+        <div class="form-group full-width">
+          <div class="frais-toggle-card">
+            <label class="switch">
+              <input type="checkbox" formControlName="frais_payes" />
+              <span class="slider round"></span>
+            </label>
+            <div class="toggle-meta">
+              <span class="toggle-title">Frais d'inscription acquittés</span>
+              <span class="toggle-desc">Cochez si le paiement a été perçu ou enregistré.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notes / Remarques -->
+        <div class="form-group full-width">
+          <label class="form-label" for="notes_validation">Notes de Validation</label>
+          <textarea
+            id="notes_validation"
+            formControlName="notes_validation"
+            class="form-control text-area"
+            rows="2"
+            placeholder="Observations ou instructions pastorales..."
+          ></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer-actions">
+        <app-button type="button" variant="ghost" (clicked)="onClose()" [disabled]="isLoading()">
+          Annuler
+        </app-button>
+        <app-button type="submit" variant="success" [loading]="isLoading()" [disabled]="form.invalid || isLoading()">
+          <i class="bi bi-check-circle-fill"></i>
+          <span>Valider l'inscription</span>
+        </app-button>
+      </div>
+    </form>
+  }
+</app-dialog>

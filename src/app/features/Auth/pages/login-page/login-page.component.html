@@ -1,0 +1,199 @@
+<div class="auth-viewport">
+  <div class="auth-container">
+    <!-- Left Hero Column: Brand & Value Proposition -->
+    <div class="auth-hero-panel">
+      <div class="hero-brand">
+        <div class="brand-badge-icon">
+          <i class="bi bi-book-half"></i>
+        </div>
+        <div class="brand-info">
+          <span class="brand-name">Cathéo</span>
+          <span class="brand-tagline">Gestion Pastorale & Catéchèse</span>
+        </div>
+      </div>
+
+      <div class="hero-body">
+        <h1 class="hero-headline">
+          L'outil moderne au service de la mission pastorale
+        </h1>
+        <p class="hero-description">
+          Une plateforme unifiée pour la gestion des catéchumènes, les registres sacramentels, le suivi pédagogique et l'administration paroissiale.
+        </p>
+
+        <!-- Feature Points -->
+        <div class="hero-features-list">
+          <div class="feature-item">
+            <div class="feature-icon"><i class="bi bi-people-fill"></i></div>
+            <div class="feature-text">
+              <strong>Inscriptions & Catéchumènes</strong>
+              <span>Gestion simplifiée des parcours et des promotions</span>
+            </div>
+          </div>
+
+          <div class="feature-item">
+            <div class="feature-icon"><i class="bi bi-droplet-half"></i></div>
+            <div class="feature-text">
+              <strong>Registres Sacramentels</strong>
+              <span>Baptême, Première Communion, Confirmation</span>
+            </div>
+          </div>
+
+          <div class="feature-item">
+            <div class="feature-icon"><i class="bi bi-shield-lock-fill"></i></div>
+            <div class="feature-text">
+              <strong>Sécurité & Confidentialité</strong>
+              <span>Données paroissiales protégées et sauvegardées</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-footer-quote">
+        <i class="bi bi-quote"></i>
+        <span>« Allez, faites de toutes les nations des disciples, baptisez-les au nom du Père, et du Fils, et du Saint-Esprit. »</span>
+        <cite>Matthieu 28, 19</cite>
+      </div>
+    </div>
+
+    <!-- Right Column: Login Form Panel -->
+    <div class="auth-form-panel">
+      <div class="form-panel-content">
+        <div class="mobile-brand-header">
+          <div class="brand-badge-icon sm">
+            <i class="bi bi-book-half"></i>
+          </div>
+          <span class="brand-name">Cathéo</span>
+        </div>
+
+        <div class="form-header">
+          <h2 class="form-title">Connexion</h2>
+          <p class="form-subtitle">Accédez à votre espace d'administration pastorale</p>
+        </div>
+
+        <!-- General Error Banner -->
+        @if (generalErrorMessage()) {
+          <div class="auth-alert-box">
+            <i class="bi bi-exclamation-octagon-fill"></i>
+            <span>{{ generalErrorMessage() }}</span>
+          </div>
+        }
+
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+          <!-- Field: Email -->
+          <div class="form-field-group">
+            <label class="form-label" for="loginEmail">
+              Adresse Email <span class="required">*</span>
+            </label>
+            <div class="input-wrapper">
+              <span class="field-icon"><i class="bi bi-envelope"></i></span>
+              <input
+                id="loginEmail"
+                type="email"
+                formControlName="email"
+                class="field-input"
+                placeholder="Email"
+                autocomplete="email"
+              />
+            </div>
+            @if (loginForm.controls.email.touched && loginForm.controls.email.invalid) {
+              <span class="error-msg">Veuillez saisir une adresse email valide.</span>
+            }
+            @if (serverErrors()?.['email']) {
+              @for (err of serverErrors()!['email']; track err) {
+                <span class="error-msg">{{ err }}</span>
+              }
+            }
+          </div>
+
+          <!-- Field: Password -->
+          <div class="form-field-group">
+            <div class="field-label-row">
+              <label class="form-label" for="loginPassword">
+                Mot de passe <span class="required">*</span>
+              </label>
+              <a routerLink="/auth/forgot-password" class="link-forgot">
+                Mot de passe oublié ?
+              </a>
+            </div>
+            <div class="input-wrapper">
+              <span class="field-icon"><i class="bi bi-shield-lock"></i></span>
+              <input
+                id="loginPassword"
+                [type]="showPassword() ? 'text' : 'password'"
+                formControlName="password"
+                class="field-input"
+                placeholder="Mot de passe"
+                autocomplete="current-password"
+              />
+              <button
+                type="button"
+                class="btn-toggle-eye"
+                (click)="togglePasswordVisibility()"
+                [title]="showPassword() ? 'Masquer' : 'Afficher'"
+                aria-label="Afficher ou masquer le mot de passe"
+              >
+                <i [class]="showPassword() ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+              </button>
+            </div>
+            @if (loginForm.controls.password.touched && loginForm.controls.password.invalid) {
+              <span class="error-msg">Le mot de passe doit comporter au moins 6 caractères.</span>
+            }
+            @if (serverErrors()?.['password']) {
+              @for (err of serverErrors()!['password']; track err) {
+                <span class="error-msg">{{ err }}</span>
+              }
+            }
+          </div>
+
+          <!-- Remember Me Checkbox -->
+          <div class="field-remember-row">
+            <label class="check-label" for="rememberMe">
+              <input
+                id="rememberMe"
+                type="checkbox"
+                formControlName="rememberMe"
+                class="check-input"
+              />
+              <span class="check-text">Se souvenir de moi</span>
+            </label>
+          </div>
+
+          <!-- Submit Button -->
+          <button
+            type="submit"
+            class="btn-submit-login"
+            [disabled]="isLoading()"
+          >
+            @if (isLoading()) {
+              <span class="spinner-circle"></span>
+              <span>Connexion en cours...</span>
+            } @else {
+              <span>Se connecter</span>
+              <i class="bi bi-arrow-right"></i>
+            }
+          </button>
+        </form>
+
+        <!-- Quick Demo Credentials Box -->
+        <div class="demo-box">
+          <div class="demo-top">
+            <div class="demo-indicator">
+              <span class="demo-dot"></span>
+              <span class="demo-label">Compte Administrateur Demo</span>
+            </div>
+            <button type="button" class="btn-demo-autofill" (click)="fillDemoCredentials()">
+              Remplir
+            </button>
+          </div>
+          <div class="demo-creds-row">
+            <code>admin.stpaul&#64;catheo.ci</code> &bull; <code>Password123!</code>
+          </div>
+        </div>
+
+        <div class="form-footer-copyright">
+          &copy; 2026 Cathéo &bull; Système de Gestion Pastorale
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

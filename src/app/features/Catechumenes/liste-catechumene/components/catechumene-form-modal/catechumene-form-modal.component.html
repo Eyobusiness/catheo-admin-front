@@ -1,0 +1,572 @@
+<app-dialog
+  [isOpen]="isOpen()"
+  [title]="isEditing() ? 'Modifier la Fiche Catéchumène' : 'Nouveau Catéchumène (Inscription en Paroisse)'"
+  size="lg"
+  (closed)="onClose()"
+>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="catechumene-form-body">
+    <!-- Tabs Navigation Header -->
+    <div class="form-tabs-nav">
+      <button
+        type="button"
+        class="form-tab-btn"
+        [class.active]="activeTab() === 'identite'"
+        (click)="setTab('identite')"
+      >
+        <i class="bi bi-person-fill"></i>
+        <span>1. Identité</span>
+      </button>
+
+      <button
+        type="button"
+        class="form-tab-btn"
+        [class.active]="activeTab() === 'parents'"
+        (click)="setTab('parents')"
+      >
+        <i class="bi bi-people-fill"></i>
+        <span>2. Parents / Tuteur</span>
+      </button>
+
+      <button
+        type="button"
+        class="form-tab-btn"
+        [class.active]="activeTab() === 'sacrements'"
+        (click)="setTab('sacrements')"
+      >
+        <i class="bi bi-droplet-half"></i>
+        <span>3. Sacrements & Parrain</span>
+      </button>
+
+      <button
+        type="button"
+        class="form-tab-btn"
+        [class.active]="activeTab() === 'paroisse'"
+        (click)="setTab('paroisse')"
+      >
+        <i class="bi bi-building"></i>
+        <span>4. Paroisse & Classe</span>
+      </button>
+    </div>
+
+    <!-- TAB 1: IDENTITÉ DU CATÉCHUMÈNE -->
+    @if (activeTab() === 'identite') {
+      <div class="tab-content-grid">
+        <div class="form-group">
+          <label class="form-label" for="cat_nom">
+            Nom de Famille <span class="required">*</span>
+          </label>
+          <input
+            id="cat_nom"
+            type="text"
+            formControlName="nom"
+            class="form-control"
+            placeholder="Ex: KOUADIO"
+          />
+          @if (form.controls.nom.touched && form.controls.nom.errors?.['required']) {
+            <span class="field-error">Le nom est obligatoire.</span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="cat_prenoms">
+            Prénoms <span class="required">*</span>
+          </label>
+          <input
+            id="cat_prenoms"
+            type="text"
+            formControlName="prenoms"
+            class="form-control"
+            placeholder="Ex: Ferdinand Roméo"
+          />
+          @if (form.controls.prenoms.touched && form.controls.prenoms.errors?.['required']) {
+            <span class="field-error">Les prénoms sont obligatoires.</span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="cat_sexe">
+            Sexe <span class="required">*</span>
+          </label>
+          <select id="cat_sexe" formControlName="sexe" class="form-control">
+            <option value="M">Masculin</option>
+            <option value="F">Féminin</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="cat_dnaiss">
+            Date de Naissance <span class="required">*</span>
+          </label>
+          <input id="cat_dnaiss" type="date" formControlName="date_naissance" class="form-control" />
+          @if (form.controls.date_naissance.touched && form.controls.date_naissance.errors?.['required']) {
+            <span class="field-error">La date de naissance est obligatoire.</span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="cat_lnaiss">Lieu de Naissance</label>
+          <input
+            id="cat_lnaiss"
+            type="text"
+            formControlName="lieu_naissance"
+            class="form-control"
+            placeholder="Ex: Yopougon, Abidjan"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="cat_tel">Téléphone du Candidat</label>
+          <input
+            id="cat_tel"
+            type="tel"
+            formControlName="telephone"
+            class="form-control"
+            placeholder="Ex: +225 07 00 00 00 00"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="cat_adr">Adresse Géographique</label>
+          <input
+            id="cat_adr"
+            type="text"
+            formControlName="adresse"
+            class="form-control"
+            placeholder="Ex: Angré 8ème Tranche"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="cat_dom">Domicile / Quartier</label>
+          <input
+            id="cat_dom"
+            type="text"
+            formControlName="domicile"
+            class="form-control"
+            placeholder="Ex: Cité BCEAO"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="cat_prof">Profession / Activité</label>
+          <input
+            id="cat_prof"
+            type="text"
+            formControlName="profession"
+            class="form-control"
+            placeholder="Ex: Élève, Enseignant, Commerçant..."
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="cat_cls_scol">Classe Scolaire (si élève)</label>
+          <input
+            id="cat_cls_scol"
+            type="text"
+            formControlName="classe_scolaire"
+            class="form-control"
+            placeholder="Ex: CM1, 4ème, 1ère A4..."
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="cat_sit_mat">Situation Matrimoniale</label>
+          <select id="cat_sit_mat" formControlName="situation_matrimoniale" class="form-control">
+            <option value="celibataire">Célibataire</option>
+            <option value="marie_eglise">Marié(e) à l'Église</option>
+            <option value="marie_coutume">Mariage Coutumier</option>
+            <option value="marie_civil">Mariage Civil</option>
+            <option value="veuf">Veuf / Veuve</option>
+            <option value="divorce">Divorcé(e)</option>
+            <option value="autre">Autre</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="cat_stat">Statut Pastoral</label>
+          <select id="cat_stat" formControlName="statut" class="form-control">
+            <option value="actif">Actif (Inscrit)</option>
+            <option value="inactif">Inactif</option>
+            <option value="archive">Archivé</option>
+          </select>
+        </div>
+
+        <div class="form-group full-width">
+          <label class="form-label" for="cat_photo">URL Photo d'identité</label>
+          <input
+            id="cat_photo"
+            type="url"
+            formControlName="photo_url"
+            class="form-control"
+            placeholder="https://..."
+          />
+        </div>
+      </div>
+    }
+
+    <!-- TAB 2: PARENTS & TUTEUR -->
+    @if (activeTab() === 'parents') {
+      <div class="tab-content-grid">
+        <div class="section-divider full-width">
+          <i class="bi bi-person-bounding-box"></i> Informations du Père
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="p_nom_cat">Nom complet du Père</label>
+          <input
+            id="p_nom_cat"
+            type="text"
+            formControlName="nom_pere"
+            class="form-control"
+            placeholder="Nom et prénoms du père"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="p_orig_cat">Origine / Village du Père</label>
+          <input
+            id="p_orig_cat"
+            type="text"
+            formControlName="origine_pere"
+            class="form-control"
+            placeholder="Origine géographique"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="p_tel_cat">Téléphone du Père</label>
+          <input
+            id="p_tel_cat"
+            type="tel"
+            formControlName="telephone_pere"
+            class="form-control"
+            placeholder="+225 ..."
+          />
+        </div>
+
+        <div class="section-divider full-width">
+          <i class="bi bi-person-heart"></i> Informations de la Mère
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="m_nom_cat">Nom complet de la Mère</label>
+          <input
+            id="m_nom_cat"
+            type="text"
+            formControlName="nom_mere"
+            class="form-control"
+            placeholder="Nom et prénoms de la mère"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="m_orig_cat">Origine / Village de la Mère</label>
+          <input
+            id="m_orig_cat"
+            type="text"
+            formControlName="origine_mere"
+            class="form-control"
+            placeholder="Origine géographique"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="m_tel_cat">Téléphone de la Mère</label>
+          <input
+            id="m_tel_cat"
+            type="tel"
+            formControlName="telephone_mere"
+            class="form-control"
+            placeholder="+225 ..."
+          />
+        </div>
+
+        <div class="section-divider full-width">
+          <i class="bi bi-shield-person"></i> Tuteur Légal / Responsable
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="t_nom_cat">Nom du Tuteur / Responsable</label>
+          <input
+            id="t_nom_cat"
+            type="text"
+            formControlName="nom_tuteur"
+            class="form-control"
+            placeholder="Nom et prénoms du tuteur"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="t_tel_cat">Téléphone du Tuteur</label>
+          <input
+            id="t_tel_cat"
+            type="tel"
+            formControlName="telephone_tuteur"
+            class="form-control"
+            placeholder="+225 ..."
+          />
+        </div>
+      </div>
+    }
+
+    <!-- TAB 3: SACREMENTS DÉJÀ REÇUS & PARRAIN -->
+    @if (activeTab() === 'sacrements') {
+      <div class="tab-content-grid">
+        <div class="form-group full-width">
+          <div class="toggle-card">
+            <label class="switch">
+              <input type="checkbox" formControlName="est_baptise" />
+              <span class="slider round"></span>
+            </label>
+            <div class="toggle-meta">
+              <span class="toggle-title">Le catéchumène a-t-il déjà reçu le Sacrement du Baptême ?</span>
+              <span class="toggle-desc">Si oui, veuillez renseigner le carnet et la paroisse d'origine</span>
+            </div>
+          </div>
+        </div>
+
+        @if (form.controls.est_baptise.value) {
+          <div class="form-group">
+            <label class="form-label" for="cb_carnet">N° Carnet / Registre de Baptême</label>
+            <input
+              id="cb_carnet"
+              type="text"
+              formControlName="num_carnet_bapteme"
+              class="form-control"
+              placeholder="Ex: REG-2019-0312"
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="cb_date">Date du Baptême</label>
+            <input id="cb_date" type="date" formControlName="date_bapteme" class="form-control" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="cb_paroisse">Paroisse du Baptême</label>
+            <input
+              id="cb_paroisse"
+              type="text"
+              formControlName="paroisse_bapteme"
+              class="form-control"
+              placeholder="Ex: Paroisse Saint Ambroise"
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="cb_ville">Ville du Baptême</label>
+            <input
+              id="cb_ville"
+              type="text"
+              formControlName="ville_bapteme"
+              class="form-control"
+              placeholder="Ex: Abidjan"
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="cb_diocese">Diocèse du Baptême</label>
+            <input
+              id="cb_diocese"
+              type="text"
+              formControlName="diocese_bapteme"
+              class="form-control"
+              placeholder="Ex: Diocèse d'Abidjan"
+            />
+          </div>
+        }
+
+        <div class="section-divider full-width">
+          <i class="bi bi-star"></i> Première Communion & Confirmation
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="cc_date">Date de Première Communion</label>
+          <input id="cc_date" type="date" formControlName="date_premiere_communion" class="form-control" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="cc_paroisse">Paroisse de Première Communion</label>
+          <input
+            id="cc_paroisse"
+            type="text"
+            formControlName="paroisse_premiere_communion"
+            class="form-control"
+            placeholder="Ex: Paroisse Notre Dame"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="cconf_date">Date de Confirmation</label>
+          <input id="cconf_date" type="date" formControlName="date_confirmation" class="form-control" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="cconf_paroisse">Paroisse de Confirmation</label>
+          <input
+            id="cconf_paroisse"
+            type="text"
+            formControlName="paroisse_confirmation"
+            class="form-control"
+            placeholder="Ex: Cathédrale Saint Paul"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="cconf_min">Ministre de la Confirmation</label>
+          <input
+            id="cconf_min"
+            type="text"
+            formControlName="ministre_confirmation"
+            class="form-control"
+            placeholder="Ex: L'Évêque / Prêtre délégué"
+          />
+        </div>
+
+        <div class="section-divider full-width">
+          <i class="bi bi-award"></i> Parrain / Marraine de Baptême ou Confirmation
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="cparr_nom">Nom complet du Parrain / Marraine</label>
+          <input
+            id="cparr_nom"
+            type="text"
+            formControlName="nom_parrain"
+            class="form-control"
+            placeholder="Nom et prénoms"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="cparr_sexe">Qualité</label>
+          <select id="cparr_sexe" formControlName="sexe_parrain" class="form-control">
+            <option value="M">Parrain (Masculin)</option>
+            <option value="F">Marraine (Féminin)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="cparr_tel">Téléphone du Parrain / Marraine</label>
+          <input
+            id="cparr_tel"
+            type="tel"
+            formControlName="telephone_parrain"
+            class="form-control"
+            placeholder="+225 ..."
+          />
+        </div>
+      </div>
+    }
+
+    <!-- TAB 4: PAROISSE & CLASSE D'AFFECTATION (LE PARENT EST À L'ÉGLISE) -->
+    @if (activeTab() === 'paroisse') {
+      <div class="tab-content-grid">
+        <div class="info-alert-box full-width">
+          <i class="bi bi-church"></i>
+          <div>
+            <strong>Inscription en Paroisse :</strong>
+            <span>
+              Le parent étant présent au secrétariat paroissial, vous pouvez directement rattacher le catéchumène à sa Communauté Ecclésiale de Base (CEB), définir son Niveau et choisir sa Classe de catéchèse dès son inscription.
+            </span>
+          </div>
+        </div>
+
+        <!-- CEB -->
+        <div class="form-group">
+          <label class="form-label" for="ceb_id">Communauté Ecclésiale de Base (CEB)</label>
+          <select id="ceb_id" formControlName="ceb_id" class="form-control">
+            <option value="">Aucune CEB / Non définie</option>
+            @for (c of cebs(); track c.id) {
+              <option [value]="c.id">{{ c.nom }}{{ c.adresse ? ' (' + c.adresse + ')' : '' }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Année Pastorale -->
+        <div class="form-group">
+          <label class="form-label" for="par_annee">Année Pastorale</label>
+          <select id="par_annee" formControlName="annee_catechese_id" class="form-control">
+            <option value="">Sélectionner une année</option>
+            @for (a of annees(); track a.id) {
+              <option [value]="a.id">{{ a.libelle }} {{ a.est_active ? '(Active)' : '' }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Section -->
+        <div class="form-group">
+          <label class="form-label" for="par_sec">Section Catéchétique</label>
+          <select id="par_sec" formControlName="section_id" class="form-control">
+            <option value="">Toutes / Non spécifiée</option>
+            @for (s of sections(); track s.id) {
+              <option [value]="s.id">{{ s.nom }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Niveau -->
+        <div class="form-group">
+          <label class="form-label" for="par_niv">Niveau de Formation</label>
+          <select id="par_niv" formControlName="niveau_id" class="form-control">
+            <option value="">Sélectionner un niveau</option>
+            @for (n of getFilteredNiveaux(); track n.id) {
+              <option [value]="n.id">{{ n.nom }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Classe choisie sur place à l'église -->
+        <div class="form-group full-width">
+          <label class="form-label" for="par_classe">
+            <i class="bi bi-mortarboard"></i> Classe de Catéchèse Affectée Directement
+          </label>
+          <select id="par_classe" formControlName="classe_id" class="form-control">
+            <option value="">Affectation ultérieure / Non affecté</option>
+            @for (cl of getFilteredClasses(); track cl.id) {
+              <option [value]="cl.id">{{ cl.nom }} (Capacité: {{ cl.capacite_max || 'N/A' }})</option>
+            }
+          </select>
+        </div>
+      </div>
+    }
+
+    <!-- Modal Footer Actions -->
+    <div class="modal-footer-actions">
+      <app-button type="button" variant="ghost" (clicked)="onClose()" [disabled]="isLoading()">
+        Annuler
+      </app-button>
+
+      <!-- Navigation buttons between tabs -->
+      @if (activeTab() !== 'identite') {
+        <app-button
+          type="button"
+          variant="secondary"
+          (clicked)="setTab(activeTab() === 'paroisse' ? 'sacrements' : activeTab() === 'sacrements' ? 'parents' : 'identite')"
+        >
+          <i class="bi bi-arrow-left"></i> Précédent
+        </app-button>
+      }
+
+      @if (activeTab() !== 'paroisse') {
+        <app-button
+          type="button"
+          variant="secondary"
+          (clicked)="setTab(activeTab() === 'identite' ? 'parents' : activeTab() === 'parents' ? 'sacrements' : 'paroisse')"
+        >
+          Suivant <i class="bi bi-arrow-right"></i>
+        </app-button>
+      }
+
+      <app-button
+        type="submit"
+        variant="primary"
+        [loading]="isLoading()"
+        [disabled]="form.invalid || isLoading()"
+      >
+        <i class="bi bi-check-lg"></i>
+        <span>{{ isEditing() ? 'Enregistrer les Modifications' : 'Enregistrer le Catéchumène' }}</span>
+      </app-button>
+    </div>
+  </form>
+</app-dialog>

@@ -1,0 +1,107 @@
+<div class="classes-page">
+  <!-- Topbar Header -->
+  <section class="page-topbar">
+    <div class="topbar-headings">
+      <h2 class="topbar-title">Classes de Catéchèse</h2>
+      <p class="topbar-subtitle">Organisation des classes.</p>
+    </div>
+
+    <div class="topbar-actions">
+      <app-button
+        variant="primary"
+        size="md"
+        icon="plus"
+        (clicked)="openCreateModal()"
+      >
+        Nouvelle Classe
+      </app-button>
+    </div>
+  </section>
+
+  <!-- Main Table Card -->
+  <app-card
+    title="Liste des Classes de Catéchèse">
+    <!-- Table Controls Toolbar (Dual Filter Layout) -->
+    <div class="filters-toolbar">
+      <!-- Left Filters Group (Search + Niveau Filter) -->
+      <div class="filters-left">
+        <!-- Search Input -->
+        <div class="search-input-wrapper">
+          <i class="bi bi-search search-icon"></i>
+          <input
+            type="text"
+            class="filter-search-control"
+            placeholder="Rechercher une classe..."
+            [value]="searchQuery()"
+            (input)="onSearchChange($event)"
+          />
+          @if (searchQuery()) {
+            <button class="clear-search-btn" (click)="clearSearch()" title="Effacer la recherche">
+              <i class="bi bi-x-circle-fill"></i>
+            </button>
+          }
+        </div>
+
+        <!-- Niveau Filter Dropdown -->
+        <div class="niveau-select-wrapper">
+          <i class="bi bi-layers select-prefix-icon"></i>
+          <select
+            class="filter-select-control"
+            [value]="selectedNiveauFilter()"
+            (change)="onNiveauFilterChange($event)"
+          >
+            <option value="">Tous les niveaux</option>
+            @for (niv of niveaux(); track niv.id) {
+              <option [value]="niv.id">{{ niv.nom }}</option>
+            }
+          </select>
+          <i class="bi bi-chevron-down select-chevron-icon"></i>
+        </div>
+      </div>
+
+      <!-- Right Meta Info & Reset Button -->
+      <div class="filters-right">
+        @if (hasActiveFilters()) {
+          <button class="reset-filter-btn" (click)="resetAllFilters()">
+            <i class="bi bi-arrow-counterclockwise"></i>
+            <span>Réinitialiser</span>
+          </button>
+        }
+        <span class="count-pill">
+          <strong>{{ filteredClasses().length }}</strong> classe(s)
+        </span>
+      </div>
+    </div>
+
+    <!-- Classe Table Sub-component with Action Icons & Pagination -->
+    <app-classe-table
+      [classes]="filteredClasses()"
+      [niveaux]="niveaux()"
+      (createRequested)="openCreateModal()"
+      (viewRequested)="handleView($event)"
+      (editRequested)="openEditModal($event)"
+      (deleteRequested)="openDeleteModal($event)"
+      (toggleStatusRequested)="handleToggleStatus($event)"
+    />
+  </app-card>
+</div>
+
+<!-- Classe Form Modal Sub-component -->
+<app-classe-form-modal
+  [isOpen]="isFormModalOpen()"
+  [isEditing]="isEditing()"
+  [classeToEdit]="selectedClasse()"
+  [niveaux]="niveaux()"
+  [isLoading]="isLoading()"
+  (formClosed)="closeFormModal()"
+  (formSubmitted)="handleFormSubmit($event)"
+/>
+
+<!-- Classe Delete Modal Sub-component -->
+<app-classe-delete-modal
+  [isOpen]="isDeleteModalOpen()"
+  [itemToDelete]="itemToDelete()"
+  [isLoading]="isLoading()"
+  (modalClosed)="closeDeleteModal()"
+  (confirmed)="handleDeleteConfirm()"
+/>

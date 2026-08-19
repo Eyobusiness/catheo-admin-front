@@ -1,0 +1,160 @@
+<div class="page-container">
+  <!-- Topbar Header -->
+  <header class="topbar">
+    <div>
+      <h2 class="topbar-title">Profils & Permissions (Rôles)</h2>
+      <p class="topbar-subtitle">
+        Définissez les rôles d'accès et attribuez les droits granulaires CRUD sur les modules de votre catéchèse
+      </p>
+    </div>
+
+    <div class="topbar-actions">
+      <app-icon-button
+        variant="ghost"
+        size="md"
+        title="Actualiser la liste"
+        ariaLabel="Actualiser"
+        (clicked)="refreshList()"
+      >
+        <i class="bi bi-arrow-clockwise" [class.spin]="isLoading()"></i>
+      </app-icon-button>
+
+      <app-button
+        variant="primary"
+        size="md"
+        icon="plus"
+        (clicked)="openCreateModal()"
+      >
+        Nouveau Profil
+      </app-button>
+    </div>
+  </header>
+
+  <!-- KPI Cards -->
+  <section class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon-wrapper primary">
+        <i class="bi bi-shield-lock-fill"></i>
+      </div>
+      <div class="stat-content">
+        <span class="stat-label">Total Profils</span>
+        <h3 class="stat-value">{{ totalCount() }}</h3>
+        <span class="stat-meta">{{ activeCount() }} profils actifs</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon-wrapper system">
+        <i class="bi bi-shield-shaded"></i>
+      </div>
+      <div class="stat-content">
+        <span class="stat-label">Rôles Système</span>
+        <h3 class="stat-value">{{ systemCount() }}</h3>
+        <span class="stat-meta">Profils natifs protégés</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon-wrapper info">
+        <i class="bi bi-diagram-3-fill"></i>
+      </div>
+      <div class="stat-content">
+        <span class="stat-label">Arborescence Menus</span>
+        <h3 class="stat-value small">{{ profilService.permissionsTree().length }} Modules</h3>
+        <span class="stat-meta">Matrice CRUD granulaire</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Content Card -->
+  <main class="page-content">
+    <app-card
+      title="Liste des Rôles & Profils"
+      subtitle="Gestion des autorisations d'accès aux fonctionnalités">
+
+      <!-- Toolbar Filters -->
+      <div class="table-toolbar">
+        <div class="toolbar-left">
+          <!-- Search input -->
+          <div class="search-input-wrapper">
+            <i class="bi bi-search search-icon"></i>
+            <input
+              type="text"
+              class="filter-search-control"
+              placeholder="Rechercher un profil..."
+              [value]="searchQuery()"
+              (input)="onSearchChange($event)"
+            />
+            @if (searchQuery()) {
+              <button
+                type="button"
+                class="clear-search-btn"
+                (click)="clearSearch()"
+                title="Effacer la recherche"
+              >
+                <i class="bi bi-x-circle-fill"></i>
+              </button>
+            }
+          </div>
+
+          <!-- Statut Filter -->
+          <div class="filter-select-wrapper">
+            <i class="bi bi-funnel select-prefix-icon"></i>
+            <select
+              class="filter-select-control"
+              [value]="selectedStatutFilter()"
+              (change)="onStatutFilterChange($event)"
+            >
+              <option value="">Tous les statuts</option>
+              <option value="actif">Actifs</option>
+              <option value="inactif">Inactifs</option>
+            </select>
+            <i class="bi bi-chevron-down select-chevron-icon"></i>
+          </div>
+
+          @if (searchQuery() || selectedStatutFilter()) {
+            <button type="button" class="reset-filter-btn" (click)="resetFilters()">
+              <i class="bi bi-arrow-counterclockwise"></i>
+              Réinitialiser
+            </button>
+          }
+        </div>
+
+        <div class="toolbar-right">
+          <span class="count-badge">
+            <strong>{{ filteredProfils().length }}</strong> profil(s)
+          </span>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <app-profil-table
+        [profils]="filteredProfils()"
+        [isLoading]="isLoading()"
+        (createRequested)="openCreateModal()"
+        (editRequested)="openEditModal($event)"
+        (deleteRequested)="openDeleteModal($event)"
+        (statusToggled)="handleToggleStatus($event)"
+      />
+    </app-card>
+  </main>
+</div>
+
+<!-- Modal Formulaire Profil & Matrice -->
+<app-profil-form-modal
+  [isOpen]="isFormModalOpen()"
+  [isEditing]="isEditing()"
+  [profilToEdit]="selectedProfil()"
+  [isLoading]="isSaving()"
+  (formClosed)="closeFormModal()"
+  (formSubmitted)="handleFormSubmit($event)"
+/>
+
+<!-- Modal Suppression Profil -->
+<app-profil-delete-modal
+  [isOpen]="isDeleteModalOpen()"
+  [profil]="itemToDelete()"
+  [isLoading]="isSaving()"
+  (closed)="closeDeleteModal()"
+  (confirmed)="handleDeleteConfirm()"
+/>

@@ -1,0 +1,139 @@
+:host {
+  display: block;
+}
+
+.stat-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  padding: 1.25rem 1.5rem;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.stat-main {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.stat-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.stat-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--neutral-500);
+}
+
+.stat-value {
+  font-size: 1.625rem;
+  font-weight: 800;
+  color: var(--neutral-900);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.stat-icon-wrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.stat-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+}
+
+.stat-trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-weight: 700;
+  padding: 0.125rem 0.375rem;
+  border-radius: var(--radius-sm);
+}
+
+.trend-up {
+  color: var(--success-700);
+  background-color: var(--success-50);
+}
+
+.trend-down {
+  color: var(--danger-700);
+  background-color: var(--danger-50);
+}
+
+.stat-period {
+  color: var(--neutral-400);
+}
+
+/* Color Themes */
+.stat-primary::before {
+  background-color: var(--primary-600);
+}
+.stat-primary .stat-icon-wrapper {
+  background-color: var(--primary-50);
+  color: var(--primary-600);
+}
+
+.stat-success::before {
+  background-color: var(--success-500);
+}
+.stat-success .stat-icon-wrapper {
+  background-color: var(--success-50);
+  color: var(--success-600);
+}
+
+.stat-warning::before {
+  background-color: var(--warning-500);
+}
+.stat-warning .stat-icon-wrapper {
+  background-color: var(--warning-50);
+  color: var(--warning-600);
+}
+
+.stat-danger::before {
+  background-color: var(--danger-500);
+}
+.stat-danger .stat-icon-wrapper {
+  background-color: var(--danger-50);
+  color: var(--danger-600);
+}
+
+.stat-accent::before {
+  background-color: var(--accent-600);
+}
+.stat-accent .stat-icon-wrapper {
+  background-color: var(--accent-50);
+  color: var(--accent-600);
+}

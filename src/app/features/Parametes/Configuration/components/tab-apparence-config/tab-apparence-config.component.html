@@ -1,0 +1,270 @@
+<div class="apparence-config-grid">
+  <!-- Left Column: Settings Form -->
+  <div class="apparence-form-column">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="apparence-form">
+      <!-- Colors Card -->
+      <app-card
+        title="Palette & Couleurs du Thème"
+        subtitle="Personnalisez les teintes identitaires de l'application et des impressions officielles">
+        <div class="colors-section">
+          <!-- Primary Color -->
+          <div class="color-picker-group">
+            <label class="form-label" for="couleur_principale">
+              Couleur Principale (Navigation, Boutons, En-têtes)
+            </label>
+            <div class="color-input-row">
+              <input
+                id="couleur_principale"
+                type="color"
+                formControlName="couleur_principale"
+                class="color-native-picker"
+              />
+              <input
+                type="text"
+                formControlName="couleur_principale"
+                class="form-control color-hex-input"
+                placeholder="#0284c7"
+              />
+              <span
+                class="color-preview-badge"
+                [style.background-color]="form.controls.couleur_principale.value"
+              ></span>
+            </div>
+
+            <!-- Swatches Presets -->
+            <div class="presets-swatches">
+              <span class="swatches-label">Palette recommandée :</span>
+              @for (color of primaryColorPresets; track color) {
+                <button
+                  type="button"
+                  class="swatch-btn"
+                  [style.background-color]="color"
+                  [class.is-selected]="form.controls.couleur_principale.value === color"
+                  (click)="selectPrimaryColor(color)"
+                  [title]="color"
+                ></button>
+              }
+            </div>
+          </div>
+
+          <!-- Secondary Color -->
+          <div class="color-picker-group">
+            <label class="form-label" for="couleur_secondaire">
+              Couleur Secondaire (Accents, Badges, Alertes)
+            </label>
+            <div class="color-input-row">
+              <input
+                id="couleur_secondaire"
+                type="color"
+                formControlName="couleur_secondaire"
+                class="color-native-picker"
+              />
+              <input
+                type="text"
+                formControlName="couleur_secondaire"
+                class="form-control color-hex-input"
+                placeholder="#d97706"
+              />
+              <span
+                class="color-preview-badge"
+                [style.background-color]="form.controls.couleur_secondaire.value"
+              ></span>
+            </div>
+
+            <!-- Swatches Presets -->
+            <div class="presets-swatches">
+              <span class="swatches-label">Accents recommandés :</span>
+              @for (color of secondaryColorPresets; track color) {
+                <button
+                  type="button"
+                  class="swatch-btn"
+                  [style.background-color]="color"
+                  [class.is-selected]="form.controls.couleur_secondaire.value === color"
+                  (click)="selectSecondaryColor(color)"
+                  [title]="color"
+                ></button>
+              }
+            </div>
+          </div>
+        </div>
+      </app-card>
+
+      <!-- Typography Card -->
+      <app-card
+        title="Typographie & Police de Caractères"
+        subtitle="Choisissez la typographie pour l'interface et la génération des certificats">
+        <div class="fonts-selection-grid">
+          @for (font of fontOptions; track font.id) {
+            <div
+              class="font-card"
+              [class.is-selected]="form.controls.police_caracteres.value === font.id"
+              (click)="selectFont(font.id)"
+            >
+              <div class="font-card-header">
+                <span class="font-name" [style.font-family]="font.id">{{ font.label }}</span>
+                @if (form.controls.police_caracteres.value === font.id) {
+                  <i class="bi bi-check-circle-fill font-selected-icon"></i>
+                }
+              </div>
+              <p class="font-desc">{{ font.description }}</p>
+              <div class="font-sample-preview" [style.font-family]="font.id">
+                {{ font.sample }}
+              </div>
+            </div>
+          }
+        </div>
+      </app-card>
+
+      <!-- Document Headers and Footers Card -->
+      <app-card
+        title="En-têtes & Pieds de Page des Documents"
+        subtitle="Textes qui figureront sur les fiches de présence, certificats, reçus et bulletins">
+        <div class="documents-texts-form">
+          <div class="form-group">
+            <label class="form-label" for="entete_document">
+              En-tête officiel des documents
+            </label>
+            <textarea
+              id="entete_document"
+              rows="2"
+              formControlName="entete_document"
+              class="form-control"
+              placeholder="Ex: PAROISSE CŒUR IMMACULÉ DE MARIE • DIRECTION DE LA CATÉCHÈSE"
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="pied_page_document">
+              Pied de page officiel des documents
+            </label>
+            <textarea
+              id="pied_page_document"
+              rows="2"
+              formControlName="pied_page_document"
+              class="form-control"
+              placeholder="Ex: BP 128 Abidjan • Tél: +225 27 22 44 11 00 • Foi - Espérance - Charité"
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="form-actions-bar">
+          <app-button
+            variant="ghost"
+            type="button"
+            icon="arrow-counterclockwise"
+            (clicked)="onResetDefaults()"
+            [loading]="isSaving()"
+          >
+            Réinitialiser par défaut
+          </app-button>
+
+          <app-button
+            variant="primary"
+            type="submit"
+            icon="check"
+            [loading]="isSaving()"
+          >
+            Enregistrer l'Apparence
+          </app-button>
+        </div>
+      </app-card>
+    </form>
+  </div>
+
+  <!-- Right Column: Live Document & UI Preview Pane -->
+  <div class="apparence-preview-column">
+    <app-card title="Aperçu en Direct">
+      <div class="live-preview-container">
+        <!-- Certificate / Official Document Mockup -->
+        <div class="mockup-document-card" [style.font-family]="form.controls.police_caracteres.value">
+          <!-- Document Header Top Bar colored with primary color -->
+          <div
+            class="mockup-header-bar"
+            [style.background]="'linear-gradient(90deg, ' + form.controls.couleur_principale.value + ', ' + form.controls.couleur_secondaire.value + ')'"
+          ></div>
+
+          <!-- Document Header Text -->
+          <div class="mockup-header-text">
+            <div class="mockup-seal" [style.color]="form.controls.couleur_principale.value">
+              <i class="bi bi-shield-shaded"></i>
+            </div>
+            <h5 class="mockup-header-title">
+              {{ form.controls.entete_document.value || 'EN-TÊTE OFFICIEL DE LA PAROISSE' }}
+            </h5>
+          </div>
+
+          <!-- Mockup Document Body -->
+          <div class="mockup-body">
+            <span
+              class="mockup-title-badge"
+              [style.background-color]="form.controls.couleur_principale.value"
+            >
+              CERTIFICAT DE CATÉCHÈSE
+            </span>
+
+            <p class="mockup-text-sample">
+              Le soussigné certifie que le catéchumène a suivi avec assiduité les séances de formation chrétienne au cours de l'année pastorale.
+            </p>
+
+            <div class="mockup-signature-row">
+              <div class="mockup-signature-box">
+                <span class="sig-title">Le Coordinateur</span>
+                <div class="sig-line"></div>
+              </div>
+              <div class="mockup-signature-box">
+                <span class="sig-title" [style.color]="form.controls.couleur_principale.value">Le Curé de la Paroisse</span>
+                <div class="sig-line"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Document Footer -->
+          <div class="mockup-footer-bar">
+            <p class="mockup-footer-text">
+              {{ form.controls.pied_page_document.value || 'Pied de page paroissial' }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Mini UI Elements Preview -->
+        <div class="ui-elements-preview">
+          <h6 class="ui-preview-heading">Éléments de l'interface :</h6>
+          <div class="ui-preview-row">
+            <button
+              type="button"
+              class="sample-btn"
+              [style.background-color]="form.controls.couleur_principale.value"
+              [style.font-family]="form.controls.police_caracteres.value"
+            >
+              Bouton Principal
+            </button>
+            <span
+              class="sample-badge"
+              [style.background-color]="form.controls.couleur_secondaire.value + '20'"
+              [style.color]="form.controls.couleur_secondaire.value"
+              [style.border]="'1px solid ' + form.controls.couleur_secondaire.value + '40'"
+            >
+              Badge Accent
+            </span>
+          </div>
+        </div>
+      </div>
+    </app-card>
+  </div>
+</div>
+
+<!-- Modal Confirmation de Réinitialisation -->
+<app-confirm-dialog
+  [isOpen]="isResetConfirmOpen()"
+  title="Réinitialiser l'Apparence"
+  message="Êtes-vous sûr de vouloir réinitialiser les couleurs, la police et les en-têtes aux valeurs par défaut ?"
+  confirmText="Restaurer par défaut"
+  cancelText="Annuler"
+  confirmVariant="warning"
+  icon="bi-arrow-counterclockwise"
+  iconType="warning"
+  [isLoading]="isSaving()"
+  (cancelled)="isResetConfirmOpen.set(false)"
+  (confirmed)="handleConfirmReset()"
+/>
+

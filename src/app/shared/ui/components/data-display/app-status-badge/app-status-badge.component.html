@@ -1,0 +1,6 @@
+<span [class]="'app-badge ' + badgeConfig().styleClass + ' badge-' + size()">
+  @if (badgeConfig().dot) {
+    <span class="badge-dot" aria-hidden="true"></span>
+  }
+  {{ badgeConfig().label }}
+</span>

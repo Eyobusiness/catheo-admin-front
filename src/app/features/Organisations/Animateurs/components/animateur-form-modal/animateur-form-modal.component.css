@@ -1,0 +1,69 @@
+:host {
+  display: contents;
+}
+
+.animateur-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.125rem;
+}
+
+.form-row {
+  display: grid;
+  gap: 1rem;
+}
+
+.col-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+@media (max-width: 600px) {
+  .col-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.checkbox-card {
+  padding: 0.875rem 1rem;
+  background-color: var(--primary-50);
+  border: 1.5px solid var(--primary-200);
+  border-radius: var(--radius-md);
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  cursor: pointer;
+}
+
+.checkbox-control {
+  margin-top: 0.2rem;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--primary-600);
+}
+
+.checkbox-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.checkbox-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--primary-900);
+}
+
+.checkbox-desc {
+  font-size: 0.75rem;
+  color: var(--primary-700);
+}
+
+.field-error {
+  font-size: 0.75rem;
+  color: var(--danger-600);
+  margin-top: 0.25rem;
+}

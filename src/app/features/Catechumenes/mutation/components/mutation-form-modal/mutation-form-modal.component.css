@@ -1,0 +1,121 @@
+.mutation-form-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.form-label {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--neutral-700);
+}
+
+.required {
+  color: var(--danger-500);
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  font-size: 0.875rem;
+  background-color: var(--neutral-50);
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--neutral-800);
+  outline: none;
+  transition: all var(--transition-fast);
+}
+
+.form-control:focus {
+  background-color: var(--neutral-0);
+  border-color: var(--primary-500);
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.12);
+}
+
+.text-area {
+  resize: vertical;
+}
+
+.type-radio-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+.type-radio-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  background: var(--neutral-50);
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.type-radio-card:hover {
+  background: var(--neutral-100);
+  border-color: var(--primary-300);
+}
+
+.type-radio-card.is-selected {
+  background: var(--primary-50);
+  border-color: var(--primary-500);
+}
+
+.type-radio-card input {
+  margin-top: 0.25rem;
+  accent-color: var(--primary-600);
+}
+
+.card-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.card-text .title {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--neutral-900);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.card-text .desc {
+  font-size: 0.75rem;
+  color: var(--neutral-500);
+}
+
+.field-error {
+  font-size: 0.75rem;
+  color: var(--danger-500);
+  font-weight: 600;
+}
+
+.modal-footer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
+}

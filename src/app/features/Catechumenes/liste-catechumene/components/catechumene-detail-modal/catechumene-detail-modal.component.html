@@ -1,0 +1,209 @@
+<app-dialog
+  [isOpen]="isOpen()"
+  title="Fiche du Catéchumène"
+  size="xl"
+  (closed)="onClose()"
+>
+  @if (catechumene(); as c) {
+    <div class="detail-modal-body">
+      <!-- Profile Header Banner -->
+      <div class="profile-header">
+        <div class="avatar-xl" [class.is-female]="c.sexe === 'F'">
+          <span>{{ c.nom.charAt(0) }}{{ c.prenoms.charAt(0) }}</span>
+        </div>
+        <div class="profile-meta">
+          <h3 class="name-title">{{ c.nom }} {{ c.prenoms }}</h3>
+          <div class="badges-row">
+            <span class="code-badge"><i class="bi bi-person-vcard-fill"></i> {{ c.code_catechumene }}</span>
+            <span class="genre-badge">{{ c.sexe === 'M' ? 'Masculin' : 'Féminin' }}</span>
+            @if (c.classe_scolaire) {
+              <span class="school-badge"><i class="bi bi-mortarboard"></i> {{ c.classe_scolaire }}</span>
+            }
+            @if (c.profession) {
+              <span class="job-badge"><i class="bi bi-briefcase"></i> {{ c.profession }}</span>
+            }
+          </div>
+        </div>
+        <div class="status-box">
+          <span [class]="'statut-tag ' + c.statut">
+            {{ c.statut === 'actif' ? 'Actif' : c.statut === 'abandon' ? 'Abandon' : c.statut === 'transfere' ? 'Transféré' : 'Complété' }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Detail Grid (3 Columns or 2x2) -->
+      <div class="detail-grid">
+        <!-- 1. État Civil & Contact -->
+        <div class="info-card">
+          <h5 class="card-title"><i class="bi bi-info-circle-fill"></i> État Civil & Contact</h5>
+          <div class="info-line">
+            <span class="label">Date de Naissance :</span>
+            <span class="value">{{ c.date_naissance | date:'dd MMMM yyyy' }}</span>
+          </div>
+          @if (c.lieu_naissance) {
+            <div class="info-line">
+              <span class="label">Lieu de Naissance :</span>
+              <span class="value">{{ c.lieu_naissance }}</span>
+            </div>
+          }
+          @if (c.telephone) {
+            <div class="info-line">
+              <span class="label">Téléphone :</span>
+              <span class="value">{{ c.telephone }}</span>
+            </div>
+          }
+          @if (c.domicile) {
+            <div class="info-line">
+              <span class="label">Domicile :</span>
+              <span class="value">{{ c.domicile }}</span>
+            </div>
+          }
+          @if (c.adresse) {
+            <div class="info-line">
+              <span class="label">Adresse :</span>
+              <span class="value">{{ c.adresse }}</span>
+            </div>
+          }
+        </div>
+
+        <!-- 2. Parents / Tuteurs -->
+        <div class="info-card">
+          <h5 class="card-title"><i class="bi bi-people-fill"></i> Filiation des Parents</h5>
+          <div class="info-line">
+            <span class="label">Père :</span>
+            <span class="value">{{ c.nom_pere || 'N/A' }} {{ c.telephone_pere ? ('(' + c.telephone_pere + ')') : '' }}</span>
+          </div>
+          @if (c.origine_pere) {
+            <div class="info-line">
+              <span class="label">Origine Père :</span>
+              <span class="value">{{ c.origine_pere }}</span>
+            </div>
+          }
+          <div class="info-line">
+            <span class="label">Mère :</span>
+            <span class="value">{{ c.nom_mere || 'N/A' }} {{ c.telephone_mere ? ('(' + c.telephone_mere + ')') : '' }}</span>
+          </div>
+          @if (c.origine_mere) {
+            <div class="info-line">
+              <span class="label">Origine Mère :</span>
+              <span class="value">{{ c.origine_mere }}</span>
+            </div>
+          }
+          @if (c.nom_tuteur) {
+            <div class="info-line">
+              <span class="label">Tuteur :</span>
+              <span class="value">{{ c.nom_tuteur }} {{ c.telephone_tuteur ? ('(' + c.telephone_tuteur + ')') : '' }}</span>
+            </div>
+          }
+        </div>
+
+        <!-- 3. Parcours Sacramentel -->
+        <div class="info-card full-width">
+          <h5 class="card-title"><i class="bi bi-droplet-fill"></i> Renseignements Sacramentels</h5>
+          <div class="sacrement-timeline">
+            <!-- Baptême -->
+            <div class="sacr-box" [class.is-done]="c.est_baptise">
+              <div class="sacr-icon"><i class="bi bi-droplet-fill"></i></div>
+              <div class="sacr-content">
+                <span class="sacr-name">Baptême</span>
+                <span class="sacr-status">{{ c.est_baptise ? 'Célébré' : 'Non Célébré' }}</span>
+                @if (c.est_baptise) {
+                  <span class="sacr-meta">Date : {{ c.date_bapteme | date:'dd/MM/yyyy' }}</span>
+                  <span class="sacr-meta">Paroisse : {{ c.paroisse_bapteme || 'N/A' }}</span>
+                  @if (c.num_carnet_bapteme) {
+                    <span class="sacr-meta">N° Carnet : {{ c.num_carnet_bapteme }}</span>
+                  }
+                }
+              </div>
+            </div>
+
+            <!-- 1ère Communion -->
+            <div class="sacr-box" [class.is-done]="!!c.date_premiere_communion">
+              <div class="sacr-icon"><i class="bi bi-heart-fill"></i></div>
+              <div class="sacr-content">
+                <span class="sacr-name">Première Communion</span>
+                <span class="sacr-status">{{ c.date_premiere_communion ? 'Reçue' : 'En attente' }}</span>
+                @if (c.date_premiere_communion) {
+                  <span class="sacr-meta">Date : {{ c.date_premiere_communion | date:'dd/MM/yyyy' }}</span>
+                  <span class="sacr-meta">Paroisse : {{ c.paroisse_premiere_communion || 'N/A' }}</span>
+                }
+              </div>
+            </div>
+
+            <!-- Confirmation -->
+            <div class="sacr-box" [class.is-done]="!!c.date_confirmation">
+              <div class="sacr-icon"><i class="bi bi-shield-fill-check"></i></div>
+              <div class="sacr-content">
+                <span class="sacr-name">Confirmation</span>
+                <span class="sacr-status">{{ c.date_confirmation ? 'Confirmé(e)' : 'En attente' }}</span>
+                @if (c.date_confirmation) {
+                  <span class="sacr-meta">Date : {{ c.date_confirmation | date:'dd/MM/yyyy' }}</span>
+                  <span class="sacr-meta">Paroisse : {{ c.paroisse_confirmation || 'N/A' }}</span>
+                  @if (c.ministre_confirmation) {
+                    <span class="sacr-meta">Ministre : {{ c.ministre_confirmation }}</span>
+                  }
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Parrains & Marraines -->
+        <div class="info-card full-width">
+          <div class="card-header-flex">
+            <h5 class="card-title"><i class="bi bi-person-heart"></i> Parrains & Marraines Associés</h5>
+            <app-button variant="primary" size="sm" icon="plus" (clicked)="onAddParrain()">
+              Ajouter Parrain / Marraine
+            </app-button>
+          </div>
+
+          <div class="parrains-grid">
+            @for (p of catechumeneParrains(); track p.id) {
+              <div class="parrain-item-card">
+                <div class="p-type-badge" [class.is-marraine]="p.type === 'marraine'">
+                  {{ p.type === 'parrain' ? 'Parrain' : 'Marraine' }}
+                </div>
+                <div class="p-info">
+                  <span class="p-name">{{ p.nom_prenoms }}</span>
+                  @if (p.telephone) {
+                    <span class="p-contact"><i class="bi bi-telephone"></i> {{ p.telephone }}</span>
+                  }
+                  @if (p.paroisse_origine) {
+                    <span class="p-parish"><i class="bi bi-geo-alt"></i> {{ p.paroisse_origine }}</span>
+                  }
+                  <span class="p-confirmed" [class.is-true]="p.sacrement_confirmation">
+                    <i [class]="'bi ' + (p.sacrement_confirmation ? 'bi-check-circle-fill' : 'bi-x-circle')"></i>
+                    {{ p.sacrement_confirmation ? 'Confirmé(e)' : 'Non Confirmé(e)' }}
+                  </span>
+                </div>
+                <div class="p-actions">
+                  <app-icon-button
+                    variant="danger"
+                    size="sm"
+                    title="Dissocier"
+                    ariaLabel="Supprimer"
+                    (clicked)="onDeleteParrain(p.id)"
+                  >
+                    <i class="bi bi-trash3"></i>
+                  </app-icon-button>
+                </div>
+              </div>
+            } @empty {
+              <p class="empty-p">Aucun parrain ou marraine n'a encore été associé à ce catéchumène.</p>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Actions -->
+      <div class="modal-footer-actions">
+        <app-button variant="ghost" (clicked)="onClose()">
+          Fermer
+        </app-button>
+        <app-button variant="primary" icon="pencil" (clicked)="onEdit()">
+          Modifier la fiche
+        </app-button>
+      </div>
+    </div>
+  }
+</app-dialog>

@@ -1,0 +1,185 @@
+<div class="inscriptions-page">
+  <!-- Topbar Header -->
+  <section class="page-topbar">
+    <div class="topbar-headings">
+
+      <h2 class="topbar-title">Inscriptions Annuelles</h2>
+      <p class="topbar-subtitle">
+        Suivi des inscriptions.
+      </p>
+    </div>
+
+    <div class="topbar-actions">
+      <app-button
+        variant="primary"
+        size="md"
+        icon="plus"
+        (clicked)="openCreateModal()"
+      >
+        Nouvelle Inscription
+      </app-button>
+    </div>
+  </section>
+
+  <!-- KPI Badges Row -->
+  <div class="kpi-grid">
+    <div class="kpi-card total">
+      <div class="kpi-icon"><i class="bi bi-journal-text"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-number">{{ stats().total }}</span>
+        <span class="kpi-label">Total Inscriptions</span>
+      </div>
+    </div>
+
+    <div class="kpi-card valid">
+      <div class="kpi-icon"><i class="bi bi-check-all"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-number">{{ stats().valides }}</span>
+        <span class="kpi-label">Inscriptions Validées</span>
+      </div>
+    </div>
+
+    <div class="kpi-card pending">
+      <div class="kpi-icon"><i class="bi bi-person-exclamation"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-number">{{ stats().enAttenteClasse }}</span>
+        <span class="kpi-label">En Attente de Classe</span>
+      </div>
+    </div>
+
+    <div class="kpi-card fees">
+      <div class="kpi-icon"><i class="bi bi-cash-coin"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-number">{{ stats().fraisPayes }}</span>
+        <span class="kpi-label">Frais Réglés</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Table Card -->
+  <app-card title="Registre des Inscriptions de l'Année">
+    <!-- Filters Toolbar -->
+    <div class="filters-toolbar">
+      <div class="filters-left">
+        <!-- Search Input -->
+        <div class="search-input-wrapper">
+          <i class="bi bi-search search-icon"></i>
+          <input
+            type="text"
+            class="filter-search-control"
+            placeholder="Rechercher catéchumène, classe, code..."
+            [value]="searchQuery()"
+            (input)="onSearchChange($event)"
+          />
+          @if (searchQuery()) {
+            <button class="clear-search-btn" (click)="clearSearch()" title="Effacer">
+              <i class="bi bi-x-circle-fill"></i>
+            </button>
+          }
+        </div>
+
+        <!-- Année Pastorale Filter -->
+        <div class="select-wrapper">
+          <i class="bi bi-calendar-range select-prefix-icon"></i>
+          <select
+            class="filter-select-control"
+            [value]="anneeFilter()"
+            (change)="onAnneeFilterChange($event)"
+          >
+            <option value="">Toutes les années</option>
+            @for (a of annees(); track a.id) {
+              <option [value]="a.id">{{ a.libelle }}</option>
+            }
+          </select>
+          <i class="bi bi-chevron-down select-chevron-icon"></i>
+        </div>
+
+        <!-- Niveau Filter -->
+        <div class="select-wrapper">
+          <i class="bi bi-layers select-prefix-icon"></i>
+          <select
+            class="filter-select-control"
+            [value]="niveauFilter()"
+            (change)="onNiveauFilterChange($event)"
+          >
+            <option value="">Tous les niveaux</option>
+            @for (n of niveaux(); track n.id) {
+              <option [value]="n.id">{{ n.nom }}</option>
+            }
+          </select>
+          <i class="bi bi-chevron-down select-chevron-icon"></i>
+        </div>
+
+        <!-- Frais Filter -->
+        <div class="select-wrapper">
+          <i class="bi bi-cash select-prefix-icon"></i>
+          <select
+            class="filter-select-control"
+            [value]="fraisFilter()"
+            (change)="onFraisFilterChange($event)"
+          >
+            <option value="">Tous les frais</option>
+            <option value="paye">Frais Payés</option>
+            <option value="impaye">Frais Impayés</option>
+          </select>
+          <i class="bi bi-chevron-down select-chevron-icon"></i>
+        </div>
+      </div>
+
+      <div class="filters-right">
+        @if (hasActiveFilters()) {
+          <button class="reset-filter-btn" (click)="resetAllFilters()">
+            <i class="bi bi-arrow-counterclockwise"></i>
+            <span>Réinitialiser</span>
+          </button>
+        }
+        <span class="count-pill">
+          <strong>{{ filteredInscriptions().length }}</strong> inscription(s)
+        </span>
+      </div>
+    </div>
+
+    <!-- Table Sub-component -->
+    <app-inscription-table
+      [inscriptions]="filteredInscriptions()"
+      (createRequested)="openCreateModal()"
+      (viewRequested)="openDetailModal($event)"
+      (editRequested)="openEditModal($event)"
+      (deleteRequested)="openDeleteModal($event)"
+    />
+  </app-card>
+</div>
+
+<!-- Form Modal -->
+<app-inscription-form-modal
+  [isOpen]="isFormModalOpen()"
+  [isEditing]="isEditing()"
+  [inscriptionToEdit]="selectedItem()"
+  [catechumenes]="catechumenes()"
+  [annees]="annees()"
+  [sections]="sections()"
+  [niveaux]="niveaux()"
+  [classes]="classes()"
+  [cebs]="cebs()"
+  [mouvements]="mouvements()"
+  [isLoading]="isLoading()"
+  (formClosed)="closeModals()"
+  (formSubmitted)="handleFormSubmit($event)"
+/>
+
+<!-- Detail Modal -->
+<app-inscription-detail-modal
+  [isOpen]="isDetailModalOpen()"
+  [inscription]="selectedItem()"
+  (modalClosed)="closeModals()"
+  (editRequested)="openEditModal($event)"
+/>
+
+<!-- Delete Modal -->
+<app-inscription-delete-modal
+  [isOpen]="isDeleteModalOpen()"
+  [itemToDelete]="itemToDelete()"
+  [isLoading]="isLoading()"
+  (modalClosed)="closeModals()"
+  (confirmed)="handleDeleteConfirm()"
+/>

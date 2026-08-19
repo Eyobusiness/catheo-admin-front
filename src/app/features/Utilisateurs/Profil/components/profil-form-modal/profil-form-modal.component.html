@@ -1,0 +1,163 @@
+<app-dialog
+  [isOpen]="isOpen()"
+  [title]="isEditing() ? 'Modifier le Profil & Droits' : 'Créer un Nouveau Profil Utilisateur'"
+  subtitle="Définition du rôle et attribution granulaire des permissions CRUD par module"
+  size="xl"
+  (closed)="onClose()"
+>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" dialog-body class="profil-form-layout">
+    <!-- Section 1: Profil Details -->
+    <div class="form-section">
+      <h4 class="section-title">
+        <i class="bi bi-info-circle"></i>
+        Informations Générales
+      </h4>
+
+      <div class="form-row col-2">
+        <div class="form-group">
+          <label class="form-label" for="nom">
+            Intitulé du Profil / Rôle <span class="required">*</span>
+          </label>
+          <input
+            id="nom"
+            type="text"
+            formControlName="nom"
+            class="form-control"
+            placeholder="Ex: Coordinateur de Catéchèse, Secrétaire, Animateur..."
+          />
+          @if (form.controls.nom.touched && form.controls.nom.invalid) {
+            <span class="field-error">L'intitulé du profil est obligatoire.</span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="description">
+            Description des responsabilités
+          </label>
+          <input
+            id="description"
+            type="text"
+            formControlName="description"
+            class="form-control"
+            placeholder="Ex: Gestion intégrale des inscriptions, présences et bilans"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2: Matrice des Permissions -->
+    <div class="form-section">
+      <div class="permissions-header">
+        <div class="header-titles">
+          <h4 class="section-title mb-0">
+            <i class="bi bi-shield-check"></i>
+            Matrice des Permissions & Menus
+          </h4>
+          <span class="permissions-counter-badge">
+            <strong>{{ selectedPermissions().size }}</strong> / {{ allAvailableKeys().length }} permission(s) active(s)
+          </span>
+        </div>
+
+        <button
+          type="button"
+          class="toggle-all-btn"
+          [class.all-checked]="isAllSelected()"
+          (click)="toggleAllPermissions()"
+        >
+          <i class="bi" [class.bi-check-all]="!isAllSelected()" [class.bi-x-lg]="isAllSelected()"></i>
+          {{ isAllSelected() ? 'Tout Décocher' : 'Tout Sélectionner' }}
+        </button>
+      </div>
+
+      <!-- Tree Grid -->
+      <div class="permissions-tree-wrapper">
+        @for (node of permissionsTree(); track node.code) {
+          <div class="module-group-card">
+            <!-- Module Group Header -->
+            <div class="module-group-header">
+              <div class="module-group-info">
+                <i class="bi bi-folder2-open folder-icon"></i>
+                <span class="module-group-title">{{ node.menu }}</span>
+              </div>
+              <button
+                type="button"
+                class="group-select-btn"
+                [class.active]="isNodeAllSelected(node)"
+                (click)="toggleNodePermissions(node)"
+              >
+                {{ isNodeAllSelected(node) ? 'Tout décocher' : 'Tout cocher' }}
+              </button>
+            </div>
+
+            <!-- If node has direct permissions -->
+            @if (node.permissions && node.permissions.length > 0) {
+              <div class="permissions-chips-grid">
+                @for (perm of node.permissions; track perm.key) {
+                  <label class="permission-chip" [class.checked]="isPermissionChecked(perm.key)">
+                    <input
+                      type="checkbox"
+                      [checked]="isPermissionChecked(perm.key)"
+                      (change)="togglePermission(perm.key)"
+                    />
+                    <span class="chip-label">{{ perm.label }}</span>
+                  </label>
+                }
+              </div>
+            }
+
+            <!-- If node has sub-menus -->
+            @if (node.sous_menus && node.sous_menus.length > 0) {
+              <div class="submenus-list">
+                @for (sm of node.sous_menus; track sm.code) {
+                  <div class="submenu-row">
+                    <div class="submenu-title-col">
+                      <span class="submenu-name">
+                        <i class="bi bi-arrow-return-right"></i>
+                        {{ sm.nom }}
+                      </span>
+                      <button
+                        type="button"
+                        class="sub-select-btn"
+                        [class.active]="isSubMenuAllSelected(sm)"
+                        (click)="toggleSubMenuPermissions(sm)"
+                      >
+                        {{ isSubMenuAllSelected(sm) ? 'Décocher' : 'Tout cocher' }}
+                      </button>
+                    </div>
+
+                    <div class="permissions-chips-grid">
+                      @for (perm of sm.permissions; track perm.key) {
+                        <label class="permission-chip" [class.checked]="isPermissionChecked(perm.key)">
+                          <input
+                            type="checkbox"
+                            [checked]="isPermissionChecked(perm.key)"
+                            (change)="togglePermission(perm.key)"
+                          />
+                          <span class="chip-label">{{ perm.label }}</span>
+                        </label>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </form>
+
+  <div dialog-footer>
+    <app-button variant="secondary" (clicked)="onClose()">
+      Annuler
+    </app-button>
+    <app-button
+      variant="primary"
+      icon="shield-lock-fill"
+      [loading]="isLoading()"
+      (clicked)="onSubmit()"
+    >
+      {{ isEditing() ? 'Enregistrer les Modifications' : 'Créer le Profil' }}
+    </app-button>
+  </div>
+</app-dialog>

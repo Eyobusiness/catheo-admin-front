@@ -1,0 +1,114 @@
+<app-dialog
+  [isOpen]="isOpen()"
+  title="Enregistrer un Transfert / Mutation de Paroisse"
+  size="md"
+  (closed)="onClose()"
+>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="mutation-form-body">
+    <div class="form-grid">
+      <!-- Catéchumène -->
+      <div class="form-group full-width">
+        <label class="form-label" for="mut_cat_id">
+          Catéchumène Concerné <span class="required">*</span>
+        </label>
+        <select id="mut_cat_id" formControlName="catechumene_id" class="form-control">
+          <option value="">Sélectionner un catéchumène</option>
+          @for (c of catechumenes(); track c.id) {
+            <option [value]="c.id">
+              {{ c.nom }} {{ c.prenoms }} ({{ c.matricule || c.code_catechumene }})
+            </option>
+          }
+        </select>
+        @if (form.controls.catechumene_id.touched && form.controls.catechumene_id.errors?.['required']) {
+          <span class="field-error">Veuillez sélectionner un catéchumène.</span>
+        }
+      </div>
+
+      <!-- Année Pastorale -->
+      <div class="form-group full-width">
+        <label class="form-label" for="mut_annee_id">
+          Année Pastorale <span class="required">*</span>
+        </label>
+        <select id="mut_annee_id" formControlName="annee_catechese_id" class="form-control">
+          <option value="">Sélectionner l'année</option>
+          @for (a of annees(); track a.id) {
+            <option [value]="a.id">{{ a.libelle }} {{ a.est_active ? '(Active)' : '' }}</option>
+          }
+        </select>
+        @if (form.controls.annee_catechese_id.touched && form.controls.annee_catechese_id.errors?.['required']) {
+          <span class="field-error">L'année pastorale est obligatoire.</span>
+        }
+      </div>
+
+      <!-- Paroisse Origine -->
+      <div class="form-group">
+        <label class="form-label" for="p_origine">
+          Paroisse d'Origine (Départ) <span class="required">*</span>
+        </label>
+        <input
+          id="p_origine"
+          type="text"
+          formControlName="paroisse_origine_nom"
+          class="form-control"
+          placeholder="Ex: Paroisse Saint Jean-Paul II"
+        />
+        @if (form.controls.paroisse_origine_nom.touched && form.controls.paroisse_origine_nom.errors?.['required']) {
+          <span class="field-error">La paroisse d'origine est requise.</span>
+        }
+      </div>
+
+      <!-- Paroisse Destination -->
+      <div class="form-group">
+        <label class="form-label" for="p_dest">
+          Paroisse d'Accueil (Destination) <span class="required">*</span>
+        </label>
+        <input
+          id="p_dest"
+          type="text"
+          formControlName="paroisse_destination_nom"
+          class="form-control"
+          placeholder="Ex: Paroisse Notre Dame de Treichville"
+        />
+        @if (form.controls.paroisse_destination_nom.touched && form.controls.paroisse_destination_nom.errors?.['required']) {
+          <span class="field-error">La paroisse de destination est requise.</span>
+        }
+      </div>
+
+      <!-- Date de Mutation -->
+      <div class="form-group full-width">
+        <label class="form-label" for="d_mut">
+          Date d'effet de la mutation <span class="required">*</span>
+        </label>
+        <input id="d_mut" type="date" formControlName="date_mutation" class="form-control" />
+      </div>
+
+      <!-- Motif -->
+      <div class="form-group full-width">
+        <label class="form-label" for="mut_motif">
+          Motif du Transfert / Mutation <span class="required">*</span>
+        </label>
+        <textarea
+          id="mut_motif"
+          formControlName="motif"
+          rows="2"
+          class="form-control"
+          placeholder="Précisez le motif (ex: Déménagement familial, mutation professionnelle des parents...)"
+        ></textarea>
+        @if (form.controls.motif.touched && form.controls.motif.errors?.['required']) {
+          <span class="field-error">Le motif est obligatoire.</span>
+        }
+      </div>
+    </div>
+
+    <!-- Modal Footer Actions -->
+    <div class="modal-footer-actions">
+      <app-button type="button" variant="ghost" (clicked)="onClose()" [disabled]="isLoading()">
+        Annuler
+      </app-button>
+      <app-button type="submit" variant="primary" [loading]="isLoading()" [disabled]="form.invalid || isLoading()">
+        <i class="bi bi-check-lg"></i>
+        <span>Enregistrer le Transfert</span>
+      </app-button>
+    </div>
+  </form>
+</app-dialog>

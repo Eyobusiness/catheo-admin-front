@@ -1,0 +1,170 @@
+<app-dialog
+  [isOpen]="isOpen()"
+  [title]="isEditing() ? 'Modifier l\'Événement' : 'Nouvel Événement Pastoral'"
+  subtitle="Calendrier • Planification des célébrations & activités"
+  size="lg"
+  (closed)="onClose()"
+>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" dialog-body class="calendrier-form">
+    <!-- Titre de l'événement -->
+    <div class="form-group">
+      <label class="form-label" for="titre">
+        Titre de l'événement <span class="required">*</span>
+      </label>
+      <input
+        id="titre"
+        type="text"
+        formControlName="titre"
+        class="form-control"
+        placeholder="Titre"
+      />
+      @if (form.controls.titre.touched && form.controls.titre.invalid) {
+        <span class="field-error">Le titre est obligatoire (min. 3 caractères).</span>
+      }
+    </div>
+
+    <!-- Type d'événement & Année Pastorale (2 colonnes) -->
+    <div class="form-row col-2">
+      <div class="form-group">
+        <label class="form-label" for="type">
+          Type d'activité <span class="required">*</span>
+        </label>
+        <input
+          id="type"
+          type="text"
+          formControlName="type"
+          class="form-control"
+          placeholder="Type (ex: Récollection, Messe, Pèlerinage...)"
+        />
+        @if (form.controls.type.touched && form.controls.type.invalid) {
+          <span class="field-error">Le type d'activité est obligatoire.</span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="annee_catechese_id">
+          Année Pastorale
+        </label>
+        <select id="annee_catechese_id" formControlName="annee_catechese_id" class="form-control">
+          <option value="">Sélectionner une année</option>
+          @for (annee of annees(); track annee.id) {
+            <option [value]="annee.id">
+              {{ annee.libelle }} {{ annee.est_active ? '(En cours)' : '' }}
+            </option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <!-- Date, Heure Début & Heure Fin (3 colonnes) -->
+    <div class="form-row col-3">
+      <div class="form-group">
+        <label class="form-label" for="date">
+          Date de l'activité <span class="required">*</span>
+        </label>
+        <input
+          id="date"
+          type="date"
+          formControlName="date"
+          class="form-control"
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="heure_debut">
+          Heure Début
+        </label>
+        <input
+          id="heure_debut"
+          type="time"
+          formControlName="heure_debut"
+          class="form-control"
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="heure_fin">
+          Heure Fin
+        </label>
+        <input
+          id="heure_fin"
+          type="time"
+          formControlName="heure_fin"
+          class="form-control"
+        />
+      </div>
+    </div>
+
+    <!-- Lieu & Public Cible & Statut (3 colonnes) -->
+    <div class="form-row col-3">
+      <div class="form-group">
+        <label class="form-label" for="lieu">
+          Lieu / Salle
+        </label>
+        <input
+          id="lieu"
+          type="text"
+          formControlName="lieu"
+          class="form-control"
+          placeholder="Lieu"
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="cible_type">
+          Public Cible
+        </label>
+        <select id="cible_type" formControlName="cible_type" class="form-control">
+          <option value="Tous">Tous (Toute la paroisse)</option>
+          <option value="Catéchumènes">Tous les Catéchumènes</option>
+          <option value="Animateurs">Animateurs / Catéchistes</option>
+          <option value="Parents">Parents des catéchumènes</option>
+          <option value="Niveau">Niveau spécifique</option>
+          <option value="Classe">Classe spécifique</option>
+          <option value="Section">Section</option>
+          <option value="CEB">CEB</option>
+          <option value="Mouvement">Mouvement / Groupe</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="statut">
+          Statut
+        </label>
+        <select id="statut" formControlName="statut" class="form-control">
+          <option value="Planifié">Planifié (À venir)</option>
+          <option value="Réalisé">Réalisé (Effectué)</option>
+          <option value="Annulé">Annulé</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Description -->
+    <div class="form-group">
+      <label class="form-label" for="description">
+        Description & Déroulement pastoral
+      </label>
+      <textarea
+        id="description"
+        rows="2"
+        formControlName="description"
+        class="form-control"
+        placeholder="Description"
+      ></textarea>
+    </div>
+  </form>
+
+  <div dialog-footer>
+    <app-button variant="secondary" (clicked)="onClose()">
+      Annuler
+    </app-button>
+    <app-button
+      variant="primary"
+      icon="check"
+      [loading]="isLoading()"
+      (clicked)="onSubmit()"
+    >
+      {{ isEditing() ? 'Enregistrer' : 'Planifier l\'Événement' }}
+    </app-button>
+  </div>
+</app-dialog>

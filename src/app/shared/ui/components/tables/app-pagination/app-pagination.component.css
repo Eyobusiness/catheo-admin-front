@@ -1,0 +1,112 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.pagination-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.875rem 1rem;
+  background-color: var(--neutral-0, #ffffff);
+  border-top: 1px solid var(--border-color);
+  font-size: 0.8125rem;
+  color: var(--neutral-600);
+  flex-wrap: wrap;
+}
+
+.pagination-info {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.pagination-text strong {
+  color: var(--neutral-900);
+  font-weight: 700;
+}
+
+.page-size-picker {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.page-size-picker label {
+  color: var(--neutral-500);
+  font-size: 0.75rem;
+}
+
+.page-size-select {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  background-color: var(--neutral-50);
+  color: var(--neutral-800);
+  outline: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.page-size-select:focus {
+  border-color: var(--primary-500);
+  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.15);
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.page-numbers {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.pagination-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 0.375rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  background-color: var(--neutral-0, #ffffff);
+  color: var(--neutral-700);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background-color: var(--neutral-100);
+  color: var(--neutral-900);
+  border-color: var(--neutral-300);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background-color: var(--neutral-50);
+}
+
+.page-num-btn.is-active {
+  background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-700) 100%);
+  color: #ffffff;
+  border-color: var(--primary-600);
+  box-shadow: 0 2px 4px rgba(2, 132, 199, 0.25);
+}
+
+.pagination-ellipsis {
+  padding: 0 0.25rem;
+  color: var(--neutral-400);
+  font-weight: 700;
+}

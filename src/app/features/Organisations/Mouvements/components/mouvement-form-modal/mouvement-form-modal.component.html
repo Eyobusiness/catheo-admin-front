@@ -1,0 +1,94 @@
+<app-dialog
+  [isOpen]="isOpen()"
+  [title]="isEditing() ? 'Modifier le Mouvement' : 'Nouveau Mouvement / Association'"
+  subtitle="Organisation • Mouvements d'Action Catholique & Groupes de Prière"
+  size="md"
+  (closed)="onClose()"
+>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" dialog-body class="mouvement-form">
+    <!-- Nom du Mouvement -->
+    <div class="form-group">
+      <label class="form-label" for="nom">
+        Nom du Mouvement <span class="required">*</span>
+      </label>
+      <input
+        id="nom"
+        type="text"
+        formControlName="nom"
+        class="form-control"
+        placeholder="Nom"
+      />
+      @if (form.controls.nom.touched && form.controls.nom.invalid) {
+        <span class="field-error">Le nom du mouvement est obligatoire (min. 3 caractères).</span>
+      }
+    </div>
+
+    <!-- Responsable & Téléphone Row -->
+    <div class="form-row col-2">
+      <div class="form-group">
+        <label class="form-label" for="responsable">
+          Responsable / Président(e)
+        </label>
+        <input
+          id="responsable"
+          type="text"
+          formControlName="responsable"
+          class="form-control"
+          placeholder="Responsable"
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="telephone">
+          Téléphone de Contact
+        </label>
+        <input
+          id="telephone"
+          type="text"
+          formControlName="telephone"
+          class="form-control"
+          placeholder="Téléphone"
+        />
+      </div>
+    </div>
+
+    <!-- Description -->
+    <div class="form-group">
+      <label class="form-label" for="description">
+        Description & Vocation pastorale
+      </label>
+      <textarea
+        id="description"
+        rows="2"
+        formControlName="description"
+        class="form-control"
+        placeholder="Description"
+      ></textarea>
+    </div>
+
+    <!-- Statut -->
+    <div class="form-group">
+      <label class="form-label" for="statut">
+        Statut du Mouvement
+      </label>
+      <select id="statut" formControlName="statut" class="form-control">
+        <option value="Active">Active (En activité)</option>
+        <option value="Inactive">Inactive</option>
+      </select>
+    </div>
+  </form>
+
+  <div dialog-footer>
+    <app-button variant="secondary" (clicked)="onClose()">
+      Annuler
+    </app-button>
+    <app-button
+      variant="primary"
+      icon="check"
+      [loading]="isLoading()"
+      (clicked)="onSubmit()"
+    >
+      {{ isEditing() ? 'Enregistrer' : 'Créer le Mouvement' }}
+    </app-button>
+  </div>
+</app-dialog>

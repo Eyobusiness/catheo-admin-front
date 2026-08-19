@@ -1,0 +1,129 @@
+<div class="modules-page">
+  <!-- Topbar Header with Breadcrumbs & Fast Switcher -->
+  <section class="page-topbar">
+    <div class="topbar-headings">
+      <!-- Breadcrumb navigation -->
+      <h2 class="topbar-title">Modules Trimestriels</h2>
+      <p class="topbar-subtitle">
+        Gestion des périodes.
+      </p>
+    </div>
+
+    <div class="topbar-actions">
+      <!-- Quick Navigation Links to related modules -->
+    
+
+      <app-button
+        variant="primary"
+        size="md"
+        icon="plus"
+        (clicked)="openCreateModal()"
+      >
+        Nouveau Module
+      </app-button>
+    </div>
+  </section>
+
+  <!-- Main Table Card -->
+  <app-card
+    title="Périodes de cours, évaluations">
+    <!-- Table Controls Toolbar -->
+    <div class="filters-toolbar">
+      <!-- Left Filters Group -->
+      <div class="filters-left">
+        <!-- Search Input -->
+        <div class="search-input-wrapper">
+          <i class="bi bi-search search-icon"></i>
+          <input
+            type="text"
+            class="filter-search-control"
+            placeholder="Rechercher..."
+            [value]="searchQuery()"
+            (input)="onSearchChange($event)"
+          />
+          @if (searchQuery()) {
+            <button class="clear-search-btn" (click)="clearSearch()" title="Effacer la recherche">
+              <i class="bi bi-x-circle-fill"></i>
+            </button>
+          }
+        </div>
+
+        <!-- Trimestre Filter Dropdown -->
+        <div class="filter-select-wrapper">
+          <i class="bi bi-calendar3-range select-prefix-icon"></i>
+          <select
+            class="filter-select-control"
+            [value]="selectedTrimestreFilter()"
+            (change)="onTrimestreFilterChange($event)"
+          >
+            <option value="">Tous les trimestres</option>
+            <option value="T1">1er Trimestre (T1)</option>
+            <option value="T2">2ème Trimestre (T2)</option>
+            <option value="T3">3ème Trimestre (T3)</option>
+          </select>
+          <i class="bi bi-chevron-down select-chevron-icon"></i>
+        </div>
+
+        <!-- Année Pastorale Filter Dropdown -->
+        <div class="filter-select-wrapper">
+          <i class="bi bi-calendar-event select-prefix-icon"></i>
+          <select
+            class="filter-select-control"
+            [value]="selectedAnneeFilter()"
+            (change)="onAnneeFilterChange($event)"
+          >
+            <option value="">Toutes les années pastorales</option>
+            @for (annee of annees(); track annee.id) {
+              <option [value]="annee.id">{{ annee.libelle }}</option>
+            }
+          </select>
+          <i class="bi bi-chevron-down select-chevron-icon"></i>
+        </div>
+      </div>
+
+      <!-- Right Meta Info & Reset Button -->
+      <div class="filters-right">
+        @if (hasActiveFilters()) {
+          <button class="reset-filter-btn" (click)="resetAllFilters()">
+            <i class="bi bi-arrow-counterclockwise"></i>
+            <span>Réinitialiser</span>
+          </button>
+        }
+        <span class="count-pill">
+          <strong>{{ filteredModules().length }}</strong> module(s)
+        </span>
+      </div>
+    </div>
+
+    <!-- Modules Table Sub-component with Action Icons & Pagination -->
+    <app-module-trimestriel-table
+      [modules]="filteredModules()"
+      [annees]="annees()"
+      (createRequested)="openCreateModal()"
+      (viewRequested)="handleView($event)"
+      (editRequested)="openEditModal($event)"
+      (deleteRequested)="openDeleteModal($event)"
+      (toggleTrimestreRequested)="handleToggleTrimestre($event)"
+    />
+  </app-card>
+</div>
+
+<!-- Module Form Modal Sub-component -->
+<app-module-trimestriel-form-modal
+  [isOpen]="isFormModalOpen()"
+  [isEditing]="isEditing()"
+  [moduleToEdit]="selectedModule()"
+  [annees]="annees()"
+  [isLoading]="isLoading()"
+  (formClosed)="closeFormModal()"
+  (formSubmitted)="handleFormSubmit($event)"
+/>
+
+<!-- Module Delete Modal Sub-component -->
+<app-module-trimestriel-delete-modal
+  [isOpen]="isDeleteModalOpen()"
+  [itemToDelete]="itemToDelete()"
+  [isLoading]="isLoading()"
+  (modalClosed)="closeDeleteModal()"
+  (confirmed)="handleDeleteConfirm()"
+/>

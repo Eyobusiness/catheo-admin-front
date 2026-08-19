@@ -1,0 +1,151 @@
+<div class="table-card-wrapper">
+  <div class="table-responsive">
+    <table class="medical-table">
+      <thead>
+        <tr>
+          <th>Code & Catéchumène</th>
+          <th>Année Pastorale</th>
+          <th>Niveau & Classe</th>
+          <th>Frais Inscription</th>
+          <th>Statut</th>
+          <th class="text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of paginatedInscriptions(); track item.id) {
+          <tr class="table-row">
+            <td>
+              <div class="inscription-cell">
+                <div class="avatar-box" [class.is-female]="item.catechumene?.sexe === 'F'">
+                  <span>
+                    {{ (item.catechumene?.nom || 'C').charAt(0) }}{{ (item.catechumene?.prenoms || 'C').charAt(0) }}
+                  </span>
+                </div>
+                <div class="inscription-meta">
+                  <span class="candidate-name">{{ item.catechumene?.nom }} {{ item.catechumene?.prenoms }}</span>
+                  <span class="ins-code"><i class="bi bi-journal-bookmark"></i> {{ item.code_inscription }}</span>
+                </div>
+              </div>
+            </td>
+
+            <td>
+              <div class="year-box">
+                <i class="bi bi-calendar4-week"></i>
+                <span>{{ item.annee_catechese?.libelle || 'Année Courante' }}</span>
+              </div>
+            </td>
+
+            <td>
+              <div class="level-class-cell">
+                <span class="level-pill">
+                  <i class="bi bi-layers-fill"></i> {{ item.niveau?.nom || 'Niveau non défini' }}
+                </span>
+                @if (item.classe; as cl) {
+                  <span class="class-pill">
+                    <i class="bi bi-mortarboard-fill"></i> {{ cl.nom }}
+                  </span>
+                } @else {
+                  <span class="unassigned-pill"><i class="bi bi-exclamation-circle"></i> Non affecté(e)</span>
+                }
+              </div>
+            </td>
+
+            <td>
+              @if (item.frais_inscription_payes) {
+                <span class="frais-badge paye">
+                  <i class="bi bi-check-circle-fill"></i> Payés
+                </span>
+              } @else {
+                <span class="frais-badge impaye">
+                  <i class="bi bi-hourglass-split"></i> Impayés
+                </span>
+              }
+            </td>
+
+            <td>
+              @switch (item.statut_inscription) {
+                @case ('valide') {
+                  <span class="statut-badge valide">
+                    <i class="bi bi-check2-all"></i> Validée
+                  </span>
+                }
+                @case ('inscrit') {
+                  <span class="statut-badge inscrit">
+                    <i class="bi bi-person-check"></i> Inscrit
+                  </span>
+                }
+                @case ('en_attente') {
+                  <span class="statut-badge attente">
+                    <i class="bi bi-clock"></i> En Attente
+                  </span>
+                }
+                @case ('abandon') {
+                  <span class="statut-badge abandon">
+                    <i class="bi bi-x-octagon"></i> Abandon
+                  </span>
+                }
+              }
+            </td>
+
+            <td class="text-right">
+              <div class="actions-flex">
+                <app-icon-button
+                  variant="info"
+                  size="sm"
+                  title="Voir détails"
+                  ariaLabel="Voir"
+                  (clicked)="onView(item)"
+                >
+                  <i class="bi bi-eye"></i>
+                </app-icon-button>
+
+                <app-icon-button
+                  variant="primary"
+                  size="sm"
+                  title="Modifier"
+                  ariaLabel="Modifier"
+                  (clicked)="onEdit(item)"
+                >
+                  <i class="bi bi-pencil"></i>
+                </app-icon-button>
+
+                <app-icon-button
+                  variant="danger"
+                  size="sm"
+                  title="Supprimer"
+                  ariaLabel="Supprimer"
+                  (clicked)="onDelete(item)"
+                >
+                  <i class="bi bi-trash3"></i>
+                </app-icon-button>
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="empty-table-cell">
+              <div class="empty-state-box">
+                <i class="bi bi-journal-check" style="font-size: 2.25rem;"></i>
+                <p class="empty-title">Aucune inscription annuelle</p>
+                <p class="empty-desc">Inscrivez un catéchumène pour cette année pastorale.</p>
+                <app-button variant="primary" size="sm" icon="plus" (clicked)="onCreate()">
+                  Nouvelle Inscription
+                </app-button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (inscriptions().length > 0) {
+    <app-pagination
+      [totalItems]="inscriptions().length"
+      [currentPage]="currentPage()"
+      [pageSize]="pageSize()"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+    />
+  }
+</div>

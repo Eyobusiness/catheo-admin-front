@@ -1,0 +1,92 @@
+<app-dialog
+  [isOpen]="isOpen()"
+  title="Ajouter un Parrain / Marraine"
+  size="lg"
+  (closed)="onClose()"
+>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="parrain-modal-body">
+    <div class="catechumene-banner">
+      <i class="bi bi-person-fill-check"></i>
+      <span>Catéchumène associé : <strong>{{ catechumeneName() }}</strong></span>
+    </div>
+
+    <div class="form-grid">
+      <!-- Type -->
+      <div class="form-group">
+        <label class="form-label">Rôle <span class="required">*</span></label>
+        <div class="type-radio-group">
+          <label class="radio-label">
+            <input type="radio" value="parrain" formControlName="type" /> Parrain
+          </label>
+          <label class="radio-label">
+            <input type="radio" value="marraine" formControlName="type" /> Marraine
+          </label>
+        </div>
+      </div>
+
+      <!-- Confirmation -->
+      <div class="form-group">
+        <label class="form-label">Statut Confirmation</label>
+        <div class="checkbox-wrapper">
+          <label class="checkbox-label">
+            <input type="checkbox" formControlName="sacrement_confirmation" />
+            A reçu le sacrement de Confirmation
+          </label>
+        </div>
+      </div>
+
+      <!-- Nom et Prénoms -->
+      <div class="form-group full-width">
+        <label class="form-label" for="nom_prenoms">
+          Nom et Prénoms <span class="required">*</span>
+        </label>
+        <input id="nom_prenoms" type="text" formControlName="nom_prenoms" class="form-control" placeholder="Ex: M. KOUASSI Jean-Pierre" />
+      </div>
+
+      <!-- Contact Téléphone -->
+      <div class="form-group">
+        <label class="form-label" for="telephone">Téléphone</label>
+        <input id="telephone" type="tel" formControlName="telephone" class="form-control" placeholder="Ex: +225 0707..." />
+      </div>
+
+      <!-- Email -->
+      <div class="form-group">
+        <label class="form-label" for="email">Adresse Email</label>
+        <input id="email" type="email" formControlName="email" class="form-control" placeholder="Ex: jean.kouassi@email.com" />
+      </div>
+
+      <!-- Domicile -->
+      <div class="form-group">
+        <label class="form-label" for="domicile">Domicile / Résidence</label>
+        <input id="domicile" type="text" formControlName="domicile" class="form-control" placeholder="Ex: Cocody Angré" />
+      </div>
+
+      <!-- Paroisse Origine -->
+      <div class="form-group">
+        <label class="form-label" for="paroisse_origine">Paroisse d'Origine</label>
+        <input id="paroisse_origine" type="text" formControlName="paroisse_origine" class="form-control" placeholder="Ex: Paroisse Saint Jean" />
+      </div>
+
+      <!-- Représentant (si parrain empêché le jour de la cérémonie) -->
+      <div class="form-group">
+        <label class="form-label" for="representant_nom">Nom du Représentant (le cas échéant)</label>
+        <input id="representant_nom" type="text" formControlName="representant_nom" class="form-control" placeholder="Ex: M. KOFFI Paul" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="representant_contact">Contact du Représentant</label>
+        <input id="representant_contact" type="tel" formControlName="representant_contact" class="form-control" placeholder="Ex: +225 0102..." />
+      </div>
+    </div>
+
+    <div class="modal-footer-actions">
+      <app-button type="button" variant="ghost" (clicked)="onClose()" [disabled]="isLoading()">
+        Annuler
+      </app-button>
+      <app-button type="submit" variant="primary" [loading]="isLoading()" [disabled]="form.invalid || isLoading()">
+        <i class="bi bi-plus-circle"></i>
+        <span>Associer le Parrain / Marraine</span>
+      </app-button>
+    </div>
+  </form>
+</app-dialog>

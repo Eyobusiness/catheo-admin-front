@@ -1,0 +1,142 @@
+<div class="under-construction-page">
+  <!-- Hero Card -->
+  <app-card padding="lg" [bordered]="true">
+    <div class="construction-hero">
+      <div class="construction-icon-wrapper">
+        <i class="bi bi-tools-wrench-cone"></i>
+        <div class="glow-ring"></div>
+      </div>
+
+      <div class="construction-badge">
+        <span class="pulse-dot"></span>
+        <span>Paroisse Cœur Immaculé de Marie (CIM) • En cours de conception</span>
+      </div>
+
+      <h2 class="construction-title">{{ pageTitle() }}</h2>
+      <p class="construction-desc">
+        Cette interface est actuellement en cours de développement par l'équipe Cathéo.
+        Les composants réutilisables (boutons, modaux, toasts, en-têtes et thèmes de couleur) sont actifs et prêts pour l'intégration finale.
+      </p>
+
+      <!-- Action buttons with same design -->
+      <div class="construction-actions">
+        <app-button
+          variant="primary"
+          size="md"
+          icon="plus"
+          (clicked)="openFeedbackModal()"
+        >
+          Ouvrir le Modal (Test)
+        </app-button>
+
+        <app-button
+          variant="secondary"
+          size="md"
+          icon="refresh"
+          (clicked)="testToast()"
+        >
+          Déclencher un Toast
+        </app-button>
+
+        <app-button
+          variant="outline"
+          size="md"
+          (clicked)="notifyTeam()"
+        >
+          Me notifier à la sortie
+        </app-button>
+
+        @if (pageTitle() !== 'Tableau de Bord') {
+          <a routerLink="/dashboard">
+            <app-button
+              variant="ghost"
+              size="md"
+              icon="arrow-right"
+              iconPosition="right"
+            >
+              Tableau de Bord
+            </app-button>
+          </a>
+        }
+      </div>
+    </div>
+  </app-card>
+
+  <!-- Next steps preview -->
+  <div class="roadmap-grid">
+    <app-card title="Étape 1 : Spécifications & Modèles" subtitle="Statut : Validé">
+      <div class="roadmap-item-content">
+        <div class="step-badge step-done">
+          <i class="bi bi-check-circle-fill"></i>
+          <span>Structure du menu & permissions</span>
+        </div>
+        <p class="step-text">La structure du menu, les codes et références de la paroisse sont intégrés.</p>
+      </div>
+    </app-card>
+
+    <app-card title="Étape 2 : Interface & Composants" subtitle="Statut : En cours">
+      <div class="roadmap-item-content">
+        <div class="step-badge step-progress">
+          <i class="bi bi-gear-fill spin-icon"></i>
+          <span>Composants UI & Charte CIM</span>
+        </div>
+        <p class="step-text">Boutons, toasts, modales et mise en page responsive opérationnels.</p>
+      </div>
+    </app-card>
+
+    <app-card title="Étape 3 : Tests & Déploiement" subtitle="Statut : À venir">
+      <div class="roadmap-item-content">
+        <div class="step-badge step-todo">
+          <i class="bi bi-clock-history"></i>
+          <span>Validation Pastorale & Recette</span>
+        </div>
+        <p class="step-text">Mise en ligne finale après la validation de l'équipe pastorale.</p>
+      </div>
+    </app-card>
+  </div>
+</div>
+
+<!-- Modal for suggestion / feedback -->
+<app-dialog
+  [isOpen]="isFeedbackModalOpen()"
+  title="Boîte de dialogue (Modal Test)"
+  subtitle="Paroisse Cœur Immaculé de Marie • Cathéo"
+  size="md"
+  (closed)="closeFeedbackModal()"
+>
+  <div dialog-body class="feedback-form">
+    <div class="form-group">
+      <label class="form-label" for="moduleName">Module concerné</label>
+      <input id="moduleName" class="form-control" [value]="pageTitle()" disabled />
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="suggestionType">Type de fonctionnalité souhaitée</label>
+      <select id="suggestionType" class="form-control">
+        <option>Formulaire de saisie rapide</option>
+        <option>Export Excel / PDF automatique</option>
+        <option>Tableau croisé avec filtres avancés</option>
+        <option>Validation pastorale avec signature</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="suggestionComment">Remarques ou besoins spécifiques</label>
+      <textarea
+        id="suggestionComment"
+        class="form-control"
+        rows="3"
+        placeholder="Remarques..."
+      ></textarea>
+    </div>
+  </div>
+
+  <div dialog-footer>
+    <app-button variant="secondary" (clicked)="closeFeedbackModal()">
+      Annuler
+    </app-button>
+    <app-button variant="primary" icon="check" (clicked)="sendFeedback()">
+      Enregistrer
+    </app-button>
+  </div>
+</app-dialog>

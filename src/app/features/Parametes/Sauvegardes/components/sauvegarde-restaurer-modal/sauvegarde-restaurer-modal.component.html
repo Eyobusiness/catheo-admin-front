@@ -1,0 +1,14 @@
+<app-confirm-dialog
+  [isOpen]="isOpen()"
+  title="Restaurer la Base de Données"
+  [message]="message()"
+  confirmText="Restaurer les Données"
+  cancelText="Annuler"
+  confirmVariant="warning"
+  icon="bi-arrow-clockwise"
+  iconType="warning"
+  [isLoading]="isLoading()"
+  [warningText]="warningText()"
+  (cancelled)="onClose()"
+  (confirmed)="onConfirm()"
+/>

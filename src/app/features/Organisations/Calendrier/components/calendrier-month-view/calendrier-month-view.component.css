@@ -1,0 +1,404 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.calendar-month-container {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--neutral-0, #ffffff);
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Header Toolbar */
+.calendar-header-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  background-color: var(--neutral-50);
+  border-bottom: 1px solid var(--border-color);
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.nav-controls-left {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.month-nav-btn-group {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.today-jump-btn {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--neutral-700);
+  background-color: var(--neutral-0);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.today-jump-btn:hover {
+  background-color: var(--primary-50);
+  border-color: var(--primary-400);
+  color: var(--primary-700);
+}
+
+.current-month-display {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--neutral-900);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.current-month-display i {
+  color: var(--primary-600);
+}
+
+/* Month & Year Pickers */
+.month-year-pickers {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.picker-select {
+  padding: 0.35rem 0.625rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--neutral-800);
+  background-color: var(--neutral-0);
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-md);
+  outline: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.picker-select:focus {
+  border-color: var(--primary-500);
+  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.15);
+}
+
+.month-count-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  background-color: var(--primary-50);
+  border: 1px solid var(--primary-200);
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--primary-700);
+}
+
+/* Quick Months Switcher Pills */
+.quick-months-pills {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+}
+
+.pills-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--neutral-500);
+}
+
+.month-pill-btn {
+  padding: 0.2rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-color);
+  background-color: var(--neutral-0);
+  color: var(--neutral-700);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.month-pill-btn:hover {
+  background-color: var(--primary-50);
+  border-color: var(--primary-300);
+  color: var(--primary-700);
+}
+
+.month-pill-btn.is-current {
+  background-color: var(--primary-600);
+  border-color: var(--primary-600);
+  color: #ffffff;
+  font-weight: 700;
+}
+
+/* Status Legend */
+.calendar-legend {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--neutral-600);
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.legend-dot.planifie {
+  background-color: var(--primary-500);
+}
+
+.legend-dot.realise {
+  background-color: var(--success-500);
+}
+
+.legend-dot.annule {
+  background-color: var(--danger-500);
+}
+
+/* Weekday Columns Header */
+.calendar-weekdays-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background-color: var(--neutral-100);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.weekday-col {
+  padding: 0.625rem 0.5rem;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--neutral-600);
+}
+
+.weekday-col.is-weekend {
+  color: var(--primary-700);
+  background-color: rgba(2, 132, 199, 0.04);
+}
+
+.weekday-full {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .weekday-short {
+    display: none;
+  }
+  .weekday-full {
+    display: inline;
+  }
+}
+
+/* Days Grid */
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background-color: var(--border-color-light);
+  gap: 1px;
+}
+
+.calendar-day-cell {
+  background-color: var(--neutral-0);
+  min-height: 110px;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.calendar-day-cell:hover {
+  background-color: var(--primary-50);
+}
+
+.calendar-day-cell.not-current-month {
+  background-color: var(--neutral-50);
+  opacity: 0.6;
+}
+
+.calendar-day-cell.is-weekend:not(.not-current-month) {
+  background-color: #fafbfd;
+}
+
+.calendar-day-cell.is-today {
+  background-color: rgba(2, 132, 199, 0.05);
+}
+
+/* Day Topbar */
+.day-cell-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.35rem;
+}
+
+.day-number-badge {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--neutral-700);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+}
+
+.day-number-badge.today-badge {
+  background-color: var(--primary-600);
+  color: #ffffff;
+  font-weight: 800;
+}
+
+/* Day Quick Add Button (appears on cell hover) */
+.day-quick-add-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-sm);
+  background-color: var(--primary-100);
+  color: var(--primary-700);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  cursor: pointer;
+  opacity: 0;
+  transform: scale(0.85);
+  transition: all var(--transition-fast);
+}
+
+.calendar-day-cell:hover .day-quick-add-btn {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.day-quick-add-btn:hover {
+  background-color: var(--primary-600);
+  color: #ffffff;
+}
+
+/* Events Container */
+.day-events-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.event-chip-pill {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.2rem 0.4rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border-left: 3px solid transparent;
+}
+
+.event-chip-pill:hover {
+  transform: translateY(-1px);
+  filter: brightness(0.95);
+}
+
+.chip-main-info {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.chip-time {
+  font-family: var(--font-family-mono);
+  font-weight: 800;
+  font-size: 0.625rem;
+}
+
+.chip-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chip-edit-btn {
+  background: none;
+  border: none;
+  color: inherit;
+  opacity: 0;
+  cursor: pointer;
+  padding: 0 0.15rem;
+  font-size: 0.625rem;
+  transition: opacity var(--transition-fast);
+}
+
+.event-chip-pill:hover .chip-edit-btn {
+  opacity: 0.8;
+}
+
+.chip-edit-btn:hover {
+  opacity: 1;
+}
+
+/* Status variants for chips */
+.chip-planifie {
+  background-color: var(--primary-100);
+  color: var(--primary-900);
+  border-left-color: var(--primary-600);
+}
+
+.chip-realise {
+  background-color: var(--success-100);
+  color: var(--success-900);
+  border-left-color: var(--success-600);
+}
+
+.chip-annule {
+  background-color: var(--danger-100);
+  color: var(--danger-900);
+  border-left-color: var(--danger-600);
+  text-decoration: line-through;
+}
+
+/* Overflow indicator */
+.events-overflow-pill {
+  font-size: 0.625rem;
+  font-weight: 700;
+  color: var(--neutral-500);
+  text-align: center;
+  padding: 0.1rem 0;
+}

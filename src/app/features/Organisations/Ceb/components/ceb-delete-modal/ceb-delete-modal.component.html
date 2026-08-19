@@ -1,0 +1,14 @@
+<app-confirm-dialog
+  [isOpen]="isOpen()"
+  title="Supprimer la CEB"
+  [message]="message()"
+  confirmText="Supprimer"
+  cancelText="Annuler"
+  confirmVariant="danger"
+  icon="bi-trash3-fill"
+  iconType="danger"
+  [isLoading]="isLoading()"
+  [warningText]="warningText()"
+  (cancelled)="onClose()"
+  (confirmed)="onConfirm()"
+/>

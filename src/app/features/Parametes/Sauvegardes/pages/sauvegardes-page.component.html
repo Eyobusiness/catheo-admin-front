@@ -1,0 +1,154 @@
+<div class="page-container">
+  <!-- Topbar Header -->
+  <header class="topbar">
+    <div>
+
+      <h2 class="topbar-title">Sauvegardes & Restauration</h2>
+      <p class="topbar-subtitle">
+        Sécurisez, téléchargez et restaurez les données de votre catéchèse
+      </p>
+    </div>
+
+    <div class="topbar-actions">
+      <app-icon-button
+        variant="ghost"
+        size="md"
+        title="Actualiser la liste"
+        ariaLabel="Actualiser"
+        (clicked)="refreshList()"
+      >
+        <i class="bi bi-arrow-clockwise" [class.spin]="isLoading()"></i>
+      </app-icon-button>
+
+      <app-button
+        variant="primary"
+        size="md"
+        icon="database-down"
+        [loading]="isActionInProgress()"
+        (clicked)="openCreateModal()"
+      >
+        Nouvelle Sauvegarde
+      </app-button>
+    </div>
+  </header>
+
+  <!-- KPI Stats Section -->
+  <section class="stats-section">
+    <app-sauvegarde-stats-cards [sauvegardes]="sauvegardes()" />
+  </section>
+
+  <!-- Main Card Section -->
+  <main class="page-content">
+    <app-card
+      title="Archives de Sauvegarde"
+      subtitle="Historique des sauvegardes manuelles et automatiques du système">
+      
+      <!-- Toolbar Filters -->
+      <div class="table-toolbar">
+        <div class="toolbar-left">
+          <!-- Search input -->
+          <div class="search-input-wrapper">
+            <i class="bi bi-search search-icon"></i>
+            <input
+              type="text"
+              class="filter-search-control"
+              placeholder="Rechercher..."
+              [value]="searchQuery()"
+              (input)="onSearchChange($event)"
+            />
+            @if (searchQuery()) {
+              <button
+                type="button"
+                class="clear-search-btn"
+                (click)="clearSearch()"
+                title="Effacer la recherche"
+              >
+                <i class="bi bi-x-circle-fill"></i>
+              </button>
+            }
+          </div>
+
+          <!-- Type Filter -->
+          <div class="filter-select-wrapper">
+            <i class="bi bi-funnel select-prefix-icon"></i>
+            <select
+              class="filter-select-control"
+              [value]="selectedTypeFilter()"
+              (change)="onTypeFilterChange($event)"
+            >
+              <option value="">Tous les types</option>
+              <option value="manuel">Manuelle</option>
+              <option value="automatique">Automatique</option>
+            </select>
+            <i class="bi bi-chevron-down select-chevron-icon"></i>
+          </div>
+
+          <!-- Statut Filter -->
+          <div class="filter-select-wrapper">
+            <i class="bi bi-check2-circle select-prefix-icon"></i>
+            <select
+              class="filter-select-control"
+              [value]="selectedStatutFilter()"
+              (change)="onStatutFilterChange($event)"
+            >
+              <option value="">Tous les statuts</option>
+              <option value="termine">Terminé</option>
+              <option value="en_cours">En cours</option>
+              <option value="echec">Échec</option>
+            </select>
+            <i class="bi bi-chevron-down select-chevron-icon"></i>
+          </div>
+
+          @if (searchQuery() || selectedTypeFilter() || selectedStatutFilter()) {
+            <button type="button" class="reset-filter-btn" (click)="resetFilters()">
+              <i class="bi bi-arrow-counterclockwise"></i>
+              Réinitialiser
+            </button>
+          }
+        </div>
+
+        <div class="toolbar-right">
+          <span class="count-badge">
+            <strong>{{ filteredSauvegardes().length }}</strong> archive(s)
+          </span>
+        </div>
+      </div>
+
+      <!-- Backups Table -->
+      <app-sauvegarde-table
+        [sauvegardes]="filteredSauvegardes()"
+        [isLoading]="isLoading()"
+        (createRequested)="openCreateModal()"
+        (downloadRequested)="handleDownload($event)"
+        (restaurerRequested)="openRestaurerModal($event)"
+        (deleteRequested)="openDeleteModal($event)"
+      />
+    </app-card>
+  </main>
+</div>
+
+<!-- Modal Créer une Sauvegarde -->
+<app-sauvegarde-create-modal
+  [isOpen]="isCreateModalOpen()"
+  [isLoading]="isActionInProgress()"
+  (closed)="closeCreateModal()"
+  (submitted)="handleCreateSubmit($event)"
+/>
+
+<!-- Modal Confirmer la Restauration -->
+<app-sauvegarde-restaurer-modal
+  [isOpen]="isRestaurerModalOpen()"
+  [sauvegarde]="selectedSauvegarde()"
+  [isLoading]="isActionInProgress()"
+  (closed)="closeRestaurerModal()"
+  (confirmed)="handleRestaurerConfirm()"
+/>
+
+<!-- Modal Confirmer la Suppression -->
+<app-sauvegarde-delete-modal
+  [isOpen]="isDeleteModalOpen()"
+  [sauvegarde]="selectedSauvegarde()"
+  [isLoading]="isActionInProgress()"
+  (closed)="closeDeleteModal()"
+  (confirmed)="handleDeleteConfirm()"
+/>

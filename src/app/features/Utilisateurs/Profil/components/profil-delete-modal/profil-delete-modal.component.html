@@ -1,0 +1,14 @@
+<app-confirm-dialog
+  [isOpen]="isOpen()"
+  title="Supprimer le Profil"
+  [message]="message()"
+  confirmText="Supprimer le Profil"
+  cancelText="Annuler"
+  confirmVariant="danger"
+  icon="bi-shield-x"
+  iconType="danger"
+  [isLoading]="isLoading()"
+  [warningText]="warningText()"
+  (cancelled)="onClose()"
+  (confirmed)="onConfirm()"
+/>

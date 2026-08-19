@@ -1,0 +1,128 @@
+<div class="table-card-wrapper">
+  <div class="table-responsive">
+    <table class="medical-table">
+      <thead>
+        <tr>
+          <th>Animateur</th>
+          <th>Classe & Niveau</th>
+          <th>Rôle</th>
+          <th>Date d'Affectation</th>
+          <th class="text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (aff of paginatedAffectations(); track aff.id) {
+          <tr class="table-row">
+            <td>
+              <div class="animateur-name-cell">
+                <div class="animateur-avatar" [class.is-female]="aff.animateur.sexe === 'F'">
+                  <span>{{ getInitials(aff.animateur) }}</span>
+                </div>
+                <div class="animateur-meta">
+                  <span class="animateur-title">
+                    {{ aff.animateur.nom }} {{ aff.animateur.prenoms }}
+                  </span>
+                  <!-- @if (aff.animateur.matricule) {
+                    <span class="matricule-tag">{{ aff.animateur.matricule }}</span>
+                  } -->
+                </div>
+              </div>
+            </td>
+
+            <td>
+              <div class="classe-cell">
+                <span class="classe-name">{{ aff.classe.nom }}</span>
+                <span class="niveau-pill">
+                  <i class="bi bi-layers"></i>
+                  {{ aff.classe.niveau?.nom || 'Niveau' }}
+                </span>
+              </div>
+            </td>
+
+            <td>
+              <span
+                class="role-badge"
+                [class.is-principal]="aff.role === 'principal'"
+                [class.is-adjoint]="aff.role === 'adjoint'"
+                [class.is-assistant]="aff.role === 'assistant'"
+                title="Cliquer pour changer le rôle"
+                (click)="onCycleRole(aff)"
+              >
+                <i [class]="'bi ' + (aff.role === 'principal' ? 'bi-star-fill' : aff.role === 'adjoint' ? 'bi-shield-check' : 'bi-person-badge')"></i>
+                {{ getRoleLabel(aff.role) }}
+              </span>
+            </td>
+
+            <td>
+              <div class="date-item">
+                <i class="bi bi-calendar-event"></i>
+                <span>{{ aff.date_affectation }}</span>
+              </div>
+            </td>
+
+            <td class="text-right">
+              <div class="actions-flex">
+                <!-- Action: Voir -->
+                <app-icon-button
+                  variant="info"
+                  size="sm"
+                  title="Voir les détails"
+                  ariaLabel="Voir"
+                  (clicked)="onView(aff)"
+                >
+                  <i class="bi bi-eye"></i>
+                </app-icon-button>
+
+                <!-- Action: Modifier -->
+                <app-icon-button
+                  variant="primary"
+                  size="sm"
+                  title="Modifier"
+                  ariaLabel="Modifier"
+                  (clicked)="onEdit(aff)"
+                >
+                  <i class="bi bi-pencil"></i>
+                </app-icon-button>
+
+                <!-- Action: Supprimer -->
+                <app-icon-button
+                  variant="danger"
+                  size="sm"
+                  title="Annuler l'affectation"
+                  ariaLabel="Supprimer"
+                  (clicked)="onDelete(aff)"
+                >
+                  <i class="bi bi-trash3"></i>
+                </app-icon-button>
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="5" class="empty-table-cell">
+              <div class="empty-state-box">
+                <i class="bi bi-person-lines-fill" style="font-size: 2rem;"></i>
+                <p class="empty-title">Aucune affectation enregistrée</p>
+                <p class="empty-desc">Affectez des catéchistes aux différentes classes pour démarrer l'année pastorale.</p>
+                <app-button variant="primary" size="sm" icon="plus" (clicked)="onCreate()">
+                  Nouvelle Affectation
+                </app-button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination intégrée -->
+  @if (affectations().length > 0) {
+    <app-pagination
+      [totalItems]="affectations().length"
+      [currentPage]="currentPage()"
+      [pageSize]="pageSize()"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+    />
+  }
+</div>

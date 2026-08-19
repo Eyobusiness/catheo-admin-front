@@ -1,0 +1,210 @@
+.table-card-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  background: var(--neutral-0);
+}
+
+.medical-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  text-align: left;
+  font-size: 0.875rem;
+}
+
+.medical-table th {
+  background-color: var(--neutral-50);
+  color: var(--neutral-600);
+  font-weight: 700;
+  padding: 0.875rem 1.25rem;
+  border-bottom: 1.5px solid var(--border-color);
+  white-space: nowrap;
+  font-size: 0.8125rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.medical-table td {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--neutral-100);
+  vertical-align: middle;
+  color: var(--neutral-800);
+}
+
+.table-row:hover td {
+  background-color: var(--neutral-50);
+}
+
+.candidate-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+.avatar-badge {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--primary-100);
+  color: var(--primary-800);
+  font-weight: 800;
+  font-size: 0.8125rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.avatar-badge.is-female {
+  background: rgba(236, 72, 153, 0.15);
+  color: #db2777;
+}
+
+.candidate-meta {
+  display: flex;
+  flex-direction: column;
+}
+
+.candidate-name {
+  font-weight: 700;
+  color: var(--neutral-900);
+}
+
+.dossier-code {
+  font-size: 0.75rem;
+  color: var(--primary-700);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.type-badge.premiere {
+  background: var(--primary-50);
+  color: var(--primary-700);
+  border: 1px solid var(--primary-200);
+}
+
+.type-badge.reinscription {
+  background: rgba(147, 51, 234, 0.1);
+  color: #9333ea;
+  border: 1px solid rgba(147, 51, 234, 0.2);
+}
+
+.contact-info-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-size: 0.8125rem;
+  color: var(--neutral-600);
+}
+
+.sacrament-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.sacrament-badge.baptise {
+  background: rgba(59, 130, 246, 0.12);
+  color: #2563eb;
+}
+
+.sacrament-badge.non-baptise {
+  background: var(--neutral-100);
+  color: var(--neutral-500);
+}
+
+.statut-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.statut-badge.attente {
+  background: rgba(245, 158, 11, 0.12);
+  color: #d97706;
+}
+
+.dot-pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #f59e0b;
+}
+
+.statut-badge.affecter {
+  background: rgba(14, 165, 233, 0.12);
+  color: #0284c7;
+}
+
+.statut-badge.validee {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+}
+
+.statut-badge.rejetee {
+  background: rgba(239, 68, 68, 0.12);
+  color: #dc2626;
+}
+
+.actions-flex {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.35rem;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.empty-state-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+  text-align: center;
+  gap: 0.5rem;
+  color: var(--neutral-400);
+}
+
+.empty-title {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--neutral-700);
+  margin-top: 0.5rem;
+}
+
+.empty-desc {
+  font-size: 0.875rem;
+  color: var(--neutral-500);
+  margin-bottom: 0.75rem;
+}

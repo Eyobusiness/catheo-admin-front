@@ -1,0 +1,67 @@
+<app-dialog
+  [isOpen]="isOpen()"
+  title="Détail de la Mutation / Transfert"
+  size="md"
+  (closed)="onClose()"
+>
+  @if (mutation(); as item) {
+    <div class="detail-modal-body">
+      <!-- Header -->
+      <div class="header-card">
+        <div class="header-icon">
+          <i class="bi bi-arrow-left-right"></i>
+        </div>
+        <div class="header-meta">
+          <h4 class="title">{{ item.catechumene?.nom }} {{ item.catechumene?.prenoms }}</h4>
+          <span class="sub">Matricule: {{ item.catechumene?.matricule || item.catechumene?.code_catechumene || 'N/A' }}</span>
+        </div>
+        @switch (item.statut) {
+          @case ('approuve') {
+            <span class="badge-approuve">Approuvé</span>
+          }
+          @case ('refuse') {
+            <span class="badge-refuse">Refusé</span>
+          }
+          @default {
+            <span class="badge-demande">En Demande</span>
+          }
+        }
+      </div>
+
+      <!-- Info Grid -->
+      <div class="detail-grid">
+        <div class="info-row">
+          <span class="label">Paroisse d'Origine :</span>
+          <span class="value">{{ item.paroisse_origine_nom }}</span>
+        </div>
+
+        <div class="info-row">
+          <span class="label">Paroisse de Destination :</span>
+          <span class="value text-primary font-bold">{{ item.paroisse_destination_nom }}</span>
+        </div>
+
+        <div class="info-row">
+          <span class="label">Année Pastorale :</span>
+          <span class="value">{{ item.annee_catechese?.libelle || 'Non spécifiée' }}</span>
+        </div>
+
+        <div class="info-row">
+          <span class="label">Date d'effet de la mutation :</span>
+          <span class="value">{{ item.date_mutation | date:'fullDate' }}</span>
+        </div>
+
+        <div class="info-block">
+          <span class="label">Motif du Transfert :</span>
+          <p class="motif-p">{{ item.motif || 'Aucun motif renseigné.' }}</p>
+        </div>
+      </div>
+
+      <!-- Footer Actions -->
+      <div class="modal-footer-actions">
+        <app-button variant="ghost" (clicked)="onClose()">
+          Fermer
+        </app-button>
+      </div>
+    </div>
+  }
+</app-dialog>

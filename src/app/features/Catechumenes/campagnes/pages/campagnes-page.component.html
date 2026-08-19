@@ -1,0 +1,124 @@
+<div class="campagnes-page">
+  <!-- Topbar Header -->
+  <section class="page-topbar">
+    <div class="topbar-headings">
+      <h2 class="topbar-title">Campagnes de Préinscription</h2>
+      <p class="topbar-subtitle">
+        Gestion et planification des campagnes pour les inscriptions des catéchumènes.
+      </p>
+    </div>
+
+    <div class="topbar-actions">
+      <app-button
+        variant="primary"
+        size="md"
+        icon="plus"
+        (clicked)="openCreateModal()"
+      >
+        Nouvelle Campagne
+      </app-button>
+    </div>
+  </section>
+
+  <!-- Main Card with Table -->
+  <app-card
+    title="Liste des Campagnes de Préinscription"
+  >
+    <!-- Filters Toolbar -->
+    <div class="filters-toolbar">
+      <div class="filters-left">
+        <!-- Search Input -->
+        <div class="search-input-wrapper">
+          <i class="bi bi-search search-icon"></i>
+          <input
+            type="text"
+            class="filter-search-control"
+            placeholder="Rechercher..."
+            [value]="searchQuery()"
+            (input)="onSearchChange($event)"
+          />
+          @if (searchQuery()) {
+            <button class="clear-search-btn" (click)="clearSearch()" title="Effacer">
+              <i class="bi bi-x-circle-fill"></i>
+            </button>
+          }
+        </div>
+
+        <!-- Status Filter -->
+        <div class="status-select-wrapper">
+          <i class="bi bi-funnel status-prefix-icon"></i>
+          <select
+            class="filter-status-control"
+            [value]="statusFilter()"
+            (change)="onStatusFilterChange($event)"
+          >
+            <option value="">Tous les statuts</option>
+            <option value="ouverte">Ouverte</option>
+            <option value="fermee">Clôturée</option>
+            <option value="suspendue">Suspendue</option>
+          </select>
+          <i class="bi bi-chevron-down select-chevron-icon"></i>
+        </div>
+      </div>
+
+      <div class="filters-right">
+        @if (hasActiveFilters()) {
+          <button class="reset-filter-btn" (click)="resetFilters()">
+            <i class="bi bi-arrow-counterclockwise"></i>
+            <span>Réinitialiser</span>
+          </button>
+        }
+        <span class="count-pill">
+          <strong>{{ filteredCampagnes().length }}</strong> campagne(s)
+        </span>
+      </div>
+    </div>
+
+    <!-- Table Sub-component -->
+    <app-campagne-table
+      [campagnes]="filteredCampagnes()"
+      (createRequested)="openCreateModal()"
+      (viewRequested)="openDetailModal($event)"
+      (qrRequested)="openQrModal($event)"
+      (editRequested)="openEditModal($event)"
+      (deleteRequested)="openDeleteModal($event)"
+      (toggleStatusRequested)="handleToggleStatus($event)"
+    />
+  </app-card>
+</div>
+
+<!-- Form Modal Sub-component -->
+<app-campagne-form-modal
+  [isOpen]="isFormModalOpen()"
+  [isEditing]="isEditing()"
+  [campagneToEdit]="selectedCampagne()"
+  [annees]="annees()"
+  [sections]="sections()"
+  [isLoading]="isLoading()"
+  (formClosed)="closeModals()"
+  (formSubmitted)="handleFormSubmit($event)"
+/>
+
+<!-- Detail Modal Sub-component -->
+<app-campagne-detail-modal
+  [isOpen]="isDetailModalOpen()"
+  [campagne]="selectedCampagne()"
+  (modalClosed)="closeModals()"
+  (editRequested)="openEditModal($event)"
+/>
+
+<!-- QR Code & Partage Modal Sub-component -->
+<app-campagne-qr-modal
+  [isOpen]="isQrModalOpen()"
+  [campagne]="selectedCampagne()"
+  (modalClosed)="closeModals()"
+/>
+
+<!-- Delete Modal Sub-component -->
+<app-campagne-delete-modal
+  [isOpen]="isDeleteModalOpen()"
+  [itemToDelete]="itemToDelete()"
+  [isLoading]="isLoading()"
+  (modalClosed)="closeModals()"
+  (confirmed)="handleDeleteConfirm()"
+/>

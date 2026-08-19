@@ -1,0 +1,162 @@
+<div class="calendar-month-container">
+  <!-- Calendar Controls & Month Navigator -->
+  <div class="calendar-header-toolbar">
+    <div class="nav-controls-left">
+      <div class="month-nav-btn-group">
+        <app-icon-button
+          variant="ghost"
+          size="sm"
+          title="Mois précédent"
+          ariaLabel="Mois précédent"
+          (clicked)="prevMonth()"
+        >
+          <i class="bi bi-chevron-left"></i>
+        </app-icon-button>
+
+        <button type="button" class="today-jump-btn" (click)="goToToday()" title="Aller à aujourd'hui">
+          Aujourd'hui
+        </button>
+
+        <app-icon-button
+          variant="ghost"
+          size="sm"
+          title="Mois suivant"
+          ariaLabel="Mois suivant"
+          (clicked)="nextMonth()"
+        >
+          <i class="bi bi-chevron-right"></i>
+        </app-icon-button>
+      </div>
+
+      <!-- Month and Year Direct Pickers -->
+      <div class="month-year-pickers">
+        <select class="picker-select" [value]="currentMonth()" (change)="onMonthChange($event)">
+          @for (mName of monthNames; track $index) {
+            <option [value]="$index">{{ mName }}</option>
+          }
+        </select>
+
+        <select class="picker-select year" [value]="currentYear()" (change)="onYearChange($event)">
+          @for (y of availableYears; track y) {
+            <option [value]="y">{{ y }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Active Month Events Count Badge -->
+      <span class="month-count-badge">
+        <i class="bi bi-calendar-event"></i>
+        {{ currentMonthEventsCount() }} activité(s)
+      </span>
+    </div>
+
+    <!-- Active Months Quick Switcher Pills (months with events in current year) -->
+    @if (activeMonthsWithEvents().length > 1) {
+      <div class="quick-months-pills">
+        <span class="pills-label">Mois avec activités :</span>
+        @for (item of activeMonthsWithEvents(); track item.monthIdx) {
+          <button
+            type="button"
+            class="month-pill-btn"
+            [class.is-current]="currentMonth() === item.monthIdx"
+            (click)="setMonth(item.monthIdx)"
+          >
+            {{ item.name }} ({{ item.count }})
+          </button>
+        }
+      </div>
+    }
+
+    <!-- Status Legend -->
+    <div class="calendar-legend">
+      <div class="legend-item">
+        <span class="legend-dot planifie"></span>
+        <span>Planifié</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-dot realise"></span>
+        <span>Réalisé</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-dot annule"></span>
+        <span>Annulé</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Weekday Columns Header -->
+  <div class="calendar-weekdays-row">
+    @for (day of weekDays; track day.label) {
+      <div class="weekday-col" [class.is-weekend]="day.label === 'Sam' || day.label === 'Dim'">
+        <span class="weekday-short">{{ day.label }}</span>
+        <span class="weekday-full">{{ day.full }}</span>
+      </div>
+    }
+  </div>
+
+  <!-- Calendar Month Days Grid -->
+  <div class="calendar-grid">
+    @for (day of calendarDays(); track day.dateStr) {
+      <div
+        class="calendar-day-cell"
+        [class.not-current-month]="!day.isCurrentMonth"
+        [class.is-today]="day.isToday"
+        [class.is-weekend]="day.isWeekend"
+        [class.has-events]="day.events.length > 0"
+        (click)="onAddEventOnDate(day.dateStr, $event)"
+      >
+        <!-- Day Cell Topbar -->
+        <div class="day-cell-topbar">
+          <span class="day-number-badge" [class.today-badge]="day.isToday">
+            {{ day.dayNumber }}
+          </span>
+
+          <!-- Quick + Button on Hover -->
+          <button
+            type="button"
+            class="day-quick-add-btn"
+            title="Ajouter un événement pour le {{ day.dateStr }}"
+            (click)="onAddEventOnDate(day.dateStr, $event)"
+          >
+            <i class="bi bi-plus-lg"></i>
+          </button>
+        </div>
+
+        <!-- Events List Container -->
+        <div class="day-events-container">
+          @for (event of day.events.slice(0, 3); track event.id) {
+            <div
+              [class]="'event-chip-pill chip-' + (event.statut === 'Réalisé' ? 'realise' : event.statut === 'Annulé' ? 'annule' : 'planifie')"
+              (click)="onEventClick(event, $event)"
+              [title]="event.titre + (event.heure_debut ? ' (' + event.heure_debut + ')' : '') + (event.lieu ? ' - ' + event.lieu : '')"
+            >
+              <div class="chip-main-info">
+                @if (event.heure_debut) {
+                  <span class="chip-time">{{ event.heure_debut }}</span>
+                }
+                <span class="chip-title">{{ event.titre }}</span>
+              </div>
+
+              <!-- Quick Edit Icon Button -->
+              <button
+                type="button"
+                class="chip-edit-btn"
+                title="Modifier l'événement"
+                (click)="onEventEdit(event, $event)"
+              >
+                <i class="bi bi-pencil-fill"></i>
+              </button>
+            </div>
+          }
+
+          <!-- Overflow Indicator -->
+          @if (day.events.length > 3) {
+            <div class="events-overflow-pill">
+              + {{ day.events.length - 3 }} autre(s)
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</div>

@@ -1,0 +1,40 @@
+<app-dialog
+  [isOpen]="isOpen()"
+  title="Affectation Groupée en Classe"
+  size="sm"
+  (closed)="onClose()"
+>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="bulk-modal-body">
+    <div class="bulk-info-card">
+      <i class="bi bi-people-fill"></i>
+      <span><strong>{{ selectedCount() }}</strong> catéchumène(s) sélectionné(s)</span>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="bulk_classe_id">
+        Classe de Destination <span class="required">*</span>
+      </label>
+      <select id="bulk_classe_id" formControlName="classe_id" class="form-control">
+        <option value="">Sélectionner la classe</option>
+        @for (c of classes(); track c.id) {
+          <option [value]="c.id">
+            {{ c.nom }} (Effectif: {{ c.effectif_actuel || 0 }}/{{ c.capacite_max }})
+          </option>
+        }
+      </select>
+      @if (form.controls.classe_id.touched && form.controls.classe_id.errors?.['required']) {
+        <span class="field-error">Veuillez choisir une classe cible.</span>
+      }
+    </div>
+
+    <div class="modal-footer-actions">
+      <app-button type="button" variant="ghost" (clicked)="onClose()" [disabled]="isLoading()">
+        Annuler
+      </app-button>
+      <app-button type="submit" variant="primary" [loading]="isLoading()" [disabled]="form.invalid || isLoading()">
+        <i class="bi bi-check2-circle"></i>
+        <span>Affecter les {{ selectedCount() }} élèves</span>
+      </app-button>
+    </div>
+  </form>
+</app-dialog>

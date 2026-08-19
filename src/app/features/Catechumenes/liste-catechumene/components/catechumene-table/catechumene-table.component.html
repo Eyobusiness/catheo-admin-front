@@ -1,0 +1,158 @@
+<div class="table-card-wrapper">
+  <div class="table-responsive">
+    <table class="medical-table">
+      <thead>
+        <tr>
+          <th>Code & Catéchumène</th>
+          <th>Date Naissance</th>
+          <th>Contacts / Parents</th>
+          <th>Sacrements Reçus</th>
+          <th>Statut</th>
+          <th class="text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of paginatedCatechumenes(); track item.id) {
+          <tr class="table-row">
+            <td>
+              <div class="catechumene-cell">
+                <div class="avatar-box" [class.is-female]="item.sexe === 'F'">
+                  <span>{{ item.nom.charAt(0) }}{{ item.prenoms.charAt(0) }}</span>
+                </div>
+                <div class="catechumene-meta">
+                  <span class="catechumene-name">{{ item.nom }} {{ item.prenoms }}</span>
+                  <span class="catechumene-code">
+                    <i class="bi bi-person-vcard"></i> {{ item.code_catechumene }}
+                  </span>
+                </div>
+              </div>
+            </td>
+
+            <td>
+              <div class="birth-cell">
+                <span>{{ item.date_naissance | date:'dd MMM yyyy' }}</span>
+                @if (item.lieu_naissance) {
+                  <span class="birth-place">à {{ item.lieu_naissance }}</span>
+                }
+              </div>
+            </td>
+
+            <td>
+              <div class="contact-meta">
+                @if (item.telephone) {
+                  <span class="contact-item"><i class="bi bi-telephone"></i> {{ item.telephone }}</span>
+                }
+                @if (item.nom_pere || item.nom_mere) {
+                  <span class="parents-item">
+                    <i class="bi bi-people"></i>
+                    {{ item.nom_pere || item.nom_mere }}
+                  </span>
+                }
+                @if (!item.telephone && !item.nom_pere && !item.nom_mere) {
+                  <span class="text-muted-xs">Non renseigné</span>
+                }
+              </div>
+            </td>
+
+            <td>
+              <div class="sacrements-badges">
+                <!-- Baptême -->
+                <span
+                  [class]="'sacr-chip ' + (item.est_baptise ? 'is-granted' : 'is-pending')"
+                  [title]="item.est_baptise ? ('Baptisé le ' + (item.date_bapteme || '')) : 'Non Baptisé'"
+                >
+                  <i [class]="'bi ' + (item.est_baptise ? 'bi-droplet-fill' : 'bi-dash-circle')"></i>
+                  BAP
+                </span>
+
+                <!-- 1ère Communion -->
+                <span
+                  [class]="'sacr-chip ' + (item.date_premiere_communion ? 'is-granted' : 'is-pending')"
+                  [title]="item.date_premiere_communion ? ('Communié le ' + item.date_premiere_communion) : 'Non Communié'"
+                >
+                  <i [class]="'bi ' + (item.date_premiere_communion ? 'bi-heart-fill' : 'bi-dash-circle')"></i>
+                  COM
+                </span>
+
+                <!-- Confirmation -->
+                <span
+                  [class]="'sacr-chip ' + (item.date_confirmation ? 'is-granted' : 'is-pending')"
+                  [title]="item.date_confirmation ? ('Confirmé le ' + item.date_confirmation) : 'Non Confirmé'"
+                >
+                  <i [class]="'bi ' + (item.date_confirmation ? 'bi-shield-fill-check' : 'bi-dash-circle')"></i>
+                  CONF
+                </span>
+              </div>
+            </td>
+
+            <td>
+              <span [class]="'statut-chip ' + getStatutBadgeClass(item.statut)">
+                {{ item.statut === 'actif' ? 'Actif' : item.statut === 'abandon' ? 'Abandon' : item.statut === 'transfere' ? 'Transféré' : 'Complété' }}
+              </span>
+            </td>
+
+            <td class="text-right">
+              <div class="actions-flex">
+                <!-- Voir Fiche & Parrains -->
+                <app-icon-button
+                  variant="info"
+                  size="sm"
+                  title="Voir la fiche complète & parrains"
+                  ariaLabel="Voir"
+                  (clicked)="onView(item)"
+                >
+                  <i class="bi bi-eye"></i>
+                </app-icon-button>
+
+                <!-- Modifier -->
+                <app-icon-button
+                  variant="primary"
+                  size="sm"
+                  title="Modifier"
+                  ariaLabel="Modifier"
+                  (clicked)="onEdit(item)"
+                >
+                  <i class="bi bi-pencil"></i>
+                </app-icon-button>
+
+                <!-- Supprimer -->
+                <app-icon-button
+                  variant="danger"
+                  size="sm"
+                  title="Supprimer"
+                  ariaLabel="Supprimer"
+                  (clicked)="onDelete(item)"
+                >
+                  <i class="bi bi-trash3"></i>
+                </app-icon-button>
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="empty-table-cell">
+              <div class="empty-state-box">
+                <i class="bi bi-people" style="font-size: 2.25rem;"></i>
+                <p class="empty-title">Aucun catéchumène enregistré</p>
+                <p class="empty-desc">Ajoutez le premier catéchumène au registre paroissial.</p>
+                <app-button variant="primary" size="sm" icon="plus" (clicked)="onCreate()">
+                  Ajouter un Catéchumène
+                </app-button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (catechumenes().length > 0) {
+    <app-pagination
+      [totalItems]="catechumenes().length"
+      [currentPage]="currentPage()"
+      [pageSize]="pageSize()"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+    />
+  }
+</div>

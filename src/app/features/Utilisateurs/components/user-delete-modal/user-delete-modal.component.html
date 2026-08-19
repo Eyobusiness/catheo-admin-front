@@ -1,0 +1,14 @@
+<app-confirm-dialog
+  [isOpen]="isOpen()"
+  title="Supprimer le Compte Utilisateur"
+  [message]="message()"
+  confirmText="Supprimer l'Utilisateur"
+  cancelText="Annuler"
+  confirmVariant="danger"
+  icon="bi-person-x-fill"
+  iconType="danger"
+  [isLoading]="isLoading()"
+  [warningText]="warningText()"
+  (cancelled)="onClose()"
+  (confirmed)="onConfirm()"
+/>

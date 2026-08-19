@@ -1,0 +1,10 @@
+<button
+  type="button"
+  [attr.aria-label]="ariaLabel()"
+  [title]="title() || ariaLabel()"
+  [disabled]="disabled()"
+  [class]="'icon-btn icon-btn-' + variant() + ' icon-btn-' + size()"
+  (click)="onClick($event)"
+>
+  <ng-content></ng-content>
+</button>

@@ -1,0 +1,61 @@
+<div class="pagination-container">
+  <!-- Left info: items counter & page size selector -->
+  <div class="pagination-info">
+    <span class="pagination-text">
+      Affichage de <strong>{{ startItem() }}</strong> à <strong>{{ endItem() }}</strong> sur <strong>{{ totalItems() }}</strong> éléments
+    </span>
+
+    <div class="page-size-picker">
+      <label for="pageSizeSelect">Lignes :</label>
+      <select id="pageSizeSelect" class="page-size-select" [value]="pageSize()" (change)="onPageSizeChange($event)">
+        @for (opt of pageSizeOptions(); track opt) {
+          <option [value]="opt">{{ opt }}</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  <!-- Right: page buttons -->
+  <div class="pagination-controls">
+    <!-- Previous button -->
+    <button
+      type="button"
+      class="pagination-btn arrow-btn"
+      [disabled]="currentPage() <= 1"
+      (click)="onPrevious()"
+      aria-label="Page précédente"
+      title="Précédent"
+    >
+      <i class="bi bi-chevron-left"></i>
+    </button>
+
+    <!-- Page numbers -->
+    <div class="page-numbers">
+      @for (p of visiblePages(); track $index) {
+        @if (p === '...') {
+          <span class="pagination-ellipsis">&hellip;</span>
+        } @else {
+          <button
+            type="button"
+            [class]="'pagination-btn page-num-btn ' + (p === currentPage() ? 'is-active' : '')"
+            (click)="onPageSelect(p)"
+          >
+            {{ p }}
+          </button>
+        }
+      }
+    </div>
+
+    <!-- Next button -->
+    <button
+      type="button"
+      class="pagination-btn arrow-btn"
+      [disabled]="currentPage() >= totalPages()"
+      (click)="onNext()"
+      aria-label="Page suivante"
+      title="Suivant"
+    >
+      <i class="bi bi-chevron-right"></i>
+    </button>
+  </div>
+</div>

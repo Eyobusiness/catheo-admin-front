@@ -1,0 +1,183 @@
+<app-dialog
+  [isOpen]="isOpen()"
+  [title]="isEditing() ? 'Modifier l’Inscription Annuelle' : 'Nouvelle Inscription Annuelle'"
+  size="lg"
+  (closed)="onClose()"
+>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="inscription-form-body">
+    <div class="form-grid">
+      <!-- Catéchumène Selection / Search -->
+      <div class="form-group full-width">
+        <label class="form-label" for="cat_search">
+          Catéchumène à inscrire <span class="required">*</span>
+        </label>
+
+        @if (!isEditing()) {
+          <div class="cat-search-box">
+            <input
+              id="cat_search"
+              type="text"
+              class="form-control"
+              placeholder="Rechercher par nom, matricule ou code..."
+              [value]="catechumeneSearch()"
+              (input)="onCatSearchChange($event)"
+            />
+            <div class="cat-dropdown-list">
+              @for (c of getFilteredCatechumenes(); track c.id) {
+                <div
+                  class="cat-dropdown-item"
+                  [class.is-selected]="form.controls.catechumene_id.value === c.id"
+                  (click)="selectCatechumene(c.id)"
+                >
+                  <span class="cat-nom">{{ c.nom }} {{ c.prenoms }}</span>
+                  <span class="cat-code">{{ c.matricule || c.code_catechumene }}</span>
+                </div>
+              } @empty {
+                <div class="cat-dropdown-empty">Aucun catéchumène trouvé.</div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Affichage du catéchumène sélectionné -->
+        @if (getSelectedCatechumene(); as selCat) {
+          <div class="selected-cat-banner">
+            <i class="bi bi-person-check-fill"></i>
+            <div>
+              <strong>{{ selCat.nom }} {{ selCat.prenoms }}</strong>
+              <span> &bull; Matricule : {{ selCat.matricule || selCat.code_catechumene }} &bull; Né(e) le {{ selCat.date_naissance | date:'dd/MM/yyyy' }}</span>
+            </div>
+          </div>
+        }
+
+        @if (form.controls.catechumene_id.touched && form.controls.catechumene_id.errors?.['required']) {
+          <span class="field-error">Veuillez sélectionner un catéchumène.</span>
+        }
+      </div>
+
+      <!-- Année Pastorale -->
+      <div class="form-group">
+        <label class="form-label" for="annee_id">
+          Année Pastorale <span class="required">*</span>
+        </label>
+        <select id="annee_id" formControlName="annee_catechese_id" class="form-control">
+          <option value="">Sélectionner une année</option>
+          @for (a of annees(); track a.id) {
+            <option [value]="a.id">{{ a.libelle }} {{ a.est_active ? '(Active)' : '' }}</option>
+          }
+        </select>
+        @if (form.controls.annee_catechese_id.touched && form.controls.annee_catechese_id.errors?.['required']) {
+          <span class="field-error">L'année pastorale est obligatoire.</span>
+        }
+      </div>
+
+      <!-- Section -->
+      <div class="form-group">
+        <label class="form-label" for="sec_id">Section</label>
+        <select id="sec_id" formControlName="section_id" class="form-control">
+          <option value="">Toutes / Non spécifiée</option>
+          @for (s of sections(); track s.id) {
+            <option [value]="s.id">{{ s.nom }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Niveau -->
+      <div class="form-group">
+        <label class="form-label" for="niv_id">
+          Niveau de Formation <span class="required">*</span>
+        </label>
+        <select id="niv_id" formControlName="niveau_id" class="form-control">
+          <option value="">Sélectionner un niveau</option>
+          @for (n of getFilteredNiveaux(); track n.id) {
+            <option [value]="n.id">{{ n.nom }}</option>
+          }
+        </select>
+        @if (form.controls.niveau_id.touched && form.controls.niveau_id.errors?.['required']) {
+          <span class="field-error">Le niveau est obligatoire.</span>
+        }
+      </div>
+
+      <!-- Classe / Groupe -->
+      <div class="form-group">
+        <label class="form-label" for="cls_id">Classe d'affectation</label>
+        <select id="cls_id" formControlName="classe_id" class="form-control">
+          <option value="">Non affecté(e) pour le moment</option>
+          @for (cl of getFilteredClasses(); track cl.id) {
+            <option [value]="cl.id">{{ cl.nom }} (Capacité: {{ cl.capacite_max || 'N/A' }})</option>
+          }
+        </select>
+      </div>
+
+      <!-- CEB -->
+      <div class="form-group">
+        <label class="form-label" for="ceb_id">CEB d'appartenance</label>
+        <select id="ceb_id" formControlName="ceb_id" class="form-control">
+          <option value="">Aucune CEB</option>
+          @for (ceb of cebs(); track ceb.id) {
+            <option [value]="ceb.id">{{ ceb.nom }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Mouvement -->
+      <div class="form-group">
+        <label class="form-label" for="mouv_id">Mouvement Paroissial</label>
+        <select id="mouv_id" formControlName="mouvement_id" class="form-control">
+          <option value="">Aucun mouvement</option>
+          @for (m of mouvements(); track m.id) {
+            <option [value]="m.id">{{ m.nom }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Statut inscription -->
+      <div class="form-group">
+        <label class="form-label" for="stat_ins">Statut de l'inscription</label>
+        <select id="stat_ins" formControlName="statut_inscription" class="form-control">
+          <option value="inscrit">Inscrit (En cours)</option>
+          <option value="valide">Validé (Classe confirmée)</option>
+          <option value="en_attente">En attente de paiement</option>
+          <option value="abandon">Abandon</option>
+        </select>
+      </div>
+
+      <!-- Frais Payés Switch -->
+      <div class="form-group">
+        <label class="form-label">Frais d'inscription</label>
+        <div class="toggle-card">
+          <label class="switch">
+            <input type="checkbox" formControlName="frais_inscription_payes" />
+            <span class="slider round"></span>
+          </label>
+          <span class="toggle-text">
+            {{ form.controls.frais_inscription_payes.value ? 'Frais acquittés / payés' : 'Frais en attente de paiement' }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Observation -->
+      <div class="form-group full-width">
+        <label class="form-label" for="obs">Observations / Remarques</label>
+        <input
+          id="obs"
+          type="text"
+          formControlName="observation"
+          class="form-control"
+          placeholder="Remarques éventuelles sur le parcours ou la situation pastorale..."
+        />
+      </div>
+    </div>
+
+    <!-- Modal Footer Actions -->
+    <div class="modal-footer-actions">
+      <app-button type="button" variant="ghost" (clicked)="onClose()" [disabled]="isLoading()">
+        Annuler
+      </app-button>
+      <app-button type="submit" variant="primary" [loading]="isLoading()" [disabled]="form.invalid || isLoading()">
+        <i class="bi bi-check-lg"></i>
+        <span>{{ isEditing() ? 'Mettre à jour l’inscription' : 'Valider l’inscription annuelle' }}</span>
+      </app-button>
+    </div>
+  </form>
+</app-dialog>

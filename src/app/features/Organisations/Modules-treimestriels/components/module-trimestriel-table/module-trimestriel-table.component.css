@@ -1,0 +1,196 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.table-card-wrapper {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background-color: var(--neutral-0, #ffffff);
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.medical-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.medical-table th {
+  background-color: var(--neutral-50);
+  padding: 0.875rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--neutral-500);
+  border-bottom: 1px solid var(--border-color);
+  white-space: nowrap;
+}
+
+.medical-table td {
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid var(--border-color-light);
+  font-size: 0.875rem;
+  vertical-align: middle;
+}
+
+.table-row {
+  transition: background-color var(--transition-fast);
+}
+
+.table-row:hover {
+  background-color: var(--primary-50);
+}
+
+.trimestre-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  user-select: none;
+}
+
+.trimestre-badge.is-t1 {
+  background-color: var(--primary-50);
+  border: 1px solid var(--primary-200);
+  color: var(--primary-700);
+}
+
+.trimestre-badge.is-t2 {
+  background-color: var(--accent-50);
+  border: 1px solid var(--accent-200);
+  color: var(--accent-700);
+}
+
+.trimestre-badge.is-t3 {
+  background-color: var(--success-50);
+  border: 1px solid var(--success-200);
+  color: var(--success-700);
+}
+
+.trimestre-badge:hover {
+  filter: brightness(0.95);
+  transform: translateY(-1px);
+}
+
+.module-title-cell {
+  display: flex;
+  flex-direction: column;
+}
+
+.module-title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--neutral-900);
+}
+
+.annee-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.8125rem;
+  color: var(--neutral-600);
+  font-weight: 500;
+}
+
+.annee-cell i {
+  color: var(--primary-600);
+}
+
+.dates-range {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  font-family: var(--font-family-mono);
+}
+
+.date-tag {
+  padding: 0.2rem 0.5rem;
+  background-color: var(--neutral-100);
+  border-radius: var(--radius-sm);
+  color: var(--neutral-700);
+  font-weight: 600;
+}
+
+.date-separator {
+  color: var(--neutral-400);
+  font-size: 0.75rem;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.status-pill.is-current {
+  background-color: var(--success-50);
+  border: 1px solid var(--success-200);
+  color: var(--success-700);
+}
+
+.status-pill.is-future {
+  background-color: var(--info-50);
+  border: 1px solid var(--info-200);
+  color: var(--info-700);
+}
+
+.status-pill.is-past {
+  background-color: var(--neutral-100);
+  border: 1px solid var(--neutral-200);
+  color: var(--neutral-500);
+}
+
+.actions-flex {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.375rem;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.empty-table-cell {
+  text-align: center;
+  padding: 3rem 1rem !important;
+}
+
+.empty-state-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--neutral-400);
+}
+
+.empty-title {
+  font-weight: 700;
+  color: var(--neutral-700);
+  font-size: 1rem;
+}
+
+.empty-desc {
+  font-size: 0.8125rem;
+  color: var(--neutral-500);
+  margin-bottom: 0.5rem;
+}

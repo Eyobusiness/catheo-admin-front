@@ -1,0 +1,136 @@
+<div class="table-card-wrapper">
+  <div class="table-responsive">
+    <table class="medical-table">
+      <thead>
+        <tr>
+          <th>Mouvements</th>
+          <th>Responsable</th>
+          <th>Adhérents</th>
+          <th>Statut</th>
+          <th class="text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (mouvement of paginatedMouvements(); track mouvement.id) {
+          <tr class="table-row">
+            <td>
+              <div class="mouvement-name-cell">
+                <div class="mouvement-avatar">
+                  <span>{{ getInitials(mouvement.nom) }}</span>
+                </div>
+                <div class="mouvement-meta">
+                  <span class="mouvement-title">{{ mouvement.nom }}</span>
+                  @if (mouvement.description) {
+                    <span class="mouvement-desc-text">{{ mouvement.description }}</span>
+                  }
+                </div>
+              </div>
+            </td>
+
+            <td>
+              <div class="contact-meta">
+                <span class="responsable-name">{{ mouvement.responsable || 'Non assigné' }}</span>
+                @if (mouvement.telephone) {
+                  <span class="contact-sub">
+                    <i class="bi bi-telephone"></i>
+                    {{ mouvement.telephone }}
+                  </span>
+                }
+              </div>
+            </td>
+
+            <td>
+              <span class="inscriptions-pill">
+                <i class="bi bi-people-fill"></i>
+                <strong>{{ mouvement.total_inscriptions || 0 }}</strong> adhérents
+              </span>
+            </td>
+
+            <td>
+              @if (isActif(mouvement)) {
+                <span class="active-badge">
+                  <span class="pulse-dot"></span>
+                  Active
+                </span>
+              } @else {
+                <span class="inactive-badge">Inactive</span>
+              }
+            </td>
+
+            <td class="text-right">
+              <div class="actions-flex">
+                <!-- Action: Bascule statut actif / inactif -->
+                <app-icon-button
+                  [variant]="isActif(mouvement) ? 'success' : 'ghost'"
+                  size="sm"
+                  [title]="isActif(mouvement) ? 'Mouvement actif' : 'Activer le mouvement'"
+                  ariaLabel="Statut"
+                  (clicked)="onToggleStatus(mouvement)"
+                >
+                  <i [class]="'bi ' + (isActif(mouvement) ? 'bi-check-circle-fill' : 'bi-toggle-off')"></i>
+                </app-icon-button>
+
+                <!-- Action: Voir -->
+                <app-icon-button
+                  variant="info"
+                  size="sm"
+                  title="Voir les détails"
+                  ariaLabel="Voir"
+                  (clicked)="onView(mouvement)"
+                >
+                  <i class="bi bi-eye"></i>
+                </app-icon-button>
+
+                <!-- Action: Modifier -->
+                <app-icon-button
+                  variant="primary"
+                  size="sm"
+                  title="Modifier"
+                  ariaLabel="Modifier"
+                  (clicked)="onEdit(mouvement)"
+                >
+                  <i class="bi bi-pencil"></i>
+                </app-icon-button>
+
+                <!-- Action: Supprimer -->
+                <app-icon-button
+                  variant="danger"
+                  size="sm"
+                  title="Supprimer"
+                  ariaLabel="Supprimer"
+                  (clicked)="onDelete(mouvement)"
+                >
+                  <i class="bi bi-trash3"></i>
+                </app-icon-button>
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="5" class="empty-table-cell">
+              <div class="empty-state-box">
+                <i class="bi bi-flag" style="font-size: 2rem;"></i>
+                <p class="empty-title">Aucun mouvement paroissial enregistré</p>
+                <p class="empty-desc">Enregistrez les mouvements de jeunesse, chorales et groupes de spiritualité de la paroisse.</p>
+                <app-button variant="primary" size="sm" icon="plus" (clicked)="onCreate()">
+                  Ajouter un Mouvement
+                </app-button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination intégrée -->
+  @if (mouvements().length > 0) {
+    <app-pagination
+      [totalItems]="mouvements().length"
+      [currentPage]="currentPage()"
+      [pageSize]="pageSize()"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+    />
+  }
+</div>

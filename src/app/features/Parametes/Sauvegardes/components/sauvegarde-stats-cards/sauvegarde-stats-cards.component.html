@@ -1,0 +1,62 @@
+<div class="stats-cards-grid">
+  <!-- Card 1: Total Backups -->
+  <div class="stat-card">
+    <div class="stat-icon-wrapper primary">
+      <i class="bi bi-database-check"></i>
+    </div>
+    <div class="stat-content">
+      <span class="stat-label">Total Sauvegardes</span>
+      <h3 class="stat-value">{{ totalCount() }}</h3>
+      <span class="stat-meta">
+        {{ automatiquesCount() }} auto • {{ manuelsCount() }} manuelles
+      </span>
+    </div>
+  </div>
+
+  <!-- Card 2: Total Storage Used -->
+  <div class="stat-card">
+    <div class="stat-icon-wrapper info">
+      <i class="bi bi-hdd-network-fill"></i>
+    </div>
+    <div class="stat-content">
+      <span class="stat-label">Espace Disque Utilisé</span>
+      <h3 class="stat-value">{{ totalSizeFormatted() }}</h3>
+      <span class="stat-meta">Archives compressées SQL.GZ</span>
+    </div>
+  </div>
+
+  <!-- Card 3: Last Backup Time -->
+  <div class="stat-card">
+    <div class="stat-icon-wrapper success">
+      <i class="bi bi-clock-history"></i>
+    </div>
+    <div class="stat-content">
+      <span class="stat-label">Dernière Sauvegarde</span>
+      @if (lastBackup()) {
+        <h3 class="stat-value small">{{ lastBackup()?.date }} à {{ lastBackup()?.heure }}</h3>
+        <span class="stat-meta success">
+          <i class="bi bi-check-circle-fill"></i>
+          {{ lastBackup()?.type === 'automatique' ? 'Automatique' : 'Manuelle' }} • {{ lastBackup()?.taille }}
+        </span>
+      } @else {
+        <h3 class="stat-value small">Aucune</h3>
+        <span class="stat-meta">Système prêt</span>
+      }
+    </div>
+  </div>
+
+  <!-- Card 4: System Health & Security -->
+  <div class="stat-card">
+    <div class="stat-icon-wrapper warning">
+      <i class="bi bi-shield-lock-fill"></i>
+    </div>
+    <div class="stat-content">
+      <span class="stat-label">Sécurité des Données</span>
+      <h3 class="stat-value small">Opérationnel</h3>
+      <span class="stat-meta warning">
+        <i class="bi bi-shield-fill-check"></i>
+        Chiffrement & Compression activés
+      </span>
+    </div>
+  </div>
+</div>

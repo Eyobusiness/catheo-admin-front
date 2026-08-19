@@ -1,0 +1,13 @@
+<app-confirm-dialog
+  [isOpen]="isOpen()"
+  title="Supprimer l'Événement"
+  [message]="message()"
+  confirmText="Supprimer"
+  cancelText="Annuler"
+  confirmVariant="danger"
+  icon="bi-trash3-fill"
+  iconType="danger"
+  [isLoading]="isLoading()"
+  (cancelled)="onClose()"
+  (confirmed)="onConfirm()"
+/>

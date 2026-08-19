@@ -1,0 +1,284 @@
+:host {
+  display: contents;
+}
+
+.confirm-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  z-index: 1050;
+  animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.confirm-modal-box {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  background: var(--neutral-0, #ffffff);
+  border-radius: var(--radius-2xl, 20px);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  padding: 2rem 1.75rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  animation: scaleUp 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-close-icon-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--neutral-400);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.modal-close-icon-btn:hover:not(:disabled) {
+  background-color: var(--neutral-100);
+  color: var(--neutral-700);
+}
+
+/* Centered Icon with Glow */
+.confirm-icon-wrapper {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+}
+
+.icon-inner {
+  position: relative;
+  z-index: 2;
+  font-size: 1.75rem;
+}
+
+.icon-pulse-glow {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  opacity: 0.5;
+  animation: pulse-ring 2.5s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.92);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.2;
+  }
+  100% {
+    transform: scale(0.92);
+    opacity: 0.6;
+  }
+}
+
+/* Icon Variant Colors */
+.icon-variant-danger {
+  background: var(--danger-50);
+  color: var(--danger-600);
+  border: 2px solid var(--danger-200);
+}
+.icon-variant-danger .icon-pulse-glow {
+  background: var(--danger-100);
+}
+
+.icon-variant-warning {
+  background: var(--warning-50);
+  color: var(--warning-600);
+  border: 2px solid var(--warning-200);
+}
+.icon-variant-warning .icon-pulse-glow {
+  background: var(--warning-100);
+}
+
+.icon-variant-info {
+  background: var(--primary-50);
+  color: var(--primary-600);
+  border: 2px solid var(--primary-200);
+}
+.icon-variant-info .icon-pulse-glow {
+  background: var(--primary-100);
+}
+
+.icon-variant-success {
+  background: var(--success-50);
+  color: var(--success-600);
+  border: 2px solid var(--success-200);
+}
+.icon-variant-success .icon-pulse-glow {
+  background: var(--success-100);
+}
+
+/* Content */
+.confirm-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.confirm-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--neutral-900);
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+}
+
+.confirm-message {
+  font-size: 0.875rem;
+  color: var(--neutral-600);
+  line-height: 1.5;
+  max-width: 360px;
+}
+
+.confirm-warning-alert {
+  margin-top: 0.75rem;
+  padding: 0.625rem 0.875rem;
+  background-color: var(--danger-50);
+  border: 1px solid var(--danger-200);
+  border-radius: var(--radius-lg);
+  color: var(--danger-700);
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: left;
+  width: 100%;
+}
+
+/* Actions Row: Two Well-Disposed Buttons */
+.confirm-actions-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.125rem;
+  width: 100%;
+  margin-top: 1.75rem;
+}
+
+.btn-action-cancel,
+.btn-action-confirm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.6875rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border: 1px solid transparent;
+  min-height: 42px;
+}
+
+.btn-action-cancel {
+  background-color: var(--neutral-100);
+  color: var(--neutral-700);
+  border-color: var(--neutral-200);
+}
+
+.btn-action-cancel:hover:not(:disabled) {
+  background-color: var(--neutral-200);
+  color: var(--neutral-900);
+}
+
+.btn-confirm-danger {
+  background: linear-gradient(135deg, var(--danger-600) 0%, #dc2626 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(225, 29, 72, 0.25);
+}
+
+.btn-confirm-danger:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--danger-700) 0%, #b91c1c 100%);
+  box-shadow: 0 4px 12px rgba(225, 29, 72, 0.35);
+  transform: translateY(-1px);
+}
+
+.btn-confirm-primary {
+  background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-700) 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);
+}
+
+.btn-confirm-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--primary-700) 0%, var(--primary-800) 100%);
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
+  transform: translateY(-1px);
+}
+
+.btn-confirm-success {
+  background: linear-gradient(135deg, var(--success-600) 0%, var(--success-700) 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(5, 150, 105, 0.25);
+}
+
+.btn-confirm-success:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--success-700) 0%, var(--success-800) 100%);
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.35);
+  transform: translateY(-1px);
+}
+
+.btn-action-cancel:disabled,
+.btn-action-confirm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleUp {
+  from {
+    opacity: 0;
+    transform: scale(0.94) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}

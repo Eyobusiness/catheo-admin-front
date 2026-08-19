@@ -1,0 +1,132 @@
+<div class="table-card-wrapper">
+  <div class="table-responsive">
+    <table class="medical-table">
+      <thead>
+        <tr>
+          <th>Trimestre</th>
+          <th>Libellé</th>
+          <th>Année Pastorale</th>
+          <th>Période & Calendrier</th>
+          <th>Statut</th>
+          <th class="text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (mod of paginatedModules(); track mod.id) {
+          <tr class="table-row">
+            <td>
+              <span
+                class="trimestre-badge"
+                [class.is-t1]="mod.trimestre === 'T1'"
+                [class.is-t2]="mod.trimestre === 'T2'"
+                [class.is-t3]="mod.trimestre === 'T3'"
+                title="Cliquer pour basculer le trimestre"
+                (click)="onCycleTrimestre(mod)"
+              >
+                <i class="bi bi-calendar3-range"></i>
+                {{ mod.trimestre }} • {{ getTrimestreLabel(mod.trimestre) }}
+              </span>
+            </td>
+
+            <td>
+              <div class="module-title-cell">
+                <span class="module-title">{{ mod.libelle }}</span>
+              </div>
+            </td>
+
+            <td>
+              <div class="annee-cell">
+                <i class="bi bi-calendar-check"></i>
+                <span>{{ getAnneeLibelle(mod) }}</span>
+              </div>
+            </td>
+
+            <td>
+              <div class="dates-range">
+                <span class="date-tag start">{{ mod.date_debut }}</span>
+                <i class="bi bi-arrow-right date-separator"></i>
+                <span class="date-tag end">{{ mod.date_fin }}</span>
+              </div>
+            </td>
+
+            <td>
+              @let status = getPeriodStatus(mod.date_debut, mod.date_fin);
+              <span
+                class="status-pill"
+                [class.is-current]="status.type === 'current'"
+                [class.is-future]="status.type === 'future'"
+                [class.is-past]="status.type === 'past'"
+              >
+                @if (status.type === 'current') {
+                  <span class="pulse-dot"></span>
+                }
+                {{ status.label }}
+              </span>
+            </td>
+
+            <td class="text-right">
+              <div class="actions-flex">
+                <!-- Action: Voir -->
+                <app-icon-button
+                  variant="info"
+                  size="sm"
+                  title="Voir les détails"
+                  ariaLabel="Voir"
+                  (clicked)="onView(mod)"
+                >
+                  <i class="bi bi-eye"></i>
+                </app-icon-button>
+
+                <!-- Action: Modifier -->
+                <app-icon-button
+                  variant="primary"
+                  size="sm"
+                  title="Modifier"
+                  ariaLabel="Modifier"
+                  (clicked)="onEdit(mod)"
+                >
+                  <i class="bi bi-pencil"></i>
+                </app-icon-button>
+
+                <!-- Action: Supprimer -->
+                <app-icon-button
+                  variant="danger"
+                  size="sm"
+                  title="Supprimer"
+                  ariaLabel="Supprimer"
+                  (clicked)="onDelete(mod)"
+                >
+                  <i class="bi bi-trash3"></i>
+                </app-icon-button>
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="empty-table-cell">
+              <div class="empty-state-box">
+                <i class="bi bi-calendar-range" style="font-size: 2rem;"></i>
+                <p class="empty-title">Aucun module trimestriel configuré</p>
+                <p class="empty-desc">Définissez le découpage trimestriel de l'année pastorale pour structurer les évaluations.</p>
+                <app-button variant="primary" size="sm" icon="plus" (clicked)="onCreate()">
+                  Ajouter un Module
+                </app-button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination intégrée -->
+  @if (modules().length > 0) {
+    <app-pagination
+      [totalItems]="modules().length"
+      [currentPage]="currentPage()"
+      [pageSize]="pageSize()"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+    />
+  }
+</div>

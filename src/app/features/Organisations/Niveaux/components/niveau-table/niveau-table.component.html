@@ -1,0 +1,130 @@
+<div class="table-card-wrapper">
+  <div class="table-responsive">
+    <table class="medical-table">
+      <thead>
+        <tr>
+          <th>Ordre</th>
+          <th>Niveau de Catéchèse</th>
+          <th>Section Parente</th>
+          <th>Description</th>
+          <th>Statut</th>
+          <th class="text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (niveau of paginatedNiveaux(); track niveau.id) {
+          <tr class="table-row">
+            <td>
+              <span class="order-badge">{{ niveau.ordre_affichage ?? niveau.ordre ?? 1 }}</span>
+            </td>
+
+            <td>
+              <div class="niveau-name-cell">
+                <div class="niveau-icon-box" [class.is-active-icon]="isActif(niveau)">
+                  <i class="bi bi-layers-fill"></i>
+                </div>
+                <div class="niveau-meta">
+                  <span class="niveau-title">{{ niveau.nom }}</span>
+                </div>
+              </div>
+            </td>
+
+            <td>
+              <span class="section-pill">
+                <i class="bi bi-diagram-2"></i>
+                {{ getSectionName(niveau.section_id || niveau.section?.id || '') }}
+              </span>
+            </td>
+
+            <td>
+              <span class="desc-text">{{ niveau.description || 'Aucune description' }}</span>
+            </td>
+
+            <td>
+              @if (isActif(niveau)) {
+                <span class="active-badge">
+                  <span class="pulse-dot"></span>
+                  Actif
+                </span>
+              } @else {
+                <span class="inactive-badge">Inactif</span>
+              }
+            </td>
+
+            <td class="text-right">
+              <div class="actions-flex">
+                <!-- Action: Bascule statut actif / inactif -->
+                <app-icon-button
+                  [variant]="isActif(niveau) ? 'success' : 'ghost'"
+                  size="sm"
+                  [title]="isActif(niveau) ? 'Niveau actif' : 'Activer le niveau'"
+                  ariaLabel="Statut"
+                  (clicked)="onToggleStatus(niveau)"
+                >
+                  <i [class]="'bi ' + (isActif(niveau) ? 'bi-check-circle-fill' : 'bi-toggle-off')"></i>
+                </app-icon-button>
+
+                <!-- Action: Voir -->
+                <app-icon-button
+                  variant="info"
+                  size="sm"
+                  title="Voir les détails"
+                  ariaLabel="Voir"
+                  (clicked)="onView(niveau)"
+                >
+                  <i class="bi bi-eye"></i>
+                </app-icon-button>
+
+                <!-- Action: Modifier -->
+                <app-icon-button
+                  variant="primary"
+                  size="sm"
+                  title="Modifier"
+                  ariaLabel="Modifier"
+                  (clicked)="onEdit(niveau)"
+                >
+                  <i class="bi bi-pencil"></i>
+                </app-icon-button>
+
+                <!-- Action: Supprimer -->
+                <app-icon-button
+                  variant="danger"
+                  size="sm"
+                  title="Supprimer"
+                  ariaLabel="Supprimer"
+                  (clicked)="onDelete(niveau)"
+                >
+                  <i class="bi bi-trash3"></i>
+                </app-icon-button>
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="empty-table-cell">
+              <div class="empty-state-box">
+                <i class="bi bi-layers" style="font-size: 2rem;"></i>
+                <p class="empty-title">Aucun niveau de catéchèse trouvé</p>
+                <p class="empty-desc">Créez le premier niveau de parcours pour les catéchumènes.</p>
+                <app-button variant="primary" size="sm" icon="plus" (clicked)="onCreate()">
+                  Créer un Niveau
+                </app-button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination intégrée -->
+  @if (niveaux().length > 0) {
+    <app-pagination
+      [totalItems]="niveaux().length"
+      [currentPage]="currentPage()"
+      [pageSize]="pageSize()"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+    />
+  }
+</div>

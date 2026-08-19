@@ -1,0 +1,253 @@
+<div class="paroisse-config-grid">
+  <!-- Left Side: Main Configuration Form -->
+  <div class="config-form-column">
+    <app-card title="Identité & Coordonnées de la Paroisse">
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="paroisse-form">
+        <!-- Nom officiel de la paroisse -->
+        <div class="form-group">
+          <label class="form-label" for="nom">
+            Nom officiel de la paroisse <span class="required">*</span>
+          </label>
+          <input
+            id="nom"
+            type="text"
+            formControlName="nom"
+            class="form-control"
+            placeholder="Ex: Paroisse Cœur Immaculé de Marie"
+          />
+          @if (form.controls.nom.touched && form.controls.nom.invalid) {
+            <span class="field-error">Le nom de la paroisse est obligatoire (min. 3 caractères).</span>
+          }
+        </div>
+
+        <!-- Diocèse & Doyenné -->
+        <div class="form-row col-2">
+          <div class="form-group">
+            <label class="form-label" for="diocese">
+              Archidiocèse / Diocèse
+            </label>
+            <input
+              id="diocese"
+              type="text"
+              formControlName="diocese"
+              class="form-control"
+              placeholder="Ex: Archidiocèse d'Abidjan"
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="doyenne">
+              Doyenné / Secteur
+            </label>
+            <input
+              id="doyenne"
+              type="text"
+              formControlName="doyenne"
+              class="form-control"
+              placeholder="Ex: Doyenné Saint-Jean"
+            />
+          </div>
+        </div>
+
+        <!-- Ville & Commune -->
+        <div class="form-row col-2">
+          <div class="form-group">
+            <label class="form-label" for="ville">
+              Ville
+            </label>
+            <input
+              id="ville"
+              type="text"
+              formControlName="ville"
+              class="form-control"
+              placeholder="Ex: Abidjan"
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="commune">
+              Commune / Quartier
+            </label>
+            <input
+              id="commune"
+              type="text"
+              formControlName="commune"
+              class="form-control"
+              placeholder="Ex: Cocody"
+            />
+          </div>
+        </div>
+
+        <!-- Téléphone & Email -->
+        <div class="form-row col-2">
+          <div class="form-group">
+            <label class="form-label" for="telephone">
+              Téléphone du secrétariat
+            </label>
+            <div class="input-with-icon">
+              <i class="bi bi-telephone prefix-icon"></i>
+              <input
+                id="telephone"
+                type="tel"
+                formControlName="telephone"
+                class="form-control with-icon"
+                placeholder="+225 27 22 00 00 00"
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="email">
+              Adresse Email officielle
+            </label>
+            <div class="input-with-icon">
+              <i class="bi bi-envelope prefix-icon"></i>
+              <input
+                id="email"
+                type="email"
+                formControlName="email"
+                class="form-control with-icon"
+                placeholder="contact@paroisse.ci"
+              />
+            </div>
+            @if (form.controls.email.touched && form.controls.email.invalid) {
+              <span class="field-error">Veuillez entrer une adresse email valide.</span>
+            }
+          </div>
+        </div>
+
+        <!-- Site Web & Adresse Géographique -->
+        <div class="form-row col-2">
+          <div class="form-group">
+            <label class="form-label" for="site_web">
+              Site Web / Page officielle
+            </label>
+            <div class="input-with-icon">
+              <i class="bi bi-globe prefix-icon"></i>
+              <input
+                id="site_web"
+                type="url"
+                formControlName="site_web"
+                class="form-control with-icon"
+                placeholder="https://www.paroisse.ci"
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="adresse">
+              Adresse géographique & Repères
+            </label>
+            <div class="input-with-icon">
+              <i class="bi bi-geo-alt prefix-icon"></i>
+              <input
+                id="adresse"
+                type="text"
+                formControlName="adresse"
+                class="form-control with-icon"
+                placeholder="Boulevard de la Paix, en face de..."
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Curé & Coordination -->
+        <div class="form-row col-2">
+          <div class="form-group">
+            <label class="form-label" for="cure_nom">
+              Nom du Curé de la paroisse
+            </label>
+            <input
+              id="cure_nom"
+              type="text"
+              formControlName="cure_nom"
+              class="form-control"
+              placeholder="Ex: Père Jean-Baptiste N'GUESSAN"
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="coordination_nom">
+              Nom de la Coordination Catéchétique
+            </label>
+            <input
+              id="coordination_nom"
+              type="text"
+              formControlName="coordination_nom"
+              class="form-control"
+              placeholder="Ex: Bureau Pastoral de la Catéchèse"
+            />
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="form-actions-bar">
+          <app-button
+            variant="primary"
+            type="submit"
+            icon="check"
+            [loading]="isSaving()"
+          >
+            Enregistrer les Coordonnées
+          </app-button>
+        </div>
+      </form>
+    </app-card>
+  </div>
+
+  <!-- Right Side: Parish Summary Profile Card -->
+  <div class="config-sidebar-column">
+    <app-card title="Fiche Synthétique">
+      <div class="parish-summary-card">
+        <div class="parish-emblem-box">
+          <div class="emblem-circle">
+            <i class="bi bi-building-check"></i>
+          </div>
+          <h4 class="parish-name-display">{{ paroisse().nom }}</h4>
+          <span class="parish-code-pill">
+            <i class="bi bi-upc-scan"></i>
+            {{ paroisse().code_paroisse }}
+          </span>
+          <span class="status-badge is-active">
+            <span class="status-dot"></span>
+            Statut : {{ paroisse().statut | titlecase }}
+          </span>
+        </div>
+
+        <div class="summary-details-list">
+          <div class="summary-item">
+            <span class="summary-label"><i class="bi bi-bank"></i> Diocèse</span>
+            <span class="summary-value">{{ paroisse().diocese || 'Non renseigné' }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label"><i class="bi bi-compass"></i> Doyenné</span>
+            <span class="summary-value">{{ paroisse().doyenne || 'Non renseigné' }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label"><i class="bi bi-geo-alt-fill"></i> Localisation</span>
+            <span class="summary-value">{{ paroisse().commune }}, {{ paroisse().ville }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label"><i class="bi bi-person-badge"></i> Curé</span>
+            <span class="summary-value cure">{{ paroisse().cure_nom || 'Non renseigné' }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label"><i class="bi bi-telephone-fill"></i> Contact</span>
+            <span class="summary-value">{{ paroisse().telephone || 'Non renseigné' }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label"><i class="bi bi-envelope-fill"></i> Email</span>
+            <span class="summary-value">{{ paroisse().email || 'Non renseigné' }}</span>
+          </div>
+        </div>
+
+        @if (paroisse().updated_at) {
+          <div class="last-sync-notice">
+            <i class="bi bi-clock-history"></i>
+            Dernière mise à jour : {{ paroisse().updated_at }}
+          </div>
+        }
+      </div>
+    </app-card>
+  </div>
+</div>

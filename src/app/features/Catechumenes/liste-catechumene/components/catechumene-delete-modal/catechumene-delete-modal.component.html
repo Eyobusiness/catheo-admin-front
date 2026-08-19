@@ -1,0 +1,32 @@
+<app-dialog
+  [isOpen]="isOpen()"
+  title="Supprimer un Catéchumène"
+  size="sm"
+  (closed)="onClose()"
+>
+  @if (itemToDelete(); as item) {
+    <div class="delete-modal-body">
+      <div class="warning-icon-box">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+      </div>
+
+      <div class="delete-message">
+        <h4 class="delete-title">Confirmer la suppression</h4>
+        <p class="delete-desc">
+          Êtes-vous sûr de vouloir supprimer définitivement <strong>{{ item.nom }} {{ item.prenoms }}</strong> (Code: {{ item.code_catechumene }}) ?
+          Cette opération supprimera l'ensemble de son dossier et de ses antécédents pastoraux.
+        </p>
+      </div>
+
+      <div class="modal-footer-actions">
+        <app-button type="button" variant="ghost" (clicked)="onClose()" [disabled]="isLoading()">
+          Annuler
+        </app-button>
+        <app-button type="button" variant="danger" [loading]="isLoading()" (clicked)="onConfirm()">
+          <i class="bi bi-trash3"></i>
+          <span>Supprimer définitivement</span>
+        </app-button>
+      </div>
+    </div>
+  }
+</app-dialog>

@@ -1,0 +1,135 @@
+<div class="table-card-wrapper">
+  <div class="table-responsive">
+    <table class="medical-table">
+      <thead>
+        <tr>
+          <th>Catéchumène</th>
+          <th>Origine &rarr; Destination</th>
+          <th>Motif</th>
+          <th>Date de Mutation</th>
+          <th>Statut</th>
+          <th class="text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of paginatedMutations(); track item.id) {
+          <tr class="table-row">
+            <td>
+              <div class="candidate-cell">
+                <div class="avatar-sm" [class.is-female]="item.catechumene?.sexe === 'F'">
+                  {{ (item.catechumene?.nom || 'C').charAt(0) }}{{ (item.catechumene?.prenoms || 'C').charAt(0) }}
+                </div>
+                <div class="candidate-meta">
+                  <span class="candidate-name">{{ item.catechumene?.nom }} {{ item.catechumene?.prenoms }}</span>
+                  <span class="candidate-code">Matricule: {{ item.catechumene?.matricule || item.catechumene?.code_catechumene || 'N/A' }}</span>
+                </div>
+              </div>
+            </td>
+
+            <td>
+              <div class="transfer-route-box">
+                <span class="route-from"><i class="bi bi-building"></i> {{ item.paroisse_origine_nom }}</span>
+                <i class="bi bi-arrow-right route-arrow"></i>
+                <span class="route-to"><i class="bi bi-geo-alt-fill"></i> {{ item.paroisse_destination_nom }}</span>
+              </div>
+            </td>
+
+            <td>
+              <span class="motif-text">{{ item.motif || 'Aucun motif renseigné' }}</span>
+            </td>
+
+            <td>
+              <div class="date-box">
+                <i class="bi bi-calendar3"></i>
+                <span>{{ item.date_mutation | date:'dd/MM/yyyy' }}</span>
+              </div>
+            </td>
+
+            <td>
+              @switch (item.statut) {
+                @case ('approuve') {
+                  <span class="badge-approuve"><i class="bi bi-check-circle-fill"></i> Approuvé</span>
+                }
+                @case ('refuse') {
+                  <span class="badge-refuse"><i class="bi bi-x-circle-fill"></i> Refusé</span>
+                }
+                @default {
+                  <span class="badge-demande"><i class="bi bi-clock-fill"></i> En Demande</span>
+                }
+              }
+            </td>
+
+            <td class="text-right">
+              <div class="actions-flex">
+                <app-icon-button
+                  variant="info"
+                  size="sm"
+                  title="Voir les détails"
+                  ariaLabel="Voir"
+                  (clicked)="onView(item)"
+                >
+                  <i class="bi bi-eye"></i>
+                </app-icon-button>
+
+                @if (item.statut === 'demande') {
+                  <app-icon-button
+                    variant="success"
+                    size="sm"
+                    title="Approuver la mutation"
+                    ariaLabel="Approuver"
+                    (clicked)="onApprove(item)"
+                  >
+                    <i class="bi bi-check-lg"></i>
+                  </app-icon-button>
+
+                  <app-icon-button
+                    variant="danger"
+                    size="sm"
+                    title="Refuser la mutation"
+                    ariaLabel="Refuser"
+                    (clicked)="onRefuse(item)"
+                  >
+                    <i class="bi bi-ban"></i>
+                  </app-icon-button>
+                }
+
+                <app-icon-button
+                  variant="danger"
+                  size="sm"
+                  title="Supprimer la mutation"
+                  ariaLabel="Supprimer"
+                  (clicked)="onDelete(item)"
+                >
+                  <i class="bi bi-trash3"></i>
+                </app-icon-button>
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="empty-table-cell">
+              <div class="empty-state-box">
+                <i class="bi bi-arrow-left-right" style="font-size: 2.25rem;"></i>
+                <p class="empty-title">Aucune mutation ou transfert enregistré</p>
+                <p class="empty-desc">Enregistrez un transfert de paroisse pour un catéchumène.</p>
+                <app-button variant="primary" size="sm" icon="plus" (clicked)="onCreate()">
+                  Nouveau Transfert
+                </app-button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (mutations().length > 0) {
+    <app-pagination
+      [totalItems]="mutations().length"
+      [currentPage]="currentPage()"
+      [pageSize]="pageSize()"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+    />
+  }
+</div>

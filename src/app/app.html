@@ -1,0 +1,22 @@
+@if (isAuthRoute()) {
+  <router-outlet />
+} @else {
+  <div class="app-layout">
+    <!-- Reusable Sidebar -->
+    <app-sidebar />
+
+    <!-- Main Content Area with Header & Router View -->
+    <div class="app-main-wrapper">
+      <app-header />
+
+      <main class="app-content-view">
+        <router-outlet />
+      </main>
+
+      <app-footer />
+    </div>
+  </div>
+}
+
+<!-- Unified Global Toast Container -->
+<app-toast />

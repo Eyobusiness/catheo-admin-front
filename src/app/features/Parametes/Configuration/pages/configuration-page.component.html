@@ -1,0 +1,52 @@
+<div class="configuration-page">
+  <!-- Page Topbar -->
+  <header class="page-topbar">
+    <div class="topbar-left">
+
+      <h1 class="topbar-title">Configuration Catéchétique</h1>
+      <p class="topbar-subtitle">
+        Gérez l'identité de votre catéchèse
+      </p>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs Bar -->
+  <nav class="config-tabs-nav" aria-label="Onglets de configuration">
+    <div class="tabs-list-container">
+      @for (tab of tabs; track tab.id) {
+        <button
+          type="button"
+          class="config-tab-btn"
+          [class.is-active]="activeTab() === tab.id"
+          (click)="selectTab(tab.id)"
+        >
+          <div class="tab-icon-box">
+            <i [class]="tab.icon"></i>
+          </div>
+          <div class="tab-label-box">
+            <span class="tab-title">{{ tab.label }}</span>
+            <span class="tab-subtitle">{{ tab.description }}</span>
+          </div>
+          @if (activeTab() === tab.id) {
+            <span class="active-indicator"></span>
+          }
+        </button>
+      }
+    </div>
+  </nav>
+
+  <!-- Tab Content Switcher -->
+  <main class="tab-content-wrapper">
+    @switch (activeTab()) {
+      @case ('paroisse') {
+        <app-tab-paroisse-config />
+      }
+      @case ('responsables') {
+        <app-tab-responsables-config />
+      }
+      @case ('apparence') {
+        <app-tab-apparence-config />
+      }
+    }
+  </main>
+</div>

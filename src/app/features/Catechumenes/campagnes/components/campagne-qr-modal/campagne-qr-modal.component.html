@@ -1,0 +1,64 @@
+<app-dialog
+  [isOpen]="isOpen()"
+  title="Partage & QR Code de la Campagne"
+  size="md"
+  (closed)="onClose()"
+>
+  @if (campagne(); as c) {
+    <div class="qr-modal-body">
+      <!-- Info Header -->
+      <div class="campaign-summary">
+        <h4 class="campaign-title">{{ c.titre }}</h4>
+        <span class="campaign-annee">Année Pastorale : {{ c.annee_catechese?.libelle || 'En cours' }}</span>
+        <div class="status-indicator">
+          @if (c.statut === 'ouverte') {
+            <span class="badge-status open"><span class="pulse-dot"></span> Inscriptions en ligne ouvertes</span>
+          } @else {
+            <span class="badge-status closed"><i class="bi bi-lock-fill"></i> Inscriptions fermées</span>
+          }
+        </div>
+      </div>
+
+      <!-- QR Display Card -->
+      <div class="qr-display-card">
+        <div class="qr-frame">
+          <img [src]="qrCodeUrl()" alt="QR Code de Préinscription" class="qr-image" />
+        </div>
+        <p class="qr-help-text">
+          Scannez ce QR Code avec un smartphone pour accéder directement au formulaire d'inscription paroissial en ligne.
+        </p>
+      </div>
+
+      <!-- Public URL Copy Box -->
+      <div class="url-box">
+        <label class="url-label">Lien public direct :</label>
+        <div class="url-copy-row">
+          <input type="text" [value]="publicUrl()" readonly class="url-input" />
+          <app-button variant="secondary" size="sm" (clicked)="copyLink()">
+            <i class="bi bi-clipboard"></i>
+            <span>Copier</span>
+          </app-button>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="modal-footer-actions">
+        <app-button variant="ghost" (clicked)="onClose()">
+          Fermer
+        </app-button>
+
+        <a [href]="publicUrl()" target="_blank" class="external-link-btn">
+          <app-button variant="secondary">
+            <i class="bi bi-box-arrow-up-right"></i>
+            <span>Tester le lien</span>
+          </app-button>
+        </a>
+
+        <app-button variant="primary" (clicked)="downloadQrCode()">
+          <i class="bi bi-download"></i>
+          <span>Télécharger le QR Code</span>
+        </app-button>
+      </div>
+    </div>
+  }
+</app-dialog>

@@ -1,0 +1,61 @@
+<app-dialog
+  [isOpen]="isOpen()"
+  title="Détails de l'Inscription Annuelle"
+  size="md"
+  (closed)="onClose()"
+>
+  @if (inscription(); as item) {
+    <div class="detail-modal-body">
+      <!-- Header -->
+      <div class="header-card">
+        <div class="header-icon">
+          <i class="bi bi-journal-check"></i>
+        </div>
+        <div class="header-meta">
+          <h4 class="title">{{ item.catechumene?.nom }} {{ item.catechumene?.prenoms }}</h4>
+          <span class="sub">Code Inscription: {{ item.code_inscription }}</span>
+        </div>
+      </div>
+
+      <!-- Info Grid -->
+      <div class="detail-grid">
+        <div class="info-row">
+          <span class="label">Date d'inscription :</span>
+          <span class="value">{{ item.date_inscription | date:'fullDate' }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Année Pastorale :</span>
+          <span class="value">{{ item.annee_catechese?.libelle || 'Année Courante' }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Niveau de Catéchèse :</span>
+          <span class="value">{{ item.niveau?.nom || 'N/A' }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Classe d'Affectation :</span>
+          <span class="value">{{ item.classe?.nom || 'Non affecté(e)' }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Frais Annuels :</span>
+          <span class="value" [class.text-success]="item.frais_inscription_payes">
+            {{ item.frais_inscription_payes ? 'Payés / Acquittés' : 'Non payés' }}
+          </span>
+        </div>
+        <div class="info-row">
+          <span class="label">Statut Dossier :</span>
+          <span class="value">{{ item.statut_inscription }}</span>
+        </div>
+      </div>
+
+      <!-- Footer Actions -->
+      <div class="modal-footer-actions">
+        <app-button variant="ghost" (clicked)="onClose()">
+          Fermer
+        </app-button>
+        <app-button variant="primary" icon="pencil" (clicked)="onEdit()">
+          Modifier l'inscription
+        </app-button>
+      </div>
+    </div>
+  }
+</app-dialog>

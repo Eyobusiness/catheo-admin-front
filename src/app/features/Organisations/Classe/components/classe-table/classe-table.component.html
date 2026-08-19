@@ -1,0 +1,144 @@
+<div class="table-card-wrapper">
+  <div class="table-responsive">
+    <table class="medical-table">
+      <thead>
+        <tr>
+          <th>Classe</th>
+          <th>Niveau Parente</th>
+          <th>Capacité & Effectif</th>
+          <th>Remplissage</th>
+          <th>Statut</th>
+          <th class="text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (classe of paginatedClasses(); track classe.id) {
+          <tr class="table-row">
+            <td>
+              <div class="classe-name-cell">
+                <div class="classe-icon-box" [class.is-active-icon]="isActif(classe)">
+                  <i class="bi bi-mortarboard-fill"></i>
+                </div>
+                <div class="classe-meta">
+                  <span class="classe-title">{{ classe.nom }}</span>
+                </div>
+              </div>
+            </td>
+
+            <td>
+              <span class="niveau-pill">
+                <i class="bi bi-layers"></i>
+                {{ classe.niveau?.nom || getNiveauName(classe.niveau_id) }}
+              </span>
+            </td>
+
+            <td>
+              <div class="capacity-box">
+                <i class="bi bi-people-fill"></i>
+                <span class="capacity-text">
+                  <strong>{{ classe.effectif_actuel || 0 }}</strong> / {{ classe.capacite_max }} places
+                </span>
+              </div>
+            </td>
+
+            <td>
+              <div class="progress-wrapper">
+                <div class="progress-bar-bg">
+                  <div
+                    class="progress-bar-fill"
+                    [class.is-full]="getOccupationPercentage(classe) >= 90"
+                    [style.width.%]="getOccupationPercentage(classe)"
+                  ></div>
+                </div>
+                <span class="progress-label">{{ getOccupationPercentage(classe) }}%</span>
+              </div>
+            </td>
+
+            <td>
+              @if (isActif(classe)) {
+                <span class="active-badge">
+                  <span class="pulse-dot"></span>
+                  Active
+                </span>
+              } @else {
+                <span class="inactive-badge">Inactive</span>
+              }
+            </td>
+
+            <td class="text-right">
+              <div class="actions-flex">
+                <!-- Action: Bascule statut actif / inactif -->
+                <app-icon-button
+                  [variant]="isActif(classe) ? 'success' : 'ghost'"
+                  size="sm"
+                  [title]="isActif(classe) ? 'Classe active' : 'Activer la classe'"
+                  ariaLabel="Statut"
+                  (clicked)="onToggleStatus(classe)"
+                >
+                  <i [class]="'bi ' + (isActif(classe) ? 'bi-check-circle-fill' : 'bi-toggle-off')"></i>
+                </app-icon-button>
+
+                <!-- Action: Voir -->
+                <app-icon-button
+                  variant="info"
+                  size="sm"
+                  title="Voir les détails"
+                  ariaLabel="Voir"
+                  (clicked)="onView(classe)"
+                >
+                  <i class="bi bi-eye"></i>
+                </app-icon-button>
+
+                <!-- Action: Modifier -->
+                <app-icon-button
+                  variant="primary"
+                  size="sm"
+                  title="Modifier"
+                  ariaLabel="Modifier"
+                  (clicked)="onEdit(classe)"
+                >
+                  <i class="bi bi-pencil"></i>
+                </app-icon-button>
+
+                <!-- Action: Supprimer -->
+                <app-icon-button
+                  variant="danger"
+                  size="sm"
+                  title="Supprimer"
+                  ariaLabel="Supprimer"
+                  (clicked)="onDelete(classe)"
+                >
+                  <i class="bi bi-trash3"></i>
+                </app-icon-button>
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="empty-table-cell">
+              <div class="empty-state-box">
+                <i class="bi bi-mortarboard" style="font-size: 2rem;"></i>
+                <p class="empty-title">Aucune classe de catéchèse trouvée</p>
+                <p class="empty-desc">Créez votre première classe pour accueillir des catéchumènes.</p>
+                <app-button variant="primary" size="sm" icon="plus" (clicked)="onCreate()">
+                  Créer une Classe
+                </app-button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination intégrée -->
+  @if (classes().length > 0) {
+    <app-pagination
+      [totalItems]="classes().length"
+      [currentPage]="currentPage()"
+      [pageSize]="pageSize()"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+    />
+  }
+</div>

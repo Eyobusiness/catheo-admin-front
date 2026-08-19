@@ -1,0 +1,181 @@
+<div class="preinscriptions-page">
+  <!-- Topbar Header -->
+  <section class="page-topbar">
+    <div class="topbar-headings">
+   
+      <h2 class="topbar-title">Gestion des Préinscriptions</h2>
+      <p class="topbar-subtitle">
+        Traitement, validation, affectation.
+      </p>
+    </div>
+
+    <div class="topbar-actions">
+      <app-button
+        variant="primary"
+        size="md"
+        icon="plus"
+        (clicked)="openCreateModal()"
+      >
+        Nouvelle Préinscription
+      </app-button>
+    </div>
+  </section>
+
+  <!-- KPI / Stats Summary Cards -->
+  <div class="kpi-grid">
+    <div class="kpi-card total">
+      <div class="kpi-icon"><i class="bi bi-folder2-open"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-number">{{ stats().total }}</span>
+        <span class="kpi-label">Total Demandes</span>
+      </div>
+    </div>
+
+    <div class="kpi-card warning">
+      <div class="kpi-icon"><i class="bi bi-clock-history"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-number">{{ stats().enAttente }}</span>
+        <span class="kpi-label">En Attente</span>
+      </div>
+    </div>
+
+    <div class="kpi-card danger">
+      <div class="kpi-icon"><i class="bi bi-x-circle"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-number">{{ stats().rejetees }}</span>
+        <span class="kpi-label">Rejetées</span>
+      </div>
+    </div>
+
+    <div class="kpi-card success">
+      <div class="kpi-icon"><i class="bi bi-check-circle"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-number">{{ stats().validees }}</span>
+        <span class="kpi-label">Dossiers Validés</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Card with Table -->
+  <app-card title="Liste des Demandes de Préinscription">
+    <!-- Filters Toolbar -->
+    <div class="filters-toolbar">
+      <div class="filters-left">
+        <!-- Search Input -->
+        <div class="search-input-wrapper">
+          <i class="bi bi-search search-icon"></i>
+          <input
+            type="text"
+            class="filter-search-control"
+            placeholder="Rechercher..."
+            [value]="searchQuery()"
+            (input)="onSearchChange($event)"
+          />
+          @if (searchQuery()) {
+            <button class="clear-search-btn" (click)="clearSearch()" title="Effacer">
+              <i class="bi bi-x-circle-fill"></i>
+            </button>
+          }
+        </div>
+
+        <!-- Status Filter -->
+        <div class="select-wrapper">
+          <i class="bi bi-funnel select-prefix-icon"></i>
+          <select
+            class="filter-select-control"
+            [value]="statusFilter()"
+            (change)="onStatusFilterChange($event)"
+          >
+            <option value="">Tous les statuts</option>
+            <option value="en_attente">En Attente</option>
+            <option value="a_affecter">À Affecter</option>
+            <option value="validee">Validées</option>
+            <option value="rejetee">Rejetées</option>
+          </select>
+          <i class="bi bi-chevron-down select-chevron-icon"></i>
+        </div>
+
+        <!-- Type Filter -->
+        <div class="select-wrapper">
+          <i class="bi bi-tag select-prefix-icon"></i>
+          <select
+            class="filter-select-control"
+            [value]="typeFilter()"
+            (change)="onTypeFilterChange($event)"
+          >
+            <option value="">Tous les types</option>
+            <option value="premiere_inscription">Première Inscription</option>
+            <option value="reinscription">Réinscription</option>
+          </select>
+          <i class="bi bi-chevron-down select-chevron-icon"></i>
+        </div>
+      </div>
+
+      <div class="filters-right">
+        @if (hasActiveFilters()) {
+          <button class="reset-filter-btn" (click)="resetFilters()">
+            <i class="bi bi-arrow-counterclockwise"></i>
+            <span>Réinitialiser</span>
+          </button>
+        }
+        <span class="count-pill">
+          <strong>{{ filteredPreinscriptions().length }}</strong> dossier(s)
+        </span>
+      </div>
+    </div>
+
+    <!-- Table Sub-component -->
+    <app-preinscription-table
+      [preinscriptions]="filteredPreinscriptions()"
+      (createRequested)="openCreateModal()"
+      (viewRequested)="openDetailModal($event)"
+      (editRequested)="openEditModal($event)"
+      (validerRequested)="openValiderModal($event)"
+      (rejeterRequested)="openRejeterModal($event)"
+      (deleteRequested)="handleDelete($event)"
+    />
+  </app-card>
+</div>
+
+<!-- Form Modal -->
+<app-preinscription-form-modal
+  [isOpen]="isFormModalOpen()"
+  [isEditing]="isEditing()"
+  [preinscriptionToEdit]="selectedItem()"
+  [campagnes]="campagnes()"
+  [sections]="sections()"
+  [niveaux]="niveaux()"
+  [isLoading]="isLoading()"
+  (formClosed)="closeModals()"
+  (formSubmitted)="handleFormSubmit($event)"
+/>
+
+<!-- Detail Modal -->
+<app-preinscription-detail-modal
+  [isOpen]="isDetailModalOpen()"
+  [preinscription]="selectedItem()"
+  (modalClosed)="closeModals()"
+  (editRequested)="openEditModal($event)"
+  (validerRequested)="openValiderModal($event)"
+  (rejeterRequested)="openRejeterModal($event)"
+/>
+
+<!-- Valider Modal -->
+<app-preinscription-valider-modal
+  [isOpen]="isValiderModalOpen()"
+  [preinscription]="selectedItem()"
+  [niveaux]="niveaux()"
+  [classes]="classes()"
+  [isLoading]="isLoading()"
+  (modalClosed)="closeModals()"
+  (validated)="handleValider($event)"
+/>
+
+<!-- Rejeter Modal -->
+<app-preinscription-rejeter-modal
+  [isOpen]="isRejeterModalOpen()"
+  [preinscription]="selectedItem()"
+  [isLoading]="isLoading()"
+  (modalClosed)="closeModals()"
+  (rejected)="handleRejeter($event)"
+/>

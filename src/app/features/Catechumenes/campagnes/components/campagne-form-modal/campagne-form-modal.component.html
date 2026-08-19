@@ -1,0 +1,132 @@
+<app-dialog
+  [isOpen]="isOpen()"
+  [title]="isEditing() ? 'Modifier la Campagne de Préinscription' : 'Nouvelle Campagne de Préinscription'"
+  size="lg"
+  (closed)="onClose()"
+>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="campagne-form-body">
+    <div class="form-grid">
+      <!-- Année pastorale -->
+      <div class="form-group">
+        <label class="form-label" for="annee_catechese_id">
+          Année Pastorale <span class="required">*</span>
+        </label>
+        <select id="annee_catechese_id" formControlName="annee_catechese_id" class="form-control">
+          <option value="">Sélectionner une année</option>
+          @for (a of annees(); track a.id) {
+            <option [value]="a.id">
+              {{ a.libelle }} {{ a.est_active ? '(Active)' : '' }}
+            </option>
+          }
+        </select>
+        @if (form.controls.annee_catechese_id.touched && form.controls.annee_catechese_id.errors?.['required']) {
+          <span class="field-error">L'année pastorale est obligatoire.</span>
+        }
+      </div>
+
+      <!-- Statut -->
+      <div class="form-group">
+        <label class="form-label" for="camp_statut">
+          Statut de la Campagne <span class="required">*</span>
+        </label>
+        <select id="camp_statut" formControlName="statut" class="form-control">
+          <option value="ouverte">Ouverte (Inscriptions autorisées)</option>
+          <option value="fermee">Fermée (Clôturée)</option>
+          <option value="suspendue">Suspendue (En pause)</option>
+        </select>
+      </div>
+
+      <!-- Titre de la Campagne -->
+      <div class="form-group full-width">
+        <label class="form-label" for="camp_titre">
+          Titre de la Campagne <span class="required">*</span>
+        </label>
+        <input
+          id="camp_titre"
+          type="text"
+          formControlName="titre"
+          class="form-control"
+          placeholder="Ex: Campagne de Préinscription 2025-2026 - Rentrée Pastorale"
+        />
+        @if (form.controls.titre.touched && form.controls.titre.errors?.['required']) {
+          <span class="field-error">Le titre est obligatoire.</span>
+        }
+      </div>
+
+      <!-- Date Début -->
+      <div class="form-group">
+        <label class="form-label" for="camp_date_debut">
+          Date de Début <span class="required">*</span>
+        </label>
+        <input
+          id="camp_date_debut"
+          type="date"
+          formControlName="date_debut"
+          class="form-control"
+        />
+        @if (form.controls.date_debut.touched && form.controls.date_debut.errors?.['required']) {
+          <span class="field-error">La date de début est requise.</span>
+        }
+      </div>
+
+      <!-- Date Fin -->
+      <div class="form-group">
+        <label class="form-label" for="camp_date_fin">
+          Date de Fin (Clôture) <span class="required">*</span>
+        </label>
+        <input
+          id="camp_date_fin"
+          type="date"
+          formControlName="date_fin"
+          class="form-control"
+        />
+        @if (form.controls.date_fin.touched && form.controls.date_fin.errors?.['required']) {
+          <span class="field-error">La date de fin est requise.</span>
+        }
+      </div>
+
+      <!-- Description -->
+      <div class="form-group full-width">
+        <label class="form-label" for="camp_desc">Instructions ou Description publique</label>
+        <textarea
+          id="camp_desc"
+          formControlName="description"
+          rows="2"
+          class="form-control"
+          placeholder="Instructions pour les paroissiens lors de leur préinscription en ligne..."
+        ></textarea>
+      </div>
+
+      <!-- Sections Autorisées -->
+      @if (sections().length > 0) {
+        <div class="form-group full-width">
+          <label class="form-label">Sections Ouvertes à la Préinscription</label>
+          <div class="sections-chips-grid">
+            @for (sec of sections(); track sec.id) {
+              <button
+                type="button"
+                class="section-chip"
+                [class.active]="isSectionSelected(sec.nom)"
+                (click)="toggleSection(sec.nom)"
+              >
+                <i class="bi" [class.bi-check-circle-fill]="isSectionSelected(sec.nom)" [class.bi-circle]="!isSectionSelected(sec.nom)"></i>
+                <span>{{ sec.nom }}</span>
+              </button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Modal Footer Actions -->
+    <div class="modal-footer-actions">
+      <app-button type="button" variant="ghost" (clicked)="onClose()" [disabled]="isLoading()">
+        Annuler
+      </app-button>
+      <app-button type="submit" variant="primary" [loading]="isLoading()" [disabled]="form.invalid || isLoading()">
+        <i class="bi bi-check-lg"></i>
+        <span>{{ isEditing() ? 'Mettre à jour la campagne' : 'Enregistrer la campagne' }}</span>
+      </app-button>
+    </div>
+  </form>
+</app-dialog>

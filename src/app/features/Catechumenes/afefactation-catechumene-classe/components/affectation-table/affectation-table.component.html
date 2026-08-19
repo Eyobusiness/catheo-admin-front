@@ -1,0 +1,119 @@
+<div class="table-card-wrapper">
+  <div class="table-responsive">
+    <table class="medical-table">
+      <thead>
+        <tr>
+          <th style="width: 40px;">
+            <input
+              type="checkbox"
+              class="custom-checkbox"
+              [checked]="isAllSelected()"
+              (change)="onToggleSelectAll($event)"
+            />
+          </th>
+          <th>Catéchumène</th>
+          <th>Niveau Requis</th>
+          <th>Classe Actuelle</th>
+          <th>Changer d'Affectation</th>
+          <th>Statut</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of paginatedInscriptions(); track item.id) {
+          <tr class="table-row" [class.row-selected]="isSelected(item.id)">
+            <td>
+              <input
+                type="checkbox"
+                class="custom-checkbox"
+                [checked]="isSelected(item.id)"
+                (change)="onToggleSelect(item.id)"
+              />
+            </td>
+
+            <td>
+              <div class="student-cell">
+                <div class="avatar-sm" [class.is-female]="item.catechumene?.sexe === 'F'">
+                  {{ (item.catechumene?.nom || 'C').charAt(0) }}{{ (item.catechumene?.prenoms || 'C').charAt(0) }}
+                </div>
+                <div class="student-meta">
+                  <span class="student-name">{{ item.catechumene?.nom }} {{ item.catechumene?.prenoms }}</span>
+                  <span class="student-sub">Code: {{ item.catechumene?.code_catechumene }}</span>
+                </div>
+              </div>
+            </td>
+
+            <td>
+              <span class="level-pill">
+                <i class="bi bi-layers"></i>
+                {{ item.niveau?.nom || 'Non défini' }}
+              </span>
+            </td>
+
+            <td>
+              @if (item.classe; as cl) {
+                <span class="classe-badge assigned">
+                  <i class="bi bi-mortarboard-fill"></i>
+                  {{ cl.nom }}
+                </span>
+              } @else {
+                <span class="classe-badge unassigned">
+                  <i class="bi bi-hourglass-split"></i>
+                  Non affecté(e)
+                </span>
+              }
+            </td>
+
+            <td>
+              <div class="class-picker-wrapper">
+                <select
+                  class="class-select-control"
+                  [value]="item.classe_id || ''"
+                  (change)="onSelectClass(item.id, $event)"
+                >
+                  <option value="">-- Sans classe --</option>
+                  @for (cl of getFilteredClasses(item.niveau_id || item.niveau?.id); track cl.id) {
+                    <option [value]="cl.id">
+                      {{ cl.nom }} ({{ cl.effectif_actuel || 0 }}/{{ cl.capacite_max }})
+                    </option>
+                  }
+                </select>
+              </div>
+            </td>
+
+            <td>
+              @if (item.classe_id) {
+                <span class="status-pill ok">
+                  <i class="bi bi-check-circle-fill"></i> Affecté
+                </span>
+              } @else {
+                <span class="status-pill pending">
+                  <i class="bi bi-exclamation-circle-fill"></i> En attente
+                </span>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="empty-table-cell">
+              <div class="empty-state-box">
+                <i class="bi bi-diagram-3" style="font-size: 2.25rem;"></i>
+                <p class="empty-title">Aucun catéchumène à afficher</p>
+                <p class="empty-desc">Sélectionnez un niveau ou modifiez les filtres de recherche.</p>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (inscriptions().length > 0) {
+    <app-pagination
+      [totalItems]="inscriptions().length"
+      [currentPage]="currentPage()"
+      [pageSize]="pageSize()"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+    />
+  }
+</div>

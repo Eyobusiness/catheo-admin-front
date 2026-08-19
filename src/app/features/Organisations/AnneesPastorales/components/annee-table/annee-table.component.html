@@ -1,0 +1,131 @@
+<div class="table-card-wrapper">
+  <div class="table-responsive">
+    <table class="medical-table">
+      <thead>
+        <tr>
+          <th>Libellé</th>
+          <th>Période Pastorale</th>
+          <th>Statut</th>
+          <th>Catéchumènes Inscrits</th>
+          <th class="text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (annee of paginatedAnnees(); track annee.id) {
+          <tr class="table-row">
+            <td>
+              <div class="annee-cell">
+                <div class="annee-icon-box" [class.is-active-icon]="annee.est_active">
+                  <i class="bi bi-calendar3"></i>
+                </div>
+                <div class="annee-meta">
+                  <span class="annee-title">{{ annee.libelle }}</span>
+                  
+                </div>
+              </div>
+            </td>
+
+            <td>
+              <div class="dates-cell">
+                <span class="date-range">
+                  <i class="bi bi-calendar-event"></i>
+                  {{ annee.date_debut }} &rarr; {{ annee.date_fin }}
+                </span>
+              </div>
+            </td>
+
+            <td>
+              @if (annee.est_active) {
+                <span class="active-badge">
+                  <span class="pulse-dot"></span>
+                  Année Active
+                </span>
+              } @else {
+                <span class="inactive-badge">Inactive</span>
+              }
+            </td>
+
+            <td>
+              <div class="inscrits-box">
+                <i class="bi bi-person-lines-fill"></i>
+                <span>{{ annee.total_inscrits || 0 }} inscrits</span>
+              </div>
+            </td>
+
+            <td class="text-right">
+              <div class="actions-flex">
+                <!-- Action: Bascule statut actif -->
+                <app-icon-button
+                  [variant]="annee.est_active ? 'success' : 'ghost'"
+                  size="sm"
+                  [title]="annee.est_active ? 'Année active' : 'Définir comme active'"
+                  ariaLabel="Statut actif"
+                  (clicked)="onToggleActive(annee)"
+                >
+                  <i [class]="'bi ' + (annee.est_active ? 'bi-check-circle-fill' : 'bi-toggle-off')"></i>
+                </app-icon-button>
+
+                <!-- Action: Voir -->
+                <app-icon-button
+                  variant="info"
+                  size="sm"
+                  title="Voir les détails"
+                  ariaLabel="Voir"
+                  (clicked)="onView(annee)"
+                >
+                  <i class="bi bi-eye"></i>
+                </app-icon-button>
+
+                <!-- Action: Modifier -->
+                <app-icon-button
+                  variant="primary"
+                  size="sm"
+                  title="Modifier"
+                  ariaLabel="Modifier"
+                  (clicked)="onEdit(annee)"
+                >
+                  <i class="bi bi-pencil"></i>
+                </app-icon-button>
+
+                <!-- Action: Supprimer -->
+                <app-icon-button
+                  variant="danger"
+                  size="sm"
+                  title="Supprimer"
+                  ariaLabel="Supprimer"
+                  (clicked)="onDelete(annee)"
+                >
+                  <i class="bi bi-trash3"></i>
+                </app-icon-button>
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="5" class="empty-table-cell">
+              <div class="empty-state-box">
+                <i class="bi bi-calendar-x" style="font-size: 2rem;"></i>
+                <p class="empty-title">Aucune année pastorale trouvée</p>
+                <p class="empty-desc">Créez votre première année pastorale pour la paroisse.</p>
+                <app-button variant="primary" size="sm" icon="plus" (clicked)="onCreate()">
+                  Créer une Année
+                </app-button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination intégrée -->
+  @if (annees().length > 0) {
+    <app-pagination
+      [totalItems]="annees().length"
+      [currentPage]="currentPage()"
+      [pageSize]="pageSize()"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+    />
+  }
+</div>

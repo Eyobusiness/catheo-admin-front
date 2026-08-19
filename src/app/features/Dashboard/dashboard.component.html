@@ -1,0 +1,280 @@
+<div class="dashboard-page">
+  <!-- Top Banner: Cathéo CIM - En cours de conception -->
+  <div class="conception-hero-card">
+    <div class="hero-content-left">
+      <div class="hero-icon-box">
+        <i class="bi bi-shield-shaded"></i>
+        <div class="glow-ring"></div>
+      </div>
+      <div class="hero-texts">
+        <div class="hero-badge">
+          <span class="pulse-dot"></span>
+          <span>Paroisse Cœur Immaculé de Marie • Version Pré-Release</span>
+        </div>
+        <h2 class="hero-title">Tableau de Bord en cours de conception</h2>
+        <p class="hero-desc">
+          Bienvenue sur l'espace d'administration paroissiale <strong>Cathéo CIM</strong>.
+          L'interface et ses modules métiers sont en cours de développement avec votre système de composants réutilisables unifié.
+        </p>
+      </div>
+    </div>
+
+    <div class="hero-content-right">
+      <app-button
+        variant="primary"
+        size="md"
+        icon="plus"
+        (clicked)="openTestModal()"
+      >
+        Tester le Modal
+      </app-button>
+
+      <app-button
+        variant="secondary"
+        size="md"
+        icon="refresh"
+        (clicked)="triggerToast('info')"
+      >
+        Tester un Toast
+      </app-button>
+    </div>
+  </div>
+
+  <!-- KPI Pastoral Metrics -->
+  <section class="stats-grid">
+    @for (stat of stats(); track stat.id) {
+      <app-stat-card
+        [title]="stat.title"
+        [value]="stat.value"
+        [change]="stat.change"
+        [isPositive]="stat.isPositive"
+        [period]="stat.period"
+        [icon]="stat.icon"
+        [color]="stat.color"
+      />
+    }
+  </section>
+
+  <!-- Interactive Component Testing & Roadmap -->
+  <section class="dashboard-content-grid">
+    <!-- Left Column: Component Showcase & Roadmap -->
+    <div class="content-col-main">
+      <!-- Reusable Component Showcase Card -->
+      <app-card
+        title="Système de Composants UI Réutilisables"
+        subtitle="Même charte graphique, mêmes boutons, mêmes fenêtres modales et mêmes notifications toast"
+      >
+        <div class="showcase-section">
+          <!-- Button Variants Test -->
+          <div class="showcase-group">
+            <h4 class="showcase-group-title">Variantes de Boutons Unifiés</h4>
+            <div class="showcase-buttons-row">
+              <app-button variant="primary" icon="plus">Primary</app-button>
+              <app-button variant="secondary" icon="refresh">Secondary</app-button>
+              <app-button variant="outline" icon="calendar">Outline</app-button>
+              <app-button variant="success" icon="check">Success</app-button>
+              <app-button variant="danger" icon="x">Danger</app-button>
+              <app-button variant="ghost">Ghost</app-button>
+              <app-button variant="primary" [loading]="true">Chargement</app-button>
+            </div>
+          </div>
+
+          <!-- Toasts Trigger Test -->
+          <div class="showcase-group">
+            <h4 class="showcase-group-title">Notifications Toast Globales</h4>
+            <div class="showcase-buttons-row">
+              <app-button variant="success" size="sm" icon="check" (clicked)="triggerToast('success')">
+                Toast Succès
+              </app-button>
+              <app-button variant="danger" size="sm" icon="x" (clicked)="triggerToast('error')">
+                Toast Erreur
+              </app-button>
+              <app-button variant="outline" size="sm" (clicked)="triggerToast('warning')">
+                Toast Alerte
+              </app-button>
+              <app-button variant="secondary" size="sm" (clicked)="triggerToast('info')">
+                Toast Info
+              </app-button>
+            </div>
+          </div>
+
+          <!-- Status Badges Preview -->
+          <div class="showcase-group">
+            <h4 class="showcase-group-title">Badges de Statut</h4>
+            <div class="showcase-badges-row">
+              <app-status-badge status="VALIDEE" />
+              <app-status-badge status="EN_ATTENTE" />
+              <app-status-badge status="EN_COURS" />
+              <app-status-badge status="URGENT" />
+              <app-status-badge status="PAYE" />
+            </div>
+          </div>
+        </div>
+      </app-card>
+
+      <!-- Preview of Catéchumènes Table -->
+      <app-card
+        title="Aperçu du Tableau des Catéchumènes"
+        subtitle="Format type des listes et fiches pour la paroisse"
+      >
+        <div class="table-responsive">
+          <table class="medical-table">
+            <thead>
+              <tr>
+                <th>Catéchumène</th>
+                <th>Section & Année</th>
+                <th>Groupe & Catéchiste</th>
+                <th>Statut</th>
+                <th>Cotisation</th>
+                <th>Sacrement Visé</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of sampleCatechumenes(); track item.id) {
+                <tr class="table-row">
+                  <td>
+                    <div class="patient-cell">
+                      <div class="patient-avatar-mini">
+                        {{ item.genre === 'M' ? '👦' : '👧' }}
+                      </div>
+                      <div class="patient-meta">
+                        <span class="patient-name">{{ item.prenoms }} {{ item.nom }}</span>
+                        <span class="patient-sub">{{ item.age }} ans • {{ item.id }}</span>
+                      </div>
+                    </div>
+                  </td>
+
+                  <td>
+                    <span class="section-pill">{{ item.section }}</span>
+                  </td>
+
+                  <td>
+                    <div class="schedule-cell">
+                      <span class="schedule-time">{{ item.groupe }}</span>
+                      <span class="schedule-room">{{ item.catechiste }}</span>
+                    </div>
+                  </td>
+
+                  <td>
+                    <app-status-badge [status]="item.statut" size="sm" />
+                  </td>
+
+                  <td>
+                    <span [class]="'payment-pill pay-' + item.cotisation.toLowerCase()">
+                      {{ item.cotisation === 'PAYE' ? 'À jour' : item.cotisation === 'PARTIEL' ? 'Partiel' : 'En attente' }}
+                    </span>
+                  </td>
+
+                  <td>
+                    <span class="sacrament-tag">{{ item.sacrementVise }}</span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </app-card>
+    </div>
+
+    <!-- Right Column: Cathéo CIM Modules Roadmap -->
+    <div class="content-col-side">
+      <app-card
+        title="Feuille de Route des Modules"
+        subtitle="Avancement du développement pour la paroisse"
+      >
+        <div class="roadmap-list">
+          @for (mod of roadmaps(); track mod.id) {
+            <div class="roadmap-card-item">
+              <div class="mod-header">
+                <div class="mod-title-box">
+                  <i [class]="'bi ' + mod.icon + ' mod-icon'"></i>
+                  <span class="mod-name">{{ mod.libelle }}</span>
+                </div>
+                <span [class]="'mod-status-tag ' + (mod.avancement > 70 ? 'tag-high' : 'tag-mid')">
+                  {{ mod.statut }}
+                </span>
+              </div>
+
+              <p class="mod-desc">{{ mod.description }}</p>
+
+              <div class="mod-progress-wrap">
+                <div class="mod-progress-labels">
+                  <span>Conception</span>
+                  <span>{{ mod.avancement }}%</span>
+                </div>
+                <div class="progress-bar-bg">
+                  <div
+                    class="progress-bar-fill"
+                    [style.width.%]="mod.avancement"
+                  ></div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </app-card>
+    </div>
+  </section>
+</div>
+
+<!-- =========================================================================
+     MODAL DE TEST / NOUVELLE PRÉINSCRIPTION
+     ========================================================================= -->
+<app-dialog
+  [isOpen]="isTestModalOpen()"
+  title="Nouvelle Fiche de Catéchumène (Test Modal)"
+  subtitle="Paroisse Cœur Immaculé de Marie • Saisie rapide"
+  size="md"
+  (closed)="closeTestModal()"
+>
+  <form [formGroup]="testForm" (ngSubmit)="submitTestForm()" dialog-body class="test-form-layout">
+    <div class="form-row col-2">
+      <div class="form-group">
+        <label class="form-label" for="nom">Nom de famille <span class="required">*</span></label>
+        <input id="nom" type="text" formControlName="nom" class="form-control" placeholder="ex: Kouadio" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="prenoms">Prénoms <span class="required">*</span></label>
+        <input id="prenoms" type="text" formControlName="prenoms" class="form-control" placeholder="ex: Emmanuel Jean" />
+      </div>
+    </div>
+
+    <div class="form-row col-2">
+      <div class="form-group">
+        <label class="form-label" for="section">Section demandée <span class="required">*</span></label>
+        <select id="section" formControlName="section" class="form-control">
+          <option value="Éveil à la foi">Éveil à la foi (6 - 7 ans)</option>
+          <option value="1ère Année">1ère Année de Catéchèse</option>
+          <option value="2ème Année">2ème Année de Catéchèse</option>
+          <option value="3ème Année">3ème Année (1ère Communion)</option>
+          <option value="4ème Année">4ème Année (Confirmation)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="tel">Téléphone du Parent <span class="required">*</span></label>
+        <input id="tel" type="tel" formControlName="telephoneParent" class="form-control" placeholder="ex: 07 00 00 00 00" />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="remarque">Remarque pastorale ou besoin particulier</label>
+      <input id="remarque" type="text" formControlName="remarque" class="form-control" placeholder="ex: Baptême déjà célébré à la paroisse..." />
+    </div>
+  </form>
+
+  <div dialog-footer>
+    <app-button variant="secondary" (clicked)="closeTestModal()">
+      Annuler
+    </app-button>
+    <app-button
+      variant="primary"
+      icon="check"
+      [loading]="isSubmitting()"
+      (clicked)="submitTestForm()"
+    >
+      Enregistrer le dossier
+    </app-button>
+  </div>
+</app-dialog>

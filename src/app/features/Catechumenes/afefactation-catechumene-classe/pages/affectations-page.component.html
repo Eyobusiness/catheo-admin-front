@@ -1,0 +1,140 @@
+<div class="affectations-page">
+  <!-- Topbar Header -->
+  <section class="page-topbar">
+    <div class="topbar-headings">
+ 
+      <h2 class="topbar-title">Affectation aux Classes</h2>
+      <p class="topbar-subtitle">
+        Répartition des catéchumènes.
+      </p>
+    </div>
+
+    <div class="topbar-actions">
+      @if (selectedInscriptionIds().length > 0) {
+        <app-button
+          variant="primary"
+          size="md"
+          icon="check2-all"
+          (clicked)="openBulkModal()"
+        >
+          Affecter la sélection ({{ selectedInscriptionIds().length }})
+        </app-button>
+      }
+    </div>
+  </section>
+
+  <!-- KPI Badges Row -->
+  <div class="kpi-grid">
+    <div class="kpi-card total">
+      <div class="kpi-icon"><i class="bi bi-people-fill"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-number">{{ stats().total }}</span>
+        <span class="kpi-label">Total des Inscrits</span>
+      </div>
+    </div>
+
+    <div class="kpi-card assigned">
+      <div class="kpi-icon"><i class="bi bi-mortarboard-fill"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-number">{{ stats().affectes }}</span>
+        <span class="kpi-label">Affectés en classe</span>
+      </div>
+    </div>
+
+    <div class="kpi-card unassigned">
+      <div class="kpi-icon"><i class="bi bi-hourglass-split"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-number">{{ stats().nonAffectes }}</span>
+        <span class="kpi-label">En Attente de Classe</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Card with Table -->
+  <app-card title="Tableau d'Affectation des Catéchumènes">
+    <!-- Filters Toolbar -->
+    <div class="filters-toolbar">
+      <div class="filters-left">
+        <!-- Search -->
+        <div class="search-input-wrapper">
+          <i class="bi bi-search search-icon"></i>
+          <input
+            type="text"
+            class="filter-search-control"
+            placeholder="Rechercher par nom, code, classe..."
+            [value]="searchQuery()"
+            (input)="onSearchChange($event)"
+          />
+          @if (searchQuery()) {
+            <button class="clear-search-btn" (click)="clearSearch()" title="Effacer">
+              <i class="bi bi-x-circle-fill"></i>
+            </button>
+          }
+        </div>
+
+        <!-- Niveau Filter -->
+        <div class="select-wrapper">
+          <i class="bi bi-layers select-prefix-icon"></i>
+          <select
+            class="filter-select-control"
+            [value]="niveauFilter()"
+            (change)="onNiveauFilterChange($event)"
+          >
+            <option value="">Tous les niveaux</option>
+            @for (n of niveaux(); track n.id) {
+              <option [value]="n.id">{{ n.nom }}</option>
+            }
+          </select>
+          <i class="bi bi-chevron-down select-chevron-icon"></i>
+        </div>
+
+        <!-- Affectation Filter -->
+        <div class="select-wrapper">
+          <i class="bi bi-funnel select-prefix-icon"></i>
+          <select
+            class="filter-select-control"
+            [value]="affectationFilter()"
+            (change)="onAffectationFilterChange($event)"
+          >
+            <option value="">Tous les statuts d'affectation</option>
+            <option value="non_affecte">En attente (Non affectés)</option>
+            <option value="affecte">Déjà affectés en classe</option>
+          </select>
+          <i class="bi bi-chevron-down select-chevron-icon"></i>
+        </div>
+      </div>
+
+      <div class="filters-right">
+        @if (hasActiveFilters()) {
+          <button class="reset-filter-btn" (click)="resetAllFilters()">
+            <i class="bi bi-arrow-counterclockwise"></i>
+            <span>Réinitialiser</span>
+          </button>
+        }
+        <span class="count-pill">
+          <strong>{{ filteredInscriptions().length }}</strong> élève(s)
+        </span>
+      </div>
+    </div>
+
+    <!-- Table Sub-component -->
+    <app-affectation-table
+      [inscriptions]="filteredInscriptions()"
+      [classes]="classes()"
+      [selectedIds]="selectedInscriptionIds()"
+      (selectionToggled)="handleSelectionToggle($event)"
+      (selectAllToggled)="handleSelectAllToggle($event)"
+      (classChanged)="handleClassChanged($event)"
+    />
+  </app-card>
+</div>
+
+<!-- Bulk Affectation Modal -->
+<app-affectation-bulk-modal
+  [isOpen]="isBulkModalOpen()"
+  [selectedCount]="selectedInscriptionIds().length"
+  [classes]="classes()"
+  [isLoading]="isLoading()"
+  (modalClosed)="closeBulkModal()"
+  (assigned)="handleBulkAssigned($event)"
+/>

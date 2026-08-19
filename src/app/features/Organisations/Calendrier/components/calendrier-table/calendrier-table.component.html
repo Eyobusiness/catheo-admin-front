@@ -1,0 +1,174 @@
+<div class="table-card-wrapper">
+  <div class="table-responsive">
+    <table class="medical-table">
+      <thead>
+        <tr>
+          <th>Date & Horaires</th>
+          <th>Événement Pastoral</th>
+          <th>Public & Lieu</th>
+          <th>Année</th>
+          <th>Statut</th>
+          <th class="text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of paginatedCalendriers(); track item.id) {
+          <tr class="table-row">
+            <!-- Date & Horaires -->
+            <td>
+              <div class="date-badge-cell">
+                <div class="calendar-mini-badge">
+                  <span class="badge-month">{{ getMonthName(item.date) }}</span>
+                  <span class="badge-day">{{ getDay(item.date) }}</span>
+                </div>
+                <div class="hours-meta">
+                  <span class="full-date">{{ item.date }}</span>
+                  @if (item.heure_debut || item.heure_fin) {
+                    <span class="hours-text">
+                      <i class="bi bi-clock"></i>
+                      {{ item.heure_debut || '??' }} - {{ item.heure_fin || '??' }}
+                    </span>
+                  }
+                </div>
+              </div>
+            </td>
+
+            <!-- Titre & Type -->
+            <td>
+              <div class="event-meta-cell">
+                <span class="event-type-badge">{{ item.type }}</span>
+                <span class="event-title">{{ item.titre }}</span>
+                @if (item.description) {
+                  <span class="event-desc">{{ item.description }}</span>
+                }
+              </div>
+            </td>
+
+            <!-- Public Cible & Lieu -->
+            <td>
+              <div class="target-location-cell">
+                <span class="cible-pill">
+                  <i class="bi bi-people"></i>
+                  {{ item.cible_nom || item.cible_type }}
+                </span>
+                @if (item.lieu) {
+                  <span class="location-text">
+                    <i class="bi bi-geo-alt-fill"></i>
+                    {{ item.lieu }}
+                  </span>
+                }
+              </div>
+            </td>
+
+            <!-- Année Pastorale -->
+            <td>
+              <span class="annee-pill">
+                {{ getAnneeLibelle(item) }}
+              </span>
+            </td>
+
+            <!-- Statut -->
+            <td>
+              @switch (item.statut) {
+                @case ('Planifié') {
+                  <span class="status-pill status-planifie">
+                    <span class="pulse-dot"></span>
+                    Planifié
+                  </span>
+                }
+                @case ('Réalisé') {
+                  <span class="status-pill status-realise">
+                    <i class="bi bi-check-circle-fill"></i>
+                    Réalisé
+                  </span>
+                }
+                @case ('Annulé') {
+                  <span class="status-pill status-annule">
+                    <i class="bi bi-x-circle-fill"></i>
+                    Annulé
+                  </span>
+                }
+                @default {
+                  <span class="status-pill status-planifie">{{ item.statut }}</span>
+                }
+              }
+            </td>
+
+            <!-- Actions -->
+            <td class="text-right">
+              <div class="actions-flex">
+                <!-- Action: Changer de statut -->
+                <app-icon-button
+                  [variant]="item.statut === 'Réalisé' ? 'success' : item.statut === 'Annulé' ? 'danger' : 'info'"
+                  size="sm"
+                  title="Changer le statut (Planifié -> Réalisé -> Annulé)"
+                  ariaLabel="Changer statut"
+                  (clicked)="onToggleStatus(item)"
+                >
+                  <i [class]="'bi ' + (item.statut === 'Réalisé' ? 'bi-check2-all' : item.statut === 'Annulé' ? 'bi-slash-circle' : 'bi-arrow-repeat')"></i>
+                </app-icon-button>
+
+                <!-- Action: Voir -->
+                <app-icon-button
+                  variant="info"
+                  size="sm"
+                  title="Voir les détails"
+                  ariaLabel="Voir"
+                  (clicked)="onView(item)"
+                >
+                  <i class="bi bi-eye"></i>
+                </app-icon-button>
+
+                <!-- Action: Modifier -->
+                <app-icon-button
+                  variant="primary"
+                  size="sm"
+                  title="Modifier"
+                  ariaLabel="Modifier"
+                  (clicked)="onEdit(item)"
+                >
+                  <i class="bi bi-pencil"></i>
+                </app-icon-button>
+
+                <!-- Action: Supprimer -->
+                <app-icon-button
+                  variant="danger"
+                  size="sm"
+                  title="Supprimer"
+                  ariaLabel="Supprimer"
+                  (clicked)="onDelete(item)"
+                >
+                  <i class="bi bi-trash3"></i>
+                </app-icon-button>
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="empty-table-cell">
+              <div class="empty-state-box">
+                <i class="bi bi-calendar3" style="font-size: 2rem;"></i>
+                <p class="empty-title">Aucun événement enregistré</p>
+                <p class="empty-desc">Planifiez les messes, récollections, pèlerinages et temps forts paroissiaux.</p>
+                <app-button variant="primary" size="sm" icon="plus" (clicked)="onCreate()">
+                  Planifier un Événement
+                </app-button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination intégrée -->
+  @if (calendriers().length > 0) {
+    <app-pagination
+      [totalItems]="calendriers().length"
+      [currentPage]="currentPage()"
+      [pageSize]="pageSize()"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+    />
+  }
+</div>

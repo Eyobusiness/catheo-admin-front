@@ -1,0 +1,46 @@
+<div [class]="'stat-card stat-' + color()">
+  <div class="stat-main">
+    <div class="stat-info">
+      <span class="stat-title">{{ title() }}</span>
+      <h3 class="stat-value">{{ value() }}</h3>
+    </div>
+
+    <div class="stat-icon-wrapper">
+      @switch (icon()) {
+        @case ('users') {
+          <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+        }
+        @case ('activity') {
+          <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+        }
+        @case ('clock') {
+          <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        }
+        @case ('credit-card') {
+          <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+        }
+        @default {
+          <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+        }
+      }
+    </div>
+  </div>
+
+  @if (change() || period()) {
+    <div class="stat-footer">
+      @if (change()) {
+        <span [class]="'stat-trend ' + (isPositive() ? 'trend-up' : 'trend-down')">
+          @if (isPositive()) {
+            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none"><polyline points="18 15 12 9 6 15"></polyline></svg>
+          } @else {
+            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          }
+          {{ change() }}
+        </span>
+      }
+      @if (period()) {
+        <span class="stat-period">{{ period() }}</span>
+      }
+    </div>
+  }
+</div>

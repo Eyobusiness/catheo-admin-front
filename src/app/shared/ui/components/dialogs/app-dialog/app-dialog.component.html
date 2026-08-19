@@ -1,0 +1,44 @@
+@if (isOpen()) {
+  <div
+    class="dialog-backdrop"
+    (click)="handleBackdropClick($event)"
+    role="dialog"
+    aria-modal="true"
+    [attr.aria-labelledby]="title() ? 'dialog-title' : null"
+  >
+    <div [class]="'dialog-container dialog-' + size()">
+      <!-- Dialog Header -->
+      <div class="dialog-header">
+        <div class="dialog-header-text">
+          @if (title()) {
+            <h3 id="dialog-title" class="dialog-title">{{ title() }}</h3>
+          }
+          @if (subtitle()) {
+            <p class="dialog-subtitle">{{ subtitle() }}</p>
+          }
+        </div>
+
+        @if (showCloseButton()) {
+          <button
+            type="button"
+            class="dialog-close-btn"
+            (click)="handleClose()"
+            aria-label="Fermer la boîte de dialogue"
+          >
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        }
+      </div>
+
+      <!-- Dialog Body -->
+      <div class="dialog-body">
+        <ng-content select="[dialog-body], :not([dialog-footer])"></ng-content>
+      </div>
+
+      <!-- Dialog Footer -->
+      <div class="dialog-footer">
+        <ng-content select="[dialog-footer]"></ng-content>
+      </div>
+    </div>
+  </div>
+}

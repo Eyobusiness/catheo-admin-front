@@ -1,0 +1,110 @@
+<!-- Mobile Backdrop Overlay -->
+@if (isMobileOpen()) {
+  <div class="sidebar-backdrop" (click)="closeMobile()"></div>
+}
+
+<aside
+  [class]="'app-sidebar ' + (isCollapsed() ? 'is-collapsed' : '') + (isMobileOpen() ? ' is-mobile-open' : '')"
+>
+  <!-- Brand Header -->
+  <div class="sidebar-brand">
+    <div class="brand-logo">
+      <svg viewBox="0 0 32 32" width="28" height="28" fill="none">
+        <rect width="32" height="32" rx="8" fill="url(#brandGrad)" />
+        <path d="M16 7v18M10 13h12" stroke="#ffffff" stroke-width="3" stroke-linecap="round" />
+        <circle cx="16" cy="13" r="3.5" fill="#ffffff" />
+        <defs>
+          <linearGradient id="brandGrad" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#0284C7" />
+            <stop offset="1" stop-color="#4F46E5" />
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+
+    @if (!isCollapsed()) {
+      <div class="brand-text">
+        <h1 class="brand-name">CATHÉO <span>CIM</span></h1>
+        <p class="brand-tagline">Cœur Immaculé de Marie</p>
+      </div>
+    }
+
+    <!-- Close button for mobile -->
+    <button type="button" class="mobile-close-btn" (click)="closeMobile()" aria-label="Fermer le menu">
+      <i class="bi bi-x-lg"></i>
+    </button>
+  </div>
+
+  <!-- Navigation Menu List -->
+  <nav class="sidebar-nav">
+    <ul class="nav-list">
+      @for (item of menuItems(); track item.code + item.reference) {
+        <li class="nav-item">
+          <!-- Main Menu Link / Accordion Toggle -->
+          @if (item.sousMenus && item.sousMenus.length > 0) {
+            <button
+              type="button"
+              class="nav-link nav-accordion-btn"
+              [class.is-open]="isMenuExpanded(item)"
+              (click)="toggleMenu(item, $event)"
+              [title]="isCollapsed() ? item.libelle : ''"
+            >
+              <i [class]="'nav-icon ' + item.icon"></i>
+              @if (!isCollapsed()) {
+                <span class="nav-label">{{ item.libelle }}</span>
+                <span class="nav-badge-count">{{ item.sousMenus.length }}</span>
+                <i [class]="'bi accordion-chevron ' + (isMenuExpanded(item) ? 'bi-chevron-down' : 'bi-chevron-right')"></i>
+              }
+            </button>
+
+            <!-- Submenu Dropdown List -->
+            @if (!isCollapsed() && isMenuExpanded(item)) {
+              <ul class="submenu-list">
+                @for (sub of item.sousMenus; track sub.reference) {
+                  <li class="submenu-item">
+                    <a
+                      [routerLink]="sub.path"
+                      routerLinkActive="active"
+                      (click)="closeMobile()"
+                      class="submenu-link"
+                    >
+                      <i [class]="'submenu-icon ' + sub.icon"></i>
+                      <span class="submenu-label">{{ sub.libelle }}</span>
+                    </a>
+                  </li>
+                }
+              </ul>
+            }
+          } @else {
+            <a
+              [routerLink]="item.path"
+              routerLinkActive="active"
+              [routerLinkActiveOptions]="{ exact: item.path === '/dashboard' }"
+              (click)="closeMobile()"
+              class="nav-link"
+              [title]="isCollapsed() ? item.libelle : ''"
+            >
+              <i [class]="'nav-icon ' + item.icon"></i>
+              @if (!isCollapsed()) {
+                <span class="nav-label">{{ item.libelle }}</span>
+              }
+            </a>
+          }
+        </li>
+      }
+    </ul>
+  </nav>
+
+  <!-- Sidebar Footer Info -->
+  <div class="sidebar-footer">
+    @if (!isCollapsed()) {
+      <div class="system-status-card">
+        <div class="status-header">
+          <div class="pulse-dot"></div>
+          <span class="status-title">Année Pastorale Active</span>
+        </div>
+        <p class="status-desc">2026-2027 • Paroisse Principale</p>
+      </div>
+    }
+  </div>
+</aside>

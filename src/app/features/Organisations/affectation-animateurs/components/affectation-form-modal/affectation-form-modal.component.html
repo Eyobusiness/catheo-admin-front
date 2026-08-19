@@ -1,0 +1,72 @@
+<app-dialog
+  [isOpen]="isOpen()"
+  [title]="isEditing() ? 'Modifier l\'Affectation' : 'Nouvelle Affectation'"
+  subtitle="Organisation • Affectation des Catéchistes aux Classes"
+  size="md"
+  (closed)="onClose()"
+>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" dialog-body class="affectation-form">
+    <!-- Catéchiste Selection -->
+    <div class="form-group">
+      <label class="form-label" for="animateurId">
+        Catéchiste / Animateur <span class="required">*</span>
+      </label>
+      <select id="animateurId" formControlName="animateur_id" class="form-control">
+        <option value="" disabled>Sélectionner un catéchiste</option>
+        @for (anim of animateurs(); track anim.id) {
+          <option [value]="anim.id">
+            {{ anim.nom }} {{ anim.prenoms }} 
+            <!-- ({{ anim.matricule || anim.sexe }}) -->
+          </option>
+        }
+      </select>
+      @if (form.controls.animateur_id.touched && form.controls.animateur_id.invalid) {
+        <span class="field-error">Veuillez sélectionner un catéchiste.</span>
+      }
+    </div>
+
+    <!-- Classe Selection -->
+    <div class="form-group">
+      <label class="form-label" for="classeId">
+        Classe de Catéchèse <span class="required">*</span>
+      </label>
+      <select id="classeId" formControlName="classe_id" class="form-control">
+        <option value="" disabled>Sélectionner une classe</option>
+        @for (cls of classes(); track cls.id) {
+          <option [value]="cls.id">
+            {{ cls.nom }} ({{ cls.niveau?.nom || 'Niveau' }})
+          </option>
+        }
+      </select>
+      @if (form.controls.classe_id.touched && form.controls.classe_id.invalid) {
+        <span class="field-error">Veuillez sélectionner une classe.</span>
+      }
+    </div>
+
+    <!-- Rôle dans la classe -->
+    <div class="form-group">
+      <label class="form-label" for="role">
+        Rôle au sein de la classe <span class="required">*</span>
+      </label>
+      <select id="role" formControlName="role" class="form-control">
+        <option value="principal"> Principal (Responsable)</option>
+        <!-- <option value="adjoint"> Adjoint (Co-animateur)</option> -->
+        <option value="assistant">Assistant</option>
+      </select>
+    </div>
+  </form>
+
+  <div dialog-footer>
+    <app-button variant="secondary" (clicked)="onClose()">
+      Annuler
+    </app-button>
+    <app-button
+      variant="primary"
+      icon="check"
+      [loading]="isLoading()"
+      (clicked)="onSubmit()"
+    >
+      {{ isEditing() ? 'Enregistrer' : 'Affecter' }}
+    </app-button>
+  </div>
+</app-dialog>

@@ -1,0 +1,200 @@
+<div class="responsables-config-container">
+  <app-card
+    title="Responsables de la Catéchèse"
+    subtitle="Gestion des coordinateurs de la catéchèse">
+    <div card-actions>
+      <app-button
+        variant="primary"
+        size="md"
+        icon="plus"
+        (clicked)="openCreateModal()"
+      >
+        Nouveau Responsable
+      </app-button>
+    </div>
+
+    <!-- Filters & Search Toolbar -->
+    <div class="responsables-toolbar">
+      <div class="toolbar-left">
+        <!-- Search input -->
+        <div class="search-input-wrapper">
+          <i class="bi bi-search search-icon"></i>
+          <input
+            type="text"
+            class="filter-search-control"
+            placeholder="Rechercher un respo..."
+            [value]="searchQuery()"
+            (input)="onSearchChange($event)"
+          />
+          @if (searchQuery()) {
+            <button
+              type="button"
+              class="clear-search-btn"
+              (click)="clearSearch()"
+              title="Effacer la recherche"
+            >
+              <i class="bi bi-x-circle-fill"></i>
+            </button>
+          }
+        </div>
+
+        <!-- Status Filter -->
+        <div class="filter-select-wrapper">
+          <i class="bi bi-funnel select-prefix-icon"></i>
+          <select
+            class="filter-select-control"
+            [value]="selectedStatutFilter()"
+            (change)="onStatusFilterChange($event)"
+          >
+            <option value="">Tous les statuts</option>
+            <option value="actif">Actifs</option>
+            <option value="inactif">Inactifs</option>
+          </select>
+          <i class="bi bi-chevron-down select-chevron-icon"></i>
+        </div>
+
+        @if (searchQuery() || selectedStatutFilter()) {
+          <button type="button" class="reset-filter-btn" (click)="resetFilters()">
+            <i class="bi bi-arrow-counterclockwise"></i>
+            Réinitialiser
+          </button>
+        }
+      </div>
+
+      <div class="toolbar-right">
+        <span class="count-badge">
+          <strong>{{ filteredResponsables().length }}</strong> responsable(s)
+        </span>
+      </div>
+    </div>
+
+    <!-- Responsables Table -->
+    <div class="table-container">
+      <table class="app-table">
+        <thead>
+          <tr>
+            <th>Responsable</th>
+            <th>Fonction</th>
+            <th>Téléphone</th>
+            <th class="text-center">Statut</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (resp of filteredResponsables(); track resp.id) {
+            <tr>
+              <!-- Name & Avatar -->
+              <td>
+                <div class="responsable-identity-cell">
+                  <div class="avatar-circle">
+                    {{ getInitials(resp.nom_prenoms) }}
+                  </div>
+                  <div class="identity-info">
+                    <span class="full-name">
+                      {{ resp.nom_prenoms }}
+                    </span>
+                    <span class="sub-text">{{ resp.titre_fonction }}</span>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Fonction -->
+              <td>
+                <span class="fonction-badge">
+                  <i class="bi bi-person-badge"></i>
+                  {{ resp.titre_fonction }}
+                </span>
+              </td>
+
+              <!-- Téléphone -->
+              <td>
+                @if (resp.telephone) {
+                  <span class="contact-line">
+                    <i class="bi bi-telephone"></i>
+                    {{ resp.telephone }}
+                  </span>
+                } @else {
+                  <span class="text-muted">—</span>
+                }
+              </td>
+
+              <!-- Statut Toggle Pill -->
+              <td class="text-center">
+                <button
+                  type="button"
+                  class="status-toggle-pill"
+                  [class.is-active]="resp.statut === 'actif'"
+                  [class.is-inactive]="resp.statut === 'inactif'"
+                  (click)="handleToggleStatus(resp)"
+                  title="Cliquer pour changer le statut"
+                >
+                  <span class="status-dot"></span>
+                  {{ resp.statut === 'actif' ? 'Actif' : 'Inactif' }}
+                </button>
+              </td>
+
+              <!-- Action Buttons -->
+              <td class="text-end">
+                <div class="row-actions">
+                  <app-icon-button
+                    variant="ghost"
+                    size="sm"
+                    title="Modifier ce responsable"
+                    ariaLabel="Modifier"
+                    (clicked)="openEditModal(resp)"
+                  >
+                    <i class="bi bi-pencil"></i>
+                  </app-icon-button>
+
+                  <app-icon-button
+                    variant="ghost"
+                    size="sm"
+                    title="Supprimer ce responsable"
+                    ariaLabel="Supprimer"
+                    (clicked)="openDeleteModal(resp)"
+                  >
+                    <i class="bi bi-trash text-danger"></i>
+                  </app-icon-button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" class="empty-state-cell">
+                <div class="empty-state">
+                  <div class="empty-icon">
+                    <i class="bi bi-people"></i>
+                  </div>
+                  <h4>Aucun responsable trouvé</h4>
+                  <p>Aucun membre pastoral ne correspond à vos critères de recherche.</p>
+                  <app-button variant="primary" size="sm" icon="plus" (clicked)="openCreateModal()">
+                    Ajouter un premier responsable
+                  </app-button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </app-card>
+</div>
+
+<!-- Modal Formulaire -->
+<app-responsable-form-modal
+  [isOpen]="isFormModalOpen()"
+  [isEditing]="isEditing()"
+  [responsableToEdit]="selectedResponsable()"
+  [isLoading]="isSaving()"
+  (formClosed)="closeFormModal()"
+  (formSubmitted)="handleFormSubmit($event)"
+/>
+
+<!-- Modal Suppression -->
+<app-responsable-delete-modal
+  [isOpen]="isDeleteModalOpen()"
+  [responsable]="itemToDelete()"
+  [isLoading]="isSaving()"
+  (closed)="closeDeleteModal()"
+  (confirmed)="handleDeleteConfirm()"
+/>

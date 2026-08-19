@@ -1,0 +1,123 @@
+<div class="table-container">
+  <table class="app-table">
+    <thead>
+      <tr>
+        <th>Utilisateur</th>
+        <th>Téléphone</th>
+        <th>Profil / Rôle</th>
+        <th class="text-center">Statut</th>
+        <th>Date de Création</th>
+        <th class="text-end">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (user of users(); track user.id) {
+        <tr>
+          <!-- User info -->
+          <td>
+            <div class="user-identity-cell">
+              <div class="avatar-circle">
+                {{ getInitials(user.name) }}
+              </div>
+              <div class="user-info">
+                <span class="user-name">{{ user.name }}</span>
+                <span class="user-email">
+                  <i class="bi bi-envelope"></i>
+                  {{ user.email }}
+                </span>
+              </div>
+            </div>
+          </td>
+
+          <!-- Téléphone -->
+          <td>
+            @if (user.telephone) {
+              <span class="contact-line">
+                <i class="bi bi-telephone"></i>
+                {{ user.telephone }}
+              </span>
+            } @else {
+              <span class="text-muted">—</span>
+            }
+          </td>
+
+          <!-- Profil RBAC -->
+          <td>
+            @if (user.profil) {
+              <span class="profil-badge" [class.system]="user.profil.is_system">
+                <i class="bi" [class.bi-shield-shaded]="user.profil.is_system" [class.bi-shield-check]="!user.profil.is_system"></i>
+                {{ user.profil.nom }}
+              </span>
+            } @else {
+              <span class="badge-unassigned">Non assigné</span>
+            }
+          </td>
+
+          <!-- Statut Toggle -->
+          <td class="text-center">
+            <button
+              type="button"
+              class="status-toggle-pill"
+              [class.status-actif]="user.statut === 'actif'"
+              [class.status-inactif]="user.statut === 'inactif'"
+              [class.status-suspendu]="user.statut === 'suspendu'"
+              (click)="toggleNextStatus(user)"
+              title="Cliquer pour faire défiler le statut (Actif -> Inactif -> Suspendu)"
+            >
+              <span class="status-dot"></span>
+              {{ user.statut === 'actif' ? 'Actif' : user.statut === 'inactif' ? 'Inactif' : 'Suspendu' }}
+            </button>
+          </td>
+
+          <!-- Date création -->
+          <td>
+            <span class="date-cell">
+              <i class="bi bi-calendar-event"></i>
+              {{ user.created_at }}
+            </span>
+          </td>
+
+          <!-- Action Buttons -->
+          <td class="text-end">
+            <div class="row-actions">
+              <app-icon-button
+                variant="ghost"
+                size="sm"
+                title="Modifier ce compte"
+                ariaLabel="Modifier"
+                (clicked)="onEdit(user)"
+              >
+                <i class="bi bi-pencil"></i>
+              </app-icon-button>
+
+              <app-icon-button
+                variant="ghost"
+                size="sm"
+                title="Supprimer ce compte"
+                ariaLabel="Supprimer"
+                (clicked)="onDelete(user)"
+              >
+                <i class="bi bi-trash text-danger"></i>
+              </app-icon-button>
+            </div>
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="6" class="empty-state-cell">
+            <div class="empty-state">
+              <div class="empty-icon">
+                <i class="bi bi-person-x"></i>
+              </div>
+              <h4>Aucun utilisateur trouvé</h4>
+              <p>Aucun compte ne correspond à vos critères de recherche ou de filtre.</p>
+              <app-button variant="primary" size="sm" icon="plus" (clicked)="createRequested.emit()">
+                Créer un premier utilisateur
+              </app-button>
+            </div>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

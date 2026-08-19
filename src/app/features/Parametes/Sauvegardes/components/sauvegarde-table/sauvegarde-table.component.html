@@ -1,0 +1,151 @@
+<div class="table-container">
+  <table class="app-table">
+    <thead>
+      <tr>
+        <th>Archive / Fichier</th>
+        <th>Date & Heure</th>
+        <th>Type</th>
+        <th>Taille</th>
+        <th>Auteur</th>
+        <th class="text-center">Statut</th>
+        <th class="text-end">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (svg of sauvegardes(); track svg.id) {
+        <tr>
+          <!-- Nom & Icon -->
+          <td>
+            <div class="file-identity-cell">
+              <div class="file-icon-box" [class.auto]="svg.type === 'automatique'">
+                <i class="bi" [class.bi-file-earmark-zip-fill]="svg.type === 'manuel'" [class.bi-cloud-arrow-down-fill]="svg.type === 'automatique'"></i>
+              </div>
+              <div class="file-info">
+                <span class="file-name" [title]="svg.nom_fichier">
+                  {{ svg.nom_fichier }}
+                </span>
+                <span class="file-sub">Base MySQL / PostgreSQL compressée</span>
+              </div>
+            </div>
+          </td>
+
+          <!-- Date & Heure -->
+          <td>
+            <div class="datetime-cell">
+              <span class="date-text"><i class="bi bi-calendar3"></i> {{ svg.date }}</span>
+              <span class="time-text"><i class="bi bi-clock"></i> {{ svg.heure }}</span>
+            </div>
+          </td>
+
+          <!-- Type (Manuel vs Automatique) -->
+          <td>
+            @if (svg.type === 'automatique') {
+              <span class="badge-type auto">
+                <i class="bi bi-robot"></i>
+                Automatique
+              </span>
+            } @else {
+              <span class="badge-type manual">
+                <i class="bi bi-person-fill"></i>
+                Manuel
+              </span>
+            }
+          </td>
+
+          <!-- Taille -->
+          <td>
+            <span class="size-badge">
+              <i class="bi bi-hdd"></i>
+              {{ svg.taille }}
+            </span>
+          </td>
+
+          <!-- Créé par -->
+          <td>
+            <span class="author-text">
+              <i class="bi bi-person-circle"></i>
+              {{ svg.cree_par }}
+            </span>
+          </td>
+
+          <!-- Statut -->
+          <td class="text-center">
+            @switch (svg.statut) {
+              @case ('termine') {
+                <span class="status-pill success">
+                  <i class="bi bi-check-circle-fill"></i>
+                  Terminé
+                </span>
+              }
+              @case ('en_cours') {
+                <span class="status-pill warning">
+                  <i class="bi bi-arrow-repeat spin"></i>
+                  En cours
+                </span>
+              }
+              @case ('echec') {
+                <span class="status-pill danger">
+                  <i class="bi bi-x-circle-fill"></i>
+                  Échec
+                </span>
+              }
+            }
+          </td>
+
+          <!-- Action Buttons -->
+          <td class="text-end">
+            <div class="row-actions">
+              <!-- Download button -->
+              <app-icon-button
+                variant="ghost"
+                size="sm"
+                title="Télécharger l'archive SQL"
+                ariaLabel="Télécharger"
+                (clicked)="onDownload(svg)"
+              >
+                <i class="bi bi-download text-primary"></i>
+              </app-icon-button>
+
+              <!-- Restore button -->
+              <app-icon-button
+                variant="ghost"
+                size="sm"
+                title="Restaurer cette sauvegarde"
+                ariaLabel="Restaurer"
+                (clicked)="onRestaurer(svg)"
+              >
+                <i class="bi bi-arrow-clockwise text-warning"></i>
+              </app-icon-button>
+
+              <!-- Delete button -->
+              <app-icon-button
+                variant="ghost"
+                size="sm"
+                title="Supprimer la sauvegarde"
+                ariaLabel="Supprimer"
+                (clicked)="onDelete(svg)"
+              >
+                <i class="bi bi-trash text-danger"></i>
+              </app-icon-button>
+            </div>
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="7" class="empty-state-cell">
+            <div class="empty-state">
+              <div class="empty-icon">
+                <i class="bi bi-database-exclamation"></i>
+              </div>
+              <h4>Aucune sauvegarde disponible</h4>
+              <p>Aucun instantané de base de données n'a encore été créé ou ne correspond aux filtres.</p>
+              <app-button variant="primary" size="sm" icon="plus" (clicked)="createRequested.emit()">
+                Générer une première sauvegarde
+              </app-button>
+            </div>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

@@ -1,0 +1,135 @@
+<div class="table-card-wrapper">
+  <div class="table-responsive">
+    <table class="medical-table">
+      <thead>
+        <tr>
+          <th>Ordre</th>
+          <th>Section / Intitulé</th>
+          <th>Code</th>
+          <th>Description</th>
+          <th>Niveaux Associés</th>
+          <th>Statut</th>
+          <th class="text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (section of paginatedSections(); track section.id) {
+          <tr class="table-row">
+            <td>
+              <span class="order-badge">{{ section.ordre }}</span>
+            </td>
+
+            <td>
+              <div class="section-name-cell">
+                <div class="section-icon-box" [class.is-active-icon]="section.statut === 'actif'">
+                  <i class="bi bi-diagram-2"></i>
+                </div>
+                <div class="section-meta">
+                  <span class="section-title">{{ section.nom }}</span>
+                </div>
+              </div>
+            </td>
+
+            <td>
+              <span class="code-pill">{{ section.code }}</span>
+            </td>
+
+            <td>
+              <span class="desc-text">{{ section.description || 'Aucune description' }}</span>
+            </td>
+
+            <td>
+              <div class="niveaux-box">
+                <i class="bi bi-layers"></i>
+                <span>{{ section.total_niveaux || 0 }} niveau(x)</span>
+              </div>
+            </td>
+
+            <td>
+              @if (section.statut === 'actif') {
+                <span class="active-badge">
+                  <span class="pulse-dot"></span>
+                  Actif
+                </span>
+              } @else {
+                <span class="inactive-badge">Inactif</span>
+              }
+            </td>
+
+            <td class="text-right">
+              <div class="actions-flex">
+                <!-- Action: Bascule statut actif / inactif -->
+                <app-icon-button
+                  [variant]="section.statut === 'actif' ? 'success' : 'ghost'"
+                  size="sm"
+                  [title]="section.statut === 'actif' ? 'Section active' : 'Activer la section'"
+                  ariaLabel="Statut"
+                  (clicked)="onToggleActive(section)"
+                >
+                  <i [class]="'bi ' + (section.statut === 'actif' ? 'bi-check-circle-fill' : 'bi-toggle-off')"></i>
+                </app-icon-button>
+
+                <!-- Action: Voir -->
+                <app-icon-button
+                  variant="info"
+                  size="sm"
+                  title="Voir les détails"
+                  ariaLabel="Voir"
+                  (clicked)="onView(section)"
+                >
+                  <i class="bi bi-eye"></i>
+                </app-icon-button>
+
+                <!-- Action: Modifier -->
+                <app-icon-button
+                  variant="primary"
+                  size="sm"
+                  title="Modifier"
+                  ariaLabel="Modifier"
+                  (clicked)="onEdit(section)"
+                >
+                  <i class="bi bi-pencil"></i>
+                </app-icon-button>
+
+                <!-- Action: Supprimer -->
+                <app-icon-button
+                  variant="danger"
+                  size="sm"
+                  title="Supprimer"
+                  ariaLabel="Supprimer"
+                  (clicked)="onDelete(section)"
+                >
+                  <i class="bi bi-trash3"></i>
+                </app-icon-button>
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="7" class="empty-table-cell">
+              <div class="empty-state-box">
+                <i class="bi bi-diagram-2-fill" style="font-size: 2rem;"></i>
+                <p class="empty-title">Aucune section trouvée</p>
+                <p class="empty-desc">Créez votre première section de catéchèse.</p>
+                <app-button variant="primary" size="sm" icon="plus" (clicked)="onCreate()">
+                  Créer une Section
+                </app-button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination intégrée -->
+  @if (sections().length > 0) {
+    <app-pagination
+      [totalItems]="sections().length"
+      [currentPage]="currentPage()"
+      [pageSize]="pageSize()"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+    />
+  }
+</div>

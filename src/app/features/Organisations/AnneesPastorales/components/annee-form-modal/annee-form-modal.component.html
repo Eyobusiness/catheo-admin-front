@@ -1,0 +1,86 @@
+<app-dialog
+  [isOpen]="isOpen()"
+  [title]="isEditing() ? 'Modifier l\'Année Pastorale' : 'Créer une Année Pastorale'"
+  subtitle="Paroisse Cœur Immaculé de Marie • Catéchèse"
+  size="md"
+  (closed)="onClose()"
+>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" dialog-body class="annee-form">
+    <div class="form-group">
+      <label class="form-label" for="formLibelle">
+        Libellé de l'Année (Format AAAA-AAAA) <span class="required">*</span>
+      </label>
+      <input
+        id="formLibelle"
+        type="text"
+        formControlName="libelle"
+        class="form-control"
+        placeholder="2026-2027"
+      />
+      @if (form.controls.libelle.touched && form.controls.libelle.invalid) {
+        <span class="field-error">Le libellé est obligatoire et doit respecter le format AAAA-AAAA (ex: 2026-2027).</span>
+      }
+    </div>
+
+    <div class="form-row col-2">
+      <div class="form-group">
+        <label class="form-label" for="formDateDebut">
+          Date de Début <span class="required">*</span>
+        </label>
+        <input
+          id="formDateDebut"
+          type="date"
+          formControlName="date_debut"
+          class="form-control"
+        />
+        @if (form.controls.date_debut.touched && form.controls.date_debut.invalid) {
+          <span class="field-error">La date de début est obligatoire.</span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="formDateFin">
+          Date de Fin <span class="required">*</span>
+        </label>
+        <input
+          id="formDateFin"
+          type="date"
+          formControlName="date_fin"
+          class="form-control"
+        />
+        @if (form.controls.date_fin.touched && form.controls.date_fin.invalid) {
+          <span class="field-error">La date de fin est obligatoire.</span>
+        }
+      </div>
+    </div>
+
+    <div class="form-group-checkbox">
+      <label class="checkbox-label" for="formEstActive">
+        <input
+          id="formEstActive"
+          type="checkbox"
+          formControlName="est_active"
+          class="custom-checkbox"
+        />
+        <div class="checkbox-text">
+          <span class="checkbox-title">Définir comme Année Pastorale Active</span>
+          <span class="checkbox-desc">Cette année sera sélectionnée par défaut pour toutes les inscriptions et séances.</span>
+        </div>
+      </label>
+    </div>
+  </form>
+
+  <div dialog-footer>
+    <app-button variant="secondary" (clicked)="onClose()">
+      Annuler
+    </app-button>
+    <app-button
+      variant="primary"
+      icon="check"
+      [loading]="isLoading()"
+      (clicked)="onSubmit()"
+    >
+      {{ isEditing() ? 'Enregistrer les modifications' : 'Créer l\'Année' }}
+    </app-button>
+  </div>
+</app-dialog>

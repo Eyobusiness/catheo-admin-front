@@ -1,0 +1,41 @@
+<app-dialog
+  [isOpen]="isOpen()"
+  title="Rejeter le Dossier de Préinscription"
+  size="sm"
+  (closed)="onClose()"
+>
+  @if (preinscription(); as item) {
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="rejeter-form">
+      <div class="alert-box-warning">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span>Vous êtes sur le point de rejeter la préinscription de <strong>{{ item.nom }} {{ item.prenoms }}</strong> ({{ item.code_dossier }}).</span>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="motif">
+          Motif du Rejet <span class="required">*</span>
+        </label>
+        <textarea
+          id="motif"
+          formControlName="motif"
+          rows="3"
+          class="form-control"
+          placeholder="Précisez la raison (ex: Dossier incomplet, non résidant sur le territoire paroissial...)"
+        ></textarea>
+        @if (form.controls.motif.touched && form.controls.motif.errors?.['required']) {
+          <span class="field-error">Le motif du rejet est obligatoire.</span>
+        }
+      </div>
+
+      <div class="modal-footer-actions">
+        <app-button type="button" variant="ghost" (clicked)="onClose()" [disabled]="isLoading()">
+          Annuler
+        </app-button>
+        <app-button type="submit" variant="danger" [loading]="isLoading()" [disabled]="form.invalid || isLoading()">
+          <i class="bi bi-x-circle"></i>
+          <span>Confirmer le Rejet</span>
+        </app-button>
+      </div>
+    </form>
+  }
+</app-dialog>

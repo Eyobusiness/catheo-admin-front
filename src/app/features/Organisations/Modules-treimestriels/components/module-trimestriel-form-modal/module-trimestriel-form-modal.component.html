@@ -1,0 +1,104 @@
+<app-dialog
+  [isOpen]="isOpen()"
+  [title]="isEditing() ? 'Modifier le Module Trimestriel' : 'Nouveau Module Trimestriel'"
+  subtitle="Organisation • Découpage Pédagogique & Périodes d'Évaluation"
+  size="md"
+  (closed)="onClose()"
+>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" dialog-body class="module-form">
+    <!-- Année Pastorale Selection -->
+    <div class="form-group">
+      <label class="form-label" for="anneeId">
+        Année Pastorale <span class="required">*</span>
+      </label>
+      <select id="anneeId" formControlName="annee_catechese_id" class="form-control">
+        <option value="" disabled>Sélectionner une année</option>
+        @for (annee of annees(); track annee.id) {
+          <option [value]="annee.id">
+            {{ annee.libelle }} @if (annee.est_active) { (En cours) }
+          </option>
+        }
+      </select>
+      @if (form.controls.annee_catechese_id.touched && form.controls.annee_catechese_id.invalid) {
+        <span class="field-error">Veuillez sélectionner l'année pastorale.</span>
+      }
+    </div>
+
+    <!-- Trimestre Code & Libellé Row -->
+    <div class="form-row col-2">
+      <div class="form-group">
+        <label class="form-label" for="trimestre">
+          Trimestre <span class="required">*</span>
+        </label>
+        <select id="trimestre" formControlName="trimestre" class="form-control">
+          <option value="T1">1er Trimestre (T1)</option>
+          <option value="T2">2ème Trimestre (T2)</option>
+          <option value="T3">3ème Trimestre (T3)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="libelle">
+          Libellé du Module <span class="required">*</span>
+        </label>
+        <input
+          id="libelle"
+          type="text"
+          formControlName="libelle"
+          class="form-control"
+          placeholder="Libellé"
+        />
+        @if (form.controls.libelle.touched && form.controls.libelle.invalid) {
+          <span class="field-error">Le libellé est obligatoire (min. 3 caractères).</span>
+        }
+      </div>
+    </div>
+
+    <!-- Dates Début & Fin Row -->
+    <div class="form-row col-2">
+      <div class="form-group">
+        <label class="form-label" for="dateDebut">
+          Date de Début <span class="required">*</span>
+        </label>
+        <input
+          id="dateDebut"
+          type="date"
+          formControlName="date_debut"
+          class="form-control"
+        />
+        @if (form.controls.date_debut.touched && form.controls.date_debut.invalid) {
+          <span class="field-error">La date de début est requise.</span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="dateFin">
+          Date de Fin <span class="required">*</span>
+        </label>
+        <input
+          id="dateFin"
+          type="date"
+          formControlName="date_fin"
+          class="form-control"
+        />
+        @if (form.controls.date_fin.touched && form.controls.date_fin.invalid) {
+          <span class="field-error">La date de fin est requise.</span>
+        }
+      </div>
+    </div>
+  </form>
+
+  <div dialog-footer>
+    <app-button variant="secondary" (clicked)="onClose()">
+      Annuler
+    </app-button>
+    <app-button
+      variant="primary"
+      icon="check"
+      [loading]="isLoading()"
+      (clicked)="onSubmit()"
+    >
+      {{ isEditing() ? 'Enregistrer' : 'Créer le Module' }}
+    </app-button>
+  </div>
+</app-dialog>

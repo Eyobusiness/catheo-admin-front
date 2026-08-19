@@ -1,0 +1,177 @@
+<app-dialog
+  [isOpen]="isOpen()"
+  title="Fiche de Préinscription"
+  size="lg"
+  (closed)="onClose()"
+>
+  @if (preinscription(); as item) {
+    <div class="detail-modal-body">
+      <!-- Header Banner -->
+      <div class="candidate-header">
+        <div class="avatar-large" [class.is-female]="item.sexe === 'F'">
+          <span>{{ item.nom.charAt(0) }}{{ item.prenoms.charAt(0) }}</span>
+        </div>
+        <div class="header-text">
+          <h3 class="candidate-title">{{ item.nom }} {{ item.prenoms }}</h3>
+          <div class="header-badges">
+            <span class="dossier-pill">
+              <i class="bi bi-folder-fill"></i> {{ item.code_dossier }}
+            </span>
+            <span class="type-pill">
+              {{ item.type_demande === 'premiere_inscription' ? 'Première Inscription' : 'Réinscription' }}
+            </span>
+            <span class="genre-pill">
+              <i [class]="'bi ' + (item.sexe === 'M' ? 'bi-gender-male' : 'bi-gender-female')"></i>
+              {{ item.sexe === 'M' ? 'Masculin' : 'Féminin' }}
+            </span>
+          </div>
+        </div>
+        <div class="header-status">
+          <span [class]="'status-pill ' + item.statut">
+            {{ item.statut === 'en_attente' ? 'En Attente' : item.statut === 'validee' ? 'Validée' : 'Rejetée' }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Sections Info Grid -->
+      <div class="sections-grid">
+        <!-- Section 1: Identité & Contact -->
+        <div class="info-block">
+          <h5 class="block-title"><i class="bi bi-person-lines-fill"></i> Identité & Contact</h5>
+          <div class="info-row">
+            <span class="label">Date de Naissance :</span>
+            <span class="value">{{ item.date_naissance | date:'dd MMMM yyyy' }}</span>
+          </div>
+          @if (item.lieu_naissance) {
+            <div class="info-row">
+              <span class="label">Lieu de Naissance :</span>
+              <span class="value">{{ item.lieu_naissance }}</span>
+            </div>
+          }
+          @if (item.telephone) {
+            <div class="info-row">
+              <span class="label">Téléphone :</span>
+              <span class="value">{{ item.telephone }}</span>
+            </div>
+          }
+          @if (item.situation_matrimoniale) {
+            <div class="info-row">
+              <span class="label">Situation Matrimoniale :</span>
+              <span class="value">{{ item.situation_matrimoniale }}</span>
+            </div>
+          }
+          @if (item.adresse) {
+            <div class="info-row">
+              <span class="label">Adresse Domicile :</span>
+              <span class="value">{{ item.adresse }}</span>
+            </div>
+          }
+        </div>
+
+        <!-- Section 2: Filiation / Parents -->
+        <div class="info-block">
+          <h5 class="block-title"><i class="bi bi-people-fill"></i> Parents & Tuteurs</h5>
+          @if (item.nom_pere) {
+            <div class="info-row">
+              <span class="label">Père :</span>
+              <span class="value">{{ item.nom_pere }} ({{ item.telephone_pere || 'N/A' }})</span>
+            </div>
+          }
+          @if (item.nom_mere) {
+            <div class="info-row">
+              <span class="label">Mère :</span>
+              <span class="value">{{ item.nom_mere }} ({{ item.telephone_mere || 'N/A' }})</span>
+            </div>
+          }
+          @if (item.nom_tuteur) {
+            <div class="info-row">
+              <span class="label">Tuteur :</span>
+              <span class="value">{{ item.nom_tuteur }} ({{ item.telephone_tuteur || 'N/A' }})</span>
+            </div>
+          }
+          @if (!item.nom_pere && !item.nom_mere && !item.nom_tuteur) {
+            <span class="text-muted-xs">Aucun renseignement parental renseigné.</span>
+          }
+        </div>
+
+        <!-- Section 3: Sacrements & Parrain -->
+        <div class="info-block">
+          <h5 class="block-title"><i class="bi bi-droplet-fill"></i> Données Sacramentelles</h5>
+          <div class="info-row">
+            <span class="label">Baptisé(e) :</span>
+            <span class="value" [class.text-success]="item.est_baptise">{{ item.est_baptise ? 'OUI' : 'NON' }}</span>
+          </div>
+          @if (item.est_baptise) {
+            @if (item.date_bapteme) {
+              <div class="info-row">
+                <span class="label">Date Baptême :</span>
+                <span class="value">{{ item.date_bapteme | date:'dd/MM/yyyy' }}</span>
+              </div>
+            }
+            @if (item.paroisse_bapteme) {
+              <div class="info-row">
+                <span class="label">Paroisse :</span>
+                <span class="value">{{ item.paroisse_bapteme }}</span>
+              </div>
+            }
+          }
+          @if (item.nom_parrain) {
+            <div class="info-row">
+              <span class="label">Parrain / Marraine :</span>
+              <span class="value">{{ item.nom_parrain }} ({{ item.telephone_parrain || 'N/A' }})</span>
+            </div>
+          }
+        </div>
+
+        <!-- Section 4: Validation & Pédagogie -->
+        <div class="info-block">
+          <h5 class="block-title"><i class="bi bi-mortarboard-fill"></i> Pédagogie & Validation</h5>
+          @if (item.section_souhaite; as section) {
+            <div class="info-row">
+              <span class="label">Section :</span>
+              <span class="value">{{ section.nom }}</span>
+            </div>
+          }
+          @if (item.niveau_souhaite; as niveau) {
+            <div class="info-row">
+              <span class="label">Niveau :</span>
+              <span class="value">{{ niveau.nom }}</span>
+            </div>
+          }
+          <div class="info-row">
+            <span class="label">Frais d'inscription :</span>
+            <span class="value" [class.text-success]="item.frais_payes">
+              {{ item.frais_payes ? 'Payés / Acquittés' : 'Non payés' }}
+            </span>
+          </div>
+          @if (item.notes_validation) {
+            <div class="info-row">
+              <span class="label">Observations :</span>
+              <span class="value-notes">{{ item.notes_validation }}</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Footer Actions -->
+      <div class="modal-footer-actions">
+        <app-button variant="ghost" (clicked)="onClose()">
+          Fermer
+        </app-button>
+
+        @if (item.statut === 'en_attente') {
+          <app-button variant="danger" icon="x-circle" (clicked)="onRejeter()">
+            Rejeter
+          </app-button>
+          <app-button variant="success" icon="check2-circle" (clicked)="onValider()">
+            Valider le dossier
+          </app-button>
+        }
+
+        <app-button variant="primary" icon="pencil" (clicked)="onEdit()">
+          Modifier
+        </app-button>
+      </div>
+    </div>
+  }
+</app-dialog>

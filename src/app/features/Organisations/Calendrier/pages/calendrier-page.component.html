@@ -1,0 +1,188 @@
+<div class="calendrier-page">
+  <!-- Topbar Header with Breadcrumbs & Actions -->
+  <section class="page-topbar">
+    <div class="topbar-headings">
+
+      <h2 class="topbar-title">Calendrier Pastoral</h2>
+      <p class="topbar-subtitle">
+        Planification des activités.
+      </p>
+    </div>
+
+    <div class="topbar-actions">
+      <!-- Quick Navigation Links to related modules -->
+
+      <app-button
+        variant="primary"
+        size="md"
+        icon="plus"
+        (clicked)="openCreateModal()"
+      >
+        Planifier un Événement
+      </app-button>
+    </div>
+  </section>
+
+  <!-- Main Card with Dual View (Calendrier & Tableau) -->
+  <app-card
+    title="Agenda des Activités">
+    <!-- View Switcher & Table Controls Toolbar -->
+    <div class="filters-toolbar">
+      <!-- Left Filters Group -->
+      <div class="filters-left">
+        <!-- View Mode Switcher Toggle Buttons -->
+        <div class="view-mode-toggle-group">
+          <button
+            type="button"
+            class="view-mode-btn"
+            [class.is-active]="viewMode() === 'calendar'"
+            (click)="setViewMode('calendar')"
+            title="Vue Calendrier Mensuel"
+          >
+            <i class="bi bi-calendar3"></i>
+            <span>Calendrier</span>
+          </button>
+
+          <button
+            type="button"
+            class="view-mode-btn"
+            [class.is-active]="viewMode() === 'table'"
+            (click)="setViewMode('table')"
+            title="Vue Liste Tableau"
+          >
+            <i class="bi bi-table"></i>
+            <span>Tableau</span>
+          </button>
+        </div>
+
+        <!-- Search Input -->
+        <div class="search-input-wrapper">
+          <i class="bi bi-search search-icon"></i>
+          <input
+            type="text"
+            class="filter-search-control"
+            placeholder="Rechercher..."
+            [value]="searchQuery()"
+            (input)="onSearchChange($event)"
+          />
+          @if (searchQuery()) {
+            <button class="clear-search-btn" (click)="clearSearch()" title="Effacer la recherche">
+              <i class="bi bi-x-circle-fill"></i>
+            </button>
+          }
+        </div>
+
+        <!-- Statut Filter Dropdown -->
+        <div class="filter-select-wrapper">
+          <i class="bi bi-toggle-on select-prefix-icon"></i>
+          <select
+            class="filter-select-control"
+            [value]="selectedStatutFilter()"
+            (change)="onStatutFilterChange($event)"
+          >
+            <option value="">Tous les statuts</option>
+            <option value="Planifié">Planifié</option>
+            <option value="Réalisé">Réalisé</option>
+            <option value="Annulé">Annulé</option>
+          </select>
+          <i class="bi bi-chevron-down select-chevron-icon"></i>
+        </div>
+
+        <!-- Public Cible Filter Dropdown -->
+        <div class="filter-select-wrapper">
+          <i class="bi bi-people select-prefix-icon"></i>
+          <select
+            class="filter-select-control"
+            [value]="selectedCibleFilter()"
+            (change)="onCibleFilterChange($event)"
+          >
+            <option value="">Tous les publics</option>
+            <option value="Tous">Tous (Paroisse)</option>
+            <option value="Catéchumènes">Catéchumènes</option>
+            <option value="Animateurs">Animateurs</option>
+            <option value="Parents">Parents</option>
+            <option value="Niveau">Niveau</option>
+            <option value="Classe">Classe</option>
+            <option value="Section">Section</option>
+            <option value="CEB">CEB</option>
+            <option value="Mouvement">Mouvement</option>
+          </select>
+          <i class="bi bi-chevron-down select-chevron-icon"></i>
+        </div>
+
+        <!-- Année Pastorale Filter Dropdown -->
+        <div class="filter-select-wrapper">
+          <i class="bi bi-calendar-event select-prefix-icon"></i>
+          <select
+            class="filter-select-control"
+            [value]="selectedAnneeFilter()"
+            (change)="onAnneeFilterChange($event)"
+          >
+            <option value="">Toutes les années</option>
+            @for (annee of annees(); track annee.id) {
+              <option [value]="annee.id">{{ annee.libelle }}</option>
+            }
+          </select>
+          <i class="bi bi-chevron-down select-chevron-icon"></i>
+        </div>
+      </div>
+
+      <!-- Right Meta Info & Reset Button -->
+      <div class="filters-right">
+        @if (hasActiveFilters()) {
+          <button class="reset-filter-btn" (click)="resetAllFilters()">
+            <i class="bi bi-arrow-counterclockwise"></i>
+            <span>Réinitialiser</span>
+          </button>
+        }
+        <span class="count-pill">
+          <strong>{{ filteredCalendriers().length }}</strong> événement(s)
+        </span>
+      </div>
+    </div>
+
+    <!-- Mode 1: Interactive Monthly Calendar View -->
+    @if (viewMode() === 'calendar') {
+      <app-calendrier-month-view
+        [calendriers]="filteredCalendriers()"
+        (dateSelected)="openCreateModal($event)"
+        (eventClicked)="handleView($event)"
+        (eventEditRequested)="openEditModal($event)"
+      />
+    }
+
+    <!-- Mode 2: Table List View with Pagination -->
+    @if (viewMode() === 'table') {
+      <app-calendrier-table
+        [calendriers]="filteredCalendriers()"
+        [annees]="annees()"
+        (createRequested)="openCreateModal()"
+        (viewRequested)="handleView($event)"
+        (editRequested)="openEditModal($event)"
+        (deleteRequested)="openDeleteModal($event)"
+        (toggleStatusRequested)="handleToggleStatus($event)"
+      />
+    }
+  </app-card>
+</div>
+
+<!-- Modal Formulaire Création / Modification Événement -->
+<app-calendrier-form-modal
+  [isOpen]="isFormModalOpen()"
+  [isEditing]="isEditing()"
+  [eventToEdit]="selectedEvent()"
+  [defaultDate]="prefilledDate()"
+  [annees]="annees()"
+  [isLoading]="isSubmitting()"
+  (formClosed)="closeFormModal()"
+  (formSubmitted)="handleFormSubmit($event)"
+/>
+
+<!-- Calendrier Delete Modal Sub-component -->
+<app-calendrier-delete-modal
+  [isOpen]="isDeleteModalOpen()"
+  [eventToDelete]="itemToDelete()"
+  [isLoading]="isLoading()"
+  (modalClosed)="closeDeleteModal()"
+  (confirmed)="handleDeleteConfirm()"
+/>

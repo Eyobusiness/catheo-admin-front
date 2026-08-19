@@ -1,0 +1,67 @@
+<div class="sections-page">
+  <!-- Topbar Header -->
+  <section class="page-topbar">
+    <div class="topbar-headings">
+      <h2 class="topbar-title">Sections de Catéchèse</h2>
+      <p class="topbar-subtitle">Configuration des tranches pastorales (Enfance, Jeunes & Ados, Adultes).</p>
+    </div>
+
+    <div class="topbar-actions">
+      <app-button
+        variant="primary"
+        size="md"
+        icon="plus"
+        (clicked)="openCreateModal()"
+      >
+        Nouvelle Section
+      </app-button>
+    </div>
+  </section>
+
+  <!-- Main Table Card -->
+  <app-card
+    title="Liste des Sections">
+    <!-- Table Controls Toolbar -->
+    <div class="table-subbar">
+      <div class="table-search-box">
+        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input
+          type="text"
+          placeholder="Rechercher..."
+          [value]="searchQuery()"
+          (input)="onSearchChange($event)"
+        />
+      </div>
+      <span class="items-count">{{ filteredSections().length }} section(s) trouvée(s)</span>
+    </div>
+
+    <!-- Section Table Sub-component with Action Icons & Pagination -->
+    <app-section-table
+      [sections]="filteredSections()"
+      (createRequested)="openCreateModal()"
+      (viewRequested)="handleView($event)"
+      (editRequested)="openEditModal($event)"
+      (deleteRequested)="openDeleteModal($event)"
+      (toggleActiveRequested)="handleToggleActive($event)"
+    />
+  </app-card>
+</div>
+
+<!-- Section Form Modal Sub-component -->
+<app-section-form-modal
+  [isOpen]="isFormModalOpen()"
+  [isEditing]="isEditing()"
+  [sectionToEdit]="selectedSection()"
+  [isLoading]="isLoading()"
+  (formClosed)="closeFormModal()"
+  (formSubmitted)="handleFormSubmit($event)"
+/>
+
+<!-- Section Delete Modal Sub-component -->
+<app-section-delete-modal
+  [isOpen]="isDeleteModalOpen()"
+  [itemToDelete]="itemToDelete()"
+  [isLoading]="isLoading()"
+  (modalClosed)="closeDeleteModal()"
+  (confirmed)="handleDeleteConfirm()"
+/>
