@@ -52,7 +52,6 @@
               <i [class]="'nav-icon ' + item.icon"></i>
               @if (!isCollapsed()) {
                 <span class="nav-label">{{ item.libelle }}</span>
-                <span class="nav-badge-count">{{ item.sousMenus.length }}</span>
                 <i [class]="'bi accordion-chevron ' + (isMenuExpanded(item) ? 'bi-chevron-down' : 'bi-chevron-right')"></i>
               }
             </button>
@@ -101,9 +100,9 @@
       <div class="system-status-card">
         <div class="status-header">
           <div class="pulse-dot"></div>
-          <span class="status-title">Année Pastorale Active</span>
+          <span class="status-title">Année de catéchèse</span>
         </div>
-        <p class="status-desc">2026-2027 • Paroisse Principale</p>
+        <p class="status-desc">{{ currentAnnee().debut | date: 'dd/MM/yyyy' }} - {{ currentAnnee().fin | date: 'dd/MM/yyyy' }}</p>
       </div>
     }
   </div>

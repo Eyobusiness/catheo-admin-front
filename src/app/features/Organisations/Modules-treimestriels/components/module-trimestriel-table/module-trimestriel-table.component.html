@@ -3,10 +3,9 @@
     <table class="medical-table">
       <thead>
         <tr>
-          <th>Trimestre</th>
           <th>Libellé</th>
           <th>Année Pastorale</th>
-          <th>Période & Calendrier</th>
+          <th>Période</th>
           <th>Statut</th>
           <th class="text-right">Actions</th>
         </tr>
@@ -15,21 +14,8 @@
         @for (mod of paginatedModules(); track mod.id) {
           <tr class="table-row">
             <td>
-              <span
-                class="trimestre-badge"
-                [class.is-t1]="mod.trimestre === 'T1'"
-                [class.is-t2]="mod.trimestre === 'T2'"
-                [class.is-t3]="mod.trimestre === 'T3'"
-                title="Cliquer pour basculer le trimestre"
-                (click)="onCycleTrimestre(mod)"
-              >
-                <i class="bi bi-calendar3-range"></i>
-                {{ mod.trimestre }} • {{ getTrimestreLabel(mod.trimestre) }}
-              </span>
-            </td>
-
-            <td>
-              <div class="module-title-cell">
+              <div class="annee-cell">
+                <i class="bi bi-calendar-check"></i>
                 <span class="module-title">{{ mod.libelle }}</span>
               </div>
             </td>
@@ -50,17 +36,15 @@
             </td>
 
             <td>
-              @let status = getPeriodStatus(mod.date_debut, mod.date_fin);
               <span
                 class="status-pill"
-                [class.is-current]="status.type === 'current'"
-                [class.is-future]="status.type === 'future'"
-                [class.is-past]="status.type === 'past'"
+                [class.is-current]="isModuleEnCours(mod)"
+                [class.is-past]="!isModuleEnCours(mod)"
               >
-                @if (status.type === 'current') {
+                @if (isModuleEnCours(mod)) {
                   <span class="pulse-dot"></span>
                 }
-                {{ status.label }}
+                {{ getStatutLabel(mod) }}
               </span>
             </td>
 

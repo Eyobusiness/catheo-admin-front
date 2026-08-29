@@ -67,3 +67,46 @@
   color: var(--danger-600);
   margin-top: 0.25rem;
 }
+
+.optional-label {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--neutral-400);
+}
+
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.password-input {
+  padding-right: 2.75rem !important;
+  width: 100%;
+}
+
+.btn-toggle-eye {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--neutral-400);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast, 0.15s ease);
+  z-index: 2;
+}
+
+.btn-toggle-eye:hover {
+  color: var(--neutral-700);
+  background-color: var(--neutral-100);
+}
+

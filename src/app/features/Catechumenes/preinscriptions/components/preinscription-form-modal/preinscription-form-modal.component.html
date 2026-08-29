@@ -1,554 +1,332 @@
 <app-dialog
   [isOpen]="isOpen()"
-  [title]="isEditing() ? 'Modifier la Demande de Préinscription' : 'Nouvelle Demande de Préinscription (Dossier Complet)'"
+  [title]="isEditing() ? 'Modifier la Demande de Préinscription' : 'Détails de la Préinscription'"
   size="lg"
   (closed)="onClose()"
 >
-  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="preinscription-form-body">
-    <!-- Tabs Navigation Header -->
-    <div class="form-tabs-nav">
-      <button
-        type="button"
-        class="form-tab-btn"
-        [class.active]="activeTab() === 'candidat'"
-        (click)="setTab('candidat')"
-      >
-        <i class="bi bi-person-fill"></i>
-        <span>1. Identité</span>
-      </button>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="preinscription-form animate-fade-in">
+    <!-- Banner Info -->
+    @if (preinscriptionToEdit(); as item) {
+      <div class="form-banner info-banner">
+        <i class="bi bi-folder-check"></i>
+        <div>
+          <span>Dossier : <strong>{{ item.code_dossier }}</strong> &bull; Candidat : <strong>{{ item.nom }} {{ item.prenoms }}</strong></span>
+        </div>
+      </div>
+    }
 
-      <button
-        type="button"
-        class="form-tab-btn"
-        [class.active]="activeTab() === 'parents'"
-        (click)="setTab('parents')"
-      >
-        <i class="bi bi-people-fill"></i>
-        <span>2. Parents / Tuteur</span>
-      </button>
+    <!-- ======================================================== -->
+    <!-- SECTION 1 : ORIENTATION & SESSION (AU DÉBUT)              -->
+    <!-- ======================================================== -->
+    <div class="form-section highlight-section">
+      <div class="section-header">
+        <i class="bi bi-diagram-3"></i>
+        <h4>1. Orientation Souhaitée & Section</h4>
+      </div>
 
-      <button
-        type="button"
-        class="form-tab-btn"
-        [class.active]="activeTab() === 'sacrements'"
-        (click)="setTab('sacrements')"
-      >
-        <i class="bi bi-droplet-half"></i>
-        <span>3. Sacrements & Parrain</span>
-      </button>
+      <div class="form-grid">
+        <div class="form-group full-width">
+          <label class="form-label" for="pre_type_demande">Type de Demande <span class="required">*</span></label>
+          <select id="pre_type_demande" formControlName="type_demande" class="form-control">
+            <option value="nouvelle_inscription">Nouvelle inscription</option>
+            <option value="reinscription">Réinscription</option>
+          </select>
+        </div>
 
-      <button
-        type="button"
-        class="form-tab-btn"
-        [class.active]="activeTab() === 'orientation'"
-        (click)="setTab('orientation')"
-      >
-        <i class="bi bi-mortarboard-fill"></i>
-        <span>4. Campagne & Niveau</span>
-      </button>
+        <div class="form-group" [class.full-width]="!form.controls.section_souhaite_id.value">
+          <label class="form-label" for="pre_section_id">Section / Tranche d'Âge <span class="required">*</span></label>
+          <select
+            id="pre_section_id"
+            formControlName="section_souhaite_id"
+            class="form-control"
+            (change)="onSectionChange($event)"
+          >
+            <option value="">Sélectionner une section</option>
+            @for (section of sections(); track section.id) {
+              <option [value]="section.id">{{ section.nom }}</option>
+            }
+          </select>
+          @if (form.controls.section_souhaite_id.touched && form.controls.section_souhaite_id.invalid) {
+            <span class="field-error">La section est obligatoire.</span>
+          }
+        </div>
+
+        @if (form.controls.section_souhaite_id.value) {
+          <div class="form-group animate-fade-in">
+            <label class="form-label" for="pre_niveau_id">Niveau Souhaité <span class="required">*</span></label>
+            <select id="pre_niveau_id" formControlName="niveau_souhaite_id" class="form-control">
+              <option value="">Sélectionner le niveau</option>
+              @for (niveau of getFilteredNiveaux(form.controls.section_souhaite_id.value); track niveau.id) {
+                <option [value]="niveau.id">{{ niveau.nom }}</option>
+              }
+            </select>
+            @if (form.controls.niveau_souhaite_id.touched && form.controls.niveau_souhaite_id.invalid) {
+              <span class="field-error">Le niveau souhaité est obligatoire.</span>
+            }
+          </div>
+        }
+      </div>
     </div>
 
-    <!-- TAB 1: IDENTITÉ DU CANDIDAT -->
-    @if (activeTab() === 'candidat') {
-      <div class="tab-content-grid">
+    <!-- ======================================================== -->
+    <!-- SECTION 2 : IDENTITÉ DU CANDIDAT                          -->
+    <!-- ======================================================== -->
+    <div class="form-section">
+      <div class="section-header">
+        <i class="bi bi-person-vcard"></i>
+        <h4>2. Identité du Candidat</h4>
+      </div>
+
+      <!-- Photo de profil du catéchumène (Bouton sous la photo) -->
+      <div class="photo-upload-container">
+        <div class="photo-preview-box">
+          @if (photoPreview()) {
+            <img [src]="photoPreview()" alt="Photo d'identité" class="photo-img-preview" />
+            <button type="button" class="btn-remove-photo" (click)="removePhoto()" title="Supprimer la photo">
+              <i class="bi bi-x"></i>
+            </button>
+          } @else {
+            <div class="photo-placeholder">
+              <i class="bi bi-person-fill"></i>
+            </div>
+          }
+        </div>
+        <label class="photo-upload-btn">
+          <i class="bi bi-cloud-arrow-up-fill"></i>
+          <span>Charger une photo</span>
+          <input type="file" accept="image/*" (change)="onPhotoFileChange($event)" hidden />
+        </label>
+        <span class="photo-help">Format JPG, PNG (Max 2 Mo)</span>
+      </div>
+
+      <div class="form-grid">
         <div class="form-group">
-          <label class="form-label" for="cand_nom">
-            Nom de Famille <span class="required">*</span>
-          </label>
-          <input
-            id="cand_nom"
-            type="text"
-            formControlName="nom"
-            class="form-control"
-            placeholder="Ex: KOUASSI"
-          />
-          @if (form.controls.nom.touched && form.controls.nom.errors?.['required']) {
+          <label class="form-label" for="pre_nom">Nom <span class="required">*</span></label>
+          <input id="pre_nom" type="text" formControlName="nom" class="form-control" placeholder="Ex: KOUASSI" />
+          @if (form.controls.nom.touched && form.controls.nom.invalid) {
             <span class="field-error">Le nom est obligatoire.</span>
           }
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="cand_prenoms">
-            Prénoms <span class="required">*</span>
-          </label>
-          <input
-            id="cand_prenoms"
-            type="text"
-            formControlName="prenoms"
-            class="form-control"
-            placeholder="Ex: Jean-Eudes Marc"
-          />
-          @if (form.controls.prenoms.touched && form.controls.prenoms.errors?.['required']) {
+          <label class="form-label" for="pre_prenoms">Prénoms <span class="required">*</span></label>
+          <input id="pre_prenoms" type="text" formControlName="prenoms" class="form-control" placeholder="Ex: Jean-Marc" />
+          @if (form.controls.prenoms.touched && form.controls.prenoms.invalid) {
             <span class="field-error">Les prénoms sont obligatoires.</span>
           }
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="cand_sexe">
-            Sexe <span class="required">*</span>
-          </label>
-          <select id="cand_sexe" formControlName="sexe" class="form-control">
-            <option value="M">Masculin (Garçon / Homme)</option>
-            <option value="F">Féminin (Fille / Femme)</option>
+          <label class="form-label" for="pre_sexe">Sexe <span class="required">*</span></label>
+          <select id="pre_sexe" formControlName="sexe" class="form-control">
+            <option value="M">Masculin (M)</option>
+            <option value="F">Féminin (F)</option>
           </select>
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="cand_dnaiss">
-            Date de Naissance <span class="required">*</span>
-          </label>
-          <input id="cand_dnaiss" type="date" formControlName="date_naissance" class="form-control" />
-          @if (form.controls.date_naissance.touched && form.controls.date_naissance.errors?.['required']) {
+          <label class="form-label" for="pre_date_naiss">Date de Naissance <span class="required">*</span></label>
+          <input id="pre_date_naiss" type="date" formControlName="date_naissance" class="form-control" />
+          @if (form.controls.date_naissance.touched && form.controls.date_naissance.invalid) {
             <span class="field-error">La date de naissance est obligatoire.</span>
           }
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="cand_lnaiss">Lieu de Naissance</label>
-          <input
-            id="cand_lnaiss"
-            type="text"
-            formControlName="lieu_naissance"
-            class="form-control"
-            placeholder="Ex: Cocody, Abidjan"
-          />
+          <label class="form-label" for="pre_lieu_naiss">Lieu de Naissance</label>
+          <input id="pre_lieu_naiss" type="text" formControlName="lieu_naissance" class="form-control" placeholder="Ex: Cocody, Abidjan" />
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="cand_tel">Téléphone du Candidat</label>
-          <input
-            id="cand_tel"
-            type="tel"
-            formControlName="telephone"
-            class="form-control"
-            placeholder="Ex: +225 07 00 00 00 00"
-          />
+          <label class="form-label" for="pre_tel">Téléphone du Candidat</label>
+          <input id="pre_tel" type="tel" formControlName="telephone" class="form-control" placeholder="Ex: 0700000000" />
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="cand_adr">Adresse Géographique</label>
-          <input
-            id="cand_adr"
-            type="text"
-            formControlName="adresse"
-            class="form-control"
-            placeholder="Ex: Riviera Palmeraie, Rue I40"
-          />
+          <label class="form-label" for="pre_domicile">Domicile / Quartier</label>
+          <input id="pre_domicile" type="text" formControlName="domicile" class="form-control" placeholder="Ex: Angré 8ème Tranche" />
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="cand_dom">Domicile / Quartier</label>
-          <input
-            id="cand_dom"
-            type="text"
-            formControlName="domicile"
-            class="form-control"
-            placeholder="Ex: Cité Feh Kessé"
-          />
+          <label class="form-label" for="pre_adresse">Adresse</label>
+          <input id="pre_adresse" type="text" formControlName="adresse" class="form-control" placeholder="Ex: Riviera Palmeraie" />
         </div>
 
-        <div class="form-group">
-          <label class="form-label" for="cand_prof">Profession / Activité</label>
-          <input
-            id="cand_prof"
-            type="text"
-            formControlName="profession"
-            class="form-control"
-            placeholder="Ex: Élève, Étudiant, Enseignant..."
-          />
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="cand_cls_scol">Classe Scolaire (si élève/étudiant)</label>
-          <input
-            id="cand_cls_scol"
-            type="text"
-            formControlName="classe_scolaire"
-            class="form-control"
-            placeholder="Ex: CM2, 3ème, Terminale D, Licence 2..."
-          />
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="cand_sit_mat">Situation Matrimoniale</label>
-          <select id="cand_sit_mat" formControlName="situation_matrimoniale" class="form-control">
-            <option value="celibataire">Célibataire</option>
-            <option value="marie_eglise">Marié(e) à l'Église</option>
-            <option value="marie_coutume">Mariage Coutumier</option>
-            <option value="marie_civil">Mariage Civil</option>
-            <option value="veuf">Veuf / Veuve</option>
-            <option value="divorce">Divorcé(e)</option>
-            <option value="autre">Autre</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="cand_photo">URL Photo d'identité</label>
-          <input
-            id="cand_photo"
-            type="url"
-            formControlName="photo_url"
-            class="form-control"
-            placeholder="https://..."
-          />
-        </div>
-      </div>
-    }
-
-    <!-- TAB 2: PARENTS & TUTEUR -->
-    @if (activeTab() === 'parents') {
-      <div class="tab-content-grid">
-        <div class="section-divider full-width">
-          <i class="bi bi-person-bounding-box"></i> Informations du Père
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="p_nom">Nom complet du Père</label>
-          <input
-            id="p_nom"
-            type="text"
-            formControlName="nom_pere"
-            class="form-control"
-            placeholder="Nom et prénoms du père"
-          />
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="p_orig">Origine / Village du Père</label>
-          <input
-            id="p_orig"
-            type="text"
-            formControlName="origine_pere"
-            class="form-control"
-            placeholder="Ex: Yamoussoukro, Baoulé"
-          />
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="p_tel">Téléphone du Père</label>
-          <input
-            id="p_tel"
-            type="tel"
-            formControlName="telephone_pere"
-            class="form-control"
-            placeholder="+225 ..."
-          />
-        </div>
-
-        <div class="section-divider full-width">
-          <i class="bi bi-person-heart"></i> Informations de la Mère
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="m_nom">Nom complet de la Mère</label>
-          <input
-            id="m_nom"
-            type="text"
-            formControlName="nom_mere"
-            class="form-control"
-            placeholder="Nom et prénoms de la mère"
-          />
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="m_orig">Origine / Village de la Mère</label>
-          <input
-            id="m_orig"
-            type="text"
-            formControlName="origine_mere"
-            class="form-control"
-            placeholder="Ex: Grand-Bassam, N'zima"
-          />
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="m_tel">Téléphone de la Mère</label>
-          <input
-            id="m_tel"
-            type="tel"
-            formControlName="telephone_mere"
-            class="form-control"
-            placeholder="+225 ..."
-          />
-        </div>
-
-        <div class="section-divider full-width">
-          <i class="bi bi-shield-person"></i> Tuteur Légal / Responsable (si différent des parents)
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="t_nom">Nom du Tuteur / Responsable</label>
-          <input
-            id="t_nom"
-            type="text"
-            formControlName="nom_tuteur"
-            class="form-control"
-            placeholder="Nom et prénoms du tuteur"
-          />
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="t_tel">Téléphone du Tuteur</label>
-          <input
-            id="t_tel"
-            type="tel"
-            formControlName="telephone_tuteur"
-            class="form-control"
-            placeholder="+225 ..."
-          />
-        </div>
-      </div>
-    }
-
-    <!-- TAB 3: SACREMENTS DÉJÀ REÇUS & PARRAIN -->
-    @if (activeTab() === 'sacrements') {
-      <div class="tab-content-grid">
-        <!-- Switch Baptisé -->
-        <div class="form-group full-width">
-          <div class="toggle-card">
-            <label class="switch">
-              <input type="checkbox" formControlName="est_baptise" />
-              <span class="slider round"></span>
-            </label>
-            <div class="toggle-meta">
-              <span class="toggle-title">Le candidat est-il déjà Baptisé dans l'Église Catholique ?</span>
-              <span class="toggle-desc">Si oui, veuillez renseigner les détails du carnet et de la paroisse de baptême</span>
-            </div>
+        <!-- Champs conditionnels selon la Section choisie en Section 1 -->
+        @if (showClasseScolaire()) {
+          <div class="form-group full-width">
+            <label class="form-label" for="pre_classe_scolaire">{{ classeScolaireLabel() }} <span class="required">*</span></label>
+            <input id="pre_classe_scolaire" type="text" formControlName="classe_scolaire" class="form-control" [placeholder]="classeScolairePlaceholder()" />
+            @if (form.controls.classe_scolaire.touched && form.controls.classe_scolaire.invalid) {
+              <span class="field-error">La classe scolaire est obligatoire pour cette section.</span>
+            }
           </div>
+        }
+
+        @if (showProfession()) {
+          <div class="form-group" [class.full-width]="!showSituationMatrimoniale()">
+            <label class="form-label" for="pre_profession">Profession / Activité <span class="required">*</span></label>
+            <input id="pre_profession" type="text" formControlName="profession" class="form-control" [placeholder]="professionPlaceholder()" />
+            @if (form.controls.profession.touched && form.controls.profession.invalid) {
+              <span class="field-error">La profession est obligatoire.</span>
+            }
+          </div>
+        }
+
+        @if (showSituationMatrimoniale()) {
+          <div class="form-group">
+            <label class="form-label" for="pre_situation_matrimoniale">Situation Matrimoniale <span class="required">*</span></label>
+            <select id="pre_situation_matrimoniale" formControlName="situation_matrimoniale" class="form-control">
+              <option value="">Sélectionner la situation</option>
+              <option value="celibataire">Célibataire</option>
+              <option value="marie_eglise">Marié(e) à l'Église</option>
+              <option value="marie_coutume">Mariage coutumier</option>
+              <option value="marie_civil">Mariage civil</option>
+              <option value="veuf">Veuf / Veuve</option>
+              <option value="divorce">Divorcé(e)</option>
+              <option value="autre">Autre</option>
+            </select>
+            @if (form.controls.situation_matrimoniale.touched && form.controls.situation_matrimoniale.invalid) {
+              <span class="field-error">La situation matrimoniale est obligatoire.</span>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- SECTION 3 : FAMILLE & PARENTS / TUTEUR                     -->
+    <!-- ======================================================== -->
+    <div class="form-section">
+      <div class="section-header">
+        <i class="bi bi-people"></i>
+        <h4>3. Filiation & Responsables Légaux</h4>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label" for="pre_pere">Nom & Prénoms du Père</label>
+          <input id="pre_pere" type="text" formControlName="nom_pere" class="form-control" placeholder="Nom complet du père" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="pre_tel_pere">Téléphone du Père</label>
+          <input id="pre_tel_pere" type="tel" formControlName="telephone_pere" class="form-control" placeholder="Contact du père" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="pre_mere">Nom & Prénoms de la Mère</label>
+          <input id="pre_mere" type="text" formControlName="nom_mere" class="form-control" placeholder="Nom complet de la mère" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="pre_tel_mere">Téléphone de la Mère</label>
+          <input id="pre_tel_mere" type="tel" formControlName="telephone_mere" class="form-control" placeholder="Contact de la mère" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="pre_tuteur">Nom du Tuteur Légal</label>
+          <input id="pre_tuteur" type="text" formControlName="nom_tuteur" class="form-control" placeholder="Si différent des parents" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="pre_tel_tuteur">Téléphone du Tuteur</label>
+          <input id="pre_tel_tuteur" type="tel" formControlName="telephone_tuteur" class="form-control" placeholder="Contact du tuteur" />
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- SECTION 4 : SITUATION SACRAMENTELLE                        -->
+    <!-- ======================================================== -->
+    <div class="form-section">
+      <div class="section-header">
+        <i class="bi bi-shield-check"></i>
+        <h4>4. Situation Sacramentelle</h4>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group full-width">
+          <label class="styled-checkbox-card" [class.checked]="form.controls.est_baptise.value">
+            <input type="checkbox" formControlName="est_baptise" class="styled-checkbox-input" />
+            <div class="styled-checkbox-indicator">
+              <i class="bi bi-check-lg"></i>
+            </div>
+            <div class="styled-checkbox-meta">
+              <span class="styled-checkbox-title">Baptême déjà reçu</span>
+              <span class="styled-checkbox-desc">Le candidat est déjà baptisé dans l'Église catholique</span>
+            </div>
+          </label>
         </div>
 
         @if (form.controls.est_baptise.value) {
           <div class="form-group">
-            <label class="form-label" for="b_carnet">N° Carnet / Registre de Baptême</label>
-            <input
-              id="b_carnet"
-              type="text"
-              formControlName="num_carnet_bapteme"
-              class="form-control"
-              placeholder="Ex: REG-2018-0492"
-            />
+            <label class="form-label" for="pre_date_bap">Date du Baptême <span class="required">*</span></label>
+            <input id="pre_date_bap" type="date" formControlName="date_bapteme" class="form-control" />
+            @if (form.controls.date_bapteme.touched && form.controls.date_bapteme.invalid) {
+              <span class="field-error">La date du baptême est obligatoire.</span>
+            }
           </div>
 
           <div class="form-group">
-            <label class="form-label" for="b_date">Date du Baptême</label>
-            <input id="b_date" type="date" formControlName="date_bapteme" class="form-control" />
+            <label class="form-label" for="pre_paroisse_bap">Paroisse du Baptême <span class="required">*</span></label>
+            <input id="pre_paroisse_bap" type="text" formControlName="paroisse_bapteme" class="form-control" placeholder="Ex: St Jean de Cocody" />
+            @if (form.controls.paroisse_bapteme.touched && form.controls.paroisse_bapteme.invalid) {
+              <span class="field-error">La paroisse du baptême est obligatoire.</span>
+            }
           </div>
 
           <div class="form-group">
-            <label class="form-label" for="b_paroisse">Paroisse du Baptême</label>
-            <input
-              id="b_paroisse"
-              type="text"
-              formControlName="paroisse_bapteme"
-              class="form-control"
-              placeholder="Ex: Paroisse Saint Jean"
-            />
+            <label class="form-label" for="pre_carnet_bap">N° Carnet / Registre</label>
+            <input id="pre_carnet_bap" type="text" formControlName="num_carnet_bapteme" class="form-control" placeholder="Ex: BAP-2018-045" />
           </div>
 
           <div class="form-group">
-            <label class="form-label" for="b_ville">Ville du Baptême</label>
-            <input
-              id="b_ville"
-              type="text"
-              formControlName="ville_bapteme"
-              class="form-control"
-              placeholder="Ex: Abidjan"
-            />
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="b_diocese">Diocèse du Baptême</label>
-            <input
-              id="b_diocese"
-              type="text"
-              formControlName="diocese_bapteme"
-              class="form-control"
-              placeholder="Ex: Diocèse d'Abidjan"
-            />
+            <label class="form-label" for="pre_lieu_bap">Lieu du Baptême</label>
+            <input id="pre_lieu_bap" type="text" formControlName="lieu_bapteme" class="form-control" placeholder="Ville ou diocèse" />
           </div>
         }
 
-        <div class="section-divider full-width">
-          <i class="bi bi-star"></i> Première Communion & Confirmation
+        <div class="form-group">
+          <label class="form-label" for="pre_date_communion">Date Première Communion</label>
+          <input id="pre_date_communion" type="date" formControlName="date_premiere_communion" class="form-control" />
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="c_date">Date de Première Communion</label>
-          <input id="c_date" type="date" formControlName="date_premiere_communion" class="form-control" />
+          <label class="form-label" for="pre_paroisse_communion">Paroisse Première Communion</label>
+          <input id="pre_paroisse_communion" type="text" formControlName="paroisse_premiere_communion" class="form-control" placeholder="Paroisse de communion" />
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="c_paroisse">Paroisse de Première Communion</label>
-          <input
-            id="c_paroisse"
-            type="text"
-            formControlName="paroisse_premiere_communion"
-            class="form-control"
-            placeholder="Ex: Paroisse Sainte Thérèse"
-          />
+          <label class="form-label" for="pre_date_conf">Date Confirmation</label>
+          <input id="pre_date_conf" type="date" formControlName="date_confirmation" class="form-control" />
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="conf_date">Date de Confirmation</label>
-          <input id="conf_date" type="date" formControlName="date_confirmation" class="form-control" />
+          <label class="form-label" for="pre_paroisse_conf">Paroisse Confirmation</label>
+          <input id="pre_paroisse_conf" type="text" formControlName="paroisse_confirmation" class="form-control" placeholder="Paroisse de confirmation" />
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="conf_paroisse">Paroisse de Confirmation</label>
-          <input
-            id="conf_paroisse"
-            type="text"
-            formControlName="paroisse_confirmation"
-            class="form-control"
-            placeholder="Ex: Cathédrale Saint Paul"
-          />
+          <label class="form-label" for="pre_parrain">Nom Parrain / Marraine</label>
+          <input id="pre_parrain" type="text" formControlName="nom_parrain" class="form-control" placeholder="Nom complet" />
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="conf_min">Ministre de la Confirmation</label>
-          <input
-            id="conf_min"
-            type="text"
-            formControlName="ministre_confirmation"
-            class="form-control"
-            placeholder="Ex: Mgr Jean-Pierre Cardinal KUTWA"
-          />
-        </div>
-
-        <div class="section-divider full-width">
-          <i class="bi bi-award"></i> Parrain / Marraine de Baptême ou Confirmation
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="parr_nom">Nom complet du Parrain / Marraine</label>
-          <input
-            id="parr_nom"
-            type="text"
-            formControlName="nom_parrain"
-            class="form-control"
-            placeholder="Nom et prénoms"
-          />
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="parr_sexe">Qualité</label>
-          <select id="parr_sexe" formControlName="sexe_parrain" class="form-control">
-            <option value="M">Parrain (Masculin)</option>
-            <option value="F">Marraine (Féminin)</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="parr_tel">Téléphone du Parrain / Marraine</label>
-          <input
-            id="parr_tel"
-            type="tel"
-            formControlName="telephone_parrain"
-            class="form-control"
-            placeholder="+225 ..."
-          />
+          <label class="form-label" for="pre_tel_parrain">Téléphone Parrain / Marraine</label>
+          <input id="pre_tel_parrain" type="tel" formControlName="telephone_parrain" class="form-control" placeholder="Contact" />
         </div>
       </div>
-    }
+    </div>
 
-    <!-- TAB 4: CAMPAGNE & ORIENTATION -->
-    @if (activeTab() === 'orientation') {
-      <div class="tab-content-grid">
-        <div class="form-group full-width">
-          <label class="form-label" for="p_camp">
-            Campagne de Préinscription Active <span class="required">*</span>
-          </label>
-          <select id="p_camp" formControlName="campagne_id" class="form-control">
-            <option value="">Sélectionner la campagne</option>
-            @for (c of campagnes(); track c.id) {
-              <option [value]="c.id">
-                {{ c.titre }} ({{ c.annee_catechese?.libelle || 'En cours' }}) - Statut: {{ c.statut }}
-              </option>
-            }
-          </select>
-          @if (form.controls.campagne_id.touched && form.controls.campagne_id.errors?.['required']) {
-            <span class="field-error">Veuillez sélectionner une campagne.</span>
-          }
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="p_type_dem">
-            Type de Demande <span class="required">*</span>
-          </label>
-          <select id="p_type_dem" formControlName="type_demande" class="form-control">
-            <option value="premiere_inscription">Première Inscription (Entrée au catéchisme)</option>
-            <option value="reinscription">Réinscription (Passage de niveau)</option>
-            <option value="nouvelle_inscription">Nouvelle Inscription</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="p_sec">Section Souhaitée</label>
-          <select id="p_sec" formControlName="section_souhaite_id" class="form-control">
-            <option value="">Toutes les sections</option>
-            @for (s of sections(); track s.id) {
-              <option [value]="s.id">{{ s.nom }}</option>
-            }
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="p_niv">Niveau Souhaité</label>
-          <select id="p_niv" formControlName="niveau_souhaite_id" class="form-control">
-            <option value="">Non spécifié</option>
-            @for (n of getFilteredNiveaux(); track n.id) {
-              <option [value]="n.id">{{ n.nom }}</option>
-            }
-          </select>
-        </div>
-
-        <div class="info-alert-box full-width">
-          <i class="bi bi-info-circle-fill"></i>
-          <div>
-            <strong>Affectation de Classe :</strong>
-            <span>
-              Dans le cadre d'une préinscription en ligne, l'affectation à une classe précise s'effectue au moment de la validation par le secrétariat paroissial après vérification du dossier.
-            </span>
-          </div>
-        </div>
-      </div>
-    }
-
-    <!-- Modal Footer Actions -->
+    <!-- Actions de bas de page -->
     <div class="modal-footer-actions">
       <app-button type="button" variant="ghost" (clicked)="onClose()" [disabled]="isLoading()">
         Annuler
       </app-button>
-
-      <!-- Navigation buttons between tabs -->
-      @if (activeTab() !== 'candidat') {
-        <app-button
-          type="button"
-          variant="secondary"
-          (clicked)="setTab(activeTab() === 'orientation' ? 'sacrements' : activeTab() === 'sacrements' ? 'parents' : 'candidat')"
-        >
-          <i class="bi bi-arrow-left"></i> Précédent
-        </app-button>
-      }
-
-      @if (activeTab() !== 'orientation') {
-        <app-button
-          type="button"
-          variant="secondary"
-          (clicked)="setTab(activeTab() === 'candidat' ? 'parents' : activeTab() === 'parents' ? 'sacrements' : 'orientation')"
-        >
-          Suivant <i class="bi bi-arrow-right"></i>
-        </app-button>
-      }
-
-      <app-button
-        type="submit"
-        variant="primary"
-        [loading]="isLoading()"
-        [disabled]="form.invalid || isLoading()"
-      >
+      <app-button type="submit" variant="primary" [loading]="isLoading()" [disabled]="form.invalid || isLoading()">
         <i class="bi bi-check-lg"></i>
-        <span>{{ isEditing() ? 'Enregistrer les Modifications' : 'Soumettre le Dossier de Préinscription' }}</span>
+        <span>{{ isEditing() ? 'Enregistrer les modifications' : 'Enregistrer' }}</span>
       </app-button>
     </div>
   </form>

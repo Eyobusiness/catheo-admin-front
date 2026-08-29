@@ -1,0 +1,435 @@
+<div class="rapport-page-container">
+  <!-- Top Bar Controls -->
+  <header class="rapport-topbar no-print">
+    <div class="topbar-title-block">
+      <div class="title-with-pill">
+        <h1 class="page-title">Rapport Pastoral & Bilan Annuel</h1>
+        @if (bilanData()?.annee?.statut) {
+          <span class="status-pill" [class.active]="bilanData()?.annee?.statut === 'active' || bilanData()?.annee?.statut === 'actif'">
+            {{ (bilanData()?.annee?.statut === 'active' || bilanData()?.annee?.statut === 'actif') ? 'Année Active' : bilanData()?.annee?.statut }}
+          </span>
+        }
+      </div>
+      <p class="page-subtitle">
+        Synthèse pastorale officielle : effectifs, assiduité, progression pédagogique, sacrements et encadrement.
+      </p>
+    </div>
+
+    <div class="topbar-actions">
+      <!-- Sélecteur d'année pastorale -->
+      <div class="annee-select-wrapper">
+        <i class="bi bi-calendar3 select-icon"></i>
+        <select
+          class="annee-select"
+          [ngModel]="selectedAnneeId()"
+          (ngModelChange)="onAnneeChange($event)"
+        >
+          <option value="">Année active en cours</option>
+          @for (a of anneesList(); track a.id) {
+            <option [value]="a.id">
+              {{ a.libelle }} {{ a.est_active ? '(Active)' : '' }}
+            </option>
+          }
+        </select>
+      </div>
+
+      <!-- Bouton Actualiser -->
+      <app-button
+        variant="ghost"
+        icon="arrow-clockwise"
+        [loading]="isLoading()"
+        (clicked)="refreshBilan()"
+      >
+        Actualiser
+      </app-button>
+
+      <!-- Bouton Imprimer / Export PDF -->
+      <app-button
+        variant="primary"
+        icon="printer-fill"
+        (clicked)="printReport()"
+      >
+        Imprimer / PDF
+      </app-button>
+    </div>
+  </header>
+
+  <!-- Document Header for Print Only -->
+  <div class="print-official-header print-only">
+    <div class="print-diocese-info">
+      <h2>ARCHIDIOCÈSE D'ABIDJAN — PAROISSE CATHÉDRALE SAINTE THÉRÈSE (CIM)</h2>
+      <h3>COMMISSION PAROISSIALE DE LA CATÉCHÈSE ET DE L'ÉDUCATION DE LA FOI</h3>
+      <p>RAPPORT PASTORAL & BILAN GÉNÉRAL — ANNÉE CATHÉCHÉTIQUE {{ activeAnneeLibelle() }}</p>
+    </div>
+    <div class="print-meta-divider"></div>
+  </div>
+
+  @if (bilanData(); as b) {
+    <!-- 1. Executive Summary & Pastoral Synthesis -->
+    <section class="summary-hero-card">
+      <div class="hero-header-row">
+        <div class="hero-title-group">
+          <span class="hero-tag"><i class="bi bi-bookmark-check-fill"></i> Synthèse Officielle</span>
+          <h2 class="hero-heading">Année Pastorale {{ b.annee.libelle }}</h2>
+          @if (b.annee.date_debut && b.annee.date_fin) {
+            <span class="hero-dates">
+              Période : {{ b.annee.date_debut | date:'dd/MM/yyyy' }} au {{ b.annee.date_fin | date:'dd/MM/yyyy' }}
+            </span>
+          }
+        </div>
+
+        <div class="hero-rates-pills">
+          <div class="rate-pill">
+            <span class="rate-val">{{ b.synthese_finale.taux_assiduite }}%</span>
+            <span class="rate-lbl">Taux d'Assiduité Global</span>
+          </div>
+          @if (b.synthese_finale.couverture_classes) {
+            <div class="rate-pill">
+              <span class="rate-val">{{ b.synthese_finale.couverture_classes }}%</span>
+              <span class="rate-lbl">Couverture des Classes</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      @if (b.synthese_finale.resume) {
+        <div class="hero-comment-box">
+          <i class="bi bi-chat-quote-fill quote-icon"></i>
+          <p class="hero-resume-text">{{ b.synthese_finale.resume }}</p>
+        </div>
+      }
+    </section>
+
+    <!-- 2. KPI Cards Grid -->
+    <section class="kpi-cards-grid">
+      <div class="kpi-card primary">
+        <div class="kpi-icon"><i class="bi bi-people-fill"></i></div>
+        <div class="kpi-body">
+          <span class="kpi-val">{{ b.synthese.effectif_total | number }}</span>
+          <span class="kpi-title">Catéchumènes Inscrits</span>
+          <span class="kpi-sub">{{ b.synthese.catechumenes_actifs }} actifs réguliers</span>
+        </div>
+      </div>
+
+      <div class="kpi-card success">
+        <div class="kpi-icon"><i class="bi bi-person-plus-fill"></i></div>
+        <div class="kpi-body">
+          <span class="kpi-val">{{ b.synthese.nouveaux | number }}</span>
+          <span class="kpi-title">Nouvelles Inscriptions</span>
+          <span class="kpi-sub">{{ b.synthese.reinscriptions }} réinscriptions</span>
+        </div>
+      </div>
+
+      <div class="kpi-card info">
+        <div class="kpi-icon"><i class="bi bi-person-badge-fill"></i></div>
+        <div class="kpi-body">
+          <span class="kpi-val">{{ b.synthese.animateurs }}</span>
+          <span class="kpi-title">Catéchistes / Animateurs</span>
+          <span class="kpi-sub">{{ b.animateurs.animateurs_affectes }} affectés aux classes</span>
+        </div>
+      </div>
+
+      <div class="kpi-card warning">
+        <div class="kpi-icon"><i class="bi bi-door-open-fill"></i></div>
+        <div class="kpi-body">
+          <span class="kpi-val">{{ b.synthese.classes }}</span>
+          <span class="kpi-title">Classes de Catéchèse</span>
+          <span class="kpi-sub">{{ b.synthese.sections }} sections / {{ b.synthese.niveaux }} niveaux</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Interannual Evolution (if available) -->
+    @if (b.evolution && b.evolution.disponible) {
+      <section class="evolution-banner">
+        <div class="evo-header">
+          <div class="evo-title">
+            <i class="bi bi-graph-up-arrow"></i>
+            <span>Évolution Comparative des Effectifs</span>
+          </div>
+          <span class="evo-badge" [class.positive]="b.evolution.difference >= 0" [class.negative]="b.evolution.difference < 0">
+            {{ b.evolution.difference >= 0 ? '+' : '' }}{{ b.evolution.pourcentage }}% vs {{ b.evolution.annee_precedente_libelle }}
+          </span>
+        </div>
+
+        <div class="evo-metrics-row">
+          <div class="evo-metric">
+            <span class="lbl">{{ b.evolution.annee_precedente_libelle }} (Année précédente)</span>
+            <span class="val">{{ b.evolution.annee_precedente }} catéchumènes</span>
+          </div>
+          <div class="evo-arrow"><i class="bi bi-arrow-right"></i></div>
+          <div class="evo-metric highlight">
+            <span class="lbl">{{ b.evolution.annee_actuelle_libelle }} (Année actuelle)</span>
+            <span class="val">{{ b.evolution.annee_actuelle }} catéchumènes</span>
+          </div>
+          <div class="evo-metric diff">
+            <span class="lbl">Variation nette</span>
+            <span class="val" [class.text-success]="b.evolution.difference >= 0" [class.text-danger]="b.evolution.difference < 0">
+              {{ b.evolution.difference >= 0 ? '+' : '' }}{{ b.evolution.difference }} élève(s)
+            </span>
+          </div>
+        </div>
+      </section>
+    }
+
+    <!-- 4. Assiduité & Fréquentation + Sacrements -->
+    <div class="grid-two-columns">
+      <!-- Assiduité & Séances -->
+      <app-card title="Assiduité & Fréquentation des Séances">
+        <div class="assiduite-container">
+          <div class="assiduite-rate-header">
+            <div class="rate-large-block">
+              <span class="pct-num">{{ b.assiduite.taux_presence }}%</span>
+              <span class="pct-sub">Taux moyen de présence</span>
+            </div>
+            <div class="seances-summary-stats">
+              <div class="seance-stat-pill">
+                <span class="lbl">Séances Prévues</span>
+                <span class="num">{{ b.assiduite.seances_prevues }}</span>
+              </div>
+              <div class="seance-stat-pill success">
+                <span class="lbl">Réalisées</span>
+                <span class="num">{{ b.assiduite.seances_realisees }}</span>
+              </div>
+              @if (b.assiduite.seances_annulees > 0) {
+                <div class="seance-stat-pill danger">
+                  <span class="lbl">Annulées</span>
+                  <span class="num">{{ b.assiduite.seances_annulees }}</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="progress-bar-track">
+            <div class="progress-bar-fill" [style.width.%]="b.assiduite.taux_presence"></div>
+          </div>
+
+          <div class="presence-counts-grid">
+            <div class="presence-count-item success">
+              <i class="bi bi-check-circle-fill"></i>
+              <div>
+                <span class="count-num">{{ b.assiduite.presences | number }}</span>
+                <span class="count-lbl">Présences cumulées</span>
+              </div>
+            </div>
+
+            <div class="presence-count-item danger">
+              <i class="bi bi-x-circle-fill"></i>
+              <div>
+                <span class="count-num">{{ b.assiduite.absences | number }}</span>
+                <span class="count-lbl">Absences enregistrées</span>
+              </div>
+            </div>
+
+            <div class="presence-count-item info">
+              <i class="bi bi-info-circle-fill"></i>
+              <div>
+                <span class="count-num">{{ b.assiduite.absences_justifiees | number }}</span>
+                <span class="count-lbl">Absences justifiées</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </app-card>
+
+      <!-- Sacrements Célébrés & en Préparation -->
+      <app-card title="Bilan des Sacrements de l'Initiation">
+        <div class="sacrements-summary-grid">
+          <!-- Baptême -->
+          <div class="sacrament-report-card bapteme">
+            <div class="sac-header">
+              <div class="sac-icon"><i class="bi bi-droplet-fill"></i></div>
+              <h4 class="sac-name">Baptême</h4>
+            </div>
+            <div class="sac-stats-row">
+              <div class="sac-stat">
+                <span class="num">{{ b.sacrements.bapteme.candidats }}</span>
+                <span class="lbl">Candidats</span>
+              </div>
+              <div class="sac-stat highlight">
+                <span class="num">{{ b.sacrements.bapteme.realises }}</span>
+                <span class="lbl">Célébrés</span>
+              </div>
+              <div class="sac-stat">
+                <span class="num">{{ b.sacrements.bapteme.restants }}</span>
+                <span class="lbl">En attente</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Première Communion -->
+          <div class="sacrament-report-card communion">
+            <div class="sac-header">
+              <div class="sac-icon"><i class="bi bi-cup-hot-fill"></i></div>
+              <h4 class="sac-name">Première Communion</h4>
+            </div>
+            <div class="sac-stats-row">
+              <div class="sac-stat">
+                <span class="num">{{ b.sacrements.premiere_communion.candidats }}</span>
+                <span class="lbl">Candidats</span>
+              </div>
+              <div class="sac-stat highlight">
+                <span class="num">{{ b.sacrements.premiere_communion.realises }}</span>
+                <span class="lbl">Célébrées</span>
+              </div>
+              <div class="sac-stat">
+                <span class="num">{{ b.sacrements.premiere_communion.restants }}</span>
+                <span class="lbl">En attente</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Confirmation -->
+          <div class="sacrament-report-card confirmation">
+            <div class="sac-header">
+              <div class="sac-icon"><i class="bi bi-fire"></i></div>
+              <h4 class="sac-name">Confirmation</h4>
+            </div>
+            <div class="sac-stats-row">
+              <div class="sac-stat">
+                <span class="num">{{ b.sacrements.confirmation.candidats }}</span>
+                <span class="lbl">Candidats</span>
+              </div>
+              <div class="sac-stat highlight">
+                <span class="num">{{ b.sacrements.confirmation.realises }}</span>
+                <span class="lbl">Confirmés</span>
+              </div>
+              <div class="sac-stat">
+                <span class="num">{{ b.sacrements.confirmation.restants }}</span>
+                <span class="lbl">En attente</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </app-card>
+    </div>
+
+    <!-- 5. Progression Pédagogique & Réussite par Niveau -->
+    @if (b.progression && b.progression.length > 0) {
+      <app-card title="Progression Pédagogique & Passage en Niveau Supérieur">
+        <div class="table-responsive">
+          <table class="report-table">
+            <thead>
+              <tr>
+                <th>Niveau de Catéchèse</th>
+                <th>Section</th>
+                <th class="text-center">Effectif Inscrit</th>
+                <th class="text-center">Admis / Promus</th>
+                <th class="text-center">Ajournés</th>
+                <th class="text-center">En attente</th>
+                <th class="text-end">Taux de Réussite</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (p of b.progression; track p.niveau_id) {
+                <tr>
+                  <td>
+                    <strong>{{ p.niveau_nom }}</strong>
+                  </td>
+                  <td>
+                    <span class="badge-section">{{ p.section_nom }}</span>
+                  </td>
+                  <td class="text-center">{{ p.effectif_inscrit }}</td>
+                  <td class="text-center text-success font-bold">{{ p.admis }}</td>
+                  <td class="text-center text-danger">{{ p.ajournes }}</td>
+                  <td class="text-center text-muted">{{ p.en_attente }}</td>
+                  <td class="text-end">
+                    <span class="success-pill">
+                      {{ p.taux_reussite !== undefined ? p.taux_reussite : (p.effectif_inscrit > 0 ? (p.admis / p.effectif_inscrit * 100 | number:'1.0-0') : 0) }}%
+                    </span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </app-card>
+    }
+
+    <!-- 6. Effectifs par Section & par Classe -->
+    <div class="grid-two-columns">
+      <!-- Par Section -->
+      <app-card title="Répartition des Effectifs par Section">
+        <div class="distribution-list">
+          @for (sec of b.effectifs.par_section; track sec.section_id) {
+            <div class="dist-row">
+              <div class="dist-row-header">
+                <span class="dist-title">
+                  <i class="bi bi-bookmark-fill"></i>
+                  {{ sec.section_nom }}
+                </span>
+                <span class="dist-val">{{ sec.effectif }} élève(s) ({{ sec.pourcentage || 0 }}%)</span>
+              </div>
+              <div class="progress-bar-track small">
+                <div class="progress-bar-fill section" [style.width.%]="sec.pourcentage || 0"></div>
+              </div>
+            </div>
+          }
+        </div>
+      </app-card>
+
+      <!-- Par Classe -->
+      <app-card title="Effectifs et Occupation des Classes">
+        <div class="classes-report-list">
+          @for (cl of b.effectifs.par_classe; track cl.classe_id) {
+            <div class="class-report-item">
+              <div class="cl-info">
+                <span class="cl-name">{{ cl.classe_nom }}</span>
+                <span class="cl-sub">{{ cl.niveau_nom }} — {{ cl.section_nom }}</span>
+              </div>
+              <div class="cl-metrics">
+                <span class="cl-count"><strong>{{ cl.effectif }}</strong> élève(s)</span>
+                @if (cl.taux_remplissage !== undefined) {
+                  <span class="cl-taux">{{ cl.taux_remplissage }}%</span>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </app-card>
+    </div>
+
+    <!-- 7. Inscriptions & Alertes Pastorales -->
+    @if (b.alertes && b.alertes.length > 0) {
+      <app-card title="Points d'Attention & Alertes Pastorales">
+        <div class="report-alerts-list">
+          @for (alt of b.alertes; track alt.type) {
+            <div class="report-alert-item" [class]="alt.niveau">
+              @if (alt.niveau === 'danger') {
+                <i class="bi bi-exclamation-octagon-fill"></i>
+              } @else if (alt.niveau === 'warning') {
+                <i class="bi bi-exclamation-triangle-fill"></i>
+              } @else {
+                <i class="bi bi-info-circle-fill"></i>
+              }
+              <div class="alert-body">
+                <span class="alert-msg">{{ alt.message }}</span>
+              </div>
+            </div>
+          }
+        </div>
+      </app-card>
+    }
+
+    <!-- Official Signature Block for Print -->
+    <div class="print-signatures-block print-only">
+      <div class="signature-box">
+        <p class="sig-title">Le Coordinateur Paroissial de Catéchèse</p>
+        <div class="sig-space"></div>
+        <p class="sig-name">Date & Signature</p>
+      </div>
+
+      <div class="signature-box">
+        <p class="sig-title">Le Curé de la Paroisse</p>
+        <div class="sig-space"></div>
+        <p class="sig-name">Vu et approuvé</p>
+      </div>
+    </div>
+  } @else {
+    <div class="empty-bilan-card">
+      <i class="bi bi-file-earmark-bar-graph empty-icon"></i>
+      <h3>Chargement du Bilan Pastoral...</h3>
+      <p>Récupération des données statistiques et consolidées de l'année en cours.</p>
+    </div>
+  }
+</div>

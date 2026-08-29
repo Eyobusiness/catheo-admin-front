@@ -2,22 +2,10 @@
   <!-- Topbar Header -->
   <section class="page-topbar">
     <div class="topbar-headings">
-   
       <h2 class="topbar-title">Gestion des Préinscriptions</h2>
       <p class="topbar-subtitle">
-        Traitement, validation, affectation.
+        File d'attente, traitement et validation des dossiers de préinscription soumis en ligne.
       </p>
-    </div>
-
-    <div class="topbar-actions">
-      <app-button
-        variant="primary"
-        size="md"
-        icon="plus"
-        (clicked)="openCreateModal()"
-      >
-        Nouvelle Préinscription
-      </app-button>
     </div>
   </section>
 
@@ -88,24 +76,24 @@
           >
             <option value="">Tous les statuts</option>
             <option value="en_attente">En Attente</option>
-            <option value="a_affecter">À Affecter</option>
             <option value="validee">Validées</option>
             <option value="rejetee">Rejetées</option>
           </select>
           <i class="bi bi-chevron-down select-chevron-icon"></i>
         </div>
 
-        <!-- Type Filter -->
+        <!-- Section Filter -->
         <div class="select-wrapper">
-          <i class="bi bi-tag select-prefix-icon"></i>
+          <i class="bi bi-diagram-3 select-prefix-icon"></i>
           <select
             class="filter-select-control"
-            [value]="typeFilter()"
-            (change)="onTypeFilterChange($event)"
+            [value]="sectionFilter()"
+            (change)="onSectionFilterChange($event)"
           >
-            <option value="">Tous les types</option>
-            <option value="premiere_inscription">Première Inscription</option>
-            <option value="reinscription">Réinscription</option>
+            <option value="">Toutes les sections</option>
+            @for (s of sections(); track s.id) {
+              <option [value]="s.id">{{ s.nom }}</option>
+            }
           </select>
           <i class="bi bi-chevron-down select-chevron-icon"></i>
         </div>

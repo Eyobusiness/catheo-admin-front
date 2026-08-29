@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
-import { ModuleTrimestriel, TrimestreCode } from '../../models/module-trimestriel.model';
+import { ModuleTrimestriel } from '../../models/module-trimestriel.model';
 import { AnneeCatechese } from '../../../AnneesPastorales/models/annee-catechese.model';
 import { AppIconButton } from '../../../../../shared/ui/components/buttons/app-icon-button/app-icon-button.component';
 import { AppButton } from '../../../../../shared/ui/components/buttons/app-button/app-button.component';
@@ -19,8 +19,8 @@ export class ModuleTrimestrielTableComponent {
   public readonly viewRequested = output<ModuleTrimestriel>();
   public readonly editRequested = output<ModuleTrimestriel>();
   public readonly deleteRequested = output<ModuleTrimestriel>();
-  public readonly toggleTrimestreRequested = output<{ id: string; nextTrimestre: TrimestreCode }>();
   public readonly createRequested = output<void>();
+
 
   // Local Pagination
   public readonly currentPage = signal<number>(1);
@@ -34,19 +34,6 @@ export class ModuleTrimestrielTableComponent {
     return list.slice(start, start + size);
   });
 
-  protected getTrimestreLabel(t: TrimestreCode): string {
-    switch (t) {
-      case 'T1':
-        return '1er Trimestre';
-      case 'T2':
-        return '2ème Trimestre';
-      case 'T3':
-        return '3ème Trimestre';
-      default:
-        return t;
-    }
-  }
-
   protected getAnneeLibelle(mod: ModuleTrimestriel): string {
     if (mod.annee_catechese?.libelle) return mod.annee_catechese.libelle;
     const anneeId = mod.annee_catechese_id || mod.annee_catechese?.id;
@@ -55,6 +42,16 @@ export class ModuleTrimestrielTableComponent {
       if (a) return a.libelle;
     }
     return 'Année pastorale';
+  }
+
+  protected isModuleEnCours(mod: ModuleTrimestriel): boolean {
+    const s = String(mod.statut || '').trim().toLowerCase();
+    if (s === 'termine' || s === 'terminé' || s === 'completed') return false;
+    return true;
+  }
+
+  protected getStatutLabel(mod: ModuleTrimestriel): string {
+    return this.isModuleEnCours(mod) ? 'En cours' : 'Terminé';
   }
 
   protected getPeriodStatus(dateDebut: string, dateFin: string): { label: string; type: 'current' | 'future' | 'past' } {
@@ -84,12 +81,6 @@ export class ModuleTrimestrielTableComponent {
 
   protected onDelete(mod: ModuleTrimestriel): void {
     this.deleteRequested.emit(mod);
-  }
-
-  protected onCycleTrimestre(mod: ModuleTrimestriel): void {
-    const nextTrimestre: TrimestreCode =
-      mod.trimestre === 'T1' ? 'T2' : mod.trimestre === 'T2' ? 'T3' : 'T1';
-    this.toggleTrimestreRequested.emit({ id: mod.id, nextTrimestre });
   }
 
   protected onCreate(): void {

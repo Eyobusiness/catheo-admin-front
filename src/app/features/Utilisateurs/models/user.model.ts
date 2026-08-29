@@ -1,44 +1,74 @@
-import { ProfilDto } from '../Profil/models/profil.model';
+import { ProfilItem } from '../Profil/models/profil.model';
 export * from '../Profil/models/profil.model';
 
 export type StatutUtilisateur = 'actif' | 'inactif' | 'suspendu';
 
-export interface ParoisseInfoMini {
-  id?: string;
-  nom?: string;
-  code_paroisse?: string;
-  ville?: string;
-}
-
-export interface UserDto {
-  id: string;
+export interface UserItem {
+  id: string; // UUID
+  uuid?: string;
+  paroisse_configuration_id?: number;
+  paroisse_id?: number;
   name: string;
+  nom?: string;
+  prenoms?: string;
+  lastName?: string;
+  firstName?: string;
   email: string;
+  username?: string;
   telephone?: string;
-  statut: StatutUtilisateur;
-  profil?: ProfilDto;
-  paroisse?: ParoisseInfoMini;
-  created_at: string;
+  phone?: string;
+  user_type?: 'admin' | 'super_admin' | 'animateur' | 'parent';
+  statut?: 'actif' | 'inactif';
+  status?: 'actif' | 'inactif';
+  dernier_login_at?: string;
+  profil?: ProfilItem | null;
+  paroisse?: {
+    id?: string;
+    nom_paroisse?: string;
+    nom?: string;
+    code_paroisse?: string;
+    diocese?: string;
+    ville?: string;
+    commune?: string;
+  } | null;
+  created_at?: string;
 }
 
-export type User = UserDto;
+export type UserDto = UserItem;
+export type User = UserItem;
+
+export interface UserPaginationMeta {
+  current_page: number;
+  per_page: number;
+  total_elements: number;
+  total_pages: number;
+  has_next: boolean;
+}
+
+export interface UserListResponse {
+  status: string;
+  meta: UserPaginationMeta;
+  data: UserItem[];
+}
 
 export interface CreateUserDto {
-  name: string;
+  profil_id: string | number;
+  nom?: string;
+  prenoms?: string;
+  name?: string;
   email: string;
   password: string;
   telephone?: string;
-  profil_id: string;
+  statut?: 'actif' | 'inactif';
 }
 
 export interface UpdateUserDto {
+  profil_id?: string | number;
+  nom?: string;
+  prenoms?: string;
   name?: string;
   email?: string;
   password?: string;
   telephone?: string;
-  profil_id?: string;
-}
-
-export interface UpdateUserStatusDto {
-  statut: StatutUtilisateur;
+  statut?: 'actif' | 'inactif';
 }

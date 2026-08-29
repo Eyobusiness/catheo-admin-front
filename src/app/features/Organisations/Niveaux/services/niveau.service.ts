@@ -27,60 +27,33 @@ export class NiveauService {
   private readonly baseUrl = `${environment.apiUrl}/niveaux`;
 
   // Reactive state signals
-  public readonly niveaux = signal<Niveau[]>([
-    {
-      id: '9f8e7d6c-5b4a-3f2e-1d0c-9b8a7f6e5d22',
-      section_id: '9f8e7d6c-5b4a-3f2e-1d0c-9b8a7f6e5d21',
-      nom: "1ère Année d'Initiation",
-      description: "Première année du parcours d'initiation chrétienne",
-      ordre_affichage: 1,
-      ordre: 1,
-      statut: 'Actif',
-      statut_code: 'actif'
-    },
-    {
-      id: '8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c23',
-      section_id: '9f8e7d6c-5b4a-3f2e-1d0c-9b8a7f6e5d21',
-      nom: "2ème Année d'Initiation",
-      description: "Deuxième année du parcours d'initiation chrétienne",
-      ordre_affichage: 2,
-      ordre: 2,
-      statut: 'Actif',
-      statut_code: 'actif'
-    },
-    {
-      id: '7b6a5c4d-3e2f-1a0b-9c8d-7e6f5a4b3c24',
-      section_id: '8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c22',
-      nom: 'Préparation Confirmation (Ados)',
-      description: 'Parcours des adolescents vers le sacrement de confirmation',
-      ordre_affichage: 3,
-      ordre: 3,
-      statut: 'Actif',
-      statut_code: 'actif'
-    }
-  ]);
+  public readonly niveaux = signal<Niveau[]>([]);
 
   public readonly isLoading = signal<boolean>(false);
+
+  constructor() {
+    this.getAll().subscribe();
+  }
 
   public getAll(): Observable<Niveau[]> {
     this.isLoading.set(true);
     return this.http.get<any>(this.baseUrl).pipe(
       tap(res => {
         const raw = extractArrayData(res);
-        if (raw.length > 0) {
-          const normalized: Niveau[] = raw.map((item: any) => ({
-            id: item.id,
-            nom: item.nom,
-            description: item.description || '',
-            statut: item.statut || 'Actif',
-            statut_code: item.statut_code || (String(item.statut).toLowerCase() === 'inactif' ? 'inactif' : 'actif'),
-            ordre_affichage: item.ordre_affichage ?? item.ordre ?? 1,
-            ordre: item.ordre ?? item.ordre_affichage ?? 1,
-            section_id: item.section_id || item.section?.id || '',
-            section: item.section || undefined
-          }));
-          this.niveaux.set(normalized);
-        }
+        const normalized: Niveau[] = raw.map((item: any) => ({
+          id: String(item.id || item.uuid || `niv-${Date.now()}`),
+          uuid: item.uuid || String(item.id),
+          nom: item.nom || item.libelle || '',
+          description: item.description || '',
+          statut: item.statut || 'Actif',
+          statut_code: item.statut_code || (String(item.statut).toLowerCase() === 'inactif' ? 'inactif' : 'actif'),
+          ordre_affichage: item.ordre_affichage ?? item.ordre ?? 1,
+          ordre: item.ordre ?? item.ordre_affichage ?? 1,
+          section_id: String(item.section_id || item.section?.id || ''),
+          section_uuid: item.section?.uuid || '',
+          section: item.section || undefined
+        }));
+        this.niveaux.set(normalized);
         this.isLoading.set(false);
       }),
       catchError(() => {

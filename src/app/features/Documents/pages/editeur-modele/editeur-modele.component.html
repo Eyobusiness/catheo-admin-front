@@ -1,0 +1,204 @@
+<div class="page-container animate-fade-in">
+  <!-- En-tête -->
+  <div class="page-header">
+    <div class="header-titles">
+      <h1 class="page-title">
+        <i class="bi bi-pencil-square"></i>
+        <span>{{ isEditMode() ? 'Modifier le Modèle de Document' : 'Nouveau Modèle de Document' }}</span>
+      </h1>
+      <p class="page-subtitle">
+        Personnalisez la mise en page, les clauses et les balises dynamiques officielles de la paroisse.
+      </p>
+    </div>
+
+    <div class="header-actions">
+      <button type="button" class="btn btn-secondary" (click)="togglePreviewPanel()">
+        <i class="bi" [class.bi-eye-slash]="showPreviewPanel()" [class.bi-eye]="!showPreviewPanel()"></i>
+        <span>{{ showPreviewPanel() ? 'Masquer aperçu' : 'Afficher aperçu' }}</span>
+      </button>
+
+      <button type="button" class="btn btn-secondary" (click)="goBack()">
+        <i class="bi bi-arrow-left"></i>
+        <span>Annuler</span>
+      </button>
+
+      <button type="button" class="btn btn-primary" (click)="saveModele()" [disabled]="!formModele().titre.trim() || service.isLoading()">
+        <i class="bi bi-check-lg"></i>
+        <span>Enregistrer le modèle</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Layout Principal Split Screen (Éditeur + Aperçu optionnel) -->
+  <div class="editor-layout" [class.with-preview]="showPreviewPanel()">
+    <!-- COLONNE GAUCHE : FORMULAIRE & ÉDITEUR -->
+    <div class="editor-main-card">
+      <!-- Métadonnées du Modèle -->
+      <div class="form-grid-top">
+        <div class="form-group flex-2">
+          <label class="form-label">Titre du modèle <span class="text-danger">*</span></label>
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Ex : Attestation de Suivi de Catéchèse, Certificat de Baptême..."
+            [ngModel]="formModele().titre"
+            (ngModelChange)="formModele.update(c => ({ ...c, titre: $event }))"
+          />
+        </div>
+
+        <div class="form-group flex-1">
+          <label class="form-label">Code unique</label>
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Ex : ATTEST_CATECHESE"
+            [ngModel]="formModele().code"
+            (ngModelChange)="formModele.update(c => ({ ...c, code: $event }))"
+          />
+        </div>
+
+        <div class="form-group flex-1">
+          <label class="form-label">Type de document <span class="text-danger">*</span></label>
+          <select
+            class="form-select-custom"
+            [ngModel]="formModele().type_document"
+            (ngModelChange)="formModele.update(c => ({ ...c, type_document: $event }))"
+          >
+            @for (cat of categoriesList; track cat.value) {
+              <option [value]="cat.value">{{ cat.label }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group flex-1">
+          <label class="form-label">Statut</label>
+          <select
+            class="form-select-custom"
+            [ngModel]="formModele().statut"
+            (ngModelChange)="formModele.update(c => ({ ...c, statut: $event }))"
+          >
+            <option value="actif">Actif</option>
+            <option value="inactif">Inactif</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top: 12px;">
+        <label class="form-label">Description / Utilisation</label>
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Ex : Attestation officielle délivrée à la fin de l'année pastorale..."
+          [ngModel]="formModele().description"
+          (ngModelChange)="formModele.update(c => ({ ...c, description: $event }))"
+        />
+      </div>
+
+      <!-- PANNEAU DES BALISES DYNAMIQUES -->
+      <div class="variables-panel">
+        <div class="variables-header">
+          <div class="v-title">
+            <i class="bi bi-tags-fill"></i>
+            <strong>Balises dynamiques de fusion (Cliquez pour insérer) :</strong>
+          </div>
+
+          <div class="v-filter">
+            <button
+              type="button"
+              class="chip-filter-btn"
+              [class.active]="selectedVariableCategory() === 'Toutes'"
+              (click)="selectedVariableCategory.set('Toutes')"
+            >Toutes</button>
+            @for (catName of availableCategories(); track catName) {
+              <button
+                type="button"
+                class="chip-filter-btn"
+                [class.active]="selectedVariableCategory() === catName"
+                (click)="selectedVariableCategory.set(catName)"
+              >{{ catName }}</button>
+            }
+          </div>
+        </div>
+
+        <div class="variables-chips-grid">
+          @for (v of filteredVariables(); track v.tag) {
+            <button
+              type="button"
+              class="variable-chip"
+              [title]="v.description"
+              (click)="insererVariable(v.tag)"
+            >
+              <span class="v-cle">{{ v.tag }}</span>
+              <span class="v-lbl">{{ v.label || v.description }}</span>
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- ÉDITEUR WYSIWYG STYLE WORD -->
+      <div class="word-editor-wrapper">
+        <div class="word-toolbar">
+          <div class="toolbar-group">
+            <button type="button" class="tb-btn" title="Gras (Ctrl+B)" (click)="execFormat('bold')"><i class="bi bi-type-bold"></i></button>
+            <button type="button" class="tb-btn" title="Italique (Ctrl+I)" (click)="execFormat('italic')"><i class="bi bi-type-italic"></i></button>
+            <button type="button" class="tb-btn" title="Souligné (Ctrl+U)" (click)="execFormat('underline')"><i class="bi bi-type-underline"></i></button>
+          </div>
+
+          <div class="toolbar-divider"></div>
+
+          <div class="toolbar-group">
+            <button type="button" class="tb-btn" title="Aligner à gauche" (click)="execFormat('justifyLeft')"><i class="bi bi-text-left"></i></button>
+            <button type="button" class="tb-btn" title="Centrer" (click)="execFormat('justifyCenter')"><i class="bi bi-text-center"></i></button>
+            <button type="button" class="tb-btn" title="Aligner à droite" (click)="execFormat('justifyRight')"><i class="bi bi-text-right"></i></button>
+            <button type="button" class="tb-btn" title="Justifier" (click)="execFormat('justifyFull')"><i class="bi bi-justify"></i></button>
+          </div>
+
+          <div class="toolbar-divider"></div>
+
+          <div class="toolbar-group">
+            <button type="button" class="tb-btn" title="Grand Titre (H2)" (click)="execFormat('formatBlock', '<h2>')"><strong>H2</strong></button>
+            <button type="button" class="tb-btn" title="Sous-Titre (H3)" (click)="execFormat('formatBlock', '<h3>')"><strong>H3</strong></button>
+            <button type="button" class="tb-btn" title="Paragraphe normal" (click)="execFormat('formatBlock', '<p>')"><i class="bi bi-paragraph"></i></button>
+          </div>
+
+          <div class="toolbar-divider"></div>
+
+          <div class="toolbar-group">
+            <button type="button" class="tb-btn" title="Liste à puces" (click)="execFormat('insertUnorderedList')"><i class="bi bi-list-ul"></i></button>
+            <button type="button" class="tb-btn" title="Liste numérotée" (click)="execFormat('insertOrderedList')"><i class="bi bi-list-ol"></i></button>
+          </div>
+        </div>
+
+        <div
+          id="dedicatedWordEditor"
+          class="word-editor-paper"
+          contenteditable="true"
+          (input)="onEditorInput($event)"
+        ></div>
+      </div>
+      <span class="form-hint">Rédigez le texte et cliquez sur les balises de fusion (ex: <code>{{ '{{nom_complet}}' }}</code>, <code>{{ '{{matricule}}' }}</code>) pour insérer les données du fidèle lors de la génération.</span>
+    </div>
+
+    <!-- COLONNE DROITE : APERÇU EN DIRECT SPLIT SCREEN -->
+    @if (showPreviewPanel()) {
+      <div class="preview-panel-card animate-fade-in">
+        <div class="preview-panel-header">
+          <div class="p-title">
+            <i class="bi bi-eye-fill"></i>
+            <span>Aperçu en Temps Réel</span>
+          </div>
+        </div>
+
+        <div class="preview-paper-box">
+          <app-entete-catechese [showBorder]="false" />
+          <div class="preview-body" [innerHTML]="previewContentHtml()"></div>
+          <div class="preview-footer">
+            <div class="signature-date">Fait à {{ service.paroisseInfo().nom }}, le {{ '2026-08-28' | date:'dd MMMM yyyy' }}</div>
+            <div class="signature-title">{{ formModele().signature_titre || 'Le Curé de la Paroisse' }}</div>
+            <div class="signature-seal">[ Sceau & Signature ]</div>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>

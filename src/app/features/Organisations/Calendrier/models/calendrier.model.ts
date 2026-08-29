@@ -5,12 +5,9 @@ export type CibleTypeCalendrier =
   | 'Tous'
   | 'Catéchumènes'
   | 'Animateurs'
-  | 'Parents'
   | 'Niveau'
   | 'Classe'
   | 'Section'
-  | 'CEB'
-  | 'Mouvement'
   | string;
 
 export interface CalendrierDto {
@@ -23,6 +20,7 @@ export interface CalendrierDto {
   lieu?: string;
   cible_type: CibleTypeCalendrier;
   cible_id?: string;
+  cible_ids?: string[];
   cible_nom?: string;
   description?: string;
   statut: 'Planifié' | 'Réalisé' | 'Annulé';
@@ -43,6 +41,8 @@ export interface CreateCalendrierDto {
   lieu?: string;
   cible_type?: CibleTypeCalendrier;
   cible_id?: string;
+  cible_ids?: string[];
+  cible_nom?: string;
   description?: string;
   statut?: StatutCalendrier;
 }
@@ -57,6 +57,8 @@ export interface UpdateCalendrierDto {
   lieu?: string;
   cible_type?: CibleTypeCalendrier;
   cible_id?: string;
+  cible_ids?: string[];
+  cible_nom?: string;
   description?: string;
   statut?: StatutCalendrier;
 }

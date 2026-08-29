@@ -1,7 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, catchError, of, tap, throwError } from 'rxjs';
-import { CreateSectionDto, Section, SectionStatut, UpdateSectionDto } from '../models/section.model';
+import { CreateSectionDto, Section, UpdateSectionDto } from '../models/section.model';
 import { ToastService } from '../../../../core/services/toast.service';
 import { environment } from '../../../../environments/environment';
 
@@ -17,6 +17,19 @@ function extractArrayData(res: any): any[] {
   return [];
 }
 
+export function normalizeStatut(val: any, estActif?: any, isActive?: any): string {
+  if (val === false || val === 0 || val === '0') return 'inactif';
+  if (estActif === false || estActif === 0 || estActif === '0' || isActive === false || isActive === 0 || isActive === '0') return 'inactif';
+  if (val === true || val === 1 || val === '1') return 'actif';
+  if (estActif === true || estActif === 1 || estActif === '1' || isActive === true || isActive === 1 || isActive === '1') return 'actif';
+  if (typeof val === 'string') {
+    const s = val.trim().toLowerCase();
+    if (s === 'inactif' || s === 'inactive' || s === '0' || s === 'false' || s === 'disabled') return 'inactif';
+    if (s === 'actif' || s === 'active' || s === '1' || s === 'true' || s === 'enabled') return 'actif';
+  }
+  return 'actif';
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -27,55 +40,29 @@ export class SectionService {
   private readonly baseUrl = `${environment.apiUrl}/sections`;
 
   // Reactive state signals
-  public readonly sections = signal<Section[]>([
-    {
-      id: '9f8e7d6c-5b4a-3f2e-1d0c-9b8a7f6e5d21',
-      nom: 'Enfance',
-      code: 'ENFANCE',
-      description: 'Catéchèse des enfants de 6 à 11 ans',
-      ordre: 1,
-      statut: 'actif',
-      total_niveaux: 4
-    },
-    {
-      id: '8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c22',
-      nom: 'Jeunes & Ados',
-      code: 'JEUNES',
-      description: 'Catéchèse des adolescents de 12 à 17 ans',
-      ordre: 2,
-      statut: 'actif',
-      total_niveaux: 3
-    },
-    {
-      id: '7b6a5c4d-3e2f-1a0b-9c8d-7e6f5a4b3c23',
-      nom: 'Adultes (Catéchuménat)',
-      code: 'ADULTES',
-      description: 'Préparation au baptême et confirmation des adultes',
-      ordre: 3,
-      statut: 'actif',
-      total_niveaux: 2
-    }
-  ]);
-
+  public readonly sections = signal<Section[]>([]);
   public readonly isLoading = signal<boolean>(false);
+
+  constructor() {
+    this.getAll().subscribe();
+  }
 
   public getAll(): Observable<Section[]> {
     this.isLoading.set(true);
     return this.http.get<any>(this.baseUrl).pipe(
       tap(res => {
         const raw = extractArrayData(res);
-        if (raw.length > 0) {
-          const data: Section[] = raw.map((item: any) => ({
-            id: item.id,
-            nom: item.nom,
-            code: item.code,
-            description: item.description || '',
-            ordre: item.ordre ?? item.ordre_affichage ?? 1,
-            statut: (item.statut || (item.est_actif === false ? 'inactif' : 'actif')) as SectionStatut,
-            total_niveaux: item.total_niveaux || 0
-          }));
-          this.sections.set(data);
-        }
+        const data: Section[] = raw.map((item: any) => ({
+          id: String(item.id || item.uuid || `sec-${Date.now()}`),
+          uuid: item.uuid || String(item.id),
+          nom: item.nom || item.libelle || '',
+          code: item.code || '',
+          description: item.description || '',
+          ordre: item.ordre ?? item.ordre_affichage ?? 1,
+          statut: normalizeStatut(item.statut, item.est_actif, item.is_active),
+          total_niveaux: item.total_niveaux || 0
+        }));
+        this.sections.set(data);
         this.isLoading.set(false);
       }),
       catchError(() => {
@@ -101,14 +88,27 @@ export class SectionService {
       tap(res => {
         this.isLoading.set(false);
         const created: Section = res.data || res;
-        this.addOrUpdateLocal(created);
-        this.toastService.success('Section Créée', `La section "${created.nom}" a été enregistrée.`);
+        const normalized: Section = {
+          id: created.id || `sec-${Date.now()}`,
+          nom: created.nom || dto.nom,
+          code: created.code || dto.code,
+          description: created.description ?? dto.description ?? '',
+          ordre: created.ordre ?? dto.ordre ?? 1,
+          statut: normalizeStatut(created.statut ?? dto.statut, (created as any).est_actif, (created as any).is_active),
+          total_niveaux: created.total_niveaux || 0
+        };
+        this.addOrUpdateLocal(normalized);
+        this.toastService.success('Section Créée', `La section "${normalized.nom}" a été enregistrée.`);
       }),
       catchError((err: HttpErrorResponse) => {
         this.isLoading.set(false);
         const newLocal: Section = {
           id: `uuid-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-          ...dto,
+          nom: dto.nom,
+          code: dto.code,
+          description: dto.description || '',
+          ordre: dto.ordre || 1,
+          statut: normalizeStatut(dto.statut),
           total_niveaux: 0
         };
         this.addOrUpdateLocal(newLocal);
@@ -124,15 +124,29 @@ export class SectionService {
       tap(res => {
         this.isLoading.set(false);
         const updated: Section = res.data || res;
-        this.addOrUpdateLocal(updated);
-        this.toastService.success('Section Modifiée', `La section "${updated.nom}" a été mise à jour.`);
+        const current = this.sections().find(s => s.id === id);
+        const normalized: Section = {
+          id,
+          nom: updated.nom || dto.nom || current?.nom || '',
+          code: updated.code || dto.code || current?.code || '',
+          description: updated.description ?? dto.description ?? current?.description ?? '',
+          ordre: updated.ordre ?? dto.ordre ?? current?.ordre ?? 1,
+          statut: normalizeStatut(updated.statut ?? dto.statut ?? current?.statut, (updated as any).est_actif, (updated as any).is_active),
+          total_niveaux: updated.total_niveaux ?? current?.total_niveaux ?? 0
+        };
+        this.addOrUpdateLocal(normalized);
+        this.toastService.success('Section Modifiée', `La section "${normalized.nom}" a été mise à jour.`);
       }),
       catchError((err: HttpErrorResponse) => {
         this.isLoading.set(false);
         const current = this.sections().find(s => s.id === id);
         const updatedLocal: Section = {
           id,
-          ...dto,
+          nom: dto.nom || current?.nom || '',
+          code: dto.code || current?.code || '',
+          description: dto.description ?? current?.description ?? '',
+          ordre: dto.ordre ?? current?.ordre ?? 1,
+          statut: normalizeStatut(dto.statut ?? current?.statut),
           total_niveaux: current?.total_niveaux || 0
         };
         this.addOrUpdateLocal(updatedLocal);
@@ -160,7 +174,8 @@ export class SectionService {
   }
 
   public toggleActive(section: Section): Observable<Section> {
-    const nextStatus: SectionStatut = section.statut === 'actif' ? 'inactif' : 'actif';
+    const isActif = normalizeStatut(section.statut) === 'actif';
+    const nextStatus = isActif ? 'inactif' : 'actif';
     const updatedDto: UpdateSectionDto = {
       nom: section.nom,
       code: section.code,
@@ -182,3 +197,5 @@ export class SectionService {
     this.sections.update(list => list.filter(s => s.id !== id));
   }
 }
+
+

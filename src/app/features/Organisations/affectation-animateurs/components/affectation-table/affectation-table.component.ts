@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
-import { AffectationAnimateur, RoleAnimateur } from '../../models/affectation-animateur.model';
+import { AffectationAnimateur } from '../../models/affectation-animateur.model';
 import { AppIconButton } from '../../../../../shared/ui/components/buttons/app-icon-button/app-icon-button.component';
 import { AppButton } from '../../../../../shared/ui/components/buttons/app-button/app-button.component';
 import { AppPagination } from '../../../../../shared/ui/components/tables/app-pagination/app-pagination.component';
@@ -17,7 +17,7 @@ export class AffectationTableComponent {
   public readonly viewRequested = output<AffectationAnimateur>();
   public readonly editRequested = output<AffectationAnimateur>();
   public readonly deleteRequested = output<AffectationAnimateur>();
-  public readonly toggleRoleRequested = output<{ id: string; nextRole: RoleAnimateur }>();
+  public readonly toggleRoleRequested = output<{ id: string; nextRole: string }>();
   public readonly createRequested = output<void>();
 
   // Local Pagination
@@ -39,17 +39,33 @@ export class AffectationTableComponent {
     return (n + p).toUpperCase() || 'CA';
   }
 
-  protected getRoleLabel(role: RoleAnimateur): string {
-    switch (role) {
-      case 'principal':
-        return 'Principal';
-      case 'adjoint':
-        return 'Adjoint';
-      case 'assistant':
-        return 'Assistant';
-      default:
-        return role;
-    }
+  protected isPrincipal(role?: string): boolean {
+    const r = String(role || '').toLowerCase().trim();
+    return r.includes('princ') || r === '1' || r === '';
+  }
+
+  protected isAssistant(role?: string): boolean {
+    const r = String(role || '').toLowerCase().trim();
+    return r.includes('assist');
+  }
+
+  protected isAdjoint(role?: string): boolean {
+    const r = String(role || '').toLowerCase().trim();
+    return r.includes('adj');
+  }
+
+  protected getRoleIcon(role?: string): string {
+    if (this.isAssistant(role)) return 'bi-person-badge';
+    if (this.isAdjoint(role)) return 'bi-shield-check';
+    return 'bi-star-fill';
+  }
+
+  protected getRoleLabel(role?: string): string {
+    if (!role) return 'Principal';
+    if (this.isAssistant(role)) return 'Assistant';
+    if (this.isAdjoint(role)) return 'Adjoint';
+    if (this.isPrincipal(role)) return 'Principal';
+    return role;
   }
 
   protected onView(aff: AffectationAnimateur): void {
@@ -65,10 +81,11 @@ export class AffectationTableComponent {
   }
 
   protected onCycleRole(aff: AffectationAnimateur): void {
-    const nextRole: RoleAnimateur =
-      aff.role === 'principal'
+    const current = String(aff.role || '').toLowerCase();
+    const nextRole: string =
+      current === 'principal'
         ? 'adjoint'
-        : aff.role === 'adjoint'
+        : current === 'adjoint'
         ? 'assistant'
         : 'principal';
     this.toggleRoleRequested.emit({ id: aff.id, nextRole });

@@ -57,6 +57,14 @@ export class CampagnesPageComponent implements OnInit {
   protected readonly selectedCampagne = signal<CampagnePreinscriptionDto | null>(null);
   protected readonly itemToDelete = signal<CampagnePreinscriptionDto | null>(null);
 
+  // Dashboard Stats Computed Signals
+  protected readonly totalCampagnesCount = computed(() => this.campagnes().length);
+  protected readonly ouvertesCount = computed(() => this.campagnes().filter(c => c.statut === 'ouverte').length);
+  protected readonly fermeesCount = computed(() => this.campagnes().filter(c => c.statut === 'fermee').length);
+  protected readonly totalDemandesCount = computed(() =>
+    this.campagnes().reduce((sum, c) => sum + (c.preinscriptions_count || 0), 0)
+  );
+
   protected readonly hasActiveFilters = computed(() => {
     return !!this.searchQuery() || !!this.statusFilter();
   });
@@ -96,6 +104,10 @@ export class CampagnesPageComponent implements OnInit {
   protected onStatusFilterChange(event: Event): void {
     const select = event.target as HTMLSelectElement;
     this.statusFilter.set(select.value);
+  }
+
+  protected setStatusFilter(status: string): void {
+    this.statusFilter.set(status);
   }
 
   protected resetFilters(): void {

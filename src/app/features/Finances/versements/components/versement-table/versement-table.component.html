@@ -1,0 +1,154 @@
+<div class="table-card-wrapper">
+  <div class="table-responsive">
+    <table class="medical-table">
+      <thead>
+        <tr>
+          <th class="col-ref">Référence</th>
+          <th class="col-periode">Période concernée</th>
+          <th class="col-montant">Montant versé</th>
+          <th class="col-destinataire">Destinataire</th>
+          <th class="col-mode">Mode de remise</th>
+          <th class="col-auteur">Déposant</th>
+          <th class="col-statut">Statut</th>
+          <th class="col-actions text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of paginatedVersements(); track item.id) {
+          <tr class="table-row">
+            <!-- Référence -->
+            <td class="col-ref">
+              <span class="ref-pill">
+                <i class="bi bi-hash"></i> {{ item.reference }}
+              </span>
+            </td>
+
+            <!-- Période -->
+            <td class="col-periode">
+              <div class="periode-cell">
+                <span class="periode-main">{{ item.periode_concernee }}</span>
+                @if (item.created_at) {
+                  <span class="periode-date">{{ item.created_at | date:'dd/MM/yyyy' }}</span>
+                }
+              </div>
+            </td>
+
+            <!-- Montant versé -->
+            <td class="col-montant">
+              <span class="montant-val">
+                {{ item.montant_verse | number:'1.0-0' }} <small>FCFA</small>
+              </span>
+            </td>
+
+            <!-- Destinataire -->
+            <td class="col-destinataire">
+              <div class="destinataire-cell">
+                <i class="bi bi-person-badge-fill text-primary"></i>
+                <span class="destinataire-text">{{ item.destinataire || 'Curé de la Paroisse' }}</span>
+              </div>
+            </td>
+
+            <!-- Mode de remise -->
+            <td class="col-mode">
+              <span [class]="'mode-pill ' + getModeBadgeClass(item.mode_remise)">
+                @if (item.mode_remise === 'cheque') {
+                  <i class="bi bi-card-heading"></i>
+                } @else if (item.mode_remise === 'virement') {
+                  <i class="bi bi-bank"></i>
+                } @else {
+                  <i class="bi bi-cash"></i>
+                }
+                <span>{{ getModeLabel(item.mode_remise) }}</span>
+              </span>
+            </td>
+
+            <!-- Déposant / Auteur -->
+            <td class="col-auteur">
+              <span class="auteur-text">
+                <i class="bi bi-person-check"></i> {{ item.effectue_par || item.user?.name || 'Trésorier' }}
+              </span>
+            </td>
+
+            <!-- Statut -->
+            <td class="col-statut">
+              <span [class]="'statut-pill ' + getStatutBadgeClass(item.statut)">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>{{ item.statut || 'Validé' }}</span>
+              </span>
+            </td>
+
+            <!-- Actions -->
+            <td class="col-actions text-right">
+              <div class="actions-flex">
+                <!-- Imprimer le Reçu -->
+                <app-icon-button
+                  variant="info"
+                  size="sm"
+                  title="Imprimer le Reçu de Versement"
+                  ariaLabel="Imprimer Reçu"
+                  (clicked)="onPrint(item)"
+                >
+                  <i class="bi bi-printer"></i>
+                </app-icon-button>
+
+                <!-- Modifier -->
+                <app-icon-button
+                  variant="primary"
+                  size="sm"
+                  title="Modifier le versement"
+                  ariaLabel="Modifier"
+                  (clicked)="onEdit(item)"
+                >
+                  <i class="bi bi-pencil"></i>
+                </app-icon-button>
+
+                <!-- Supprimer -->
+                <app-icon-button
+                  variant="danger"
+                  size="sm"
+                  title="Supprimer le versement"
+                  ariaLabel="Supprimer"
+                  (clicked)="onDelete(item)"
+                >
+                  <i class="bi bi-trash3"></i>
+                </app-icon-button>
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="8" class="empty-cell">
+              <div class="empty-state-box">
+                <div class="empty-icon-wrap">
+                  <i class="bi bi-bank"></i>
+                </div>
+                <h4 class="empty-title">Aucun versement au Curé enregistré</h4>
+                <p class="empty-desc">
+                  Enregistrez les reversements périodiques des recettes de catéchèse vers le compte paroissial.
+                </p>
+                <app-button
+                  variant="primary"
+                  size="sm"
+                  icon="plus"
+                  (clicked)="createRequested.emit()"
+                >
+                  Nouveau Versement
+                </app-button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (versements().length > 0) {
+    <app-pagination
+      [totalItems]="versements().length"
+      [currentPage]="currentPage()"
+      [pageSize]="pageSize()"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+    />
+  }
+</div>

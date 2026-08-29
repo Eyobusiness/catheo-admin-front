@@ -26,6 +26,7 @@ export interface CreateAnimateurDto {
   email?: string;
   profession?: string;
   create_user_account?: boolean;
+  password?: string;
 }
 
 export interface UpdateAnimateurStatusDto {
@@ -40,4 +41,6 @@ export interface UpdateAnimateurDto {
   email?: string;
   profession?: string;
   statut?: AnimateurStatut;
+  password?: string;
 }
+

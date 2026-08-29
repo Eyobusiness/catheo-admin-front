@@ -1,0 +1,226 @@
+<div class="admin-dashboard">
+  <!-- 1. Top KPI Cards Grid -->
+  <div class="kpi-grid">
+    <div class="kpi-card total">
+      <div class="kpi-icon"><i class="bi bi-people-fill"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-number">{{ data()?.summary?.catechumenes_actifs ?? 0 }}</span>
+        <span class="kpi-label">Catéchumènes Actifs</span>
+      </div>
+    </div>
+
+    <div class="kpi-card info">
+      <div class="kpi-icon"><i class="bi bi-diagram-3-fill"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-number">{{ data()?.summary?.sections ?? 0 }}</span>
+        <span class="kpi-label">Sections Pastorales</span>
+      </div>
+    </div>
+
+    <div class="kpi-card success">
+      <div class="kpi-icon"><i class="bi bi-door-open-fill"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-number">{{ data()?.summary?.classes ?? 0 }}</span>
+        <span class="kpi-label">Classes de Catéchèse</span>
+      </div>
+    </div>
+
+    <div class="kpi-card warning">
+      <div class="kpi-icon"><i class="bi bi-person-badge-fill"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-number">{{ data()?.summary?.animateurs ?? 0 }}</span>
+        <span class="kpi-label">Catéchistes / Animateurs</span>
+      </div>
+    </div>
+
+    <div class="kpi-card danger">
+      <div class="kpi-icon"><i class="bi bi-hourglass-top"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-number">{{ data()?.summary?.preinscriptions_en_attente ?? 0 }}</span>
+        <span class="kpi-label">Préinscriptions en Attente</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Two Columns: Sections / Niveaux & Effectifs Classes / Sacrements / Alertes -->
+  <div class="dash-grid-2">
+    <!-- Left Column: Repartition par Section & Niveau -->
+    <div class="dash-col">
+      <!-- Répartition par Section -->
+      <app-card title="Répartition des Effectifs par Section">
+        <div class="distribution-list">
+          @for (sec of data()?.effectifs?.par_section || []; track sec.section_id) {
+            <div class="dist-item">
+              <div class="dist-item-header">
+                <span class="dist-name">
+                  <i class="bi bi-bookmark-fill icon-sec"></i>
+                  {{ sec.section_nom }}
+                </span>
+                <span class="dist-count">
+                  {{ sec.effectif }} catéchumène(s)
+                  @if (sec.pourcentage !== undefined || getSectionPercentage(sec.effectif) > 0) {
+                    ({{ sec.pourcentage !== undefined ? sec.pourcentage : getSectionPercentage(sec.effectif) }}%)
+                  }
+                </span>
+              </div>
+              <div class="dist-bar-track">
+                <div
+                  class="dist-bar-fill section"
+                  [style.width.%]="sec.pourcentage !== undefined ? sec.pourcentage : getSectionPercentage(sec.effectif)"
+                ></div>
+              </div>
+            </div>
+          } @empty {
+            <p class="empty-hint">Aucune section pastorale enregistrée.</p>
+          }
+        </div>
+      </app-card>
+
+      <!-- Répartition par Niveau -->
+      <app-card title="Répartition par Niveau de Catéchèse">
+        <div class="distribution-list">
+          @for (niv of data()?.effectifs?.par_niveau || []; track niv.niveau_id) {
+            <div class="dist-item">
+              <div class="dist-item-header">
+                <span class="dist-name">
+                  <i class="bi bi-layers-fill icon-niv"></i>
+                  {{ niv.niveau_nom }}
+                  @if (niv.section_nom) {
+                    <small class="text-muted">({{ niv.section_nom }})</small>
+                  }
+                </span>
+                <span class="dist-count">{{ niv.effectif }} élève(s)</span>
+              </div>
+              <div class="dist-bar-track">
+                <div
+                  class="dist-bar-fill niveau"
+                  [style.width.%]="getSectionPercentage(niv.effectif)"
+                ></div>
+              </div>
+            </div>
+          } @empty {
+            <p class="empty-hint">Aucun niveau de catéchèse configuré.</p>
+          }
+        </div>
+      </app-card>
+
+      <!-- Effectifs et Répartition par Classe -->
+      <app-card title="Effectif par Classe de Catéchèse">
+        <div class="classes-occupation-list">
+          @for (cl of data()?.effectifs?.par_classe || []; track cl.classe_id) {
+            <div class="class-occ-item">
+              <div class="class-occ-header">
+                <span class="class-title">
+                  {{ cl.classe_nom }}
+                  <small>({{ cl.niveau_nom }} - {{ cl.section_nom }})</small>
+                </span>
+                <span class="class-numbers">
+                  <strong>{{ cl.effectif }}</strong>
+                  @if (cl.capacite_max) {
+                    / {{ cl.capacite_max }} élèves
+                  } @else {
+                    élève(s)
+                  }
+                </span>
+              </div>
+              <div class="class-occ-track">
+                <div
+                  class="class-occ-fill"
+                  [style.width.%]="cl.pourcentage !== undefined ? cl.pourcentage : getClassOccupancy(cl.effectif, cl.capacite_max)"
+                  [class.full]="(cl.pourcentage || getClassOccupancy(cl.effectif, cl.capacite_max)) >= 95"
+                  [class.medium]="(cl.pourcentage || getClassOccupancy(cl.effectif, cl.capacite_max)) < 95 && (cl.pourcentage || getClassOccupancy(cl.effectif, cl.capacite_max)) >= 75"
+                ></div>
+              </div>
+            </div>
+          } @empty {
+            <p class="empty-hint">Aucune classe répertoriée pour cette année pastorale.</p>
+          }
+        </div>
+      </app-card>
+    </div>
+
+    <!-- Right Column: Sacrements & Alertes & Accès Rapides -->
+    <div class="dash-col">
+      <!-- Sacrements en préparation -->
+      <app-card title="Candidats aux Sacrements">
+        <div class="sacraments-grid">
+          <div class="sacrament-card bapteme">
+            <div class="sac-icon"><i class="bi bi-droplet-fill"></i></div>
+            <div class="sac-content">
+              <span class="sac-num">{{ data()?.sacrements?.bapteme ?? 0 }}</span>
+              <span class="sac-label">En attente de Baptême</span>
+            </div>
+          </div>
+
+          <div class="sacrament-card communion">
+            <div class="sac-icon"><i class="bi bi-brightness-high-fill"></i></div>
+            <div class="sac-content">
+              <span class="sac-num">{{ data()?.sacrements?.premiere_communion ?? 0 }}</span>
+              <span class="sac-label">Première Communion</span>
+            </div>
+          </div>
+
+          <div class="sacrament-card confirmation">
+            <div class="sac-icon"><i class="bi bi-fire"></i></div>
+            <div class="sac-content">
+              <span class="sac-num">{{ data()?.sacrements?.confirmation ?? 0 }}</span>
+              <span class="sac-label">Confirmation</span>
+            </div>
+          </div>
+        </div>
+      </app-card>
+
+      <!-- Alertes pastorales dynamiques -->
+      <app-card title="Alertes Pastorales & Administratives">
+        <div class="alerts-list">
+          @if (alertsSummary()?.alerts_list && (alertsSummary()?.alerts_list)!.length > 0) {
+            @for (alert of alertsSummary()!.alerts_list; track alert.id) {
+              <div class="alert-item" [class]="alert.couleur || 'info'">
+                @if (alert.couleur === 'danger' || alert.type === 'alerte') {
+                  <i class="bi bi-exclamation-octagon-fill"></i>
+                } @else if (alert.couleur === 'warning' || alert.type === 'rappel') {
+                  <i class="bi bi-exclamation-triangle-fill"></i>
+                } @else if (alert.couleur === 'success' || alert.type === 'activite') {
+                  <i class="bi bi-check-circle-fill"></i>
+                } @else {
+                  <i class="bi bi-info-circle-fill"></i>
+                }
+                <div class="alert-info">
+                  <span class="alert-title">{{ alert.titre }}</span>
+                  <span class="alert-desc">{{ alert.message }}</span>
+                </div>
+                <a [routerLink]="getResolvedRoute(alert)" class="alert-action-link">Consulter</a>
+              </div>
+            }
+          } @else if (data()?.alertes) {
+            @if (data()?.alertes?.nouvelles_preinscriptions?.count) {
+              <div class="alert-item info">
+                <i class="bi bi-person-plus-fill"></i>
+                <div class="alert-info">
+                  <span class="alert-title">Nouvelles préinscriptions ({{ data()?.alertes?.nouvelles_preinscriptions?.count }})</span>
+                  <span class="alert-desc">{{ data()?.alertes?.nouvelles_preinscriptions?.message }}</span>
+                </div>
+                <a routerLink="/preinscriptions" class="alert-action-link">Traiter</a>
+              </div>
+            }
+            @if (data()?.alertes?.appels_non_effectues?.count) {
+              <div class="alert-item warning">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <div class="alert-info">
+                  <span class="alert-title">Appels non effectués ({{ data()?.alertes?.appels_non_effectues?.count }})</span>
+                  <span class="alert-desc">{{ data()?.alertes?.appels_non_effectues?.message }}</span>
+                </div>
+                <a routerLink="/seances" class="alert-action-link">Voir séances</a>
+              </div>
+            }
+          } @else {
+            <p class="empty-hint" style="padding: 1.5rem 0; text-align: center; color: var(--neutral-400);">
+              <i class="bi bi-shield-check" style="font-size: 2rem; display: block; margin-bottom: 0.5rem; color: var(--success-500);"></i>
+              Toutes les opérations pastorales sont à jour. Aucune alerte en cours.
+            </p>
+          }
+        </div>
+      </app-card>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,211 @@
+<div class="page-container animate-fade-in">
+  <!-- En-tête de page -->
+  <div class="page-header">
+    <div class="header-titles">
+      <h2 class="page-title">
+        <i class="bi bi-file-earmark-richtext"></i>
+        <span>Modèles de Documents</span>
+      </h2>
+      <p class="page-subtitle">
+        Gérez, éditez et personnalisez vos modèles officiels de documents paroissiaux.
+      </p>
+    </div>
+
+    <div class="header-actions">
+      <button type="button" class="btn btn-primary" (click)="openNewModelePage()">
+        <i class="bi bi-plus-lg"></i>
+        <span>Nouveau modèle</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Barre de Filtres & Recherche -->
+  <div class="toolbar-card">
+    <div class="search-box">
+      <i class="bi bi-search search-icon"></i>
+      <input
+        type="text"
+        placeholder="Rechercher un modèle par nom, description..."
+        [ngModel]="searchQuery()"
+        (ngModelChange)="searchQuery.set($event)"
+      />
+    </div>
+
+    <div class="filter-group">
+      <label class="filter-label">Catégorie :</label>
+      <select class="filter-select" [ngModel]="filterCategorie()" (ngModelChange)="filterCategorie.set($event)">
+        <option value="toutes">Toutes les catégories</option>
+        @for (cat of categoriesList; track cat.value) {
+          <option [value]="cat.value">{{ cat.label }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label class="filter-label">Statut :</label>
+      <select class="filter-select" [ngModel]="filterStatut()" (ngModelChange)="filterStatut.set($event)">
+        <option value="tous">Tous les statuts</option>
+        <option value="actif">Actif</option>
+        <option value="inactif">Inactif</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Tableau des Modèles -->
+  <div class="card-table">
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Nom du modèle</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Statut</th>
+            <th>Dernière modif.</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (m of filteredModeles(); track m.id) {
+            <tr class="data-row">
+              <td>
+                <div class="item-nom">
+                  <i class="bi bi-file-earmark-text file-icon"></i>
+                  <div>
+                    <strong>{{ m.titre }}</strong>
+                    @if (m.code) {
+                      <span class="code-pill">{{ m.code }}</span>
+                    }
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="cat-badge" [class.attestation]="m.type_document === 'attestation'"
+                                      [class.certificat]="m.type_document === 'certificat'"
+                                      [class.convocation]="m.type_document === 'convocation'"
+                                      [class.carte]="m.type_document === 'carte'"
+                                      [class.fiche]="m.type_document === 'fiche'">
+                  {{ getCategoryBadgeLabel(m.type_document) }}
+                </span>
+              </td>
+              <td>
+                <span class="text-desc" [title]="m.description || ''">{{ m.description || 'Aucune description' }}</span>
+              </td>
+              <td>
+                <span
+                  class="status-badge"
+                  [class.actif]="m.statut === 'actif'"
+                  [class.inactif]="m.statut === 'inactif'"
+                  (click)="toggleStatut(m)"
+                  title="Cliquer pour basculer le statut"
+                >
+                  <i class="bi" [class.bi-check-circle-fill]="m.statut === 'actif'" [class.bi-x-circle-fill]="m.statut === 'inactif'"></i>
+                  {{ m.statut === 'actif' ? 'Actif' : 'Inactif' }}
+                </span>
+              </td>
+              <td>
+                <span class="text-date">{{ (m.updated_at || m.created_at) | date:'dd/MM/yyyy' }}</span>
+              </td>
+              <td class="text-right">
+                <div class="action-group">
+                  <button type="button" class="action-btn view-btn" title="Prévisualiser" (click)="openPreviewModal(m)">
+                    <i class="bi bi-eye"></i>
+                  </button>
+
+                  <button type="button" class="action-btn edit-btn" title="Modifier le modèle" (click)="openEditModelePage(m)">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+
+                  <button type="button" class="action-btn copy-btn" title="Dupliquer" (click)="dupliquerModele(m)">
+                    <i class="bi bi-copy"></i>
+                  </button>
+
+                  <button type="button" class="action-btn delete-btn" title="Supprimer" (click)="openDeleteConfirm(m)">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+          @if (filteredModeles().length === 0 && !service.isLoading()) {
+            <tr>
+              <td colspan="6" class="empty-cell">
+                <i class="bi bi-file-earmark-x empty-icon"></i>
+                <p>Aucun modèle de document trouvé.</p>
+              </td>
+            </tr>
+          }
+          @if (service.isLoading()) {
+            <tr>
+              <td colspan="6" class="loading-cell">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p>Chargement des modèles de documents...</p>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-footer">
+      <span class="footer-count">Total : {{ filteredModeles().length }} modèle(s)</span>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL : Prévisualisation Rendu du Modèle -->
+@if (isPreviewModalOpen()) {
+  <div class="modal-overlay" (click)="isPreviewModalOpen.set(false)">
+    <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <i class="bi bi-file-earmark-text"></i>
+          <h3>Aperçu : {{ selectedModele()?.titre }}</h3>
+        </div>
+        <button type="button" class="btn-close" (click)="isPreviewModalOpen.set(false)">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="preview-paper-box">
+          <app-entete-catechese [showBorder]="false" />
+          <div class="preview-body" [innerHTML]="previewContentHtml()"></div>
+          <div class="preview-footer">
+            <div class="signature-date">Fait à {{ service.paroisseInfo().nom }}, le {{ (selectedModele()?.created_at || '2026-08-28') | date:'dd MMMM yyyy' }}</div>
+            <div class="signature-title">{{ selectedModele()?.signature_titre || 'Le Curé de la Paroisse' }}</div>
+            <div class="signature-seal">[ Sceau & Signature Officielle ]</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="isPreviewModalOpen.set(false)">Fermer</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- MODAL CONFIRMATION SUPPRESSION -->
+@if (isDeleteConfirmOpen()) {
+  <div class="modal-overlay" (click)="isDeleteConfirmOpen.set(false)">
+    <div class="modal-card modal-sm" (click)="$event.stopPropagation()">
+      <div class="modal-header header-danger">
+        <div class="modal-title-group">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+          <h3>Supprimer ce modèle ?</h3>
+        </div>
+        <button type="button" class="btn-close" (click)="isDeleteConfirmOpen.set(false)">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>Êtes-vous sûr de vouloir supprimer définitivement le modèle <strong>« {{ selectedModele()?.titre }} »</strong> ? Cette action est irréversible.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="isDeleteConfirmOpen.set(false)">Annuler</button>
+        <button type="button" class="btn btn-danger" (click)="confirmDeleteModele()">Supprimer</button>
+      </div>
+    </div>
+  </div>
+}

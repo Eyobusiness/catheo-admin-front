@@ -112,6 +112,7 @@ export class AnimateursPageComponent implements OnInit {
   protected closeFormModal(): void {
     this.isFormModalOpen.set(false);
     this.selectedAnimateur.set(null);
+    this.isEditing.set(false);
   }
 
   protected handleView(animateur: Animateur): void {

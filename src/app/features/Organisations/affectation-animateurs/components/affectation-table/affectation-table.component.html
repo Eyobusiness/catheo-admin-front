@@ -42,13 +42,11 @@
             <td>
               <span
                 class="role-badge"
-                [class.is-principal]="aff.role === 'principal'"
-                [class.is-adjoint]="aff.role === 'adjoint'"
-                [class.is-assistant]="aff.role === 'assistant'"
-                title="Cliquer pour changer le rôle"
-                (click)="onCycleRole(aff)"
+                [class.is-principal]="isPrincipal(aff.role)"
+                [class.is-assistant]="isAssistant(aff.role)"
+                [class.is-adjoint]="isAdjoint(aff.role)"
               >
-                <i [class]="'bi ' + (aff.role === 'principal' ? 'bi-star-fill' : aff.role === 'adjoint' ? 'bi-shield-check' : 'bi-person-badge')"></i>
+                <i [class]="'bi ' + getRoleIcon(aff.role)"></i>
                 {{ getRoleLabel(aff.role) }}
               </span>
             </td>

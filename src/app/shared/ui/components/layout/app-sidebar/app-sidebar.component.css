@@ -13,6 +13,7 @@
 .app-sidebar {
   width: var(--sidebar-width);
   height: 100vh;
+  max-height: 100vh;
   background-color: var(--neutral-900);
   color: var(--neutral-300);
   display: flex;
@@ -22,23 +23,28 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden; /* Empêche le défilement du conteneur parent */
 }
 
 .app-sidebar.is-collapsed {
   width: var(--sidebar-collapsed-width);
 }
 
-/* Brand */
+/* Brand - Fixé au sommet */
 .sidebar-brand {
   height: var(--header-height);
+  min-height: 64px;
   padding: 0 1.25rem;
   display: flex;
   align-items: center;
   gap: 0.875rem;
+  background-color: var(--neutral-900);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .brand-logo {
@@ -46,11 +52,18 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  filter: drop-shadow(0 2px 4px rgba(2, 132, 199, 0.4));
+  transition: transform var(--transition-fast);
+}
+
+.brand-logo:hover {
+  transform: scale(1.05);
 }
 
 .brand-text {
   overflow: hidden;
   white-space: nowrap;
+  user-select: none;
 }
 
 .brand-name {
@@ -59,16 +72,21 @@
   color: #ffffff;
   letter-spacing: -0.02em;
   line-height: 1.2;
+  margin: 0;
 }
 
 .brand-name span {
   color: var(--primary-400);
+  background: linear-gradient(135deg, var(--primary-400), #818cf8);
+  /* -webkit-background-clip: text; */
+  -webkit-text-fill-color: transparent;
 }
 
 .brand-tagline {
   font-size: 0.6875rem;
   color: var(--neutral-400);
   letter-spacing: 0.02em;
+  margin: 2px 0 0 0;
 }
 
 .mobile-close-btn {
@@ -76,12 +94,41 @@
   margin-left: auto;
   color: var(--neutral-400);
   font-size: 1.25rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
 }
 
-/* Nav */
+.mobile-close-btn:hover {
+  color: #ffffff;
+}
+
+/* Nav - Scrollable avec scrollbar discrète */
 .sidebar-nav {
   flex: 1;
   padding: 1rem 0.75rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+.sidebar-nav::-webkit-scrollbar {
+  width: 5px;
+}
+
+.sidebar-nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .nav-list {
@@ -238,6 +285,8 @@
 .sidebar-footer {
   padding: 1rem 0.75rem;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+  background-color: var(--neutral-900);
 }
 
 .system-status-card {

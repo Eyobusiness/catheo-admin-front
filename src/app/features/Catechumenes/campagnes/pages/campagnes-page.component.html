@@ -2,9 +2,10 @@
   <!-- Topbar Header -->
   <section class="page-topbar">
     <div class="topbar-headings">
+      
       <h2 class="topbar-title">Campagnes de Préinscription</h2>
       <p class="topbar-subtitle">
-        Gestion et planification des campagnes pour les inscriptions des catéchumènes.
+        Planifiez les périodes d'inscription.
       </p>
     </div>
 
@@ -20,56 +21,113 @@
     </div>
   </section>
 
+  <!-- KPI / Stats Summary Cards -->
+  <div class="kpi-grid">
+    <div class="kpi-card total" (click)="setStatusFilter('')">
+      <div class="kpi-icon"><i class="bi bi-megaphone"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-number">{{ totalCampagnesCount() }}</span>
+        <span class="kpi-label">Total Campagnes</span>
+      </div>
+    </div>
+
+    <div class="kpi-card success" (click)="setStatusFilter('ouverte')">
+      <div class="kpi-icon"><i class="bi bi-broadcast"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-number">{{ ouvertesCount() }}</span>
+        <span class="kpi-label">Campagnes Ouvertes</span>
+      </div>
+    </div>
+
+    <div class="kpi-card warning">
+      <div class="kpi-icon"><i class="bi bi-people"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-number">{{ totalDemandesCount() }}</span>
+        <span class="kpi-label">Demandes Reçues</span>
+      </div>
+    </div>
+
+    <div class="kpi-card danger" (click)="setStatusFilter('fermee')">
+      <div class="kpi-icon"><i class="bi bi-lock"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-number">{{ fermeesCount() }}</span>
+        <span class="kpi-label">Campagnes Clôturées</span>
+      </div>
+    </div>
+  </div>
+
   <!-- Main Card with Table -->
   <app-card
     title="Liste des Campagnes de Préinscription"
+    subtitle="Gérez l'ouverture, le partage QR Code, les modifications et l'état de vos campagnes."
   >
     <!-- Filters Toolbar -->
     <div class="filters-toolbar">
       <div class="filters-left">
+        <!-- Quick Status Filter Tabs -->
+        <div class="status-tabs-group">
+          <button
+            type="button"
+            class="tab-btn"
+            [class.active]="statusFilter() === ''"
+            (click)="setStatusFilter('')"
+          >
+            Toutes <span class="tab-count">{{ totalCampagnesCount() }}</span>
+          </button>
+          <button
+            type="button"
+            class="tab-btn tab-btn-open"
+            [class.active]="statusFilter() === 'ouverte'"
+            (click)="setStatusFilter('ouverte')"
+          >
+            <span class="tab-dot dot-green"></span>
+            Ouvertes <span class="tab-count">{{ ouvertesCount() }}</span>
+          </button>
+          <button
+            type="button"
+            class="tab-btn"
+            [class.active]="statusFilter() === 'fermee'"
+            (click)="setStatusFilter('fermee')"
+          >
+            Clôturées <span class="tab-count">{{ fermeesCount() }}</span>
+          </button>
+          <button
+            type="button"
+            class="tab-btn"
+            [class.active]="statusFilter() === 'suspendue'"
+            (click)="setStatusFilter('suspendue')"
+          >
+            Suspendues
+          </button>
+        </div>
+
         <!-- Search Input -->
         <div class="search-input-wrapper">
           <i class="bi bi-search search-icon"></i>
           <input
             type="text"
             class="filter-search-control"
-            placeholder="Rechercher..."
+            placeholder="Rechercher une campagne..."
             [value]="searchQuery()"
             (input)="onSearchChange($event)"
           />
           @if (searchQuery()) {
-            <button class="clear-search-btn" (click)="clearSearch()" title="Effacer">
+            <button class="clear-search-btn" (click)="clearSearch()" title="Effacer la recherche">
               <i class="bi bi-x-circle-fill"></i>
             </button>
           }
-        </div>
-
-        <!-- Status Filter -->
-        <div class="status-select-wrapper">
-          <i class="bi bi-funnel status-prefix-icon"></i>
-          <select
-            class="filter-status-control"
-            [value]="statusFilter()"
-            (change)="onStatusFilterChange($event)"
-          >
-            <option value="">Tous les statuts</option>
-            <option value="ouverte">Ouverte</option>
-            <option value="fermee">Clôturée</option>
-            <option value="suspendue">Suspendue</option>
-          </select>
-          <i class="bi bi-chevron-down select-chevron-icon"></i>
         </div>
       </div>
 
       <div class="filters-right">
         @if (hasActiveFilters()) {
-          <button class="reset-filter-btn" (click)="resetFilters()">
+          <button class="reset-filter-btn" (click)="resetFilters()" title="Réinitialiser les filtres">
             <i class="bi bi-arrow-counterclockwise"></i>
             <span>Réinitialiser</span>
           </button>
         }
         <span class="count-pill">
-          <strong>{{ filteredCampagnes().length }}</strong> campagne(s)
+          <strong>{{ filteredCampagnes().length }}</strong> résultat(s)
         </span>
       </div>
     </div>
@@ -122,3 +180,4 @@
   (modalClosed)="closeModals()"
   (confirmed)="handleDeleteConfirm()"
 />
+

@@ -1,0 +1,325 @@
+<div class="profile-container">
+  <!-- Profile Header Card -->
+  <div class="profile-header-card">
+    <div class="profile-cover"></div>
+    <div class="profile-header-body">
+      <div class="profile-avatar-wrapper">
+        <div class="profile-avatar">
+          <span>{{ userInitials() }}</span>
+        </div>
+        <span class="status-indicator-dot" title="En ligne"></span>
+      </div>
+
+      <div class="profile-main-info">
+        <div class="name-badge-row">
+          <h1 class="profile-name">{{ displayName() }}</h1>
+          @if (userRole()) {
+            <span class="role-badge">{{ userRole() }}</span>
+          }
+          @if (userStatus()) {
+            <span class="active-badge">{{ userStatus() }}</span>
+          }
+        </div>
+        <p class="profile-email">
+          <i class="bi bi-envelope"></i>
+          {{ user()?.email }}
+        </p>
+        @if (user()?.telephone) {
+          <p class="profile-phone">
+            <i class="bi bi-telephone"></i>
+            {{ user()?.telephone }}
+          </p>
+        }
+        @if (userParoisse()) {
+          <p class="profile-paroisse">
+            <i class="bi bi-building"></i>
+            {{ userParoisse() }}
+          </p>
+        }
+      </div>
+
+      <div class="profile-header-stats">
+        @if (userStatus()) {
+          <div class="stat-pill">
+            <span class="stat-label">Statut</span>
+            <span class="stat-value text-success">{{ userStatus() }}</span>
+          </div>
+        }
+        @if (createdAt()) {
+          <div class="stat-pill">
+            <span class="stat-label">Date de création</span>
+            <span class="stat-value">{{ createdAt() | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+        }
+        @if (lastLogin()) {
+          <div class="stat-pill">
+            <span class="stat-label">Dernière connexion</span>
+            <span class="stat-value">{{ lastLogin() | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation Tabs -->
+  <div class="profile-tabs-card">
+    <div class="tabs-nav">
+      <button
+        type="button"
+        class="tab-nav-btn"
+        [class.active]="activeTab() === 'infos'"
+        (click)="setTab('infos')"
+      >
+        <i class="bi bi-person-badge"></i>
+        <span>Informations Personnelles</span>
+      </button>
+
+      <button
+        type="button"
+        class="tab-nav-btn"
+        [class.active]="activeTab() === 'securite'"
+        (click)="setTab('securite')"
+      >
+        <i class="bi bi-shield-lock"></i>
+        <span>Sécurité & Mot de Passe</span>
+      </button>
+
+      <button
+        type="button"
+        class="tab-nav-btn"
+        [class.active]="activeTab() === 'preferences'"
+        (click)="setTab('preferences')"
+      >
+        <i class="bi bi-gear"></i>
+        <span>Session & Déconnexion</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Tab Contents -->
+  @if (activeTab() === 'infos') {
+    <app-card title="Modifier mes coordonnées">
+      <form [formGroup]="profileForm" (ngSubmit)="onUpdateProfile()" class="profile-form">
+        <div class="form-grid">
+          <!-- Nom -->
+          <div class="form-group">
+            <label class="form-label" for="userNom">Nom de famille <span class="required">*</span></label>
+            <div class="input-wrapper">
+              <i class="bi bi-person input-icon"></i>
+              <input
+                id="userNom"
+                type="text"
+                class="form-control with-icon"
+                placeholder="Ex: KOUADIO"
+                formControlName="nom"
+                [class.is-invalid]="profileForm.get('nom')?.invalid && profileForm.get('nom')?.touched"
+              />
+            </div>
+            @if (profileForm.get('nom')?.invalid && profileForm.get('nom')?.touched) {
+              <span class="error-msg">Le nom est obligatoire (min 2 caractères).</span>
+            }
+          </div>
+
+          <!-- Prénoms -->
+          <div class="form-group">
+            <label class="form-label" for="userPrenoms">Prénoms <span class="required">*</span></label>
+            <div class="input-wrapper">
+              <i class="bi bi-person-fill input-icon"></i>
+              <input
+                id="userPrenoms"
+                type="text"
+                class="form-control with-icon"
+                placeholder="Ex: Ferdinand"
+                formControlName="prenoms"
+                [class.is-invalid]="profileForm.get('prenoms')?.invalid && profileForm.get('prenoms')?.touched"
+              />
+            </div>
+            @if (profileForm.get('prenoms')?.invalid && profileForm.get('prenoms')?.touched) {
+              <span class="error-msg">Les prénoms sont obligatoires (min 2 caractères).</span>
+            }
+          </div>
+
+          <!-- Email -->
+          <div class="form-group">
+            <label class="form-label" for="userEmail">Adresse Email <span class="required">*</span></label>
+            <div class="input-wrapper">
+              <i class="bi bi-envelope input-icon"></i>
+              <input
+                id="userEmail"
+                type="email"
+                class="form-control with-icon"
+                placeholder="Ex: ferdinand.kouadio@catheo.ci"
+                formControlName="email"
+                [class.is-invalid]="profileForm.get('email')?.invalid && profileForm.get('email')?.touched"
+              />
+            </div>
+            @if (profileForm.get('email')?.invalid && profileForm.get('email')?.touched) {
+              <span class="error-msg">Veuillez saisir une adresse email valide.</span>
+            }
+          </div>
+
+          <!-- Téléphone -->
+          <div class="form-group">
+            <label class="form-label" for="userPhone">Numéro de Téléphone / WhatsApp</label>
+            <div class="input-wrapper">
+              <i class="bi bi-telephone input-icon"></i>
+              <input
+                id="userPhone"
+                type="tel"
+                class="form-control with-icon"
+                placeholder="Ex: +225 0701020304"
+                formControlName="telephone"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <app-button
+            type="submit"
+            variant="primary"
+            icon="check-circle"
+            [loading]="isSubmittingProfile()"
+          >
+            Enregistrer les modifications
+          </app-button>
+        </div>
+      </form>
+    </app-card>
+  }
+
+  @if (activeTab() === 'securite') {
+    <app-card title="Changement du mot de passe">
+      <form [formGroup]="passwordForm" (ngSubmit)="onChangePassword()" class="profile-form">
+        <div class="security-intro-box">
+          <i class="bi bi-shield-check intro-icon"></i>
+          <div>
+            <h4 class="intro-title">Sécurité du compte</h4>
+            <p class="intro-desc">
+              Utilisez un mot de passe robuste d'au moins 6 caractères pour protéger l'accès à votre compte.
+            </p>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <!-- Mot de passe actuel -->
+          <div class="form-group full-width">
+            <label class="form-label" for="currentPass">Mot de passe actuel <span class="required">*</span></label>
+            <div class="input-wrapper">
+              <i class="bi bi-key input-icon"></i>
+              <input
+                id="currentPass"
+                [type]="showCurrentPassword() ? 'text' : 'password'"
+                class="form-control with-icon with-action"
+                placeholder="Saisissez votre mot de passe actuel"
+                formControlName="current_password"
+                [class.is-invalid]="passwordForm.get('current_password')?.invalid && passwordForm.get('current_password')?.touched"
+              />
+              <button
+                type="button"
+                class="input-action-btn"
+                (click)="togglePasswordVisibility('current')"
+              >
+                <i [class]="showCurrentPassword() ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+              </button>
+            </div>
+            @if (passwordForm.get('current_password')?.invalid && passwordForm.get('current_password')?.touched) {
+              <span class="error-msg">Le mot de passe actuel est requis.</span>
+            }
+          </div>
+
+          <!-- Nouveau mot de passe -->
+          <div class="form-group">
+            <label class="form-label" for="newPass">Nouveau mot de passe <span class="required">*</span></label>
+            <div class="input-wrapper">
+              <i class="bi bi-lock input-icon"></i>
+              <input
+                id="newPass"
+                [type]="showNewPassword() ? 'text' : 'password'"
+                class="form-control with-icon with-action"
+                placeholder="Minimum 6 caractères"
+                formControlName="password"
+                [class.is-invalid]="passwordForm.get('password')?.invalid && passwordForm.get('password')?.touched"
+              />
+              <button
+                type="button"
+                class="input-action-btn"
+                (click)="togglePasswordVisibility('new')"
+              >
+                <i [class]="showNewPassword() ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+              </button>
+            </div>
+            @if (passwordForm.get('password')?.invalid && passwordForm.get('password')?.touched) {
+              <span class="error-msg">Le nouveau mot de passe doit comporter au moins 6 caractères.</span>
+            }
+          </div>
+
+          <!-- Confirmation mot de passe -->
+          <div class="form-group">
+            <label class="form-label" for="confirmPass">Confirmer le nouveau mot de passe <span class="required">*</span></label>
+            <div class="input-wrapper">
+              <i class="bi bi-lock-fill input-icon"></i>
+              <input
+                id="confirmPass"
+                [type]="showConfirmPassword() ? 'text' : 'password'"
+                class="form-control with-icon with-action"
+                placeholder="Répétez le mot de passe"
+                formControlName="password_confirmation"
+                [class.is-invalid]="(passwordForm.get('password_confirmation')?.invalid || passwordForm.hasError('passwordsMismatch')) && passwordForm.get('password_confirmation')?.touched"
+              />
+              <button
+                type="button"
+                class="input-action-btn"
+                (click)="togglePasswordVisibility('confirm')"
+              >
+                <i [class]="showConfirmPassword() ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+              </button>
+            </div>
+            @if (passwordForm.hasError('passwordsMismatch') && passwordForm.get('password_confirmation')?.touched) {
+              <span class="error-msg">Les deux mots de passe ne correspondent pas.</span>
+            }
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <app-button
+            type="submit"
+            variant="primary"
+            icon="shield-lock"
+            [loading]="isSubmittingPassword()"
+          >
+            Mettre à jour le mot de passe
+          </app-button>
+        </div>
+      </form>
+    </app-card>
+  }
+
+  @if (activeTab() === 'preferences') {
+    <app-card title="Gestion de session">
+      <div class="preferences-container">
+        <div class="pref-row">
+          <div class="pref-info">
+            <h4 class="pref-title">Identifiant de session</h4>
+            <p class="pref-desc">
+              Connecté avec le compte <strong>{{ user()?.email }}</strong> (ID: {{ user()?.id }}).
+            </p>
+          </div>
+        </div>
+
+        <div class="pref-divider"></div>
+
+        <div class="pref-row">
+          <div class="pref-info">
+            <h4 class="pref-title">Déconnexion</h4>
+            <p class="pref-desc">Fermer votre session active sur cet appareil.</p>
+          </div>
+          <button type="button" class="logout-btn" (click)="onLogout()">
+            <i class="bi bi-box-arrow-right"></i>
+            Se déconnecter
+          </button>
+        </div>
+      </div>
+    </app-card>
+  }
+</div>

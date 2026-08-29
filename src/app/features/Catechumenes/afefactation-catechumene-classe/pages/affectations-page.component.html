@@ -61,7 +61,7 @@
           <input
             type="text"
             class="filter-search-control"
-            placeholder="Rechercher par nom, code, classe..."
+            placeholder="Rechercher..."
             [value]="searchQuery()"
             (input)="onSearchChange($event)"
           />
@@ -96,9 +96,9 @@
             [value]="affectationFilter()"
             (change)="onAffectationFilterChange($event)"
           >
-            <option value="">Tous les statuts d'affectation</option>
-            <option value="non_affecte">En attente (Non affectés)</option>
-            <option value="affecte">Déjà affectés en classe</option>
+            <option value="">Tous les statuts</option>
+            <option value="non_affecte">En attente</option>
+            <option value="affecte">Déjà affectés</option>
           </select>
           <i class="bi bi-chevron-down select-chevron-icon"></i>
         </div>

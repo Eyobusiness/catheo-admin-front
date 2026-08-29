@@ -20,7 +20,7 @@ export class ModuleTrimestrielDeleteModalComponent {
   protected readonly message = computed(() => {
     const target = this.itemToDelete();
     if (!target) return 'Êtes-vous sûr de vouloir supprimer ce module trimestriel ?';
-    return `Êtes-vous sûr de vouloir supprimer le module "${target.libelle}" (${target.trimestre}) ? Toutes les évaluations associées à cette période devront être réassignées.`;
+    return `Êtes-vous sûr de vouloir supprimer le module "${target.libelle}" ? Toutes les évaluations associées à cette période devront être réassignées.`;
   });
 
   protected onClose(): void {

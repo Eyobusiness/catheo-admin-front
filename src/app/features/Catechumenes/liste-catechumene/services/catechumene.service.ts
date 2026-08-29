@@ -1,6 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, catchError, of, tap, throwError } from 'rxjs';
+import { Observable, catchError, map, of, tap, throwError } from 'rxjs';
 import {
   CatechumeneDto,
   CreateCatechumeneDto,
@@ -110,6 +110,75 @@ export class CatechumeneService {
       }),
       catchError(err => {
         const found = this.catechumenes().find(c => c.id === id);
+        if (found) return of(found);
+        return throwError(() => err);
+      })
+    );
+  }
+
+  public getByMatricule(matricule: string): Observable<CatechumeneDto> {
+    const cleanMat = matricule.trim();
+    return this.http.get<any>(`${this.baseUrl}/matricule/${encodeURIComponent(cleanMat)}`).pipe(
+      map(res => {
+        const item = res.data || res;
+        if (!item || (!item.id && !item.nom)) {
+          throw new Error('Catéchumène introuvable');
+        }
+        return {
+          id: String(item.id),
+          code_catechumene: item.code_catechumene || `CAT-${item.id}`,
+          matricule: item.matricule || item.code_catechumene,
+          nom: item.nom || '',
+          prenoms: item.prenoms || '',
+          nom_complet: item.nom_complet || `${item.nom || ''} ${item.prenoms || ''}`.trim(),
+          sexe: item.sexe || 'M',
+          date_naissance: item.date_naissance || '',
+          lieu_naissance: item.lieu_naissance,
+          adresse: item.adresse,
+          domicile: item.domicile,
+          profession: item.profession,
+          classe_scolaire: item.classe_scolaire,
+          situation_matrimoniale: item.situation_matrimoniale,
+          telephone: item.telephone,
+          photo_path: item.photo_path || item.photo_url,
+          photo_url: item.photo_url || item.photo_path,
+          nom_pere: item.nom_pere,
+          origine_pere: item.origine_pere,
+          telephone_pere: item.telephone_pere,
+          nom_mere: item.nom_mere,
+          origine_mere: item.origine_mere,
+          telephone_mere: item.telephone_mere,
+          nom_tuteur: item.nom_tuteur,
+          telephone_tuteur: item.telephone_tuteur,
+          est_baptise: !!(item.est_baptise || item.date_bapteme),
+          num_carnet_bapteme: item.num_carnet_bapteme,
+          date_bapteme: item.date_bapteme,
+          lieu_bapteme: item.lieu_bapteme,
+          diocese_bapteme: item.diocese_bapteme,
+          ville_bapteme: item.ville_bapteme,
+          paroisse_bapteme: item.paroisse_bapteme,
+          date_premiere_communion: item.date_premiere_communion,
+          paroisse_premiere_communion: item.paroisse_premiere_communion,
+          date_confirmation: item.date_confirmation,
+          paroisse_confirmation: item.paroisse_confirmation,
+          ministre_confirmation: item.ministre_confirmation,
+          nom_parrain: item.nom_parrain || item.parrains_marraines?.[0]?.nom_prenoms,
+          telephone_parrain: item.telephone_parrain || item.parrains_marraines?.[0]?.telephone,
+          statut: item.statut || 'actif',
+          ceb_id: item.ceb_id || item.ceb?.id,
+          ceb: item.ceb,
+          inscriptions_annuelles: item.inscriptions_annuelles || [],
+          parrains_marraines: item.parrains_marraines || [],
+          created_at: item.created_at || new Date().toISOString()
+        } as CatechumeneDto;
+      }),
+      catchError(err => {
+        const matLower = cleanMat.toLowerCase();
+        const found = this.catechumenes().find(
+          c => (c.matricule && c.matricule.toLowerCase() === matLower) ||
+               (c.code_catechumene && c.code_catechumene.toLowerCase() === matLower) ||
+               (c.nom_complet && c.nom_complet.toLowerCase().includes(matLower))
+        );
         if (found) return of(found);
         return throwError(() => err);
       })

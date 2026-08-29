@@ -1,0 +1,122 @@
+<app-dialog
+  [isOpen]="isOpen()"
+  title="Enregistrer une Dépense de Caisse"
+  size="md"
+  (closed)="onClose()"
+>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="caisse-form-body">
+    <!-- Nature & Catégorie de la dépense -->
+    <div class="form-row-2">
+      <!-- Nature (Fixe Dépense) -->
+      <div class="form-group">
+        <label class="form-label" for="caisse_type">
+          Nature de l'opération
+        </label>
+        <div class="readonly-badge-input">
+          <i class="bi bi-arrow-up-right-circle-fill text-danger"></i>
+          <span class="badge-text">Sortie</span>
+        </div>
+      </div>
+
+      <!-- Catégorie de dépense -->
+      <div class="form-group">
+        <label class="form-label" for="caisse_cat">
+          Catégorie <span class="required">*</span>
+        </label>
+        <div class="select-wrapper">
+          <select id="caisse_cat" formControlName="categorie" class="form-control">
+            <option value="depense">Dépense</option>     
+          </select>
+          <i class="bi bi-chevron-down select-chevron"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Motif / Libellé de la dépense -->
+    <div class="form-group">
+      <label class="form-label" for="caisse_libelle">
+        Motif de la dépense <span class="required">*</span>
+      </label>
+      <input
+        id="caisse_libelle"
+        type="text"
+        formControlName="libelle"
+        class="form-control"
+        placeholder="Ex: Achat de rames de papier, craies et carnets..."
+      />
+      @if (form.controls.libelle.touched && form.controls.libelle.errors?.['required']) {
+        <span class="field-error">L'objet de la dépense est obligatoire.</span>
+      }
+    </div>
+
+    <!-- Montant & Date -->
+    <div class="form-row-2">
+      <!-- Montant -->
+      <div class="form-group">
+        <label class="form-label" for="caisse_montant">
+          Montant décaissé (FCFA) <span class="required">*</span>
+        </label>
+        <input
+          id="caisse_montant"
+          type="number"
+          step="500"
+          min="1"
+          formControlName="montant"
+          class="form-control"
+        />
+        @if (form.controls.montant.touched && form.controls.montant.errors?.['required']) {
+          <span class="field-error">Le montant décaissé est obligatoire.</span>
+        }
+      </div>
+
+      <!-- Date -->
+      <div class="form-group">
+        <label class="form-label" for="caisse_date">
+          Date du décaissement <span class="required">*</span>
+        </label>
+        <input
+          id="caisse_date"
+          type="date"
+          formControlName="date_mouvement"
+          class="form-control"
+        />
+      </div>
+    </div>
+
+    <!-- Pièce justificative / Réf Document -->
+    <div class="form-group">
+      <label class="form-label" for="caisse_ref_doc">
+        Réf. Facture / Reçu
+      </label>
+      <input
+        id="caisse_ref_doc"
+        type="text"
+        formControlName="reference_document"
+        class="form-control"
+        placeholder="Ex: FACT-2026-092, BON-048..."
+      />
+    </div>
+
+    <!-- Actions -->
+    <div class="modal-footer-actions">
+      <app-button
+        type="button"
+        variant="ghost"
+        (clicked)="onClose()"
+        [disabled]="isLoading()"
+      >
+        Annuler
+      </app-button>
+
+      <app-button
+        type="submit"
+        variant="primary"
+        [loading]="isLoading()"
+        [disabled]="form.invalid || isLoading()"
+      >
+        <i class="bi bi-check-lg"></i>
+        <span>Enregistrer la Dépense</span>
+      </app-button>
+    </div>
+  </form>
+</app-dialog>

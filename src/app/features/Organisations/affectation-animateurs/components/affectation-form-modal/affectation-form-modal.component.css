@@ -13,3 +13,18 @@
   color: var(--danger-600);
   margin-top: 0.25rem;
 }
+
+.field-info-notice {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-top: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--warning-700, #b45309);
+  background-color: var(--warning-50, #fffbeb);
+  padding: 0.375rem 0.625rem;
+  border-radius: var(--radius-sm, 4px);
+  border: 1px solid var(--warning-200, #fde68a);
+}
+

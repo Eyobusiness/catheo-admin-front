@@ -1,0 +1,63 @@
+<div class="print-header-container">
+  <div class="print-header-top">
+    <!-- Image / Logo Paroissial (Gauche) -->
+    <div class="logo-box logo-left">
+      @if (logoParoisse()) {
+        <img [src]="logoParoisse()" alt="Logo Paroisse" class="print-logo" />
+      } @else {
+        <i class="bi bi-shield-shaded church-icon"></i>
+      }
+    </div>
+
+    <!-- Bloc d'en-tête paroissial centré -->
+    <div class="parish-info-center">
+      @if (diocese()) {
+        <h3 class="line-diocese">{{ diocese() | uppercase }}</h3>
+      }
+      @if (doyenne()) {
+        <h4 class="line-doyenne">{{ doyenne() | uppercase }}</h4>
+      }
+      @if (nomParoisse()) {
+        <h2 class="line-paroisse">{{ nomParoisse() | uppercase }}</h2>
+      }
+      @if (adresse()) {
+        <p class="line-contact">{{ adresse() }}</p>
+      }
+      @if (email()) {
+        <p class="line-contact">Email : {{ email() }}</p>
+      }
+      @if (telephone()) {
+        <p class="line-contact">TEL. {{ telephone() }}</p>
+      }
+    </div>
+
+    <!-- Image / Logo Catéchèse OU Photo de profil du catéchumène pour les fiches individuelles (Droite) -->
+    <div class="logo-box logo-right" [class.photo-box]="isFicheIndividuelle()">
+      @if (isFicheIndividuelle()) {
+        @if (photoProfil()) {
+          <img [src]="photoProfil()" alt="Photo du Catéchumène" class="print-photo" />
+        } @else {
+          <div class="photo-placeholder">
+            <i class="bi bi-person-fill user-icon"></i>
+            <span class="photo-txt">PHOTO</span>
+          </div>
+        }
+      } @else {
+        @if (logoCatechese()) {
+          <img [src]="logoCatechese()" alt="Logo Catéchèse" class="print-logo" />
+        } @else {
+          <i class="bi bi-book-half church-icon"></i>
+        }
+      }
+    </div>
+  </div>
+
+  <!-- Trait horizontal dans le header -->
+  <div class="header-divider-line"></div>
+
+  @if (customTitle()) {
+    <div class="custom-title-block">
+      <h2 class="custom-title-text">{{ customTitle() }}</h2>
+    </div>
+  }
+</div>

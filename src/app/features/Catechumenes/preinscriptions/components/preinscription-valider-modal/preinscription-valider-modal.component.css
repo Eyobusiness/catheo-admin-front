@@ -1,3 +1,7 @@
+:host {
+  display: contents;
+}
+
 .valider-modal-body {
   display: flex;
   flex-direction: column;
@@ -91,6 +95,25 @@
 
 .text-area {
   resize: vertical;
+}
+
+.payment-info-note {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  background: rgba(14, 165, 233, 0.08);
+  border: 1px solid rgba(14, 165, 233, 0.25);
+  border-radius: var(--radius-md);
+  color: #0369a1;
+  font-size: 0.825rem;
+  line-height: 1.4;
+}
+
+.payment-info-note i {
+  font-size: 1.25rem;
+  color: #0284c7;
+  flex-shrink: 0;
 }
 
 .frais-toggle-card {

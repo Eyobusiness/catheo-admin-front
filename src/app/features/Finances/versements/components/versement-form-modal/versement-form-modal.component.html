@@ -1,0 +1,131 @@
+<app-dialog
+  [isOpen]="isOpen()"
+  [title]="isEditing() ? 'Modifier le Versement' : 'Nouveau Versement Paroissial / au Curé'"
+  size="md"
+  (closed)="onClose()"
+>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="versement-form-body">
+    <!-- Période Concernée -->
+    <div class="form-group">
+      <label class="form-label" for="vrs_periode">
+        Période Concernée <span class="required">*</span>
+      </label>
+      <input
+        id="vrs_periode"
+        type="text"
+        formControlName="periode_concernee"
+        class="form-control"
+        placeholder="Ex: Juin 2026, 1er Trimestre 2026..."
+      />
+      @if (form.controls.periode_concernee.touched && form.controls.periode_concernee.errors?.['required']) {
+        <span class="field-error">La période est obligatoire.</span>
+      }
+    </div>
+
+    <!-- Montant & Mode de Remise -->
+    <div class="form-row-2">
+      <!-- Montant -->
+      <div class="form-group">
+        <label class="form-label" for="vrs_montant">
+          Montant Reversé (FCFA) <span class="required">*</span>
+        </label>
+        <input
+          id="vrs_montant"
+          type="number"
+          step="1000"
+          min="1"
+          formControlName="montant_verse"
+          class="form-control"
+        />
+        @if (form.controls.montant_verse.touched && form.controls.montant_verse.errors?.['required']) {
+          <span class="field-error">Le montant est obligatoire.</span>
+        }
+      </div>
+
+      <!-- Mode de Remise -->
+      <div class="form-group">
+        <label class="form-label" for="vrs_mode">
+          Mode de Remise <span class="required">*</span>
+        </label>
+        <div class="select-wrapper">
+          <select id="vrs_mode" formControlName="mode_remise" class="form-control">
+            <option value="especes">Espèces (Remise main propre)</option>
+            <option value="cheque">Chèque Paroissial</option>
+            <option value="virement">Virement Bancaire</option>
+          </select>
+          <i class="bi bi-chevron-down select-chevron"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Destinataire & Effectué par -->
+    <div class="form-row-2">
+      <!-- Destinataire -->
+      <div class="form-group">
+        <label class="form-label" for="vrs_destinataire">
+          Destinataire / Bénéficiaire <span class="required">*</span>
+        </label>
+        <input
+          id="vrs_destinataire"
+          type="text"
+          formControlName="destinataire"
+          class="form-control"
+          placeholder="Ex: Curé de la Paroisse, Économe..."
+        />
+        @if (form.controls.destinataire.touched && form.controls.destinataire.errors?.['required']) {
+          <span class="field-error">Le destinataire est obligatoire.</span>
+        }
+      </div>
+
+      <!-- Effectué par -->
+      <div class="form-group">
+        <label class="form-label" for="vrs_auteur">
+          Nom du Déposant / Trésorier
+        </label>
+        <input
+          id="vrs_auteur"
+          type="text"
+          formControlName="effectue_par"
+          class="form-control"
+          placeholder="Ex: Trésorier de la catéchèse..."
+        />
+      </div>
+    </div>
+
+    <!-- Notes & Observations -->
+    <div class="form-group">
+      <label class="form-label" for="vrs_notes">
+        Observations / Remarques (Optionnel)
+      </label>
+      <textarea
+        id="vrs_notes"
+        rows="2"
+        formControlName="notes"
+        class="form-control"
+        placeholder="Précisions éventuelles sur la remise de fonds..."
+      ></textarea>
+    </div>
+
+    <!-- Actions -->
+    <div class="modal-footer-actions">
+      <app-button
+        type="button"
+        variant="ghost"
+        (clicked)="onClose()"
+        [disabled]="isLoading()"
+      >
+        Annuler
+      </app-button>
+
+      <app-button
+        type="submit"
+        variant="primary"
+        [loading]="isLoading()"
+        [disabled]="form.invalid || isLoading()"
+      >
+        <i class="bi bi-check-lg"></i>
+        <span>{{ isEditing() ? 'Enregistrer les modifications' : 'Enregistrer le versement' }}</span>
+      </app-button>
+    </div>
+  </form>
+</app-dialog>

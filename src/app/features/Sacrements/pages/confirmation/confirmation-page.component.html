@@ -1,0 +1,614 @@
+<div class="page-container animate-fade-in">
+  <!-- En-tête de page -->
+  <div class="page-header">
+    <div class="header-titles">
+      <h2 class="page-title">
+        <i class="bi bi-patch-check-fill text-danger"></i>
+        <span>Sacrement de Confirmation</span>
+      </h2>
+      <p class="page-subtitle">
+        Candidats de 5ème année achevant leur parcours de maturation chrétienne sous l'onction du Saint-Esprit.
+      </p>
+    </div>
+
+    <div class="header-actions">
+      <button type="button" class="btn btn-secondary" (click)="isPrintModalOpen.set(true)">
+        <i class="bi bi-printer"></i>
+        <span>Imprimer le registre</span>
+      </button>
+
+      <button type="button" class="btn btn-outline-primary" (click)="openExceptionModal()">
+        <i class="bi bi-shield-plus"></i>
+        <span>Ajouter une exception</span>
+      </button>
+
+      @if (selectedIds().size > 0) {
+        <button type="button" class="btn btn-success" (click)="validerSelectionBulk()">
+          <i class="bi bi-check2-all"></i>
+          <span>Valider ({{ selectedIds().size }})</span>
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Statistiques & KPIs dynamiques -->
+  <div class="kpi-grid">
+    <div class="kpi-card total-card">
+      <div class="kpi-icon icon-total">
+        <i class="bi bi-fire"></i>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-value">{{ stats().total }}</span>
+        <span class="kpi-label">Candidats à la Confirmation</span>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon icon-enfants">
+        <i class="bi bi-hourglass-split"></i>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-value">{{ stats().enAttente }}</span>
+        <span class="kpi-label">En préparation</span>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon icon-adultes">
+        <i class="bi bi-check-circle-fill text-success"></i>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-value">{{ stats().valides }}</span>
+        <span class="kpi-label">Confirmations Reçues</span>
+      </div>
+    </div>
+
+    @for (secStat of stats().sectionsStats.slice(0, 1); track secStat.id || secStat.nom) {
+      <div class="kpi-card">
+        <div class="kpi-icon icon-jeunes">
+          <i class="bi bi-diagram-2"></i>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-value">{{ secStat.count }}</span>
+          <span class="kpi-label">{{ secStat.nom }}</span>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Barre de Filtres & Recherche Dynamiques depuis la BD -->
+  <div class="toolbar-card">
+    <div class="search-box">
+      <i class="bi bi-search search-icon"></i>
+      <input
+        type="text"
+        placeholder="Rechercher par nom, prénom, matricule ou classe..."
+        [ngModel]="searchQuery()"
+        (ngModelChange)="searchQuery.set($event)"
+      />
+    </div>
+
+    <div class="filter-group">
+      <label class="filter-label">Section :</label>
+      <select class="filter-select" [ngModel]="filterSection()" (ngModelChange)="onSectionChange($event)">
+        <option value="">Toutes les sections</option>
+        @for (s of sections(); track s.id) {
+          <option [value]="s.id">{{ s.nom }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label class="filter-label">Niveau :</label>
+      <select class="filter-select" [ngModel]="filterNiveau()" (ngModelChange)="onNiveauChange($event)">
+        <option value="">Tous les niveaux</option>
+        @for (n of filteredNiveauxList(); track n.id) {
+          <option [value]="n.id">{{ n.nom }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label class="filter-label">Classe :</label>
+      <select class="filter-select" [ngModel]="filterClasse()" (ngModelChange)="filterClasse.set($event)">
+        <option value="">Toutes les classes</option>
+        @for (c of filteredClassesList(); track c.id) {
+          <option [value]="c.id">{{ c.nom }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label class="filter-label">État :</label>
+      <select class="filter-select" [ngModel]="filterStatut()" (ngModelChange)="filterStatut.set($event)">
+        <option value="tous">Tous les états</option>
+        <option value="en_attente">En préparation</option>
+        <option value="valide">Confirmé</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Tableau des Candidats -->
+  <div class="card-table">
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th class="th-checkbox">
+              <input
+                type="checkbox"
+                class="form-checkbox"
+                [checked]="isAllSelected()"
+                (change)="toggleSelectAll()"
+              />
+            </th>
+            <th>Matricule</th>
+            <th>Candidat (Nom & Prénoms)</th>
+            <th>Section</th>
+            <th>Niveau</th>
+            <th>Classe</th>
+            <th>Pré-requis (Baptême & 1ère Com.)</th>
+            <th>Statut Confirmation</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (cat of candidatsList(); track cat.id) {
+            <tr class="data-row" [class.row-selected]="selectedIds().has(cat.id)">
+              <td class="td-checkbox">
+                <input
+                  type="checkbox"
+                  class="form-checkbox"
+                  [checked]="selectedIds().has(cat.id)"
+                  (change)="toggleSelectOne(cat.id)"
+                />
+              </td>
+              <td>
+                <span class="item-mat">{{ cat.matricule }}</span>
+              </td>
+              <td>
+                <div class="item-user">
+                  <div class="user-avatar-placeholder">
+                    {{ cat.nom.substring(0, 1) }}{{ cat.prenoms.substring(0, 1) }}
+                  </div>
+                  <div>
+                    <strong class="item-nom">{{ cat.nom }} {{ cat.prenoms }}</strong>
+                    @if (cat.exceptions && cat.exceptions.length > 0) {
+                      <span class="exception-pill"><i class="bi bi-shield-exclamation"></i> Exception</span>
+                    }
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="section-badge" [class.enfants]="cat.section === 'Enfants'" [class.jeunes]="cat.section === 'Jeunes'" [class.adultes]="cat.section === 'Adultes'">
+                  {{ cat.section }}
+                </span>
+              </td>
+              <td>
+                <span class="chip-niveau">{{ cat.niveau }}</span>
+              </td>
+              <td>
+                <span class="item-classe">{{ cat.classe }}</span>
+              </td>
+              <td>
+                <div class="prereq-badges">
+                  <span class="prereq-pill" [class.valid]="cat.isBaptise">
+                    <i class="bi" [class.bi-check]="cat.isBaptise" [class.bi-x]="!cat.isBaptise"></i>
+                    Bap.
+                  </span>
+                  <span class="prereq-pill" [class.valid]="cat.isPremiereCommunion">
+                    <i class="bi" [class.bi-check]="cat.isPremiereCommunion" [class.bi-x]="!cat.isPremiereCommunion"></i>
+                    1ère Com.
+                  </span>
+                </div>
+              </td>
+              <td>
+                @if (cat.isConfirme) {
+                  <span class="status-badge valid">
+                    <i class="bi bi-check-circle-fill"></i>
+                    Confirmé
+                  </span>
+                } @else {
+                  <span class="status-badge pending">
+                    <i class="bi bi-clock-history"></i>
+                    En préparation
+                  </span>
+                }
+              </td>
+              <td class="text-right">
+                <div class="action-group">
+                  <button type="button" class="action-btn view-btn" (click)="openViewModal(cat)" title="Voir la fiche">
+                    <i class="bi bi-eye"></i>
+                  </button>
+
+                  @if (!cat.isConfirme) {
+                    <button type="button" class="action-btn validate-btn" (click)="openValidationModal(cat)" title="Enregistrer la Confirmation">
+                      <i class="bi bi-check-lg"></i>
+                    </button>
+                  }
+
+                  <button type="button" class="action-btn delete-btn" (click)="openDeleteModal(cat)" title="Retirer">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+          @if (candidatsList().length === 0) {
+            <tr>
+              <td colspan="9" class="empty-cell">
+                <i class="bi bi-patch-question empty-icon"></i>
+                <p>Aucun candidat à la Confirmation trouvé.</p>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-footer">
+      <span class="footer-count">
+        {{ candidatsList().length }} catéchumène(s) au registre de Confirmation
+        @if (selectedIds().size > 0) {
+          • <strong>{{ selectedIds().size }} sélectionné(s)</strong>
+        }
+      </span>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- MODAL : ENREGISTRER LA CONFIRMATION                                       -->
+<!-- ========================================================================= -->
+@if (isValidationModalOpen() && selectedCatechumene()) {
+  <div class="modal-overlay" (click)="isValidationModalOpen.set(false)">
+    <div class="modal-card modal-md" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <i class="bi bi-patch-check-fill text-danger"></i>
+          <h3>Enregistrer la Confirmation : {{ selectedCatechumene()?.nom }} {{ selectedCatechumene()?.prenoms }}</h3>
+        </div>
+        <button type="button" class="btn-close" (click)="isValidationModalOpen.set(false)">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <div class="modal-body form-grid">
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label class="form-label">Date de la célébration *</label>
+            <input type="date" class="form-control" [ngModel]="sacrementFormData().date" (ngModelChange)="sacrementFormData().date = $event" />
+          </div>
+
+          <div class="form-group flex-1">
+            <label class="form-label">Lieu / Paroisse *</label>
+            <input type="text" class="form-control" [ngModel]="sacrementFormData().lieu" (ngModelChange)="sacrementFormData().lieu = $event" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label class="form-label">Évêque / Ministre célébrant *</label>
+            <input type="text" class="form-control" [ngModel]="sacrementFormData().celebrant" (ngModelChange)="sacrementFormData().celebrant = $event" />
+          </div>
+
+          <div class="form-group flex-1">
+            <label class="form-label">N° Registre de Confirmation</label>
+            <input type="text" class="form-control" placeholder="Ex : CONF-2026-008" [ngModel]="sacrementFormData().numRegistre" (ngModelChange)="sacrementFormData().numRegistre = $event" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label class="form-label">Parrain de confirmation</label>
+            <input type="text" class="form-control" placeholder="Nom du parrain" [ngModel]="sacrementFormData().parrain" (ngModelChange)="sacrementFormData().parrain = $event" />
+          </div>
+
+          <div class="form-group flex-1">
+            <label class="form-label">Marraine de confirmation</label>
+            <input type="text" class="form-control" placeholder="Nom de la marraine" [ngModel]="sacrementFormData().marraine" (ngModelChange)="sacrementFormData().marraine = $event" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Observations</label>
+          <textarea class="form-control" rows="2" placeholder="Nom de confirmation, mentions particulières..." [ngModel]="sacrementFormData().observations" (ngModelChange)="sacrementFormData().observations = $event"></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="isValidationModalOpen.set(false)">Annuler</button>
+        <button type="button" class="btn btn-success" (click)="saveSacrementValidation()">
+          <i class="bi bi-check2-circle"></i>
+          <span>Valider l'onction</span>
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ========================================================================= -->
+<!-- MODAL : AJOUTER UNE EXCEPTION PASTORALE                                   -->
+<!-- ========================================================================= -->
+@if (isExceptionModalOpen()) {
+  <div class="modal-overlay" (click)="isExceptionModalOpen.set(false)">
+    <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <i class="bi bi-shield-plus text-primary"></i>
+          <h3>Dérogation & Exception — Confirmation</h3>
+        </div>
+        <button type="button" class="btn-close" (click)="isExceptionModalOpen.set(false)">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <div class="modal-body form-grid">
+        <p class="modal-desc">
+          Autorisez un catéchumène à recevoir la Confirmation par dispense d'âge ou cas pastoral particulier.
+        </p>
+
+        <div class="form-group">
+          <label class="form-label">Sélectionner le catéchumène *</label>
+          <div class="search-box width-100">
+            <i class="bi bi-search search-icon"></i>
+            <input
+              type="text"
+              placeholder="Rechercher par nom, prénom, classe..."
+              [ngModel]="exceptionSearchQuery()"
+              (ngModelChange)="exceptionSearchQuery.set($event)"
+            />
+          </div>
+        </div>
+
+        <div class="results-table-box">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Nom & Prénoms</th>
+                <th>Section</th>
+                <th>Classe</th>
+                <th>Niveau</th>
+                <th class="text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (c of searchedCatechumenesForException(); track c.id) {
+                <tr class="data-row" [class.selected-row]="selectedCatechumeneForException()?.id === c.id">
+                  <td><strong>{{ c.nom }} {{ c.prenoms }}</strong></td>
+                  <td>{{ c.section }}</td>
+                  <td>{{ c.classe }}</td>
+                  <td><span class="chip-niveau">{{ c.niveau }}</span></td>
+                  <td class="text-right">
+                    <button
+                      type="button"
+                      class="btn btn-sm"
+                      [class.btn-primary]="selectedCatechumeneForException()?.id === c.id"
+                      [class.btn-secondary]="selectedCatechumeneForException()?.id !== c.id"
+                      (click)="selectCatechumeneForException(c)"
+                    >
+                      {{ selectedCatechumeneForException()?.id === c.id ? 'Sélectionné ✓' : 'Choisir' }}
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        @if (selectedCatechumeneForException()) {
+          <div class="exception-form-box animate-fade-in">
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label class="form-label">Motif de la dérogation *</label>
+                <select class="form-control" [ngModel]="exceptionFormData().motif" (ngModelChange)="exceptionFormData().motif = $event">
+                  @for (m of motifsException; track m) {
+                    <option [value]="m">{{ m }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="form-group flex-1">
+                <label class="form-label">Autorisé par *</label>
+                <input type="text" class="form-control" [ngModel]="exceptionFormData().autorisePar" (ngModelChange)="exceptionFormData().autorisePar = $event" placeholder="Ex: Décision de l'Archevêque" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Observations</label>
+              <textarea class="form-control" rows="2" placeholder="Précisez le motif..." [ngModel]="exceptionFormData().observation" (ngModelChange)="exceptionFormData().observation = $event"></textarea>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="isExceptionModalOpen.set(false)">Annuler</button>
+        @if (selectedCatechumeneForException()) {
+          <button type="button" class="btn btn-primary" (click)="saveExceptionForm()">
+            <i class="bi bi-check-lg"></i>
+            <span>Valider la dérogation</span>
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ========================================================================= -->
+<!-- MODAL : FICHE DU CANDIDAT                                                 -->
+<!-- ========================================================================= -->
+@if (isViewModalOpen() && selectedCatechumene()) {
+  <div class="modal-overlay" (click)="isViewModalOpen.set(false)">
+    <div class="modal-card modal-md" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <i class="bi bi-person-lines-fill"></i>
+          <h3>Fiche Candidat : {{ selectedCatechumene()?.nom }} {{ selectedCatechumene()?.prenoms }}</h3>
+        </div>
+        <button type="button" class="btn-close" (click)="isViewModalOpen.set(false)">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="view-header-box">
+          <div class="view-avatar">
+            {{ selectedCatechumene()?.nom?.substring(0, 1) }}{{ selectedCatechumene()?.prenoms?.substring(0, 1) }}
+          </div>
+          <div>
+            <h4 class="view-name">{{ selectedCatechumene()?.nom }} {{ selectedCatechumene()?.prenoms }}</h4>
+            <p class="view-sub">Matricule : {{ selectedCatechumene()?.matricule }} • {{ selectedCatechumene()?.classe }}</p>
+          </div>
+        </div>
+
+        <div class="view-details-grid">
+          <div class="view-item">
+            <span class="view-label">Section :</span>
+            <strong>{{ selectedCatechumene()?.section }}</strong>
+          </div>
+          <div class="view-item">
+            <span class="view-label">Niveau :</span>
+            <strong>{{ selectedCatechumene()?.niveau }}</strong>
+          </div>
+          <div class="view-item">
+            <span class="view-label">Baptisé :</span>
+            <span>{{ selectedCatechumene()?.isBaptise ? 'Oui ✓' : 'Non' }}</span>
+          </div>
+          <div class="view-item">
+            <span class="view-label">Première Communion :</span>
+            <span>{{ selectedCatechumene()?.isPremiereCommunion ? 'Oui ✓' : 'Non' }}</span>
+          </div>
+        </div>
+
+        @if (selectedCatechumene()?.confirmationRecord) {
+          <div class="view-record-card" style="background:#fef2f2; border-color:#fecaca; margin-bottom:10px;">
+            <h5 style="color:#b91c1c;">Sacrement de Confirmation reçu :</h5>
+            <p style="color:#991b1b;"><strong>Date :</strong> {{ selectedCatechumene()?.confirmationRecord?.date }}</p>
+            <p style="color:#991b1b;"><strong>Célébrant :</strong> {{ selectedCatechumene()?.confirmationRecord?.celebrant }}</p>
+            <p style="color:#991b1b;"><strong>Lieu :</strong> {{ selectedCatechumene()?.confirmationRecord?.lieu }}</p>
+          </div>
+        }
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="isViewModalOpen.set(false)">Fermer</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ========================================================================= -->
+<!-- MODAL : IMPRESSION DU REGISTRE A4                                         -->
+<!-- ========================================================================= -->
+@if (isPrintModalOpen()) {
+  <div class="modal-overlay" (click)="isPrintModalOpen.set(false)">
+    <div class="modal-card modal-xl" (click)="$event.stopPropagation()">
+      <div class="modal-header no-print">
+        <div class="modal-title-group">
+          <i class="bi bi-file-earmark-pdf"></i>
+          <h3>Registre Officiel de Confirmation</h3>
+        </div>
+        <button type="button" class="btn-close" (click)="isPrintModalOpen.set(false)">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="print-sheet-container" id="printable-sheet">
+          <div class="sheet-header-parish">
+            <h3>ARCHIDIOCÈSE D'ABIDJAN — PAROISSE CŒUR IMMACULÉ DE MARIE</h3>
+            <h2>REGISTRE PASTORAL DES CANDIDATS AU SACREMENT DE CONFIRMATION</h2>
+            <p>Coordination Paroissiale de la Catéchèse — Année Pastorale 2025-2026</p>
+            <div class="sheet-meta-box">
+              <span><strong>Total inscrits :</strong> {{ candidatsList().length }} candidats</span>
+              <span><strong>Date d'édition :</strong> 19/08/2026</span>
+            </div>
+          </div>
+
+          <table class="photo-style-table">
+            <thead>
+              <tr>
+                <th class="text-center">N°</th>
+                <th>Matricule</th>
+                <th>Nom & Prénoms</th>
+                <th>Section</th>
+                <th>Classe</th>
+                <th>Parrain / Marraine de Confirmation</th>
+                <th class="text-center">Statut</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (c of candidatsList(); track c.id; let idx = $index) {
+                <tr>
+                  <td class="text-center">{{ idx + 1 }}</td>
+                  <td>{{ c.matricule }}</td>
+                  <td><strong>{{ c.nom }} {{ c.prenoms }}</strong></td>
+                  <td>{{ c.section }}</td>
+                  <td>{{ c.classe }}</td>
+                  <td>{{ c.confirmationRecord?.parrain || 'À renseigner' }}</td>
+                  <td class="text-center">{{ c.isConfirme ? 'Confirmé ✓' : 'En attente' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+
+          <div class="sheet-signatures-grid">
+            <div class="sig-col">
+              <span>Le Responsable de la Confirmation</span>
+              <div class="sig-line-space"></div>
+            </div>
+            <div class="sig-col">
+              <span>Le Curé de la Paroisse</span>
+              <div class="sig-line-space"></div>
+            </div>
+            <div class="sig-col">
+              <span>L'Archevêque / Évêque Célébrant</span>
+              <div class="sig-line-space"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer no-print">
+        <button type="button" class="btn btn-secondary" (click)="isPrintModalOpen.set(false)">Fermer</button>
+        <button type="button" class="btn btn-primary" (click)="printList()">
+          <i class="bi bi-printer-fill"></i>
+          <span>Imprimer le registre</span>
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- CONFIRMATION SUPPRESSION -->
+@if (isDeleteModalOpen()) {
+  <div class="modal-overlay" (click)="isDeleteModalOpen.set(false)">
+    <div class="modal-card modal-sm" (click)="$event.stopPropagation()">
+      <div class="modal-header header-danger">
+        <div class="modal-title-group">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+          <h3>Retirer le candidat ?</h3>
+        </div>
+        <button type="button" class="btn-close" (click)="isDeleteModalOpen.set(false)">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>Voulez-vous retirer <strong>« {{ selectedCatechumene()?.nom }} {{ selectedCatechumene()?.prenoms }} »</strong> de la liste de Confirmation ?</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="isDeleteModalOpen.set(false)">Annuler</button>
+        <button type="button" class="btn btn-danger" (click)="confirmDelete()">Retirer</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- TOAST -->
+@if (showToast()) {
+  <div class="toast-floating" [class.success]="toastType() === 'success'" [class.danger]="toastType() === 'danger'" [class.info]="toastType() === 'info'">
+    <i class="bi" [class.bi-check-circle]="toastType() === 'success'" [class.bi-x-circle]="toastType() === 'danger'" [class.bi-info-circle]="toastType() === 'info'"></i>
+    <span>{{ toastMessage() }}</span>
+  </div>
+}

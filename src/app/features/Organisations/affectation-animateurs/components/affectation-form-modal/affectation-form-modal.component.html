@@ -13,13 +13,15 @@
       </label>
       <select id="animateurId" formControlName="animateur_id" class="form-control">
         <option value="" disabled>Sélectionner un catéchiste</option>
-        @for (anim of animateurs(); track anim.id) {
+        @for (anim of availableAnimateurs(); track anim.id) {
           <option [value]="anim.id">
             {{ anim.nom }} {{ anim.prenoms }} 
-            <!-- ({{ anim.matricule || anim.sexe }}) -->
           </option>
         }
       </select>
+      @if (availableAnimateurs().length === 0 && !isEditing()) {
+        <span class="field-info-notice">Tous les catéchistes enregistrés sont déjà affectés à une classe.</span>
+      }
       @if (form.controls.animateur_id.touched && form.controls.animateur_id.invalid) {
         <span class="field-error">Veuillez sélectionner un catéchiste.</span>
       }
@@ -49,9 +51,9 @@
         Rôle au sein de la classe <span class="required">*</span>
       </label>
       <select id="role" formControlName="role" class="form-control">
-        <option value="principal"> Principal (Responsable)</option>
-        <!-- <option value="adjoint"> Adjoint (Co-animateur)</option> -->
+        <option value="principal">Principal</option>
         <option value="assistant">Assistant</option>
+        <!-- <option value="adjoint">Adjoint</option> -->
       </select>
     </div>
   </form>

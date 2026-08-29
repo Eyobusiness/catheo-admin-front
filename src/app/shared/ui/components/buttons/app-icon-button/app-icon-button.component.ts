@@ -16,6 +16,7 @@ export class AppIconButton {
   public readonly clicked = output<MouseEvent>();
 
   protected onClick(event: MouseEvent): void {
+    event.stopPropagation();
     if (!this.disabled()) {
       this.clicked.emit(event);
     }

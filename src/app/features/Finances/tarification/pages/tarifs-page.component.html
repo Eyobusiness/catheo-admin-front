@@ -1,0 +1,142 @@
+<div class="tarifs-page">
+  <!-- Topbar Header -->
+  <section class="page-topbar">
+    <div class="topbar-headings">
+      <h2 class="topbar-title">Configuration des Tarifs & Frais</h2>
+      <p class="topbar-subtitle">
+        Paramétrez la grille tarifaire pour les inscriptions et sacrements.
+      </p>
+    </div>
+
+    <div class="topbar-actions">
+      <app-button
+        variant="primary"
+        size="md"
+        icon="plus"
+        (clicked)="openCreateModal()"
+      >
+        Nouveau Tarif
+      </app-button>
+    </div>
+  </section>
+
+  <!-- KPI / Stats Summary Cards -->
+  <div class="kpi-grid">
+    <div class="kpi-card total">
+      <div class="kpi-icon"><i class="bi bi-tags"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-number">{{ totalTarifs() }}</span>
+        <span class="kpi-label">Tarifs Configurés</span>
+      </div>
+    </div>
+
+    <div class="kpi-card danger">
+      <div class="kpi-icon"><i class="bi bi-shield-fill-check"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-number">{{ tarifsObligatoires() }}</span>
+        <span class="kpi-label">Paiements Obligatoires</span>
+      </div>
+    </div>
+
+    <div class="kpi-card success">
+      <div class="kpi-icon"><i class="bi bi-cash-stack"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-number">{{ totalMontantInscriptions() | number:'1.0-0' }} F</span>
+        <span class="kpi-label">Frais Inscription</span>
+      </div>
+    </div>
+
+    <div class="kpi-card info">
+      <div class="kpi-icon"><i class="bi bi-collection"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-number">{{ typesTarifsCount() }}</span>
+        <span class="kpi-label">Catégories de Frais</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Card with Table -->
+  <app-card title="Grille Tarifaire Active">
+    <!-- Filters Toolbar -->
+    <div class="filters-toolbar">
+      <div class="filters-left">
+        <!-- Search Input -->
+        <div class="search-input-wrapper">
+          <i class="bi bi-search search-icon"></i>
+          <input
+            type="text"
+            class="filter-search-control"
+            placeholder="Rechercher..."
+            [value]="searchQuery()"
+            (input)="onSearchChange($event)"
+          />
+          @if (searchQuery()) {
+            <button class="clear-search-btn" (click)="searchQuery.set('')" title="Effacer">
+              <i class="bi bi-x-circle-fill"></i>
+            </button>
+          }
+        </div>
+
+        <!-- Type Filter -->
+        <div class="select-wrapper">
+          <i class="bi bi-funnel select-prefix-icon"></i>
+          <select
+            class="filter-select-control"
+            [value]="selectedTypeFilter()"
+            (change)="onTypeFilterChange($event)"
+          >
+            <option value="">Tous les types de frais</option>
+            <option value="inscription">Droits d'Inscription</option>
+            <option value="sacrement_bapteme">Sacrement Baptême</option>
+            <option value="sacrement_premiere_communion">Première Communion</option>
+            <option value="sacrement_confirmation">Confirmation</option>
+          </select>
+          <i class="bi bi-chevron-down select-chevron-icon"></i>
+        </div>
+      </div>
+
+      <div class="filters-right">
+        @if (hasActiveFilters()) {
+          <button class="reset-filter-btn" (click)="resetFilters()">
+            <i class="bi bi-arrow-counterclockwise"></i>
+            <span>Réinitialiser</span>
+          </button>
+        }
+        <span class="count-pill">
+          <strong>{{ filteredTarifs().length }}</strong> tarif(s)
+        </span>
+      </div>
+    </div>
+
+    <!-- Table Component -->
+    <app-tarif-table
+      [tarifs]="filteredTarifs()"
+      [isLoading]="isLoading()"
+      (createRequested)="openCreateModal()"
+      (editRequested)="openEditModal($event)"
+      (deleteRequested)="openDeleteModal($event)"
+      (genererRequested)="handleGenererOperations($event)"
+      (toggleStatusRequested)="handleToggleStatus($event)"
+    />
+  </app-card>
+</div>
+
+<!-- Form Modal -->
+<app-tarif-form-modal
+  [isOpen]="isFormModalOpen()"
+  [isEditing]="isEditing()"
+  [tarifToEdit]="selectedTarif()"
+  [niveaux]="niveaux()"
+  [isLoading]="isLoading()"
+  (formClosed)="closeModals()"
+  (formSubmitted)="handleFormSubmit($event)"
+/>
+
+<!-- Delete Modal -->
+<app-tarif-delete-modal
+  [isOpen]="isDeleteModalOpen()"
+  [itemToDelete]="selectedTarif()"
+  [isLoading]="isLoading()"
+  (modalClosed)="closeModals()"
+  (confirmed)="handleDeleteConfirm()"
+/>

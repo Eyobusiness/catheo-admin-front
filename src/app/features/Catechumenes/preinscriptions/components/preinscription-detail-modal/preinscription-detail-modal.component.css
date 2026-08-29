@@ -1,3 +1,7 @@
+:host {
+  display: contents;
+}
+
 .detail-modal-body {
   display: flex;
   flex-direction: column;

@@ -1,13 +1,25 @@
 export interface User {
-  id: string;
+  id: string | number;
   name: string;
   nom?: string;
   prenoms?: string;
   email: string;
   telephone?: string;
-  statut: string;
+  role?: string;
+  role_nom?: string;
+  profil_id?: string | number;
+  profil?: { id?: string | number; nom?: string; code?: string; libelle?: string };
+  profil_nom?: string;
+  paroisse_id?: string | number;
+  paroisse?: { id?: string | number; nom?: string; ville?: string; diocese?: string };
+  paroisse_nom?: string;
+  statut?: string;
+  is_active?: boolean;
+  avatar?: string;
   dernier_login_at?: string;
   created_at?: string;
+  updated_at?: string;
+  [key: string]: any;
 }
 
 export interface LoginDto {

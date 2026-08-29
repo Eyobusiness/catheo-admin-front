@@ -1,0 +1,169 @@
+<div class="caisse-page">
+  <!-- Topbar Header -->
+  <section class="page-topbar">
+    <div class="topbar-headings">
+      
+      <h2 class="topbar-title">Gestion de la Caisse </h2>
+      <p class="topbar-subtitle">
+        Suivi en temps réel des encaissements de catéchèse.
+      </p>
+    </div>
+
+    <div class="topbar-actions">
+      <app-button
+        variant="primary"
+        size="md"
+        icon="plus"
+        (clicked)="openMouvementModal()"
+      >
+        Nouvelle Dépense
+      </app-button>
+    </div>
+  </section>
+
+  <!-- KPI Cards (Conforme à l'écran 2 du prototype) -->
+  <div class="kpi-grid">
+    <!-- Solde en Caisse -->
+    <div class="kpi-card solde">
+      <div class="kpi-icon"><i class="bi bi-safe2"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-number">{{ kpis().solde_en_caisse | number:'1.0-0' }} F</span>
+        <span class="kpi-label">Solde Actuel en Caisse</span>
+      </div>
+    </div>
+
+    <!-- Total Encaissé -->
+    <div class="kpi-card success">
+      <div class="kpi-icon"><i class="bi bi-arrow-down-left-circle-fill"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-number">{{ kpis().total_encaisse | number:'1.0-0' }} F</span>
+        <span class="kpi-label">Total des Encaissements</span>
+      </div>
+    </div>
+
+    <!-- Total Remboursé -->
+    <div class="kpi-card danger">
+      <div class="kpi-icon"><i class="bi bi-arrow-counterclockwise"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-number">{{ kpis().total_rembourse | number:'1.0-0' }} F</span>
+        <span class="kpi-label">Total des Remboursements</span>
+      </div>
+    </div>
+
+    <!-- Paiements Validés -->
+    <div class="kpi-card info">
+      <div class="kpi-icon"><i class="bi bi-receipt"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-number">{{ kpis().paiements_valides_count }}</span>
+        <span class="kpi-label">Reçus Validés Émis</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Card with Table -->
+  <app-card title="Livre Journal de Trésorerie">
+    <!-- Filters Toolbar -->
+    <div class="filters-toolbar">
+      <div class="filters-left">
+        <!-- Search Input -->
+        <div class="search-input-wrapper">
+          <i class="bi bi-search search-icon"></i>
+          <input
+            type="text"
+            class="filter-search-control"
+            placeholder="Rechercher..."
+            [value]="searchQuery()"
+            (input)="onSearchChange($event)"
+          />
+          @if (searchQuery()) {
+            <button class="clear-search-btn" (click)="searchQuery.set('')" title="Effacer">
+              <i class="bi bi-x-circle-fill"></i>
+            </button>
+          }
+        </div>
+
+        <!-- Type Filter -->
+        <div class="select-wrapper">
+          <i class="bi bi-funnel select-prefix-icon"></i>
+          <select
+            class="filter-select-control"
+            [value]="selectedTypeFilter()"
+            (change)="onTypeFilterChange($event)"
+          >
+            <option value="">Tous les flux</option>
+            <option value="entree">Encaissements</option>
+            <option value="sortie">Dépenses</option>
+            <option value="remboursement">Remboursements</option>
+          </select>
+          <i class="bi bi-chevron-down select-chevron-icon"></i>
+        </div>
+
+        <!-- Date Range -->
+        <div class="date-range-wrapper">
+          <input
+            type="date"
+            class="filter-date-control"
+            [value]="dateDebutFilter()"
+            (input)="onDateDebutChange($event)"
+            title="Date de début"
+          />
+          <span class="date-sep">à</span>
+          <input
+            type="date"
+            class="filter-date-control"
+            [value]="dateFinFilter()"
+            (input)="onDateFinChange($event)"
+            title="Date de fin"
+          />
+        </div>
+      </div>
+
+      <div class="filters-right">
+        @if (hasActiveFilters()) {
+          <button class="reset-filter-btn" (click)="resetFilters()">
+            <i class="bi bi-arrow-counterclockwise"></i>
+            <span>Réinitialiser</span>
+          </button>
+        }
+        <span class="count-pill">
+          <strong>{{ filteredMouvements().length }}</strong> écriture(s)
+        </span>
+      </div>
+    </div>
+
+    <!-- Table Component -->
+    <app-caisse-table
+      [mouvements]="filteredMouvements()"
+      [isLoading]="isLoading()"
+      (createRequested)="openMouvementModal()"
+      (rembourserRequested)="openRembourserModal($event)"
+      (deleteRequested)="openDeleteModal($event)"
+    />
+  </app-card>
+</div>
+
+<!-- Manual Entry Modal -->
+<app-caisse-mouvement-modal
+  [isOpen]="isMouvementModalOpen()"
+  [isLoading]="isLoading()"
+  (modalClosed)="closeModals()"
+  (formSubmitted)="handleMouvementSubmit($event)"
+/>
+
+<!-- Refund Modal -->
+<app-caisse-rembourser-modal
+  [isOpen]="isRembourserModalOpen()"
+  [mouvement]="selectedMouvement()"
+  [isLoading]="isLoading()"
+  (modalClosed)="closeModals()"
+  (remboursementSubmitted)="handleRemboursementSubmit($event)"
+/>
+
+<!-- Delete Modal -->
+<app-caisse-delete-modal
+  [isOpen]="isDeleteModalOpen()"
+  [itemToDelete]="selectedMouvement()"
+  [isLoading]="isLoading()"
+  (modalClosed)="closeModals()"
+  (confirmed)="handleDeleteConfirm()"
+/>

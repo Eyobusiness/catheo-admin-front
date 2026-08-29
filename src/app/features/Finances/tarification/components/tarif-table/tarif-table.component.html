@@ -1,0 +1,159 @@
+<div class="table-card-wrapper">
+  <div class="table-responsive">
+    <table class="medical-table">
+      <thead>
+        <tr>
+          <th class="col-type">Type de frais</th>
+          <th class="col-intitule">Intitulé</th>
+          <th class="col-niveau">Niveau(x) ciblé(s)</th>
+          <th class="col-montant">Montant (FCFA)</th>
+          <th class="col-obligation">Caractère</th>
+          <th class="col-actions text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of paginatedTarifs(); track item.id) {
+          <tr class="table-row">
+            <!-- Type de frais -->
+            <td class="col-type">
+              <span class="type-pill" [class]="'type-pill ' + getTypeBadgeClass(item.type_tarif)">
+                <i class="bi bi-tag-fill"></i>
+                <span>{{ getTypeLabel(item.type_tarif) }}</span>
+              </span>
+            </td>
+
+            <!-- Intitulé -->
+            <td class="col-intitule">
+              <div class="intitule-cell">
+                <span class="intitule-main">{{ item.intitule }}</span>
+                @if (item.description) {
+                  <span class="intitule-desc">{{ item.description }}</span>
+                }
+              </div>
+            </td>
+
+            <!-- Niveaux Ciblés (Multiple ou Unique ou Tous) -->
+            <td class="col-niveau">
+              @if (item.niveaux && item.niveaux.length > 0) {
+                <div class="niveaux-badges-flex">
+                  @for (niv of item.niveaux; track niv.id) {
+                    <span class="niveau-badge">
+                      <i class="bi bi-layers-fill"></i> {{ niv.nom }}
+                    </span>
+                  }
+                </div>
+              } @else if (item.niveau; as niv) {
+                <span class="niveau-badge">
+                  <i class="bi bi-layers-fill"></i> {{ niv.nom }}
+                </span>
+              } @else {
+                <span class="niveau-badge all">
+                  <i class="bi bi-asterisk"></i> Tous les niveaux
+                </span>
+              }
+            </td>
+
+            <!-- Montant -->
+            <td class="col-montant">
+              <span class="montant-amount">
+                {{ item.montant | number:'1.0-0' }} <span class="currency">FCFA</span>
+              </span>
+            </td>
+
+            <!-- Obligation -->
+            <td class="col-obligation">
+              @if (item.est_obligatoire) {
+                <span class="badge-status-obligatoire">
+                  <i class="bi bi-check-circle-fill"></i> Obligatoire
+                </span>
+              } @else {
+                <span class="badge-status-optionnel">
+                  <i class="bi bi-dash-circle"></i> Optionnel
+                </span>
+              }
+            </td>
+
+            <!-- Actions -->
+            <td class="col-actions text-right">
+              <div class="actions-flex">
+                <!-- Générer les opérations en masse -->
+                <app-icon-button
+                  variant="success"
+                  size="sm"
+                  title="Générer en masse les opérations pour ce tarif"
+                  ariaLabel="Générer Opérations"
+                  (clicked)="onGenerer(item)"
+                >
+                  <i class="bi bi-magic"></i>
+                </app-icon-button>
+
+                <!-- Toggle Statut Actif/Inactif -->
+                <app-icon-button
+                  variant="secondary"
+                  size="sm"
+                  [title]="item.statut === 'inactif' ? 'Activer le tarif' : 'Désactiver le tarif'"
+                  ariaLabel="Statut"
+                  (clicked)="onToggleStatus(item)"
+                >
+                  <i [class]="'bi ' + (item.statut === 'inactif' ? 'bi-toggle-off' : 'bi-toggle-on')"></i>
+                </app-icon-button>
+
+                <app-icon-button
+                  variant="primary"
+                  size="sm"
+                  title="Modifier le tarif"
+                  ariaLabel="Modifier"
+                  (clicked)="onEdit(item)"
+                >
+                  <i class="bi bi-pencil"></i>
+                </app-icon-button>
+
+                <app-icon-button
+                  variant="danger"
+                  size="sm"
+                  title="Supprimer le tarif"
+                  ariaLabel="Supprimer"
+                  (clicked)="onDelete(item)"
+                >
+                  <i class="bi bi-trash3"></i>
+                </app-icon-button>
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="empty-cell">
+              <div class="empty-state-box">
+                <div class="empty-icon-wrap">
+                  <i class="bi bi-tags"></i>
+                </div>
+                <h4 class="empty-title">Aucun tarif configuré</h4>
+                <p class="empty-desc">
+                  Définissez la grille tarifaire (inscriptions, sacrements, manuels...) pour l'année de catéchèse.
+                </p>
+                <app-button
+                  variant="primary"
+                  size="sm"
+                  icon="plus"
+                  (clicked)="createRequested.emit()"
+                >
+                  Nouveau Tarif
+                </app-button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (tarifs().length > 0) {
+    <app-pagination
+      [totalItems]="tarifs().length"
+      [currentPage]="currentPage()"
+      [pageSize]="pageSize()"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+    />
+  }
+</div>

@@ -1,0 +1,45 @@
+:host {
+  display: block;
+  width: 100%;
+  margin-top: 14px;
+}
+
+.print-footer-container {
+  font-family: 'Times New Roman', Times, serif, Arial, sans-serif;
+  color: #000;
+  width: 100%;
+  padding-top: 4px;
+  page-break-inside: avoid;
+}
+
+.footer-divider-line {
+  width: 100%;
+  height: 1px;
+  background-color: #000;
+  margin-bottom: 5px;
+}
+
+.footer-content-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0 4px;
+}
+
+.footer-commission {
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-weight: 800;
+}
+
+.footer-annee {
+  font-style: normal;
+  font-weight: 700;
+}
+
+.footer-annee em {
+  font-style: italic;
+  font-weight: 800;
+}

@@ -25,7 +25,7 @@ export class ResponsableFormModalComponent {
       nonNullable: true,
       validators: [Validators.required, Validators.minLength(3)]
     }),
-    titre_fonction: new FormControl('', {
+    fonction: new FormControl('', {
       nonNullable: true,
       validators: [Validators.required]
     }),
@@ -43,14 +43,14 @@ export class ResponsableFormModalComponent {
         if (isEdit && item) {
           this.form.setValue({
             nom_prenoms: item.nom_prenoms || '',
-            titre_fonction: item.titre_fonction || '',
+            fonction: item.fonction || item.titre_fonction || '',
             telephone: item.telephone || '',
             statut: item.statut || 'actif'
           });
         } else {
           this.form.reset({
             nom_prenoms: '',
-            titre_fonction: '',
+            fonction: '',
             telephone: '',
             statut: 'actif'
           });
@@ -68,7 +68,8 @@ export class ResponsableFormModalComponent {
       const val = this.form.getRawValue();
       this.formSubmitted.emit({
         nom_prenoms: val.nom_prenoms,
-        titre_fonction: val.titre_fonction,
+        fonction: val.fonction,
+        titre_fonction: val.fonction,
         telephone: val.telephone || undefined,
         statut: val.statut
       });

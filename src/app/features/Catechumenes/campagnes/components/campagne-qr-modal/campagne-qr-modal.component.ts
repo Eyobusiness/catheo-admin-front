@@ -23,9 +23,11 @@ export class CampagneQrModalComponent {
   protected readonly publicUrl = computed(() => {
     const c = this.campagne();
     if (!c) return '';
-    if (c.public_url) return c.public_url;
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
-    return `${origin}/preinscription-publique/${c.id}`;
+    if (c.public_url && !c.public_url.startsWith('http://localhost/') && !c.public_url.startsWith('http://localhost:80/')) {
+      return c.public_url;
+    }
+    return `${origin}/preinscriptions/campagne/${c.id}`;
   });
 
   protected readonly qrCodeUrl = computed(() => {

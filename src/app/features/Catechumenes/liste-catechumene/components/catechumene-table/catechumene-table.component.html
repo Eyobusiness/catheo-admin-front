@@ -104,17 +104,6 @@
                   <i class="bi bi-eye"></i>
                 </app-icon-button>
 
-                <!-- Modifier -->
-                <app-icon-button
-                  variant="primary"
-                  size="sm"
-                  title="Modifier"
-                  ariaLabel="Modifier"
-                  (clicked)="onEdit(item)"
-                >
-                  <i class="bi bi-pencil"></i>
-                </app-icon-button>
-
                 <!-- Supprimer -->
                 <app-icon-button
                   variant="danger"
@@ -134,9 +123,9 @@
               <div class="empty-state-box">
                 <i class="bi bi-people" style="font-size: 2.25rem;"></i>
                 <p class="empty-title">Aucun catéchumène enregistré</p>
-                <p class="empty-desc">Ajoutez le premier catéchumène au registre paroissial.</p>
-                <app-button variant="primary" size="sm" icon="plus" (clicked)="onCreate()">
-                  Ajouter un Catéchumène
+                <p class="empty-desc">Pour enregistrer un nouveau catéchumène, effectuez une démarche d'inscription.</p>
+                <app-button variant="primary" size="sm" icon="journal-check" (clicked)="onCreate()">
+                  Faire une Inscription
                 </app-button>
               </div>
             </td>

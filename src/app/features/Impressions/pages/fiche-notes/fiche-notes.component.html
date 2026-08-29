@@ -1,0 +1,118 @@
+<div class="print-page-wrapper">
+  <!-- Barre d'outils et de filtres (Masquée à l'impression) -->
+  <div class="print-toolbar no-print">
+    <div class="toolbar-top-row">
+      <div class="toolbar-left">
+        
+        <h2 class="toolbar-page-title">Fiche de Notes & Évaluations</h2>
+      </div>
+
+      <div class="toolbar-top-actions">
+        <div class="orientation-toggle">
+          <button type="button" [class.active]="orientation() === 'portrait'" (click)="toggleOrientation('portrait')">
+            <i class="bi bi-file-earmark"></i> Portrait
+          </button>
+          <button type="button" [class.active]="orientation() === 'landscape'" (click)="toggleOrientation('landscape')">
+            <i class="bi bi-file-earmark-landscape"></i> Paysage
+          </button>
+        </div>
+
+        <button type="button" class="btn-print" (click)="triggerPrint()">
+          <i class="bi bi-printer-fill"></i>
+          <span>Imprimer</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Filtres de sélection (Année supprimée, Section -> Niveau -> Classe dynamiques) -->
+    <div class="toolbar-filters-row text-center">
+      <div class="filter-group">
+        <label>Section :</label>
+        <select [ngModel]="selectedSectionId()" (ngModelChange)="onSectionChange($event)">
+          <option value="tous">Toutes les sections</option>
+          @for (s of sections(); track s.id) { <option [value]="s.id">{{ s.nom }}</option> }
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Niveau :</label>
+        <select [ngModel]="selectedNiveauId()" (ngModelChange)="onNiveauChange($event)">
+          <option value="tous">Tous les niveaux</option>
+          @for (n of niveauxFiltres(); track n.id) { <option [value]="n.id">{{ n.nom }}</option> }
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Classe :</label>
+        <select [ngModel]="selectedClasseId()" (ngModelChange)="selectedClasseId.set($event)">
+          <option value="tous">Toutes les classes</option>
+          @for (c of classesFiltrees(); track c.id) { <option [value]="c.id">{{ c.nom }}</option> }
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- DOCUMENT OFFICIEL IMPRIMABLE A4 -->
+  <div class="a4-document-container" [class.landscape-mode]="orientation() === 'landscape'">
+    <!-- En-tête commun Paroisse avec Logos Paroisse et Catéchèse -->
+    <app-header-paroisse-print customTitle="FICHE DE NOTES & ÉVALUATIONS"></app-header-paroisse-print>
+
+    <!-- Sous-titre officiel -->
+    <div class="doc-title-block">
+      <h2 class="doc-subtitle">{{ displayClasseTitle() }}</h2>
+    </div>
+
+    <!-- Tableau de Notes officiel -->
+    <table class="official-print-table">
+      <thead>
+        <tr class="black-banner-row">
+          <th class="th-num" rowspan="2">N°</th>
+          <th class="th-name" rowspan="2">NOMS ET PRÉNOMS</th>
+          <th class="th-phone" rowspan="2">CONTACTS</th>
+          <th colspan="6" class="th-black-center">DATES DES ÉVALUATIONS</th>
+        </tr>
+        <tr class="sub-header-row">
+          <th class="th-cell"></th>
+          <th class="th-cell"></th>
+          <th class="th-cell"></th>
+          <th class="th-cell"></th>
+          <th class="th-cell"></th>
+          <th class="th-cell"></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (st of studentsList(); track st.id) {
+          <tr>
+            <td class="td-num">{{ st.num }}</td>
+            <td class="td-name">{{ st.nomPrenoms }}</td>
+            <td class="td-phone">{{ st.telephone || '-' }}</td>
+            <td class="td-blank"></td>
+            <td class="td-blank"></td>
+            <td class="td-blank"></td>
+            <td class="td-blank"></td>
+            <td class="td-blank"></td>
+            <td class="td-blank"></td>
+          </tr>
+        }
+        @if (studentsList().length === 0) {
+          @for (i of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]; track i) {
+            <tr>
+              <td class="td-num">{{ i }}</td>
+              <td class="td-name"></td>
+              <td class="td-phone"></td>
+              <td class="td-blank"></td>
+              <td class="td-blank"></td>
+              <td class="td-blank"></td>
+              <td class="td-blank"></td>
+              <td class="td-blank"></td>
+              <td class="td-blank"></td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+
+    <!-- Pied de page officiel -->
+    <app-footer-paroisse-print></app-footer-paroisse-print>
+  </div>
+</div>

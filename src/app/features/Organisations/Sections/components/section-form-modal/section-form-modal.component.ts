@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, effect, input, output } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { CreateSectionDto, Section, SectionStatut, UpdateSectionDto } from '../../models/section.model';
+import { CreateSectionDto, Section, UpdateSectionDto } from '../../models/section.model';
 import { AppDialog } from '../../../../../shared/ui/components/dialogs/app-dialog/app-dialog.component';
 import { AppButton } from '../../../../../shared/ui/components/buttons/app-button/app-button.component';
 
@@ -36,30 +36,38 @@ export class SectionFormModalComponent {
       nonNullable: true,
       validators: [Validators.required, Validators.min(1)]
     }),
-    statut: new FormControl<SectionStatut>('actif', {
+    statut: new FormControl<string>('actif', {
       nonNullable: true
     })
   });
 
   constructor() {
     effect(() => {
+      const open = this.isOpen();
       const item = this.sectionToEdit();
-      if (this.isEditing() && item) {
-        this.form.setValue({
-          nom: item.nom,
-          code: item.code,
-          description: item.description || '',
-          ordre: item.ordre,
-          statut: item.statut || 'actif'
-        });
-      } else {
-        this.form.reset({
-          nom: '',
-          code: '',
-          description: '',
-          ordre: 1,
-          statut: 'actif'
-        });
+      const isEdit = this.isEditing();
+
+      if (open) {
+        if (isEdit && item) {
+          const currentStatut = String(item.statut || '').trim().toLowerCase();
+          const statutVal = (currentStatut === 'inactif' || currentStatut === 'inactive' || currentStatut === '0' || currentStatut === 'false') ? 'inactif' : 'actif';
+
+          this.form.patchValue({
+            nom: item.nom || '',
+            code: item.code || '',
+            description: item.description || '',
+            ordre: item.ordre ?? 1,
+            statut: statutVal
+          });
+        } else {
+          this.form.reset({
+            nom: '',
+            code: '',
+            description: '',
+            ordre: 1,
+            statut: 'actif'
+          });
+        }
       }
     });
   }
@@ -70,9 +78,17 @@ export class SectionFormModalComponent {
 
   protected onSubmit(): void {
     if (this.form.valid) {
-      this.formSubmitted.emit(this.form.getRawValue());
+      const val = this.form.getRawValue();
+      this.formSubmitted.emit({
+        nom: val.nom.trim(),
+        code: val.code.trim().toUpperCase(),
+        description: val.description ? val.description.trim() : '',
+        ordre: Number(val.ordre) || 1,
+        statut: val.statut || 'actif'
+      });
     } else {
       this.form.markAllAsTouched();
     }
   }
 }
+

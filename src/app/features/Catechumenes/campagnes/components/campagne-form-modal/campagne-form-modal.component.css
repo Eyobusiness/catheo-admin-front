@@ -1,3 +1,7 @@
+:host {
+  display: contents;
+}
+
 .campagne-form-body {
   display: flex;
   flex-direction: column;

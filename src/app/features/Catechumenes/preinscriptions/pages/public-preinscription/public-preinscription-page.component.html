@@ -1,0 +1,832 @@
+<div class="public-page-wrapper">
+  
+  <!-- En-tête Paroissial Public Sublime -->
+  <header class="public-header">
+    <div class="public-header-glow"></div>
+    <div class="public-header-content">
+      <div class="church-brand">
+        <div class="church-logo-badge">
+          @if (logoParoisse()) {
+            <img [src]="logoParoisse()" [alt]="nomParoisse() || 'Logo Paroisse'" class="church-logo-real-img" />
+          } @else if (logoCatechese()) {
+            <img [src]="logoCatechese()" [alt]="nomParoisse() || 'Logo Catéchèse'" class="church-logo-real-img" />
+          } @else {
+            <i class="bi bi-cross text-gold"></i>
+          }
+        </div>
+        <div class="church-info">
+          @if (diocese()) {
+            <span class="church-diocese">
+              {{ diocese() }}
+              @if (doyenne()) {
+                • {{ doyenne() }}
+              }
+            </span>
+          }
+          <h1 class="church-name">{{ nomParoisse() || 'Paroisse' }}</h1>
+          <div class="portal-badge">
+            <span class="pulse-dot"></span>
+            <span>Portail Officiel de Préinscription en Catéchèse</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Campagne Info Pill (Chargée depuis la BD) -->
+      @if (currentCampagne(); as camp) {
+        <div class="campagne-pill animate-fade-in">
+          <div class="campagne-pill-icon">
+            <i class="bi bi-megaphone-fill"></i>
+          </div>
+          <div class="campagne-pill-text">
+            <span class="campagne-pill-title">{{ camp.titre }}</span>
+            <span class="campagne-pill-year">
+              <i class="bi bi-calendar-event"></i>
+              {{ camp.annee_catechese?.libelle || 'Année Pastorale' }}
+              @if (camp.date_fin) {
+                • Jusqu'au {{ camp.date_fin }}
+              }
+            </span>
+          </div>
+        </div>
+      }
+    </div>
+  </header>
+
+  <!-- Corps Principal du Formulaire -->
+  <main class="public-main-container">
+
+    <!-- ======================================================== -->
+    <!-- 1. ÉCRAN DE CHOIX : NOUVELLE INSCRIPTION VS RÉINSCRIPTION -->
+    <!-- ======================================================== -->
+    @if (currentMode() === 'choice') {
+      <div class="card-box choice-hero animate-fade-in">
+        <div class="hero-text text-center">
+          <span class="badge-tag">Rentrée Pastorale</span>
+          <h2 class="hero-title">Préinscription en Ligne</h2>
+          <p class="hero-subtitle">
+            Effectuez la démarche en quelques étapes simples depuis votre smartphone ou ordinateur.
+          </p>
+        </div>
+
+        <div class="choice-cards-grid">
+          <!-- Option 1 : NOUVELLE INSCRIPTION -->
+          <div class="interactive-choice-card choice-new" (click)="selectChoice('nouvelle')">
+            <div class="choice-icon-wrap icon-new">
+              <i class="bi bi-person-plus-fill"></i>
+            </div>
+            <div class="choice-content">
+              <div class="choice-header-badge">Premier Enregistrement</div>
+              <h3 class="choice-title">Nouvelle Inscription</h3>
+              <p class="choice-description">
+                Pour tout fidèle qui commence la catéchèse sur la paroisse ou qui ne possède pas encore de numéro de matricule.
+              </p>
+              <div class="choice-cta cta-new">
+                <span>Remplir le dossier</span>
+                <i class="bi bi-arrow-right-circle-fill"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Option 2 : RÉINSCRIPTION -->
+          <div class="interactive-choice-card choice-re" (click)="selectChoice('reinscription')">
+            <div class="choice-icon-wrap icon-re">
+              <i class="bi bi-arrow-repeat"></i>
+            </div>
+            <div class="choice-content">
+              <div class="choice-header-badge badge-re">Déjà Inscrit</div>
+              <h3 class="choice-title">Réinscription</h3>
+              <p class="choice-description">
+                Vous avez déjà suivi la catéchèse sur la paroisse et possédez un <strong>Matricule</strong> (ex: sur carnet ou reçu).
+              </p>
+              <div class="choice-cta cta-re">
+                <span>Recherche par Matricule</span>
+                <i class="bi bi-arrow-right-circle-fill"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="security-info-box">
+          <i class="bi bi-shield-check text-success"></i>
+          <div>
+            <strong>Information Paroissiale :</strong>
+            <span>La sélection de la classe définitive se fera par le secrétariat lors de la validation du dossier.</span>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ======================================================== -->
+    <!-- 2. FORMULAIRE NOUVELLE INSCRIPTION GUIDÉ (STEPPER)       -->
+    <!-- ======================================================== -->
+    @if (currentMode() === 'nouvelle') {
+      <div class="card-box form-card animate-fade-in">
+        
+        <!-- Header du formulaire avec retour -->
+        <div class="form-nav-bar">
+          <button type="button" class="btn-step-back" (click)="backToChoice()">
+            <i class="bi bi-arrow-left"></i>
+            <span>Changer de démarche</span>
+          </button>
+          <div class="form-meta-heading">
+            <h2 class="form-title-text">Nouvelle Inscription</h2>
+            <span class="form-subtitle-text">Parcours d'inscription officiel • Étape {{ activeStep() }} sur 4</span>
+          </div>
+        </div>
+
+        <!-- Stepper Progress Bar Visuel -->
+        <div class="stepper-track">
+          <div class="step-node" [class.active]="activeStep() >= 1" [class.current]="activeStep() === 1" (click)="goToStep(1)">
+            <span class="step-num">1</span>
+            <span class="step-label">Orientation</span>
+          </div>
+          <div class="step-line" [class.filled]="activeStep() >= 2"></div>
+          <div class="step-node" [class.active]="activeStep() >= 2" [class.current]="activeStep() === 2" (click)="goToStep(2)">
+            <span class="step-num">2</span>
+            <span class="step-label">Identité</span>
+          </div>
+          <div class="step-line" [class.filled]="activeStep() >= 3"></div>
+          <div class="step-node" [class.active]="activeStep() >= 3" [class.current]="activeStep() === 3" (click)="goToStep(3)">
+            <span class="step-num">3</span>
+            <span class="step-label">Parents</span>
+          </div>
+          <div class="step-line" [class.filled]="activeStep() >= 4"></div>
+          <div class="step-node" [class.active]="activeStep() >= 4" [class.current]="activeStep() === 4" (click)="goToStep(4)">
+            <span class="step-num">4</span>
+            <span class="step-label">Sacrements</span>
+          </div>
+        </div>
+
+        <form [formGroup]="nouvelleForm" (ngSubmit)="submitNouvelle()" class="form-steps-container">
+
+          <!-- ============================================== -->
+          <!-- ÉTAPE 1 : ORIENTATION & NIVEAU DE FORMATION    -->
+          <!-- ============================================== -->
+          @if (activeStep() === 1) {
+            <div class="step-pane animate-fade-in">
+              <div class="section-banner">
+                <i class="bi bi-compass-fill"></i>
+                <div>
+                  <h4>Orientation Pastorale</h4>
+                  <p>Choisissez la section correspondant à l'âge du fidèle et le niveau de formation.</p>
+                </div>
+              </div>
+
+              <div class="form-fields-grid">
+                <!-- Section (de la BD) -->
+                <div class="form-group-modern">
+                  <label class="form-label-modern" for="n_sec">
+                    Section de Catéchèse <span class="required-star">*</span>
+                  </label>
+                  <select id="n_sec" formControlName="section_id" class="form-control-modern" (change)="onNouvelleSectionChange()">
+                    <option value="">-- Sélectionnez la Section --</option>
+                    @for (s of sections(); track s.id) {
+                      <option [value]="s.id">{{ s.nom }}</option>
+                    }
+                  </select>
+                  @if (nouvelleForm.controls.section_id.touched && nouvelleForm.controls.section_id.invalid) {
+                    <span class="form-error-msg">Veuillez sélectionner une section.</span>
+                  }
+                </div>
+
+                <!-- Niveau (de la BD, filtré par section) -->
+                <div class="form-group-modern">
+                  <label class="form-label-modern" for="n_niv">
+                    Niveau de Catéchèse Souhaité <span class="required-star">*</span>
+                  </label>
+                  <select id="n_niv" formControlName="niveau_id" class="form-control-modern">
+                    <option value="">-- Sélectionnez le Niveau --</option>
+                    @for (n of filteredNiveauxNouvelle(); track n.id) {
+                      <option [value]="n.id">{{ n.nom }}</option>
+                    }
+                  </select>
+                  @if (nouvelleForm.controls.niveau_id.touched && nouvelleForm.controls.niveau_id.invalid) {
+                    <span class="form-error-msg">Veuillez sélectionner un niveau.</span>
+                  }
+                </div>
+              </div>
+
+              <div class="step-actions">
+                <button type="button" class="btn-step-action btn-next" (click)="nextStep()">
+                  <span>Continuer vers l'identité</span>
+                  <i class="bi bi-arrow-right"></i>
+                </button>
+              </div>
+            </div>
+          }
+
+          <!-- ============================================== -->
+          <!-- ÉTAPE 2 : IDENTITÉ DU CATÉCHUMÈNE              -->
+          <!-- ============================================== -->
+          @if (activeStep() === 2) {
+            <div class="step-pane animate-fade-in">
+              <div class="section-banner">
+                <i class="bi bi-person-bounding-box"></i>
+                <div>
+                  <h4>Identité du Catéchumène</h4>
+                  <p>Renseignez les informations de base du fidèle inscrit.</p>
+                </div>
+              </div>
+
+              <!-- Upload Photo Mobile Friendly -->
+              <div class="photo-upload-bar">
+                <div class="avatar-preview-box">
+                  @if (photoPreview()) {
+                    <img [src]="photoPreview()" alt="Photo Catéchumène" class="avatar-photo-img" />
+                    <button type="button" class="btn-photo-delete" (click)="removePhoto()" title="Supprimer">
+                      <i class="bi bi-x"></i>
+                    </button>
+                  } @else {
+                    <i class="bi bi-person-fill avatar-icon-placeholder"></i>
+                  }
+                </div>
+                <div class="avatar-upload-info">
+                  <label class="btn-upload-label">
+                    <i class="bi bi-camera-fill"></i>
+                    <span>Ajouter une photo</span>
+                    <input type="file" accept="image/*" (change)="onPhotoFileChange($event)" hidden />
+                  </label>
+                  <span class="avatar-helper-text">Format JPG/PNG (Optionnel, Max 2 Mo)</span>
+                </div>
+              </div>
+
+              <div class="form-fields-grid">
+                <!-- Nom -->
+                <div class="form-group-modern">
+                  <label class="form-label-modern" for="n_nom">
+                    Nom de Famille <span class="required-star">*</span>
+                  </label>
+                  <input id="n_nom" type="text" formControlName="nom" class="form-control-modern uppercase-input" placeholder="Ex: KOUASSI" />
+                  @if (nouvelleForm.controls.nom.touched && nouvelleForm.controls.nom.invalid) {
+                    <span class="form-error-msg">Le nom est obligatoire.</span>
+                  }
+                </div>
+
+                <!-- Prénoms -->
+                <div class="form-group-modern">
+                  <label class="form-label-modern" for="n_prenoms">
+                    Prénoms <span class="required-star">*</span>
+                  </label>
+                  <input id="n_prenoms" type="text" formControlName="prenoms" class="form-control-modern" placeholder="Ex: Jean-Baptiste" />
+                  @if (nouvelleForm.controls.prenoms.touched && nouvelleForm.controls.prenoms.invalid) {
+                    <span class="form-error-msg">Les prénoms sont obligatoires.</span>
+                  }
+                </div>
+
+                <!-- Sexe -->
+                <div class="form-group-modern">
+                  <label class="form-label-modern" for="n_sexe">
+                    Sexe <span class="required-star">*</span>
+                  </label>
+                  <select id="n_sexe" formControlName="sexe" class="form-control-modern">
+                    <option value="M">Masculin (M)</option>
+                    <option value="F">Féminin (F)</option>
+                  </select>
+                </div>
+
+                <!-- Date de naissance -->
+                <div class="form-group-modern">
+                  <label class="form-label-modern" for="n_date_naiss">
+                    Date de Naissance <span class="required-star">*</span>
+                  </label>
+                  <input id="n_date_naiss" type="date" formControlName="date_naissance" class="form-control-modern" />
+                  @if (nouvelleForm.controls.date_naissance.touched && nouvelleForm.controls.date_naissance.invalid) {
+                    <span class="form-error-msg">La date de naissance est obligatoire.</span>
+                  }
+                </div>
+
+                <!-- Lieu de naissance -->
+                <div class="form-group-modern">
+                  <label class="form-label-modern" for="n_lieu_naiss">Lieu de Naissance</label>
+                  <input id="n_lieu_naiss" type="text" formControlName="lieu_naissance" class="form-control-modern" placeholder="Ex: Cocody, Abidjan" />
+                </div>
+
+                <!-- Téléphone -->
+                <div class="form-group-modern">
+                  <label class="form-label-modern" for="n_tel">Téléphone / WhatsApp</label>
+                  <input id="n_tel" type="tel" formControlName="telephone" class="form-control-modern" placeholder="Ex: 0700000000" />
+                </div>
+
+                <!-- Domicile -->
+                <div class="form-group-modern">
+                  <label class="form-label-modern" for="n_dom">Domicile / Quartier</label>
+                  <input id="n_dom" type="text" formControlName="domicile" class="form-control-modern" placeholder="Ex: Angré 8ème Tranche" />
+                </div>
+
+                <!-- CONDITION 1 : Classe Scolaire (Pour Enfants Primaire & Collège) -->
+                @if (showClasseScolaireNouvelle()) {
+                  <div class="form-group-modern animate-fade-in">
+                    <label class="form-label-modern" for="n_scolaire">
+                      {{ labelClasseScolaireNouvelle() }}
+                    </label>
+                    <input
+                      id="n_scolaire"
+                      type="text"
+                      formControlName="classe_scolaire"
+                      class="form-control-modern"
+                      [placeholder]="placeholderClasseScolaireNouvelle()"
+                    />
+                  </div>
+                }
+
+                <!-- CONDITION 2 : Fonction / Profession (Pour Adultes Uniquement) -->
+                @if (showProfessionNouvelle()) {
+                  <div class="form-group-modern animate-fade-in">
+                    <label class="form-label-modern" for="n_prof">
+                      Fonction / Profession
+                    </label>
+                    <input
+                      id="n_prof"
+                      type="text"
+                      formControlName="profession"
+                      class="form-control-modern"
+                      placeholder="Ex: Fonctionnaire, Enseignant(e), Commerçant(e), Cadre..."
+                    />
+                  </div>
+                }
+
+                <!-- CONDITION 3 : Situation Matrimoniale (Pour Adultes Uniquement) -->
+                @if (showSituationMatrimonialeNouvelle()) {
+                  <div class="form-group-modern animate-fade-in">
+                    <label class="form-label-modern" for="n_matrimoniale">
+                      Situation Matrimoniale
+                    </label>
+                    <select id="n_matrimoniale" formControlName="situation_matrimoniale" class="form-control-modern">
+                      <option value="">-- Sélectionnez --</option>
+                      <option value="Célibataire">Célibataire</option>
+                      <option value="Marié(e) à l'Église">Marié(e) à l'Église</option>
+                      <option value="Marié(e) Coutumier / Civil">Marié(e) Coutumier / Civil</option>
+                      <option value="Veuf(ve)">Veuf(ve)</option>
+                      <option value="Divorcé(e)">Divorcé(e)</option>
+                      <option value="Autre">Autre</option>
+                    </select>
+                  </div>
+                }
+              </div>
+
+              <div class="step-actions">
+                <button type="button" class="btn-step-action btn-prev" (click)="prevStep()">
+                  <i class="bi bi-arrow-left"></i>
+                  <span>Précédent</span>
+                </button>
+                <button type="button" class="btn-step-action btn-next" (click)="nextStep()">
+                  <span>Continuer vers les parents</span>
+                  <i class="bi bi-arrow-right"></i>
+                </button>
+              </div>
+            </div>
+          }
+
+          <!-- ============================================== -->
+          <!-- ÉTAPE 3 : PARENTS & FILIATION                  -->
+          <!-- ============================================== -->
+          @if (activeStep() === 3) {
+            <div class="step-pane animate-fade-in">
+              <div class="section-banner">
+                <i class="bi bi-people-fill"></i>
+                <div>
+                  <h4>Filiation & Contacts Responsables</h4>
+                  <p>Contacts des parents ou du tuteur légal pour le suivi paroissial.</p>
+                </div>
+              </div>
+
+              <div class="form-fields-grid">
+                <!-- Père -->
+                <div class="form-group-modern">
+                  <label class="form-label-modern" for="n_pere">Nom & Prénoms du Père</label>
+                  <input id="n_pere" type="text" formControlName="nom_pere" class="form-control-modern" placeholder="Nom complet du père" />
+                </div>
+
+                <div class="form-group-modern">
+                  <label class="form-label-modern" for="n_tel_pere">Téléphone du Père</label>
+                  <input id="n_tel_pere" type="tel" formControlName="telephone_pere" class="form-control-modern" placeholder="Ex: 0700000000" />
+                </div>
+
+                <!-- Mère -->
+                <div class="form-group-modern">
+                  <label class="form-label-modern" for="n_mere">Nom & Prénoms de la Mère</label>
+                  <input id="n_mere" type="text" formControlName="nom_mere" class="form-control-modern" placeholder="Nom complet de la mère" />
+                </div>
+
+                <div class="form-group-modern">
+                  <label class="form-label-modern" for="n_tel_mere">Téléphone de la Mère</label>
+                  <input id="n_tel_mere" type="tel" formControlName="telephone_mere" class="form-control-modern" placeholder="Ex: 0500000000" />
+                </div>
+
+                <!-- Tuteur Légal -->
+                <div class="form-group-modern">
+                  <label class="form-label-modern" for="n_tuteur">Nom du Tuteur (si différent des parents)</label>
+                  <input id="n_tuteur" type="text" formControlName="nom_tuteur" class="form-control-modern" placeholder="Nom du tuteur" />
+                </div>
+
+                <div class="form-group-modern">
+                  <label class="form-label-modern" for="n_tel_tuteur">Téléphone du Tuteur</label>
+                  <input id="n_tel_tuteur" type="tel" formControlName="telephone_tuteur" class="form-control-modern" placeholder="Ex: 0100000000" />
+                </div>
+              </div>
+
+              <div class="step-actions">
+                <button type="button" class="btn-step-action btn-prev" (click)="prevStep()">
+                  <i class="bi bi-arrow-left"></i>
+                  <span>Précédent</span>
+                </button>
+                <button type="button" class="btn-step-action btn-next" (click)="nextStep()">
+                  <span>Continuer vers les sacrements</span>
+                  <i class="bi bi-arrow-right"></i>
+                </button>
+              </div>
+            </div>
+          }
+
+          <!-- ============================================== -->
+          <!-- ÉTAPE 4 : SACREMENTS, ENGAGEMENT & ENVOI       -->
+          <!-- ============================================== -->
+          @if (activeStep() === 4) {
+            <div class="step-pane animate-fade-in">
+              <div class="section-banner">
+                <i class="bi bi-droplet-half"></i>
+                <div>
+                  <h4>Situation Sacramentelle & Parrain</h4>
+                  <p>Vérification du baptême et informations du parrain / marraine.</p>
+                </div>
+              </div>
+
+              <!-- Checkbox Baptême reçu -->
+              <div class="custom-card-check-wrap">
+                <label class="custom-card-check" [class.checked]="nouvelleForm.controls.est_baptise.value">
+                  <input type="checkbox" formControlName="est_baptise" class="hidden-check" />
+                  <div class="check-box-icon">
+                    <i class="bi bi-check-lg"></i>
+                  </div>
+                  <div class="check-box-text">
+                    <strong>Le catéchumène a déjà reçu le sacrement du Baptême</strong>
+                    <span>Cochez cette case si le baptême a déjà été célébré dans l'Église Catholique.</span>
+                  </div>
+                </label>
+              </div>
+
+              @if (nouvelleForm.controls.est_baptise.value) {
+                <div class="form-fields-grid-3 mt-4 animate-fade-in">
+                  <div class="form-group-modern">
+                    <label class="form-label-modern" for="n_date_bap">Date du Baptême</label>
+                    <input id="n_date_bap" type="date" formControlName="date_bapteme" class="form-control-modern" />
+                  </div>
+
+                  <div class="form-group-modern">
+                    <label class="form-label-modern" for="n_paroisse_bap">Paroisse du Baptême</label>
+                    <input id="n_paroisse_bap" type="text" formControlName="paroisse_bapteme" class="form-control-modern" placeholder="Ex: St Jean de Cocody" />
+                  </div>
+
+                  <div class="form-group-modern">
+                    <label class="form-label-modern" for="n_carnet_bap">N° Carnet de Baptême</label>
+                    <input id="n_carnet_bap" type="text" formControlName="num_carnet_bapteme" class="form-control-modern" placeholder="Ex: BAP-2018-045" />
+                  </div>
+                </div>
+              }
+
+              <!-- Parrain / Marraine -->
+              <div class="form-fields-grid mt-4">
+                <div class="form-group-modern">
+                  <label class="form-label-modern" for="n_parrain">Nom du Parrain / Marraine</label>
+                  <input id="n_parrain" type="text" formControlName="nom_parrain" class="form-control-modern" placeholder="Nom et prénoms du parrain/marraine" />
+                </div>
+
+                <div class="form-group-modern">
+                  <label class="form-label-modern" for="n_tel_parrain">Téléphone du Parrain / Marraine</label>
+                  <input id="n_tel_parrain" type="tel" formControlName="telephone_parrain" class="form-control-modern" placeholder="Contact téléphonique" />
+                </div>
+              </div>
+
+              <!-- CEB & Mouvement (de la BD) -->
+              <div class="form-fields-grid mt-4">
+                <div class="form-group-modern">
+                  <label class="form-label-modern" for="n_ceb">CEB de Résidence (Optionnel)</label>
+                  <select id="n_ceb" formControlName="ceb_id" class="form-control-modern">
+                    <option value="">-- Sélectionnez la CEB (si connue) --</option>
+                    @for (c of cebs(); track c.id) {
+                      <option [value]="c.id">{{ c.nom }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div class="form-group-modern">
+                  <label class="form-label-modern" for="n_mouv">Mouvement / Groupe d'Action (Optionnel)</label>
+                  <select id="n_mouv" formControlName="mouvement_id" class="form-control-modern">
+                    <option value="">-- Sélectionnez le mouvement (si affilié) --</option>
+                    @for (m of mouvements(); track m.id) {
+                      <option [value]="m.id">{{ m.nom }}</option>
+                    }
+                  </select>
+                </div>
+              </div>
+
+              <div class="step-actions">
+                <button type="button" class="btn-step-action btn-prev" (click)="prevStep()">
+                  <i class="bi bi-arrow-left"></i>
+                  <span>Précédent</span>
+                </button>
+                <button type="submit" class="btn-submit-glow" [disabled]="isLoading()">
+                  @if (isLoading()) {
+                    <span class="btn-spinner"></span>
+                    <span>Transmission du dossier...</span>
+                  } @else {
+                    <i class="bi bi-send-check-fill"></i>
+                    <span>Valider ma Préinscription</span>
+                  }
+                </button>
+              </div>
+            </div>
+          }
+        </form>
+      </div>
+    }
+
+    <!-- ======================================================== -->
+    <!-- 3. FORMULAIRE : RÉINSCRIPTION (RECHERCHE PAR MATRICULE)   -->
+    <!-- ======================================================== -->
+    @if (currentMode() === 'reinscription') {
+      <div class="card-box form-card animate-fade-in">
+        
+        <div class="form-nav-bar">
+          <button type="button" class="btn-step-back" (click)="backToChoice()">
+            <i class="bi bi-arrow-left"></i>
+            <span>Changer de démarche</span>
+          </button>
+          <div class="form-meta-heading">
+            <h2 class="form-title-text">Réinscription Pastorale</h2>
+            <span class="form-subtitle-text">Recherche de dossier existant pour la nouvelle année</span>
+          </div>
+        </div>
+
+        <!-- Recherche matricule bar -->
+        <div class="search-matricule-box">
+          <label class="search-matricule-label" for="search_mat">
+            Entrez votre Matricule de Catéchumène
+          </label>
+          <div class="search-input-combo">
+            <i class="bi bi-search search-lens-icon"></i>
+            <input
+              id="search_mat"
+              type="text"
+              class="search-text-field"
+              placeholder="Ex: CAT-2025-0042..."
+              [ngModel]="searchMatricule()"
+              (ngModelChange)="searchMatricule.set($event)"
+              (keyup.enter)="onSearchMatricule()"
+            />
+            <button type="button" class="btn-search-trigger" (click)="onSearchMatricule()" [disabled]="isSearchingMatricule()">
+              @if (isSearchingMatricule()) {
+                <span class="btn-spinner-sm"></span>
+              } @else {
+                <span>Rechercher</span>
+              }
+            </button>
+          </div>
+
+          @if (searchMatriculeError()) {
+            <div class="search-error-toast animate-fade-in">
+              <i class="bi bi-exclamation-triangle-fill"></i>
+              <span>{{ searchMatriculeError() }}</span>
+            </div>
+          }
+        </div>
+
+        <!-- Fiche Catéchumène retrouvée -->
+        @if (foundCatechumene(); as cat) {
+          <div class="found-catechumene-panel animate-fade-in">
+            
+            <div class="found-hero-card">
+              <div class="found-avatar-circle">
+                @if (photoPreview() || cat.photo_url || cat.photo_path) {
+                  <img [src]="photoPreview() || cat.photo_url || cat.photo_path" alt="Avatar" class="avatar-cover" />
+                } @else {
+                  <i class="bi bi-person-check-fill"></i>
+                }
+              </div>
+              <div class="found-info-meta">
+                <span class="matricule-tag">{{ cat.matricule || cat.code_catechumene }}</span>
+                <h3 class="found-full-name">{{ cat.nom }} {{ cat.prenoms }}</h3>
+                <div class="found-details-row">
+                  <span><i class="bi bi-gender-ambiguous"></i> {{ cat.sexe === 'F' ? 'Fille / Femme' : 'Garçon / Homme' }}</span>
+                  <span><i class="bi bi-calendar3"></i> Né(e) le {{ cat.date_naissance }}</span>
+                  <span><i class="bi bi-droplet-fill"></i> {{ cat.est_baptise ? 'Baptisé(e)' : 'Non baptisé(e)' }}</span>
+                </div>
+              </div>
+            </div>
+
+            <form [formGroup]="reinscriptionForm" (ngSubmit)="submitReinscription()" class="mt-4">
+              
+              <!-- Choix de la Section et Niveau pour la nouvelle année -->
+              <div class="section-banner">
+                <i class="bi bi-calendar2-check-fill"></i>
+                <div>
+                  <h4>Orientation pour la Nouvelle Année</h4>
+                  <p>Sélectionnez votre niveau de formation pour cette rentrée pastorale.</p>
+                </div>
+              </div>
+
+              <div class="form-fields-grid">
+                <div class="form-group-modern">
+                  <label class="form-label-modern" for="r_sec">
+                    Section Souhaitée <span class="required-star">*</span>
+                  </label>
+                  <select id="r_sec" formControlName="section_id" class="form-control-modern" (change)="onReinscriptionSectionChange()">
+                    <option value="">-- Sélectionnez la Section --</option>
+                    @for (s of sections(); track s.id) {
+                      <option [value]="s.id">{{ s.nom }}</option>
+                    }
+                  </select>
+                  @if (reinscriptionForm.controls.section_id.touched && reinscriptionForm.controls.section_id.invalid) {
+                    <span class="form-error-msg">La section est obligatoire.</span>
+                  }
+                </div>
+
+                <div class="form-group-modern">
+                  <label class="form-label-modern" for="r_niv">
+                    Niveau Souhaité <span class="required-star">*</span>
+                  </label>
+                  <select id="r_niv" formControlName="niveau_id" class="form-control-modern">
+                    <option value="">-- Sélectionnez le Niveau --</option>
+                    @for (n of filteredNiveauxReinscription(); track n.id) {
+                      <option [value]="n.id">{{ n.nom }}</option>
+                    }
+                  </select>
+                  @if (reinscriptionForm.controls.niveau_id.touched && reinscriptionForm.controls.niveau_id.invalid) {
+                    <span class="form-error-msg">Le niveau est obligatoire.</span>
+                  }
+                </div>
+              </div>
+
+              <!-- Coordonnées actualisées -->
+              <div class="section-banner mt-4">
+                <i class="bi bi-telephone-forward-fill"></i>
+                <div>
+                  <h4>Mise à Jour des Coordonnées & Contacts</h4>
+                  <p>Vérifiez ou actualisez vos numéros pour recevoir les notifications.</p>
+                </div>
+              </div>
+
+              <div class="form-fields-grid">
+                <div class="form-group-modern">
+                  <label class="form-label-modern" for="r_tel">Téléphone / WhatsApp</label>
+                  <input id="r_tel" type="tel" formControlName="telephone" class="form-control-modern" placeholder="Ex: 0700000000" />
+                </div>
+
+                <div class="form-group-modern">
+                  <label class="form-label-modern" for="r_dom">Domicile / Quartier</label>
+                  <input id="r_dom" type="text" formControlName="domicile" class="form-control-modern" placeholder="Ex: Angré 8ème Tranche" />
+                </div>
+
+                <!-- CONDITION 1 : Classe scolaire (Enfants) -->
+                @if (showClasseScolaireReinscription()) {
+                  <div class="form-group-modern animate-fade-in">
+                    <label class="form-label-modern" for="r_scolaire">
+                      Classe à l'École / Collège
+                    </label>
+                    <input id="r_scolaire" type="text" formControlName="classe_scolaire" class="form-control-modern" placeholder="Ex: 5ème, CM1..." />
+                  </div>
+                }
+
+                <!-- CONDITION 2 : Fonction / Profession (Pour Adultes Uniquement) -->
+                @if (showProfessionReinscription()) {
+                  <div class="form-group-modern animate-fade-in">
+                    <label class="form-label-modern" for="r_prof">
+                      Fonction / Profession
+                    </label>
+                    <input id="r_prof" type="text" formControlName="profession" class="form-control-modern" placeholder="Ex: Fonctionnaire, Enseignant(e), Commerçant(e), Cadre..." />
+                  </div>
+                }
+
+                <!-- CONDITION 3 : Situation matrimoniale (Adultes) -->
+                @if (showSituationMatrimonialeReinscription()) {
+                  <div class="form-group-modern animate-fade-in">
+                    <label class="form-label-modern" for="r_matrimoniale">
+                      Situation Matrimoniale
+                    </label>
+                    <select id="r_matrimoniale" formControlName="situation_matrimoniale" class="form-control-modern">
+                      <option value="">-- Sélectionnez --</option>
+                      <option value="Célibataire">Célibataire</option>
+                      <option value="Marié(e) à l'Église">Marié(e) à l'Église</option>
+                      <option value="Marié(e) Coutumier / Civil">Marié(e) Coutumier / Civil</option>
+                      <option value="Veuf(ve)">Veuf(ve)</option>
+                      <option value="Divorcé(e)">Divorcé(e)</option>
+                      <option value="Autre">Autre</option>
+                    </select>
+                  </div>
+                }
+
+                <div class="form-group-modern">
+                  <label class="form-label-modern" for="r_tuteur">Nom du Tuteur / Contact d'urgence</label>
+                  <input id="r_tuteur" type="text" formControlName="nom_tuteur" class="form-control-modern" placeholder="Nom du responsable" />
+                </div>
+
+                <div class="form-group-modern">
+                  <label class="form-label-modern" for="r_tel_tut">Téléphone du Tuteur</label>
+                  <input id="r_tel_tut" type="tel" formControlName="telephone_tuteur" class="form-control-modern" placeholder="Ex: 0100000000" />
+                </div>
+              </div>
+
+              <!-- Soumission Réinscription -->
+              <div class="step-actions mt-4">
+                <button type="button" class="btn-step-action btn-prev" (click)="backToChoice()">
+                  <i class="bi bi-x-circle"></i>
+                  <span>Annuler</span>
+                </button>
+                <button type="submit" class="btn-submit-glow" [disabled]="isLoading()">
+                  @if (isLoading()) {
+                    <span class="btn-spinner"></span>
+                    <span>Validation de la réinscription...</span>
+                  } @else {
+                    <i class="bi bi-check-circle-fill"></i>
+                    <span>Confirmer ma Réinscription</span>
+                  }
+                </button>
+              </div>
+            </form>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- ======================================================== -->
+    <!-- 4. ÉCRAN DE SUCCÈS & RÉCÉPISSÉ PREMIUM                   -->
+    <!-- ======================================================== -->
+    @if (currentMode() === 'success' && submittedDossier(); as dossier) {
+      <div class="card-box success-hero-card animate-fade-in">
+        <div class="success-seal-badge">
+          <i class="bi bi-patch-check-fill"></i>
+        </div>
+
+        <h2 class="success-heading">Préinscription Transmise avec Succès !</h2>
+        <p class="success-desc">
+          Votre demande a été enregistrée sur le serveur officiel de la <strong>{{ nomParoisse() || 'Paroisse' }}</strong>.
+        </p>
+
+        <!-- Code Dossier Grand Format -->
+        <div class="dossier-ticket-box">
+          <span class="dossier-ticket-label">Numéro de Dossier Officiel</span>
+          <strong class="dossier-ticket-number">{{ dossier.code_dossier }}</strong>
+          <span class="dossier-ticket-note">Présentez ce numéro lors de votre passage au secrétariat paroissial.</span>
+        </div>
+
+        <!-- Récapitulatif Fiche -->
+        <div class="ticket-recap-grid">
+          <div class="ticket-recap-item">
+            <span class="ticket-recap-label">Catéchumène</span>
+            <strong class="ticket-recap-val">{{ dossier.nom }} {{ dossier.prenoms }}</strong>
+          </div>
+          <div class="ticket-recap-item">
+            <span class="ticket-recap-label">Type de démarche</span>
+            <strong class="ticket-recap-val text-capitalize">{{ dossier.type_demande === 'reinscription' ? 'Réinscription' : 'Nouvelle Inscription' }}</strong>
+          </div>
+          <div class="ticket-recap-item">
+            <span class="ticket-recap-label">Section</span>
+            <strong class="ticket-recap-val">{{ dossier.section_souhaite?.nom || 'Section Pastorale' }}</strong>
+          </div>
+          <div class="ticket-recap-item">
+            <span class="ticket-recap-label">Niveau</span>
+            <strong class="ticket-recap-val">{{ dossier.niveau_souhaite?.nom || 'Niveau Catéchèse' }}</strong>
+          </div>
+        </div>
+
+        <!-- Instructions Pastorales -->
+        <div class="pastoral-instructions-card">
+          <h4><i class="bi bi-info-circle-fill text-gold"></i> Prochaines étapes pour finaliser :</h4>
+          <ul>
+            <li>Rendez-vous au secrétariat paroissial muni(e) de votre numéro de dossier : <strong>{{ dossier.code_dossier }}</strong>.</li>
+            <li>Fournissez une copie d'acte de naissance ou carnet de baptême si applicable.</li>
+            <li>Réglez les frais paroissiaux d'inscription et de manuels de formation.</li>
+          </ul>
+        </div>
+
+        <!-- Actions -->
+        <div class="success-button-group">
+          <button type="button" class="btn-print-ticket" (click)="printReceipt()">
+            <i class="bi bi-printer-fill"></i>
+            <span>Imprimer le récépissé</span>
+          </button>
+          <button type="button" class="btn-new-ticket" (click)="resetForm()">
+            <i class="bi bi-plus-circle-fill"></i>
+            <span>Faire une autre préinscription</span>
+          </button>
+        </div>
+      </div>
+    }
+
+  </main>
+
+  <!-- Footer Public -->
+  <footer class="public-footer">
+    <div class="footer-container">
+      <div class="footer-brand">
+        @if (logoParoisse()) {
+          <img [src]="logoParoisse()" [alt]="nomParoisse() || 'Paroisse'" class="footer-logo-real-img" />
+        } @else {
+          <i class="bi bi-cross text-gold"></i>
+        }
+        <span>{{ nomParoisse() || 'Paroisse' }}</span>
+      </div>
+      <p class="footer-copy">© {{ (currentCampagne()?.annee_catechese?.libelle || '2026-2027') }} • Application Pastorale Cathéo</p>
+    </div>
+  </footer>
+</div>

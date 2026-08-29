@@ -5,7 +5,6 @@ import { ToastService } from '../../../../core/services/toast.service';
 import {
   CreateModuleTrimestrielDto,
   ModuleTrimestriel,
-  TrimestreCode,
   UpdateModuleTrimestrielDto
 } from '../models/module-trimestriel.model';
 import { AppCard } from '../../../../shared/ui/components/layout/app-card/app-card.component';
@@ -39,7 +38,6 @@ export class ModulesTrimestrielsPageComponent implements OnInit {
 
   // Local Page Signals
   protected readonly searchQuery = signal<string>('');
-  protected readonly selectedTrimestreFilter = signal<string>('');
   protected readonly selectedAnneeFilter = signal<string>('');
   protected readonly isFormModalOpen = signal<boolean>(false);
   protected readonly isDeleteModalOpen = signal<boolean>(false);
@@ -48,7 +46,7 @@ export class ModulesTrimestrielsPageComponent implements OnInit {
   protected readonly itemToDelete = signal<ModuleTrimestriel | null>(null);
 
   protected readonly hasActiveFilters = computed(() => {
-    return !!this.searchQuery() || !!this.selectedTrimestreFilter() || !!this.selectedAnneeFilter();
+    return !!this.searchQuery() || !!this.selectedAnneeFilter();
   });
 
   public ngOnInit(): void {
@@ -58,13 +56,8 @@ export class ModulesTrimestrielsPageComponent implements OnInit {
 
   protected readonly filteredModules = computed(() => {
     const q = this.searchQuery().toLowerCase().trim();
-    const trimestreFilter = this.selectedTrimestreFilter();
     const anneeFilter = this.selectedAnneeFilter();
     let list: ModuleTrimestriel[] = this.modules();
-
-    if (trimestreFilter) {
-      list = list.filter(m => m.trimestre === trimestreFilter);
-    }
 
     if (anneeFilter) {
       list = list.filter(m => m.annee_catechese_id === anneeFilter || m.annee_catechese?.id === anneeFilter);
@@ -73,7 +66,7 @@ export class ModulesTrimestrielsPageComponent implements OnInit {
     if (!q) return list;
     return list.filter((m: ModuleTrimestriel) =>
       m.libelle.toLowerCase().includes(q) ||
-      m.trimestre.toLowerCase().includes(q) ||
+      (m.statut && m.statut.toLowerCase().includes(q)) ||
       (m.annee_catechese?.libelle && m.annee_catechese.libelle.toLowerCase().includes(q)) ||
       (m.date_debut && m.date_debut.includes(q)) ||
       (m.date_fin && m.date_fin.includes(q))
@@ -89,11 +82,6 @@ export class ModulesTrimestrielsPageComponent implements OnInit {
     this.searchQuery.set('');
   }
 
-  protected onTrimestreFilterChange(event: Event): void {
-    const select = event.target as HTMLSelectElement;
-    this.selectedTrimestreFilter.set(select.value);
-  }
-
   protected onAnneeFilterChange(event: Event): void {
     const select = event.target as HTMLSelectElement;
     this.selectedAnneeFilter.set(select.value);
@@ -101,7 +89,6 @@ export class ModulesTrimestrielsPageComponent implements OnInit {
 
   protected resetAllFilters(): void {
     this.searchQuery.set('');
-    this.selectedTrimestreFilter.set('');
     this.selectedAnneeFilter.set('');
   }
 
@@ -120,6 +107,7 @@ export class ModulesTrimestrielsPageComponent implements OnInit {
   protected closeFormModal(): void {
     this.isFormModalOpen.set(false);
     this.selectedModule.set(null);
+    this.isEditing.set(false);
   }
 
   protected handleView(mod: ModuleTrimestriel): void {
@@ -128,7 +116,7 @@ export class ModulesTrimestrielsPageComponent implements OnInit {
       'Année en cours';
     this.toastService.info(
       `Module : ${mod.libelle}`,
-      `Trimestre : ${mod.trimestre} • Année : ${anneeLibelle} • Du ${mod.date_debut} au ${mod.date_fin}`
+      `Statut : ${mod.statut || 'En cours'} • Année : ${anneeLibelle} • Du ${mod.date_debut} au ${mod.date_fin}`
     );
   }
 
@@ -146,10 +134,6 @@ export class ModulesTrimestrielsPageComponent implements OnInit {
           this.closeFormModal();
         });
     }
-  }
-
-  protected handleToggleTrimestre(event: { id: string; nextTrimestre: TrimestreCode }): void {
-    this.moduleService.patchTrimestre(event.id, event.nextTrimestre).subscribe();
   }
 
   protected openDeleteModal(mod: ModuleTrimestriel): void {

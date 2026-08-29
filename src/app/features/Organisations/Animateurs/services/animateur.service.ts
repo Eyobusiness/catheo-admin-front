@@ -27,43 +27,13 @@ export class AnimateurService {
   private readonly baseUrl = `${environment.apiUrl}/animateurs`;
 
   // Reactive state signals
-  public readonly animateurs = signal<Animateur[]>([
-    {
-      id: '1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c61',
-      matricule: 'CAT-2026-001',
-      nom: 'KOUASSI',
-      prenoms: 'Jean-Marc',
-      sexe: 'M',
-      telephone: '+225 07 01 02 03 04',
-      email: 'jean.kouassi@catheo.ci',
-      profession: 'Enseignant',
-      statut: 'actif'
-    },
-    {
-      id: '2b3c4d5e-6f7a-8b9c-0d1e-2f3a4b5c6d72',
-      matricule: 'CAT-2026-002',
-      nom: 'YAO',
-      prenoms: 'Marie-Noëlle',
-      sexe: 'F',
-      telephone: '+225 05 06 07 08 09',
-      email: 'marie.yao@catheo.ci',
-      profession: 'Comptable',
-      statut: 'actif'
-    },
-    {
-      id: '3c4d5e6f-7a8b-9c0d-1e2f-3a4b5c6d7e83',
-      matricule: 'CAT-2026-003',
-      nom: 'KONE',
-      prenoms: 'David',
-      sexe: 'M',
-      telephone: '+225 01 02 03 04 05',
-      email: 'david.kone@catheo.ci',
-      profession: 'Ingénieur',
-      statut: 'actif'
-    }
-  ]);
+  public readonly animateurs = signal<Animateur[]>([]);
 
   public readonly isLoading = signal<boolean>(false);
+
+  constructor() {
+    this.getAll().subscribe();
+  }
 
   public getAll(): Observable<Animateur[]> {
     this.isLoading.set(true);

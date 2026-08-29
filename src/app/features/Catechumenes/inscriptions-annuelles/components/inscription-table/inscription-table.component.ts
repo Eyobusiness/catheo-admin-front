@@ -16,6 +16,7 @@ export class InscriptionTableComponent {
   public readonly inscriptions = input<InscriptionAnnuelleDto[]>([]);
 
   public readonly viewRequested = output<InscriptionAnnuelleDto>();
+  public readonly printReceiptRequested = output<InscriptionAnnuelleDto>();
   public readonly editRequested = output<InscriptionAnnuelleDto>();
   public readonly deleteRequested = output<InscriptionAnnuelleDto>();
   public readonly createRequested = output<void>();
@@ -44,6 +45,10 @@ export class InscriptionTableComponent {
 
   protected onView(item: InscriptionAnnuelleDto): void {
     this.viewRequested.emit(item);
+  }
+
+  protected onPrintReceipt(item: InscriptionAnnuelleDto): void {
+    this.printReceiptRequested.emit(item);
   }
 
   protected onEdit(item: InscriptionAnnuelleDto): void {

@@ -1,0 +1,309 @@
+<div class="page-container animate-fade-in">
+  <!-- 1. En-tête de page -->
+  <div class="page-header">
+    <div class="header-titles">
+      <h2 class="page-title">
+        <i class="bi bi-file-earmark-bar-graph"></i>
+        <span>Bulletins de Catéchèse</span>
+      </h2>
+      <p class="page-subtitle">
+        Générez, consultez et imprimez les bulletins d'évaluation individuels par classe.
+      </p>
+    </div>
+
+    <div class="header-actions">
+      @if (isValide()) {
+        <button type="button" class="btn btn-secondary" (click)="printBulletin()">
+          <i class="bi bi-printer"></i>
+          <span>Imprimer les bulletins</span>
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- 2. Barre de Sélection / Filtres (sans le filtre année) -->
+  <div class="toolbar-card">
+    <div class="filter-group">
+      <label class="filter-label">Section :</label>
+      <select
+        class="filter-select"
+        [ngModel]="selectedSectionId()"
+        (ngModelChange)="onSectionChange($event)"
+      >
+        <option value="">Toutes les sections</option>
+        @for (s of sections(); track s.id) {
+          <option [value]="s.id">{{ s.nom }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label class="filter-label">Niveau :</label>
+      <select
+        class="filter-select"
+        [ngModel]="selectedNiveauId()"
+        (ngModelChange)="onNiveauChange($event)"
+      >
+        <option value="">Tous les niveaux</option>
+        @for (n of filteredNiveaux(); track n.id) {
+          <option [value]="n.id">{{ n.nom }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="filter-group flex-2">
+      <label class="filter-label">Classe :</label>
+      <select
+        class="filter-select highlight-select"
+        [ngModel]="selectedClasseId()"
+        (ngModelChange)="onClasseChange($event)"
+      >
+        <option value="">Toutes les classes</option>
+        @for (c of filteredClasses(); track c.id) {
+          <option [value]="c.id">
+            {{ c.nom }}
+            @if (c.niveau; as niv) {
+              ({{ niv.nom }})
+            }
+          </option>
+        }
+      </select>
+    </div>
+  </div>
+
+  <!-- Statut Bilan -->
+  @if (!isValide()) {
+    <div class="banner-notice">
+      <i class="bi bi-info-circle-fill"></i>
+      <span>Le bilan annuel pour cette classe n'est pas encore officiellement validé. Vous pouvez prévisualiser et imprimer les bulletins.</span>
+    </div>
+  }
+
+  <!-- 3. Tableau des Bulletins -->
+  <div class="card-table">
+    <div class="table-header-info">
+      <div class="search-box table-search">
+        <i class="bi bi-search search-icon"></i>
+        <input
+          type="text"
+          placeholder="Rechercher..."
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)"
+        />
+      </div>
+
+      <div class="info-title">
+        <i class="bi bi-list-check"></i>
+        <span>
+          Classe :
+          <strong>{{ selectedClasseName() }}</strong>
+          ({{ filteredBilans().length }} élève(s))
+        </span>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Matricule</th>
+            <th>Nom et Prénoms</th>
+            <th class="text-center">Moyenne Gén.</th>
+            <th class="text-center">Présence (%)</th>
+            <th class="text-center">Décision</th>
+            <th class="text-center">Statut</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (b of filteredBilans(); track b.catechumeneId) {
+            <tr class="data-row">
+              <td>
+                <span class="badge-matricule">{{ b.matricule || 'N/A' }}</span>
+              </td>
+              <td>
+                <strong class="student-name">{{ b.nomPrenoms }}</strong>
+              </td>
+              <td class="text-center">
+                <span class="font-bold note-badge" [class.note-good]="b.moyenneGenerale >= 10" [class.note-bad]="b.moyenneGenerale < 10">
+                  {{ b.moyenneGenerale }} / 20
+                </span>
+              </td>
+              <td class="text-center">
+                <span class="pct-badge" [class.pct-good]="b.presenceCoursPct >= 80" [class.pct-bad]="b.presenceCoursPct < 80">
+                  {{ b.presenceCoursPct }}%
+                </span>
+              </td>
+              <td class="text-center">
+                <span
+                  class="decision-badge"
+                  [class.admis]="b.decision === 'Admis'"
+                  [class.non-admis]="b.decision === 'Non admis'"
+                  [class.ajourne]="b.decision === 'Ajourné'"
+                >
+                  {{ b.decision }}
+                </span>
+              </td>
+              <td class="text-center">
+                @if (isValide()) {
+                  <span class="status-pill status-valide">Officiel</span>
+                } @else {
+                  <span class="status-pill status-provisoire">Brouillon</span>
+                }
+              </td>
+              <td class="text-right">
+                <button type="button" class="btn btn-primary btn-sm" (click)="openBulletin(b)">
+                  <i class="bi bi-eye"></i>
+                  <span>Voir le bulletin</span>
+                </button>
+              </td>
+            </tr>
+          }
+          @if (filteredBilans().length === 0) {
+            <tr>
+              <td colspan="7" class="empty-cell">
+                <i class="bi bi-folder-x empty-icon"></i>
+                <p>Aucun catéchumène trouvé pour cette classe.</p>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-footer">
+      <span>Total élèves : <strong>{{ filteredBilans().length }}</strong></span>
+    </div>
+  </div>
+</div>
+
+<!-- 4. MODAL : APERÇU & IMPRESSION DU BULLETIN INDIVIDUEL -->
+@if (isBulletinModalOpen() && selectedBilan()) {
+  <div class="modal-overlay" (click)="closeBulletin()">
+    <div class="modal-card modal-lg print-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header no-print">
+        <div class="modal-title-group">
+          <i class="bi bi-file-earmark-person"></i>
+          <h3>Bulletin de Catéchèse — {{ selectedBilan()?.nomPrenoms }}</h3>
+        </div>
+        <button type="button" class="btn-close" (click)="closeBulletin()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <div class="print-document">
+        <!-- En-tête officiel de la catéchèse -->
+        <app-entete-catechese
+          [titreDocument]="'BULLETIN D\'ÉVALUATION DE CATÉCHÈSE'"
+          [sousTitre]="selectedBilan()?.niveau || ''"
+          [classeNom]="selectedBilan()?.classe || selectedClasseName()"
+          [anneePastorale]="selectedBilan()?.anneePastorale || currentAnneePastorale()"
+          [showBorder]="true"
+        ></app-entete-catechese>
+
+        <!-- Fiche Identité du Catéchumène -->
+        <div class="bulletin-student-card">
+          <div class="info-row">
+            <span>Nom & Prénoms : <strong>{{ selectedBilan()?.nomPrenoms }}</strong></span>
+            <span>Matricule : <strong>{{ selectedBilan()?.matricule || 'N/A' }}</strong></span>
+          </div>
+          <div class="info-row">
+            <span>Classe : <strong>{{ selectedBilan()?.classe || selectedClasseName() }}</strong></span>
+            <span>Rang : <strong>{{ studentRang() }} / {{ filteredBilans().length }}</strong></span>
+          </div>
+        </div>
+
+        <!-- Tableau des Notes & Évaluations -->
+        <table class="bulletin-table">
+          <thead>
+            <tr>
+              <th>Évaluation / Matière</th>
+              <th class="text-center">Type</th>
+              <th class="text-center">Coeff.</th>
+              <th class="text-center">Note (/Barème)</th>
+              <th class="text-center">Note /20</th>
+              <th class="text-center">Total Pondéré</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (n of bulletinNotes(); track n.nom) {
+              <tr>
+                <td><strong>{{ n.nom }}</strong></td>
+                <td class="text-center">{{ n.type }}</td>
+                <td class="text-center">{{ n.coeff }}</td>
+                <td class="text-center">{{ n.note !== null ? n.note : '-' }} / {{ n.bareme }}</td>
+                <td class="text-center font-bold" [class.text-red]="n.noteSur20 !== null && n.noteSur20 < 10">
+                  {{ n.noteSur20 !== null ? n.noteSur20 : '-' }}
+                </td>
+                <td class="text-center font-bold">
+                  {{ n.noteSur20 !== null ? (n.noteSur20 * n.coeff).toFixed(2) : '-' }}
+                </td>
+              </tr>
+            }
+            @if (bulletinNotes().length === 0) {
+              <tr>
+                <td colspan="6" class="text-center text-muted" style="padding: 1.5rem;">
+                  Aucune évaluation enregistrée pour cette période.
+                </td>
+              </tr>
+            }
+          </tbody>
+          <tfoot>
+            <tr class="tfoot-row">
+              <td colspan="2"><strong>TOTAL DES POINTS PONDÉRÉS</strong></td>
+              <td class="text-center"><strong>{{ bulletinTotals().totalCoeff }}</strong></td>
+              <td colspan="2" class="text-right"><strong>MOYENNE GÉNÉRALE :</strong></td>
+              <td class="text-center highlight-moy">
+                <strong>{{ selectedBilan()?.moyenneGenerale }} / 20</strong>
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+
+        <!-- Assiduité & Vie Chrétienne -->
+        <div class="bulletin-assiduite-grid">
+          <div class="assiduite-box">
+            <h4>Assiduité aux Cours</h4>
+            <p>Présence : <strong>{{ selectedBilan()?.presenceCoursPct }}%</strong></p>
+          </div>
+          <div class="assiduite-box">
+            <h4>Vie Communautaire</h4>
+            <p>Messes : <strong>{{ selectedBilan()?.presenceMesse }} fois</strong></p>
+            <p>CEB : <strong>{{ selectedBilan()?.presenceCEB }} fois</strong></p>
+            <p>Mouvements : <strong>{{ selectedBilan()?.presenceMouvement }} fois</strong></p>
+          </div>
+          <div class="assiduite-box decision-box">
+            <h4>Décision du Conseil</h4>
+            <span class="decision-stamp" [class.is-admis]="selectedBilan()?.decision === 'Admis'" [class.is-non-admis]="selectedBilan()?.decision === 'Non admis'">
+              {{ selectedBilan()?.decision | uppercase }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Signatures -->
+        <div class="pv-signatures">
+          <div class="sig-box">
+            <p class="sig-role">Le Catéchiste / Animateur</p>
+            <div class="sig-space"></div>
+          </div>
+          <div class="sig-box">
+            <p class="sig-role">Le Responsable de la Catéchèse</p>
+            <div class="sig-space"></div>
+          </div>
+          <div class="sig-box">
+            <p class="sig-role">Le Parent / Tuteur</p>
+            <div class="sig-space"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer no-print">
+        <button type="button" class="btn btn-secondary" (click)="closeBulletin()">Fermer</button>
+        <button type="button" class="btn btn-primary" (click)="printBulletin()">
+          <i class="bi bi-printer-fill"></i>
+          <span>Imprimer le Bulletin</span>
+        </button>
+      </div>
+    </div>
+  </div>
+}

@@ -21,7 +21,7 @@
 
             <td>
               <div class="section-name-cell">
-                <div class="section-icon-box" [class.is-active-icon]="section.statut === 'actif'">
+                <div class="section-icon-box" [class.is-active-icon]="isSectionActive(section)">
                   <i class="bi bi-diagram-2"></i>
                 </div>
                 <div class="section-meta">
@@ -46,7 +46,7 @@
             </td>
 
             <td>
-              @if (section.statut === 'actif') {
+              @if (isSectionActive(section)) {
                 <span class="active-badge">
                   <span class="pulse-dot"></span>
                   Actif
@@ -60,13 +60,13 @@
               <div class="actions-flex">
                 <!-- Action: Bascule statut actif / inactif -->
                 <app-icon-button
-                  [variant]="section.statut === 'actif' ? 'success' : 'ghost'"
+                  [variant]="isSectionActive(section) ? 'success' : 'ghost'"
                   size="sm"
-                  [title]="section.statut === 'actif' ? 'Section active' : 'Activer la section'"
+                  [title]="isSectionActive(section) ? 'Section active (Cliquer pour désactiver)' : 'Section inactive (Cliquer pour activer)'"
                   ariaLabel="Statut"
                   (clicked)="onToggleActive(section)"
                 >
-                  <i [class]="'bi ' + (section.statut === 'actif' ? 'bi-check-circle-fill' : 'bi-toggle-off')"></i>
+                  <i [class]="'bi ' + (isSectionActive(section) ? 'bi-check-circle-fill' : 'bi-toggle-off')"></i>
                 </app-icon-button>
 
                 <!-- Action: Voir -->

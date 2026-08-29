@@ -1,0 +1,166 @@
+<div class="seances-page">
+  <!-- Topbar Header -->
+  <section class="page-topbar">
+    <div class="topbar-headings">
+      <h2 class="topbar-title">Séances & Présences</h2>
+      <p class="topbar-subtitle">
+        Planifiez, enregistrez les présences.
+      </p>
+    </div>
+
+    <div class="topbar-actions">
+      <app-button
+        variant="primary"
+        size="md"
+        icon="plus"
+        (clicked)="openCreateModal()"
+      >
+        Nouvelle Séance
+      </app-button>
+    </div>
+  </section>
+
+  <!-- KPI / Stats Summary Cards (Standard Uniform Design) -->
+  <div class="kpi-grid">
+    <div class="kpi-card total">
+      <div class="kpi-icon"><i class="bi bi-calendar-event"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-number">{{ totalSeances() }}</span>
+        <span class="kpi-label">Total Séances</span>
+      </div>
+    </div>
+
+    <div class="kpi-card success">
+      <div class="kpi-icon"><i class="bi bi-clock-history"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-number">{{ seancesRecentes() }}</span>
+        <span class="kpi-label">Séances ce mois</span>
+      </div>
+    </div>
+
+    <div class="kpi-card warning">
+      <div class="kpi-icon"><i class="bi bi-door-open"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-number">{{ classesCouvertes() }}</span>
+        <span class="kpi-label">Classes Couvertes</span>
+      </div>
+    </div>
+
+    <div class="kpi-card info">
+      <div class="kpi-icon"><i class="bi bi-check2-square"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-number">{{ totalPresencesCount() }}</span>
+        <span class="kpi-label">Présences Enregistrées</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Card with Table -->
+  <app-card title="Planning & Registre des Séances">
+    <!-- Filters Toolbar -->
+    <div class="filters-toolbar">
+      <div class="filters-left">
+        <!-- Search Input -->
+        <div class="search-input-wrapper">
+          <i class="bi bi-search search-icon"></i>
+          <input
+            type="text"
+            class="filter-search-control"
+            placeholder="Rechercher..."
+            [value]="searchQuery()"
+            (input)="onSearchChange($event)"
+          />
+          @if (searchQuery()) {
+            <button class="clear-search-btn" (click)="searchQuery.set('')" title="Effacer">
+              <i class="bi bi-x-circle-fill"></i>
+            </button>
+          }
+        </div>
+
+        <!-- Classe Filter -->
+        <div class="select-wrapper">
+          <i class="bi bi-door-open select-prefix-icon"></i>
+          <select
+            class="filter-select-control"
+            [value]="selectedClasseFilter()"
+            (change)="onClasseFilterChange($event)"
+          >
+            <option value="">Toutes les classes</option>
+            @for (c of classes(); track c.id) {
+              <option [value]="c.id">
+                {{ c.nom }}
+                @if (c.niveau; as niv) {
+                  ({{ niv.nom }})
+                }
+              </option>
+            }
+          </select>
+          <i class="bi bi-chevron-down select-chevron-icon"></i>
+        </div>
+
+        <!-- Date Filter -->
+        <div class="date-filter-wrap">
+          <input
+            type="date"
+            class="date-input-control"
+            [value]="selectedDateFilter()"
+            (input)="onDateFilterChange($event)"
+            title="Filtrer par date de séance"
+          />
+        </div>
+      </div>
+
+      <div class="filters-right">
+        @if (hasActiveFilters()) {
+          <button class="reset-filter-btn" (click)="resetFilters()">
+            <i class="bi bi-arrow-counterclockwise"></i>
+            <span>Réinitialiser</span>
+          </button>
+        }
+        <span class="count-pill">
+          <strong>{{ filteredSeances().length }}</strong> séance(s)
+        </span>
+      </div>
+    </div>
+
+    <!-- Table Component -->
+    <app-seance-table
+      [seances]="filteredSeances()"
+      [isLoading]="isLoading()"
+      (createRequested)="openCreateModal()"
+      (editRequested)="openEditModal($event)"
+      (deleteRequested)="openDeleteModal($event)"
+      (presencesRequested)="openPresencesModal($event)"
+    />
+  </app-card>
+</div>
+
+<!-- Form Modal (Create / Edit) -->
+<app-seance-form-modal
+  [isOpen]="isFormModalOpen()"
+  [isEditing]="isEditing()"
+  [seanceToEdit]="selectedSeance()"
+  [classes]="classes()"
+  [isLoading]="isLoading()"
+  (formClosed)="closeModals()"
+  (formSubmitted)="handleFormSubmit($event)"
+/>
+
+<!-- Presences Modal (Roll Call / Appel) -->
+<app-seance-presences-modal
+  [isOpen]="isPresencesModalOpen()"
+  [seance]="selectedSeance()"
+  [inscriptions]="inscriptions()"
+  [isLoading]="isLoading()"
+  (modalClosed)="closeModals()"
+  (presencesSubmitted)="handlePresencesSubmit($event)"
+/>
+
+<!-- Delete Modal -->
+<app-seance-delete-modal
+  [isOpen]="isDeleteModalOpen()"
+  [itemToDelete]="selectedSeance()"
+  [isLoading]="isLoading()"
+  (modalClosed)="closeModals()"
+  (confirmed)="handleDeleteConfirm()"
+/>

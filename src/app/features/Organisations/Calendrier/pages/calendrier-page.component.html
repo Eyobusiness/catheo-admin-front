@@ -94,24 +94,20 @@
           <select
             class="filter-select-control"
             [value]="selectedCibleFilter()"
-            (change)="onCibleFilterChange($event)"
-          >
-            <option value="">Tous les publics</option>
-            <option value="Tous">Tous (Paroisse)</option>
+            (change)="onCibleFilterChange($event)"> 
+            <option value="">Cibles</option>
+            <option value="Tous">Tous</option>
             <option value="Catéchumènes">Catéchumènes</option>
             <option value="Animateurs">Animateurs</option>
-            <option value="Parents">Parents</option>
             <option value="Niveau">Niveau</option>
             <option value="Classe">Classe</option>
             <option value="Section">Section</option>
-            <option value="CEB">CEB</option>
-            <option value="Mouvement">Mouvement</option>
           </select>
           <i class="bi bi-chevron-down select-chevron-icon"></i>
         </div>
 
         <!-- Année Pastorale Filter Dropdown -->
-        <div class="filter-select-wrapper">
+        <!-- <div class="filter-select-wrapper">
           <i class="bi bi-calendar-event select-prefix-icon"></i>
           <select
             class="filter-select-control"
@@ -124,7 +120,7 @@
             }
           </select>
           <i class="bi bi-chevron-down select-chevron-icon"></i>
-        </div>
+        </div> -->
       </div>
 
       <!-- Right Meta Info & Reset Button -->
@@ -172,7 +168,6 @@
   [isEditing]="isEditing()"
   [eventToEdit]="selectedEvent()"
   [defaultDate]="prefilledDate()"
-  [annees]="annees()"
   [isLoading]="isSubmitting()"
   (formClosed)="closeFormModal()"
   (formSubmitted)="handleFormSubmit($event)"

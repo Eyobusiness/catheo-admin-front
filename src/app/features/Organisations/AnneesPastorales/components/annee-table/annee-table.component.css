@@ -130,6 +130,19 @@
   color: var(--neutral-500);
 }
 
+.preparation-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.625rem;
+  background-color: var(--warning-50);
+  border: 1px solid var(--warning-200);
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--warning-700);
+}
+
 .inscrits-box {
   display: inline-flex;
   align-items: center;

@@ -63,6 +63,9 @@ export class CampagneFormModalComponent {
 
   constructor() {
     effect(() => {
+      if (!this.isOpen()) {
+        return;
+      }
       const item = this.campagneToEdit();
       const currentAnnee = this.annees().find(a => a.est_active) || (this.annees().length > 0 ? this.annees()[0] : null);
 
@@ -89,7 +92,7 @@ export class CampagneFormModalComponent {
         });
         this.selectedSections.set([]);
       }
-    });
+    }, { allowSignalWrites: true });
   }
 
   protected toggleSection(sectionNom: string): void {

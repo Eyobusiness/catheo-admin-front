@@ -45,7 +45,7 @@ export const APP_MENU: MenuItem[] = [
       {
         "order": null,
         "id": null,
-        "libelle": "Campagnes de préinscription",
+        "libelle": "Campagnes",
         "icon": "bi bi-megaphone",
         "path": "/campagnes-preinscriptions",
         "code": "200",
@@ -65,7 +65,7 @@ export const APP_MENU: MenuItem[] = [
       {
         "order": null,
         "id": null,
-        "libelle": "Inscriptions annuelles",
+        "libelle": "Inscriptions",
         "icon": "bi bi-journal-check",
         "path": "/inscriptions-annuelles",
         "code": "200",
@@ -108,7 +108,7 @@ export const APP_MENU: MenuItem[] = [
   {
     "order": 3,
     "id": null,
-    "libelle": "Gestion des présences",
+    "libelle": "Gestion présences",
     "icon": "bi bi-calendar-check",
     "path": "#",
     "code": "300",
@@ -223,7 +223,7 @@ export const APP_MENU: MenuItem[] = [
         "id": null,
         "libelle": "Exceptions pastorales",
         "icon": "bi bi-exclamation-diamond",
-        "path": "/exceptions-pastorales",
+        "path": "/sacrements/exceptions-pastorales",
         "code": "500",
         "permission": null,
         "reference": "exceptions_pastorales"
@@ -347,7 +347,7 @@ export const APP_MENU: MenuItem[] = [
       {
         "order": null,
         "id": null,
-        "libelle": "Fiche de bilan annuel",
+        "libelle": "Fiche bilan",
         "icon": "bi bi-file-earmark-bar-graph",
         "path": "/impressions/bilan-annuel",
         "code": "800",
@@ -357,7 +357,7 @@ export const APP_MENU: MenuItem[] = [
       {
         "order": null,
         "id": null,
-        "libelle": "Fiche de suivi sacramentel",
+        "libelle": "Fiche sacramentel",
         "icon": "bi bi-clipboard-pulse",
         "path": "/impressions/suivi-sacramentel",
         "code": "800",
@@ -367,7 +367,7 @@ export const APP_MENU: MenuItem[] = [
       {
         "order": null,
         "id": null,
-        "libelle": "Fiche de renseignements Baptême",
+        "libelle": "Fiche Baptême",
         "icon": "bi bi-file-earmark-person",
         "path": "/impressions/renseignements-bapteme",
         "code": "800",
@@ -377,7 +377,7 @@ export const APP_MENU: MenuItem[] = [
       {
         "order": null,
         "id": null,
-        "libelle": "Fiche de renseignements Première Communion",
+        "libelle": "Fiche Communion",
         "icon": "bi bi-file-earmark-person",
         "path": "/impressions/renseignements-premiere-communion",
         "code": "800",
@@ -387,7 +387,7 @@ export const APP_MENU: MenuItem[] = [
       {
         "order": null,
         "id": null,
-        "libelle": "Fiche de renseignements Confirmation",
+        "libelle": "Fiche Confirmation",
         "icon": "bi bi-file-earmark-person",
         "path": "/impressions/renseignements-confirmation",
         "code": "800",
@@ -400,7 +400,7 @@ export const APP_MENU: MenuItem[] = [
   {
     "order": 9,
     "id": null,
-    "libelle": "Documents officiels",
+    "libelle": "Documents",
     "icon": "bi bi-file-earmark-richtext",
     "path": "#",
     "code": "900",
@@ -409,7 +409,7 @@ export const APP_MENU: MenuItem[] = [
       {
         "order": null,
         "id": null,
-        "libelle": "Modèles de documents",
+        "libelle": "Modèles documents",
         "icon": "bi bi-file-earmark",
         "path": "/modeles-documents",
         "code": "900",
@@ -419,7 +419,7 @@ export const APP_MENU: MenuItem[] = [
       {
         "order": null,
         "id": null,
-        "libelle": "Génération de documents",
+        "libelle": "Génération documents",
         "icon": "bi bi-file-earmark-plus",
         "path": "/generation-documents",
         "code": "900",
@@ -432,33 +432,12 @@ export const APP_MENU: MenuItem[] = [
   {
     "order": 10,
     "id": null,
-    "libelle": "Rapports & Statistiques",
-    "icon": "bi bi-graph-up-arrow",
-    "path": "#",
+    "libelle": "Rapports",
+    "icon": "bi bi-file-earmark-bar-graph",
+    "path": "/rapports",
     "code": "1000",
     "permission": "1,2,3,4",
-    "sousMenus": [
-      {
-        "order": null,
-        "id": null,
-        "libelle": "Statistiques",
-        "icon": "bi bi-bar-chart",
-        "path": "/statistiques",
-        "code": "1000",
-        "permission": null,
-        "reference": "statistiques"
-      },
-      {
-        "order": null,
-        "id": null,
-        "libelle": "Rapports",
-        "icon": "bi bi-file-earmark-bar-graph",
-        "path": "/rapports",
-        "code": "1000",
-        "permission": null,
-        "reference": "rapports"
-      }
-    ],
+    "sousMenus": [],
     "reference": "main_rapports_statistiques"
   },
   {
@@ -533,7 +512,7 @@ export const APP_MENU: MenuItem[] = [
       {
         "order": null,
         "id": null,
-        "libelle": "Affectation des animateurs",
+        "libelle": "Affectation animateurs",
         "icon": "bi bi-person-check",
         "path": "/affectations-animateurs",
         "code": "1100",

@@ -4,7 +4,6 @@ import { Observable, catchError, of, tap, throwError } from 'rxjs';
 import {
   CreateModuleTrimestrielDto,
   ModuleTrimestriel,
-  TrimestreCode,
   UpdateModuleTrimestrielDto
 } from '../models/module-trimestriel.model';
 import { ToastService } from '../../../../core/services/toast.service';
@@ -34,55 +33,13 @@ export class ModuleTrimestrielService {
   private readonly baseUrl = `${environment.apiUrl}/modules-trimestriels`;
 
   // Reactive state signals
-  public readonly modules = signal<ModuleTrimestriel[]>([
-    {
-      id: '1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c71',
-      annee_catechese_id: '9f8e7d6c-5b4a-3f2e-1d0c-9b8a7f6e5d20',
-      trimestre: 'T1',
-      libelle: '1er Trimestre : Temps de l\'Avent et Éveil de la Foi',
-      date_debut: '2026-10-01',
-      date_fin: '2026-12-20',
-      annee_catechese: {
-        id: '9f8e7d6c-5b4a-3f2e-1d0c-9b8a7f6e5d20',
-        libelle: '2026-2027',
-        date_debut: '2026-09-15',
-        date_fin: '2027-06-30',
-        est_active: true
-      }
-    },
-    {
-      id: '2b3c4d5e-6f7a-8b9c-0d1e-2f3a4b5c6d72',
-      annee_catechese_id: '9f8e7d6c-5b4a-3f2e-1d0c-9b8a7f6e5d20',
-      trimestre: 'T2',
-      libelle: '2ème Trimestre : Temps du Carême et Approfondissement',
-      date_debut: '2027-01-05',
-      date_fin: '2027-03-25',
-      annee_catechese: {
-        id: '9f8e7d6c-5b4a-3f2e-1d0c-9b8a7f6e5d20',
-        libelle: '2026-2027',
-        date_debut: '2026-09-15',
-        date_fin: '2027-06-30',
-        est_active: true
-      }
-    },
-    {
-      id: '3c4d5e6f-7a8b-9c0d-1e2f-3a4b5c6d7e83',
-      annee_catechese_id: '9f8e7d6c-5b4a-3f2e-1d0c-9b8a7f6e5d20',
-      trimestre: 'T3',
-      libelle: '3ème Trimestre : Temps Pascal et Célébrations des Sacrements',
-      date_debut: '2027-04-10',
-      date_fin: '2027-06-25',
-      annee_catechese: {
-        id: '9f8e7d6c-5b4a-3f2e-1d0c-9b8a7f6e5d20',
-        libelle: '2026-2027',
-        date_debut: '2026-09-15',
-        date_fin: '2027-06-30',
-        est_active: true
-      }
-    }
-  ]);
+  public readonly modules = signal<ModuleTrimestriel[]>([]);
 
   public readonly isLoading = signal<boolean>(false);
+
+  constructor() {
+    this.getAll().subscribe();
+  }
 
   public getAll(): Observable<ModuleTrimestriel[]> {
     this.isLoading.set(true);
@@ -93,10 +50,10 @@ export class ModuleTrimestrielService {
           const normalized: ModuleTrimestriel[] = raw.map((item: any) => ({
             id: item.id,
             annee_catechese_id: item.annee_catechese_id || item.annee_id || item.annee_pastorale_id || item.annee_catechese?.id || item.annee?.id,
-            trimestre: (item.trimestre || item.code || 'T1') as TrimestreCode,
             libelle: item.libelle || item.nom || '',
             date_debut: item.date_debut || item.dateDebut || '',
             date_fin: item.date_fin || item.dateFin || '',
+            statut: item.statut || 'en cours',
             annee_catechese: item.annee_catechese || item.annee || undefined
           }));
           this.modules.set(normalized);
@@ -133,10 +90,10 @@ export class ModuleTrimestrielService {
         const created: ModuleTrimestriel = {
           id: item.id || `uuid-${Date.now()}`,
           annee_catechese_id: item.annee_catechese_id || dto.annee_catechese_id,
-          trimestre: item.trimestre || dto.trimestre,
           libelle: item.libelle || dto.libelle,
           date_debut: item.date_debut || dto.date_debut,
           date_fin: item.date_fin || dto.date_fin,
+          statut: item.statut || dto.statut || 'en cours',
           annee_catechese: item.annee_catechese || undefined
         };
         this.addOrUpdateLocal(created);
@@ -147,10 +104,10 @@ export class ModuleTrimestrielService {
         const newLocal: ModuleTrimestriel = {
           id: `uuid-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
           annee_catechese_id: dto.annee_catechese_id,
-          trimestre: dto.trimestre,
           libelle: dto.libelle,
           date_debut: dto.date_debut,
-          date_fin: dto.date_fin
+          date_fin: dto.date_fin,
+          statut: dto.statut || 'en cours'
         };
         this.addOrUpdateLocal(newLocal);
         this.toastService.success('Module Enregistré', `Le module "${newLocal.libelle}" a été ajouté.`);
@@ -171,9 +128,9 @@ export class ModuleTrimestrielService {
           ...item,
           id,
           libelle: item.libelle || dto.libelle || current?.libelle || '',
-          trimestre: (item.trimestre || dto.trimestre || current?.trimestre || 'T1') as TrimestreCode,
           date_debut: item.date_debut || dto.date_debut || current?.date_debut || '',
           date_fin: item.date_fin || dto.date_fin || current?.date_fin || '',
+          statut: item.statut || dto.statut || current?.statut || 'en cours',
           annee_catechese_id: item.annee_catechese_id || dto.annee_catechese_id || current?.annee_catechese_id,
           annee_catechese: item.annee_catechese || current?.annee_catechese
         };
@@ -187,9 +144,9 @@ export class ModuleTrimestrielService {
           ...current!,
           id,
           libelle: dto.libelle || current?.libelle || '',
-          trimestre: (dto.trimestre || current?.trimestre || 'T1') as TrimestreCode,
           date_debut: dto.date_debut || current?.date_debut || '',
           date_fin: dto.date_fin || current?.date_fin || '',
+          statut: dto.statut || current?.statut || 'en cours',
           annee_catechese_id: dto.annee_catechese_id || current?.annee_catechese_id,
           annee_catechese: current?.annee_catechese
         };
@@ -217,33 +174,10 @@ export class ModuleTrimestrielService {
     );
   }
 
-  public patchTrimestre(id: string, nextTrimestre: TrimestreCode): Observable<ModuleTrimestriel> {
-    return this.http.patch<any>(`${this.baseUrl}/${id}`, { trimestre: nextTrimestre }).pipe(
-      tap(res => {
-        const item = res.data || res;
-        const current = this.modules().find(m => m.id === id);
-        if (current) {
-          const updated: ModuleTrimestriel = { ...current, ...item, trimestre: nextTrimestre };
-          this.addOrUpdateLocal(updated);
-          this.toastService.info('Trimestre Mis à Jour', `Le module est maintenant assigné au : ${nextTrimestre}`);
-        }
-      }),
-      catchError(() => {
-        const current = this.modules().find(m => m.id === id);
-        if (current) {
-          const updated: ModuleTrimestriel = { ...current, trimestre: nextTrimestre };
-          this.addOrUpdateLocal(updated);
-          this.toastService.info('Trimestre Mis à Jour', `Le module est maintenant assigné au : ${nextTrimestre}`);
-        }
-        return of(current!);
-      })
-    );
-  }
-
   private addOrUpdateLocal(item: ModuleTrimestriel): void {
     this.modules.update(list => {
       const updatedList = list.filter(m => m.id !== item.id);
-      return [item, ...updatedList].sort((a, b) => (a.trimestre || '').localeCompare(b.trimestre || ''));
+      return [item, ...updatedList].sort((a, b) => (a.libelle || '').localeCompare(b.libelle || ''));
     });
   }
 
@@ -251,4 +185,5 @@ export class ModuleTrimestrielService {
     this.modules.update(list => list.filter(m => m.id !== id));
   }
 }
+
 

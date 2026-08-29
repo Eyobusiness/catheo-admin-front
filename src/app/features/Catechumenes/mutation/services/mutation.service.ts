@@ -118,7 +118,7 @@ export class MutationCatechumeneService {
 
   public updateStatus(id: string, statut: 'approuve' | 'refuse'): Observable<MutationCatechumeneDto> {
     this.isLoading.set(true);
-    return this.http.patch<any>(`${this.baseUrl}/${id}`, { statut }).pipe(
+    return this.http.patch<any>(`${this.baseUrl}/${id}/statut`, { statut }).pipe(
       tap(res => {
         this.isLoading.set(false);
         const item = res.data || res;

@@ -1,6 +1,8 @@
-import { ChangeDetectionStrategy, Component, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, OnDestroy, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Subscription } from 'rxjs';
 import { ConfigurationService } from '../../services/configuration.service';
+import { ThemeService } from '../../../../../core/services/theme.service';
 import { AppCard } from '../../../../../shared/ui/components/layout/app-card/app-card.component';
 import { AppButton } from '../../../../../shared/ui/components/buttons/app-button/app-button.component';
 import { AppConfirmDialog } from '../../../../../shared/ui/components/dialogs/app-confirm-dialog/app-confirm-dialog.component';
@@ -13,11 +15,14 @@ import { PoliceCaracteres, UpdateApparenceConfigurationDto } from '../../models/
   styleUrl: './tab-apparence-config.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class TabApparenceConfigComponent {
+export class TabApparenceConfigComponent implements OnDestroy {
   protected readonly configService = inject(ConfigurationService);
+  protected readonly themeService = inject(ThemeService);
   protected readonly apparence = this.configService.apparenceConfig;
   protected readonly isSaving = this.configService.isSaving;
   protected readonly isResetConfirmOpen = signal<boolean>(false);
+  private formSub?: Subscription;
+  private isSaved = false;
 
   protected readonly fontOptions: { id: PoliceCaracteres; label: string; description: string; sample: string }[] = [
     { id: 'Outfit', label: 'Outfit', description: 'Moderne, géométrique et élégante', sample: 'Catéchèse Paroissiale 2026' },
@@ -29,8 +34,8 @@ export class TabApparenceConfigComponent {
   ];
 
   protected readonly primaryColorPresets = [
-    '#0284c7', // Sky Blue (Default)
-    '#4f46e5', // Indigo
+    '#4F46E5', // Indigo (Default)
+    '#0284c7', // Sky Blue
     '#2563eb', // Royal Blue
     '#059669', // Emerald Green
     '#7c3aed', // Purple
@@ -39,7 +44,7 @@ export class TabApparenceConfigComponent {
   ];
 
   protected readonly secondaryColorPresets = [
-    '#d97706', // Amber Gold (Default)
+    '#D97706', // Amber Gold (Default)
     '#ea580c', // Tangerine
     '#e11d48', // Rose
     '#10b981', // Mint
@@ -48,15 +53,15 @@ export class TabApparenceConfigComponent {
   ];
 
   protected readonly form = new FormGroup({
-    couleur_principale: new FormControl('#0284c7', {
+    couleur_principale: new FormControl('#4F46E5', {
       nonNullable: true,
       validators: [Validators.required]
     }),
-    couleur_secondaire: new FormControl('#d97706', {
+    couleur_secondaire: new FormControl('#D97706', {
       nonNullable: true,
       validators: [Validators.required]
     }),
-    police_caracteres: new FormControl<PoliceCaracteres>('Outfit', {
+    police_caracteres: new FormControl<PoliceCaracteres>('Inter', {
       nonNullable: true,
       validators: [Validators.required]
     }),
@@ -69,14 +74,32 @@ export class TabApparenceConfigComponent {
       const app = this.apparence();
       if (app) {
         this.form.patchValue({
-          couleur_principale: app.couleur_principale || '#0284c7',
-          couleur_secondaire: app.couleur_secondaire || '#d97706',
-          police_caracteres: app.police_caracteres || 'Outfit',
+          couleur_principale: app.couleur_principale || '#4F46E5',
+          couleur_secondaire: app.couleur_secondaire || '#D97706',
+          police_caracteres: app.police_caracteres || 'Inter',
           entete_document: app.entete_document || '',
           pied_page_document: app.pied_page_document || ''
         }, { emitEvent: false });
       }
     });
+
+    // Listen to form value changes for immediate live preview across the platform
+    this.formSub = this.form.valueChanges.subscribe(val => {
+      if (val.couleur_principale || val.couleur_secondaire || val.police_caracteres) {
+        this.themeService.previewTheme(
+          val.couleur_principale,
+          val.couleur_secondaire,
+          val.police_caracteres
+        );
+      }
+    });
+  }
+
+  public ngOnDestroy(): void {
+    this.formSub?.unsubscribe();
+    if (!this.isSaved) {
+      this.themeService.restoreSavedTheme();
+    }
   }
 
   protected selectPrimaryColor(color: string): void {
@@ -101,7 +124,13 @@ export class TabApparenceConfigComponent {
         entete_document: val.entete_document || undefined,
         pied_page_document: val.pied_page_document || undefined
       };
-      this.configService.updateApparenceConfig(dto).subscribe();
+      this.isSaved = true;
+      this.themeService.applyTheme(val.couleur_principale, val.couleur_secondaire, val.police_caracteres, true);
+      this.configService.updateApparenceConfig(dto).subscribe({
+        error: () => {
+          this.isSaved = false;
+        }
+      });
     }
   }
 
@@ -111,6 +140,7 @@ export class TabApparenceConfigComponent {
 
   protected handleConfirmReset(): void {
     this.isResetConfirmOpen.set(false);
+    this.isSaved = true;
     this.configService.resetApparenceConfig().subscribe();
   }
 }

@@ -1,0 +1,178 @@
+<app-dialog
+  [isOpen]="isOpen()"
+  title="Feuille d'Appel & Gestion des Présences"
+  [subtitle]="seance() ? (seance()!.titre_lecon + ' • ' + (seance()!.classe?.nom || 'Classe') + ' • ' + (seance()!.date_seance | date:'dd MMMM yyyy')) : ''"
+  size="lg"
+  (closed)="onClose()"
+>
+  <div class="presences-modal-body">
+    <!-- Header Stats Banner -->
+    <div class="stats-banner-row">
+      <div class="stat-mini-pill total">
+        <span class="label">Total Élèves</span>
+        <span class="val">{{ totalCount() }}</span>
+      </div>
+
+      <div class="stat-mini-pill present">
+        <i class="bi bi-check-circle-fill"></i>
+        <span class="label">Présents</span>
+        <span class="val">{{ presentCount() }}</span>
+      </div>
+
+      <div class="stat-mini-pill absent">
+        <i class="bi bi-x-circle-fill"></i>
+        <span class="label">Absents</span>
+        <span class="val">{{ absentCount() }}</span>
+      </div>
+
+      <div class="stat-mini-pill rate">
+        <span class="label">Taux Présence</span>
+        <span class="val">{{ tauxPresence() }}%</span>
+      </div>
+    </div>
+
+    <!-- Quick Actions Toolbar -->
+    <div class="presences-toolbar">
+      <!-- Search Input -->
+      <div class="search-wrap">
+        <i class="bi bi-search"></i>
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Rechercher un catéchumène..."
+          [value]="searchQuery()"
+          (input)="onSearchChange($event)"
+        />
+      </div>
+
+      <!-- Quick Set Buttons -->
+      <div class="quick-batch-btns">
+        <button
+          type="button"
+          class="btn-quick-check all-present"
+          (click)="setAllStatus(true)"
+          title="Marquer tous les élèves comme présents"
+        >
+          <i class="bi bi-check-all"></i>
+          <span>Tous Présents</span>
+        </button>
+
+        <button
+          type="button"
+          class="btn-quick-check all-absent"
+          (click)="setAllStatus(false)"
+          title="Marquer tous les élèves comme absents"
+        >
+          <i class="bi bi-x"></i>
+          <span>Tous Absents</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Attendance Table / List -->
+    <div class="presences-list-card">
+      <div class="presences-table-wrap">
+        <table class="presence-table">
+          <thead>
+            <tr>
+              <th class="col-num">#</th>
+              <th>Catéchumène</th>
+              <th class="col-status text-center">Statut Présence</th>
+              <th class="col-motif">Motif d'absence</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (entry of filteredEntries(); track entry.catechumene_id; let i = $index) {
+              <tr class="entry-row" [class.is-absent]="!entry.est_present">
+                <!-- Index -->
+                <td class="col-num">{{ i + 1 }}</td>
+
+                <!-- Candidate Info -->
+                <td>
+                  <div class="candidate-cell">
+                    <div class="avatar-circle" [class.is-female]="entry.sexe === 'F'">
+                      <span>{{ entry.nom_complet.charAt(0) }}</span>
+                    </div>
+                    <div class="candidate-meta">
+                      <span class="name-label">{{ entry.nom_complet }}</span>
+                      @if (entry.code_catechumene) {
+                        <span class="code-label">{{ entry.code_catechumene }}</span>
+                      }
+                    </div>
+                  </div>
+                </td>
+
+                <!-- Status Toggle -->
+                <td class="col-status text-center">
+                  <button
+                    type="button"
+                    class="status-toggle-btn"
+                    [class.is-present]="entry.est_present"
+                    [class.is-absent]="!entry.est_present"
+                    (click)="togglePresence(entry)"
+                    [title]="entry.est_present ? 'Cliquer pour marquer Absent' : 'Cliquer pour marquer Présent'"
+                  >
+                    @if (entry.est_present) {
+                      <i class="bi bi-check-circle-fill"></i>
+                      <span>PRÉSENT</span>
+                    } @else {
+                      <i class="bi bi-x-circle-fill"></i>
+                      <span>ABSENT</span>
+                    }
+                  </button>
+                </td>
+
+                <!-- Motif (Only enabled / visible when absent) -->
+                <td class="col-motif">
+                  @if (!entry.est_present) {
+                    <div class="motif-input-wrap">
+                      <input
+                        type="text"
+                        class="motif-control"
+                        placeholder="Motif (ex: Maladie, Voyage...)"
+                        [value]="entry.motif_absence"
+                        (input)="updateMotif(entry, $any($event.target).value)"
+                      />
+                    </div>
+                  } @else {
+                    <span class="motif-placeholder">—</span>
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="4" class="empty-row">
+                  <i class="bi bi-people"></i>
+                  <span>Aucun catéchumène inscrit dans cette classe pour le moment.</span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Modal Footer Actions -->
+    <div class="modal-footer-actions">
+      <app-button
+        type="button"
+        variant="ghost"
+        (clicked)="onClose()"
+        [disabled]="isLoading()"
+      >
+        Fermer
+      </app-button>
+
+      <app-button
+        type="button"
+        variant="primary"
+        [loading]="isLoading()"
+        [disabled]="entries().length === 0 || isLoading()"
+        (clicked)="onSubmit()"
+      >
+        <i class="bi bi-cloud-check-fill"></i>
+        <span>Enregistrer</span>
+      </app-button>
+    </div>
+  </div>
+</app-dialog>

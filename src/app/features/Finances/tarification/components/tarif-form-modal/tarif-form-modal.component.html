@@ -1,0 +1,161 @@
+<app-dialog
+  [isOpen]="isOpen()"
+  [title]="isEditing() ? 'Modifier l\'élément Tarifaire' : 'Nouveau Tarif de Catéchèse'"
+  size="md"
+  (closed)="onClose()"
+>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="tarif-form-body">
+    <!-- Intitulé -->
+    <div class="form-group">
+      <label class="form-label" for="tarif_intitule">
+        Intitulé du Tarif / Frais <span class="required">*</span>
+      </label>
+      <input
+        id="tarif_intitule"
+        type="text"
+        formControlName="intitule"
+        class="form-control"
+        placeholder="Ex: Droit d'inscription, Frais de Baptême..."
+      />
+      @if (form.controls.intitule.touched && form.controls.intitule.errors?.['required']) {
+        <span class="field-error">L'intitulé est obligatoire.</span>
+      }
+    </div>
+
+    <!-- Type de Tarif & Montant -->
+    <div class="form-row-2">
+      <!-- Type -->
+      <div class="form-group">
+        <label class="form-label" for="tarif_type">
+          Catégorie / Type <span class="required">*</span>
+        </label>
+        <div class="select-wrapper">
+          <select id="tarif_type" formControlName="type_tarif" class="form-control">
+            <option value="inscription">Droit d'inscription</option>
+            <option value="sacrement_bapteme">Droit de sacrement Baptême</option>
+            <option value="sacrement_premiere_communion">Droit de sacrement Première Communion</option>
+            <option value="sacrement_confirmation">Droit de sacrement Confirmation</option>
+            <option value="manuel">Manuel de Catéchèse</option>
+            <option value="uniforme">Uniforme / Tenue</option>
+            <option value="examen">Frais d'Examen</option>
+            <option value="autre">Autre Contribution</option>
+          </select>
+          <i class="bi bi-chevron-down select-chevron"></i>
+        </div>
+      </div>
+
+      <!-- Montant -->
+      <div class="form-group">
+        <label class="form-label" for="tarif_montant">
+          Montant (en FCFA) <span class="required">*</span>
+        </label>
+        <input
+          id="tarif_montant"
+          type="number"
+          step="500"
+          min="0"
+          formControlName="montant"
+          class="form-control"
+          placeholder="Ex: 15000"
+        />
+        @if (form.controls.montant.touched && form.controls.montant.errors?.['required']) {
+          <span class="field-error">Le montant est obligatoire.</span>
+        }
+      </div>
+    </div>
+
+    <!-- Niveaux Concernés (Checkboxes multiples) -->
+    <div class="form-group">
+      <div class="niveaux-header">
+        <label class="form-label">
+          Niveau(x) Concerné(s)
+        </label>
+        <div class="niveaux-actions">
+          <button
+            type="button"
+            class="niveaux-toggle-btn"
+            (click)="areAllNiveauxSelected() ? clearAllNiveaux() : selectAllNiveaux()"
+          >
+            <i class="bi" [class.bi-check-all]="!areAllNiveauxSelected()" [class.bi-x-circle]="areAllNiveauxSelected()"></i>
+            <span>{{ areAllNiveauxSelected() ? 'Tout décocher' : 'Tout cocher' }}</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="niveaux-checkbox-grid">
+        @for (n of niveaux(); track n.id) {
+          <label class="niveau-checkbox-item" [class.selected]="isNiveauSelected(n.id)">
+            <input
+              type="checkbox"
+              [checked]="isNiveauSelected(n.id)"
+              (change)="toggleNiveau(n.id, $event)"
+              class="niveau-input-check"
+            />
+            <span class="niveau-name-label">
+              <i class="bi bi-layers-fill"></i>
+              {{ n.nom }}
+            </span>
+          </label>
+        } @empty {
+          <div class="no-niveaux-hint">
+            <i class="bi bi-info-circle"></i>
+            <span>Aucun niveau enregistré. Le tarif s'appliquera par défaut à tous.</span>
+          </div>
+        }
+      </div>
+      <span class="field-hint">
+        @if (selectedNiveauIds().length === 0) {
+          <i class="bi bi-asterisk"></i> Aucun niveau coché : le tarif s'appliquera à <strong>tous les niveaux</strong> de catéchèse.
+        } @else {
+          <i class="bi bi-check2"></i> <strong>{{ selectedNiveauIds().length }}</strong> niveau(x) sélectionné(s).
+        }
+      </span>
+    </div>
+
+    <!-- Caractère Obligatoire -->
+    <div class="checkbox-group">
+      <label class="checkbox-label">
+        <input type="checkbox" formControlName="est_obligatoire" class="custom-checkbox" />
+        <span class="checkbox-text">
+          <strong>Paiement obligatoire</strong> (requis pour valider l'inscription ou l'étape)
+        </span>
+      </label>
+    </div>
+
+    <!-- Description -->
+    <div class="form-group">
+      <label class="form-label" for="tarif_description">
+        Description ou Détails complémentaires
+      </label>
+      <textarea
+        id="tarif_description"
+        rows="2"
+        formControlName="description"
+        class="form-control textarea-control"
+        placeholder="Précisions supplémentaires..."
+      ></textarea>
+    </div>
+
+    <!-- Actions -->
+    <div class="modal-footer-actions">
+      <app-button
+        type="button"
+        variant="ghost"
+        (clicked)="onClose()"
+        [disabled]="isLoading()"
+      >
+        Annuler
+      </app-button>
+
+      <app-button
+        type="submit"
+        variant="primary"
+        [loading]="isLoading()"
+        [disabled]="form.invalid || isLoading()"
+      >
+        <i class="bi bi-check-lg"></i>
+        <span>{{ isEditing() ? 'Enregistrer les modifications' : 'Créer le tarif' }}</span>
+      </app-button>
+    </div>
+  </form>
+</app-dialog>

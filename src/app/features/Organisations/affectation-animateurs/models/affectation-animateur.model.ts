@@ -1,28 +1,36 @@
 import { AnimateurDto } from '../../Animateurs/models/animateur.model';
 import { ClasseDto } from '../../Classe/models/classe.model';
 
-export type RoleAnimateur = 'principal' | 'adjoint' | 'assistant';
-
 export interface AffectationAnimateur {
   id: string;
+  annee_catechese_id?: string;
   animateur_id?: string;
   classe_id?: string;
   animateur: AnimateurDto;
   classe: ClasseDto;
-  role: RoleAnimateur;
+  role: string;
   date_affectation: string;
 }
 
 export type AffectationAnimateurDto = AffectationAnimateur;
 
 export interface CreateAffectationAnimateurDto {
+  annee_catechese_id?: string;
   animateur_id: string;
   classe_id: string;
-  role?: RoleAnimateur;
+  role?: string;
 }
 
 export interface UpdateAffectationAnimateurDto {
   animateur_id?: string;
   classe_id?: string;
-  role?: RoleAnimateur;
+  role?: string;
 }
+
+export interface AffectationFilterParams {
+  annee_catechese_id?: string;
+  classe_id?: string;
+  animateur_id?: string;
+  search?: string;
+}
+

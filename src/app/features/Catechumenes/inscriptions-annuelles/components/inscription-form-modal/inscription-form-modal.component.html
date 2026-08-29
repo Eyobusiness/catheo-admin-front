@@ -1,183 +1,633 @@
 <app-dialog
   [isOpen]="isOpen()"
-  [title]="isEditing() ? 'Modifier l’Inscription Annuelle' : 'Nouvelle Inscription Annuelle'"
+  [title]="isEditing() ? 'Modifier l’Inscription' : (currentMode() === 'choice' ? 'Enregistrement d’une Inscription' : (currentMode() === 'nouvelle' ? 'Nouvelle Inscription (Premier enregistrement)' : 'Réinscription par Matricule'))"
   size="lg"
   (closed)="onClose()"
 >
-  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="inscription-form-body">
-    <div class="form-grid">
-      <!-- Catéchumène Selection / Search -->
-      <div class="form-group full-width">
-        <label class="form-label" for="cat_search">
-          Catéchumène à inscrire <span class="required">*</span>
-        </label>
+  <div class="modal-content-wrapper">
 
-        @if (!isEditing()) {
-          <div class="cat-search-box">
-            <input
-              id="cat_search"
-              type="text"
-              class="form-control"
-              placeholder="Rechercher par nom, matricule ou code..."
-              [value]="catechumeneSearch()"
-              (input)="onCatSearchChange($event)"
-            />
-            <div class="cat-dropdown-list">
-              @for (c of getFilteredCatechumenes(); track c.id) {
-                <div
-                  class="cat-dropdown-item"
-                  [class.is-selected]="form.controls.catechumene_id.value === c.id"
-                  (click)="selectCatechumene(c.id)"
-                >
-                  <span class="cat-nom">{{ c.nom }} {{ c.prenoms }}</span>
-                  <span class="cat-code">{{ c.matricule || c.code_catechumene }}</span>
-                </div>
-              } @empty {
-                <div class="cat-dropdown-empty">Aucun catéchumène trouvé.</div>
-              }
+    <!-- ======================================================== -->
+    <!-- 1. ÉCRAN DE CHOIX : NOUVELLE INSCRIPTION VS RÉINSCRIPTION -->
+    <!-- ======================================================== -->
+    @if (!isEditing() && currentMode() === 'choice') {
+      <div class="choice-container animate-fade-in">
+        <p class="choice-intro">
+          Sélectionnez le type de démarche à effectuer au guichet :
+        </p>
+
+        <div class="choice-cards-grid">
+          <!-- Carte 1 : NOUVELLE INSCRIPTION -->
+          <div class="choice-card choice-nouvelle" (click)="selectChoice('nouvelle')">
+            <div class="choice-icon-box">
+              <i class="bi bi-person-plus-fill"></i>
+            </div>
+            <div class="choice-body">
+              <h3 class="choice-title">Nouvelle Inscription</h3>
+              <p class="choice-desc">
+                Première inscription pour ce fidèle sur la paroisse. Création complète de la fiche catéchumène avec génération automatique d'un <strong>Matricule unique</strong>.
+              </p>
+              <div class="choice-action-badge">
+                <span>Créer le dossier</span>
+                <i class="bi bi-arrow-right"></i>
+              </div>
             </div>
           </div>
-        }
 
-        <!-- Affichage du catéchumène sélectionné -->
-        @if (getSelectedCatechumene(); as selCat) {
-          <div class="selected-cat-banner">
-            <i class="bi bi-person-check-fill"></i>
-            <div>
-              <strong>{{ selCat.nom }} {{ selCat.prenoms }}</strong>
-              <span> &bull; Matricule : {{ selCat.matricule || selCat.code_catechumene }} &bull; Né(e) le {{ selCat.date_naissance | date:'dd/MM/yyyy' }}</span>
+          <!-- Carte 2 : RÉINSCRIPTION -->
+          <div class="choice-card choice-reinscription" (click)="selectChoice('reinscription')">
+            <div class="choice-icon-box">
+              <i class="bi bi-arrow-repeat"></i>
+            </div>
+            <div class="choice-body">
+              <h3 class="choice-title">Réinscription</h3>
+              <p class="choice-desc">
+                Le catéchumène possède déjà un dossier ou un <strong>Matricule</strong>. Recherche rapide de sa fiche, actualisation des coordonnées et affectation pour la nouvelle année.
+              </p>
+              <div class="choice-action-badge">
+                <span>Rechercher par Matricule</span>
+                <i class="bi bi-arrow-right"></i>
+              </div>
             </div>
           </div>
-        }
+        </div>
 
-        @if (form.controls.catechumene_id.touched && form.controls.catechumene_id.errors?.['required']) {
-          <span class="field-error">Veuillez sélectionner un catéchumène.</span>
-        }
-      </div>
-
-      <!-- Année Pastorale -->
-      <div class="form-group">
-        <label class="form-label" for="annee_id">
-          Année Pastorale <span class="required">*</span>
-        </label>
-        <select id="annee_id" formControlName="annee_catechese_id" class="form-control">
-          <option value="">Sélectionner une année</option>
-          @for (a of annees(); track a.id) {
-            <option [value]="a.id">{{ a.libelle }} {{ a.est_active ? '(Active)' : '' }}</option>
-          }
-        </select>
-        @if (form.controls.annee_catechese_id.touched && form.controls.annee_catechese_id.errors?.['required']) {
-          <span class="field-error">L'année pastorale est obligatoire.</span>
-        }
-      </div>
-
-      <!-- Section -->
-      <div class="form-group">
-        <label class="form-label" for="sec_id">Section</label>
-        <select id="sec_id" formControlName="section_id" class="form-control">
-          <option value="">Toutes / Non spécifiée</option>
-          @for (s of sections(); track s.id) {
-            <option [value]="s.id">{{ s.nom }}</option>
-          }
-        </select>
-      </div>
-
-      <!-- Niveau -->
-      <div class="form-group">
-        <label class="form-label" for="niv_id">
-          Niveau de Formation <span class="required">*</span>
-        </label>
-        <select id="niv_id" formControlName="niveau_id" class="form-control">
-          <option value="">Sélectionner un niveau</option>
-          @for (n of getFilteredNiveaux(); track n.id) {
-            <option [value]="n.id">{{ n.nom }}</option>
-          }
-        </select>
-        @if (form.controls.niveau_id.touched && form.controls.niveau_id.errors?.['required']) {
-          <span class="field-error">Le niveau est obligatoire.</span>
-        }
-      </div>
-
-      <!-- Classe / Groupe -->
-      <div class="form-group">
-        <label class="form-label" for="cls_id">Classe d'affectation</label>
-        <select id="cls_id" formControlName="classe_id" class="form-control">
-          <option value="">Non affecté(e) pour le moment</option>
-          @for (cl of getFilteredClasses(); track cl.id) {
-            <option [value]="cl.id">{{ cl.nom }} (Capacité: {{ cl.capacite_max || 'N/A' }})</option>
-          }
-        </select>
-      </div>
-
-      <!-- CEB -->
-      <div class="form-group">
-        <label class="form-label" for="ceb_id">CEB d'appartenance</label>
-        <select id="ceb_id" formControlName="ceb_id" class="form-control">
-          <option value="">Aucune CEB</option>
-          @for (ceb of cebs(); track ceb.id) {
-            <option [value]="ceb.id">{{ ceb.nom }}</option>
-          }
-        </select>
-      </div>
-
-      <!-- Mouvement -->
-      <div class="form-group">
-        <label class="form-label" for="mouv_id">Mouvement Paroissial</label>
-        <select id="mouv_id" formControlName="mouvement_id" class="form-control">
-          <option value="">Aucun mouvement</option>
-          @for (m of mouvements(); track m.id) {
-            <option [value]="m.id">{{ m.nom }}</option>
-          }
-        </select>
-      </div>
-
-      <!-- Statut inscription -->
-      <div class="form-group">
-        <label class="form-label" for="stat_ins">Statut de l'inscription</label>
-        <select id="stat_ins" formControlName="statut_inscription" class="form-control">
-          <option value="inscrit">Inscrit (En cours)</option>
-          <option value="valide">Validé (Classe confirmée)</option>
-          <option value="en_attente">En attente de paiement</option>
-          <option value="abandon">Abandon</option>
-        </select>
-      </div>
-
-      <!-- Frais Payés Switch -->
-      <div class="form-group">
-        <label class="form-label">Frais d'inscription</label>
-        <div class="toggle-card">
-          <label class="switch">
-            <input type="checkbox" formControlName="frais_inscription_payes" />
-            <span class="slider round"></span>
-          </label>
-          <span class="toggle-text">
-            {{ form.controls.frais_inscription_payes.value ? 'Frais acquittés / payés' : 'Frais en attente de paiement' }}
-          </span>
+        <div class="choice-footer">
+          <app-button type="button" variant="ghost" (clicked)="onClose()">
+            Annuler
+          </app-button>
         </div>
       </div>
+    }
 
-      <!-- Observation -->
-      <div class="form-group full-width">
-        <label class="form-label" for="obs">Observations / Remarques</label>
-        <input
-          id="obs"
-          type="text"
-          formControlName="observation"
-          class="form-control"
-          placeholder="Remarques éventuelles sur le parcours ou la situation pastorale..."
-        />
+    <!-- ======================================================== -->
+    <!-- 2. FORMULAIRE : NOUVELLE INSCRIPTION (CRÉATION COMPLÈTE)   -->
+    <!-- ======================================================== -->
+    @if (!isEditing() && currentMode() === 'nouvelle') {
+      <form [formGroup]="nouvelleForm" (ngSubmit)="submitNouvelle()" class="inscription-form animate-fade-in">
+        <div class="form-banner info-banner">
+          <i class="bi bi-info-circle-fill"></i>
+          <span>Renseignez les informations du catéchumène. Un matricule officiel lui sera automatiquement attribué.</span>
+        </div>
+
+        <!-- Section A : Identité -->
+        <div class="form-section">
+          <div class="section-header">
+            <i class="bi bi-person-vcard"></i>
+            <h4>1. Identité du Catéchumène</h4>
+          </div>
+
+          <!-- Photo de profil du catéchumène (Bouton sous la photo) -->
+          <div class="photo-upload-container">
+            <div class="photo-preview-box">
+              @if (photoPreview()) {
+                <img [src]="photoPreview()" alt="Photo de profil" class="photo-img-preview" />
+                <button type="button" class="btn-remove-photo" (click)="removePhoto()" title="Supprimer la photo">
+                  <i class="bi bi-x"></i>
+                </button>
+              } @else {
+                <div class="photo-placeholder">
+                  <i class="bi bi-person-fill"></i>
+                </div>
+              }
+            </div>
+            <label class="photo-upload-btn">
+              <i class="bi bi-cloud-arrow-up-fill"></i>
+              <span>Charger une photo</span>
+              <input type="file" accept="image/*" (change)="onPhotoFileChange($event)" hidden />
+            </label>
+            <span class="photo-help">Format JPG, PNG (Max 2 Mo)</span>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="n_nom">Nom <span class="required">*</span></label>
+              <input id="n_nom" type="text" formControlName="nom" class="form-control" placeholder="Ex: KOUASSI" />
+              @if (nouvelleForm.controls.nom.touched && nouvelleForm.controls.nom.invalid) {
+                <span class="field-error">Le nom est obligatoire.</span>
+              }
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="n_prenoms">Prénoms <span class="required">*</span></label>
+              <input id="n_prenoms" type="text" formControlName="prenoms" class="form-control" placeholder="Ex: Jean-Baptiste" />
+              @if (nouvelleForm.controls.prenoms.touched && nouvelleForm.controls.prenoms.invalid) {
+                <span class="field-error">Les prénoms sont obligatoires.</span>
+              }
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="n_sexe">Sexe <span class="required">*</span></label>
+              <select id="n_sexe" formControlName="sexe" class="form-control">
+                <option value="M">Masculin (M)</option>
+                <option value="F">Féminin (F)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="n_date_naiss">Date de Naissance <span class="required">*</span></label>
+              <input id="n_date_naiss" type="date" formControlName="date_naissance" class="form-control" />
+              @if (nouvelleForm.controls.date_naissance.touched && nouvelleForm.controls.date_naissance.invalid) {
+                <span class="field-error">La date de naissance est obligatoire.</span>
+              }
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="n_lieu_naiss">Lieu de Naissance</label>
+              <input id="n_lieu_naiss" type="text" formControlName="lieu_naissance" class="form-control" placeholder="Ex: Cocody, Abidjan" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="n_tel">Téléphone du Catéchumène</label>
+              <input id="n_tel" type="tel" formControlName="telephone" class="form-control" placeholder="Ex: 0700000000" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="n_domicile">Domicile / Quartier</label>
+              <input id="n_domicile" type="text" formControlName="domicile" class="form-control" placeholder="Ex: Angré 8ème Tranche" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="n_scolaire">Classe Scolaire / Profession</label>
+              <input id="n_scolaire" type="text" formControlName="classe_scolaire" class="form-control" placeholder="Ex: CM2 / Étudiant..." />
+            </div>
+          </div>
+        </div>
+
+        <!-- Section B : Parents & Filiation -->
+        <div class="form-section">
+          <div class="section-header">
+            <i class="bi bi-people"></i>
+            <h4>2. Filiation & Contacts Parents / Tuteurs</h4>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="n_pere">Nom & Prénoms du Père</label>
+              <input id="n_pere" type="text" formControlName="nom_pere" class="form-control" placeholder="Nom du père" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="n_tel_pere">Téléphone du Père</label>
+              <input id="n_tel_pere" type="tel" formControlName="telephone_pere" class="form-control" placeholder="Contact père" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="n_mere">Nom & Prénoms de la Mère</label>
+              <input id="n_mere" type="text" formControlName="nom_mere" class="form-control" placeholder="Nom de la mère" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="n_tel_mere">Téléphone de la Mère</label>
+              <input id="n_tel_mere" type="tel" formControlName="telephone_mere" class="form-control" placeholder="Contact mère" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="n_tuteur">Nom du Tuteur Légal</label>
+              <input id="n_tuteur" type="text" formControlName="nom_tuteur" class="form-control" placeholder="Si différent des parents" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="n_tel_tuteur">Téléphone du Tuteur</label>
+              <input id="n_tel_tuteur" type="tel" formControlName="telephone_tuteur" class="form-control" placeholder="Contact tuteur" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Section C : Sacrements -->
+        <div class="form-section">
+          <div class="section-header">
+            <i class="bi bi-shield-check"></i>
+            <h4>3. Situation Sacramentelle</h4>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group full-width">
+              <label class="styled-checkbox-card" [class.checked]="nouvelleForm.controls.est_baptise.value">
+                <input type="checkbox" formControlName="est_baptise" class="styled-checkbox-input" />
+                <div class="styled-checkbox-indicator">
+                  <i class="bi bi-check-lg"></i>
+                </div>
+                <div class="styled-checkbox-meta">
+                  <span class="styled-checkbox-title">Baptême déjà reçu</span>
+                  <span class="styled-checkbox-desc">Le catéchumène a déjà reçu le sacrement du Baptême</span>
+                </div>
+              </label>
+            </div>
+
+            @if (nouvelleForm.controls.est_baptise.value) {
+              <div class="form-group">
+                <label class="form-label" for="n_date_bap">Date de Baptême</label>
+                <input id="n_date_bap" type="date" formControlName="date_bapteme" class="form-control" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="n_paroisse_bap">Paroisse de Baptême</label>
+                <input id="n_paroisse_bap" type="text" formControlName="paroisse_bapteme" class="form-control" placeholder="Ex: St Jean de Cocody" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="n_carnet_bap">N° Carnet de Baptême</label>
+                <input id="n_carnet_bap" type="text" formControlName="num_carnet_bapteme" class="form-control" placeholder="Ex: BAP-2018-045" />
+              </div>
+            }
+
+            <div class="form-group">
+              <label class="form-label" for="n_parrain">Nom du Parrain / Marraine</label>
+              <input id="n_parrain" type="text" formControlName="nom_parrain" class="form-control" placeholder="Nom du parrain ou marraine" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="n_tel_parrain">Téléphone Parrain / Marraine</label>
+              <input id="n_tel_parrain" type="tel" formControlName="telephone_parrain" class="form-control" placeholder="Contact" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Section D : Affectation & Inscription Pastorale -->
+        <div class="form-section">
+          <div class="section-header">
+            <i class="bi bi-journal-bookmark"></i>
+            <h4>4. Orientation & Affectation Pastorale</h4>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="n_sec">Section</label>
+              <select id="n_sec" formControlName="section_id" class="form-control">
+                <option value="">Sélectionner une section</option>
+                @for (s of sections(); track s.id) {
+                  <option [value]="s.id">{{ s.nom }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="n_niv">Niveau de Formation <span class="required">*</span></label>
+              <select id="n_niv" formControlName="niveau_id" class="form-control">
+                <option value="">Sélectionner un niveau</option>
+                @for (n of getFilteredNiveaux(nouvelleForm.controls.section_id.value); track n.id) {
+                  <option [value]="n.id">{{ n.nom }}</option>
+                }
+              </select>
+              @if (nouvelleForm.controls.niveau_id.touched && nouvelleForm.controls.niveau_id.invalid) {
+                <span class="field-error">Le niveau est obligatoire.</span>
+              }
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="n_cla">Classe</label>
+              <select id="n_cla" formControlName="classe_id" class="form-control">
+                <option value="">Toutes les classes / Non assignée</option>
+                @for (c of getFilteredClasses(nouvelleForm.controls.niveau_id.value); track c.id) {
+                  <option [value]="c.id">{{ c.nom }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="n_ceb">CEB de Résidence</label>
+              <select id="n_ceb" formControlName="ceb_id" class="form-control">
+                <option value="">Non affilié</option>
+                @for (ceb of cebs(); track ceb.id) {
+                  <option [value]="ceb.id">{{ ceb.nom }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="n_mouv">Mouvement / Groupe d'Action</label>
+              <select id="n_mouv" formControlName="mouvement_id" class="form-control">
+                <option value="">Aucun</option>
+                @for (m of mouvements(); track m.id) {
+                  <option [value]="m.id">{{ m.nom }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="n_statut">Statut d'Inscription <span class="required">*</span></label>
+              <select id="n_statut" formControlName="statut_inscription" class="form-control">
+                <option value="inscrit">Inscrit</option>
+                <option value="valide">Validé</option>
+                <option value="en_attente">En attente de confirmation</option>
+              </select>
+            </div>
+
+            <div class="form-group full-width">
+              <div class="payment-info-note">
+                <i class="bi bi-info-circle-fill"></i>
+                <span>La validation générera automatiquement un ordre de paiement en attente dans le module <strong>Opérations / Caisse</strong>.</span>
+              </div>
+            </div>
+
+            <div class="form-group full-width">
+              <label class="form-label" for="n_obs">Observation / Remarque</label>
+              <textarea id="n_obs" formControlName="observation" rows="2" class="form-control" placeholder="Observations particulières..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer Formulaire Nouvelle Inscription -->
+        <div class="modal-footer-actions">
+          <app-button type="button" variant="ghost" (clicked)="backToChoice()">
+            <i class="bi bi-arrow-left"></i>
+            <span>Changer de démarche</span>
+          </app-button>
+          <app-button type="submit" variant="primary" [loading]="isLoading()" [disabled]="nouvelleForm.invalid || isLoading()">
+            <i class="bi bi-check-lg"></i>
+            <span>Valider l'inscription</span>
+          </app-button>
+        </div>
+      </form>
+    }
+
+    <!-- ======================================================== -->
+    <!-- 3. PARCOURS : RÉINSCRIPTION PAR RECHERCHE MATRICULE       -->
+    <!-- ======================================================== -->
+    @if (!isEditing() && currentMode() === 'reinscription') {
+      <div class="reinscription-container animate-fade-in">
+        
+        <!-- Étape A : Recherche Matricule -->
+        <div class="matricule-search-card">
+          <label class="form-label" for="search_mat">
+            Saisissez le Matricule du Catéchumène <span class="required">*</span>
+          </label>
+          <div class="search-input-group">
+            <i class="bi bi-upc-scan input-icon"></i>
+            <input
+              id="search_mat"
+              type="text"
+              class="form-control matricule-input"
+              placeholder="Ex: CAT-2025-0012 ou nom..."
+              [ngModel]="searchMatricule()"
+              (ngModelChange)="searchMatricule.set($event)"
+              (keyup.enter)="onSearchMatricule()"
+            />
+            <app-button
+              type="button"
+              variant="primary"
+              [loading]="isSearchingMatricule()"
+              (clicked)="onSearchMatricule()"
+            >
+              <i class="bi bi-search"></i>
+              <span>Rechercher</span>
+            </app-button>
+          </div>
+
+          @if (searchMatriculeError()) {
+            <div class="search-error-msg">
+              <i class="bi bi-exclamation-circle-fill"></i>
+              <span>{{ searchMatriculeError() }}</span>
+            </div>
+          }
+        </div>
+
+        <!-- Étape B : Fiche Identité trouvée & Formulaire de Réinscription -->
+        @if (foundCatechumene(); as cat) {
+          <form [formGroup]="reinscriptionForm" (ngSubmit)="submitReinscription()" class="reinscription-form animate-fade-in">
+            
+            <!-- Carte Identité du Catéchumène -->
+            <div class="found-cat-card">
+              <div class="cat-card-header">
+                <div class="cat-avatar">
+                  <i class="bi bi-person-fill"></i>
+                </div>
+                <div class="cat-main-info">
+                  <h3 class="cat-name">{{ cat.nom }} {{ cat.prenoms }}</h3>
+                  <div class="cat-badges">
+                    <span class="badge-mat"><i class="bi bi-upc"></i> {{ cat.matricule || cat.code_catechumene }}</span>
+                    <span class="badge-info"><i class="bi bi-gender-ambiguous"></i> {{ cat.sexe === 'M' ? 'Masculin' : 'Féminin' }}</span>
+                    <span class="badge-info"><i class="bi bi-calendar3"></i> Né(e) le {{ cat.date_naissance | date:'dd/MM/yyyy' }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Coordonnées actualisables -->
+              <div class="cat-editable-coords">
+                <h5 class="sub-section-title"><i class="bi bi-pencil-square"></i> Mettre à jour les coordonnées si nécessaire :</h5>
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label class="form-label" for="r_tel">Téléphone</label>
+                    <input id="r_tel" type="tel" formControlName="telephone" class="form-control" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="r_dom">Domicile / Quartier</label>
+                    <input id="r_dom" type="text" formControlName="domicile" class="form-control" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="r_scol">Classe Scolaire / Emploi</label>
+                    <input id="r_scol" type="text" formControlName="classe_scolaire" class="form-control" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="r_tut">Téléphone Tuteur</label>
+                    <input id="r_tut" type="tel" formControlName="telephone_tuteur" class="form-control" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Nouvelle Affectation pour la nouvelle année -->
+            <div class="form-section">
+              <div class="section-header">
+                <i class="bi bi-mortarboard"></i>
+                <h4>Affectation pour la nouvelle année pastorale</h4>
+              </div>
+
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="form-label" for="r_sec">Section</label>
+                  <select id="r_sec" formControlName="section_id" class="form-control">
+                    <option value="">Sélectionner une section</option>
+                    @for (s of sections(); track s.id) {
+                      <option [value]="s.id">{{ s.nom }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="r_niv">Nouveau Niveau <span class="required">*</span></label>
+                  <select id="r_niv" formControlName="niveau_id" class="form-control">
+                    <option value="">Sélectionner un niveau</option>
+                    @for (n of getFilteredNiveaux(reinscriptionForm.controls.section_id.value); track n.id) {
+                      <option [value]="n.id">{{ n.nom }}</option>
+                    }
+                  </select>
+                  @if (reinscriptionForm.controls.niveau_id.touched && reinscriptionForm.controls.niveau_id.invalid) {
+                    <span class="field-error">Le niveau est obligatoire.</span>
+                  }
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="r_cla">Classe Affectée</label>
+                  <select id="r_cla" formControlName="classe_id" class="form-control">
+                    <option value="">Non assignée</option>
+                    @for (c of getFilteredClasses(reinscriptionForm.controls.niveau_id.value); track c.id) {
+                      <option [value]="c.id">{{ c.nom }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="r_ceb">CEB de Résidence</label>
+                  <select id="r_ceb" formControlName="ceb_id" class="form-control">
+                    <option value="">Non affilié</option>
+                    @for (ceb of cebs(); track ceb.id) {
+                      <option [value]="ceb.id">{{ ceb.nom }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="r_mouv">Mouvement</label>
+                  <select id="r_mouv" formControlName="mouvement_id" class="form-control">
+                    <option value="">Aucun</option>
+                    @for (m of mouvements(); track m.id) {
+                      <option [value]="m.id">{{ m.nom }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="r_statut">Statut</label>
+                  <select id="r_statut" formControlName="statut_inscription" class="form-control">
+                    <option value="inscrit">Inscrit</option>
+                    <option value="valide">Validé</option>
+                    <option value="en_attente">En attente</option>
+                  </select>
+                </div>
+
+                <div class="form-group full-width">
+                  <div class="payment-info-note">
+                    <i class="bi bi-info-circle-fill"></i>
+                    <span>La réinscription générera automatiquement un ordre de paiement en attente dans le module <strong>Opérations / Caisse</strong>.</span>
+                  </div>
+                </div>
+
+                <div class="form-group full-width">
+                  <label class="form-label" for="r_obs">Observation</label>
+                  <textarea id="r_obs" formControlName="observation" rows="2" class="form-control" placeholder="Observations..."></textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- Footer Réinscription -->
+            <div class="modal-footer-actions">
+              <app-button type="button" variant="ghost" (clicked)="backToChoice()">
+                <i class="bi bi-arrow-left"></i>
+                <span>Changer de démarche</span>
+              </app-button>
+              <app-button type="submit" variant="primary" [loading]="isLoading()" [disabled]="reinscriptionForm.invalid || isLoading()">
+                <i class="bi bi-check-lg"></i>
+                <span>Valider la réinscription</span>
+              </app-button>
+            </div>
+          </form>
+        }
+
+        @if (!foundCatechumene()) {
+          <div class="choice-footer">
+            <app-button type="button" variant="ghost" (clicked)="backToChoice()">
+              <i class="bi bi-arrow-left"></i>
+              <span>Retour au choix</span>
+            </app-button>
+          </div>
+        }
       </div>
-    </div>
+    }
 
-    <!-- Modal Footer Actions -->
-    <div class="modal-footer-actions">
-      <app-button type="button" variant="ghost" (clicked)="onClose()" [disabled]="isLoading()">
-        Annuler
-      </app-button>
-      <app-button type="submit" variant="primary" [loading]="isLoading()" [disabled]="form.invalid || isLoading()">
-        <i class="bi bi-check-lg"></i>
-        <span>{{ isEditing() ? 'Mettre à jour l’inscription' : 'Valider l’inscription annuelle' }}</span>
-      </app-button>
-    </div>
-  </form>
+    <!-- ======================================================== -->
+    <!-- 4. FORMULAIRE : MODIFICATION D'UNE INSCRIPTION EXISTANTE   -->
+    <!-- ======================================================== -->
+    @if (isEditing() && inscriptionToEdit(); as item) {
+      <form [formGroup]="editForm" (ngSubmit)="submitEdit()" class="inscription-form animate-fade-in">
+        <div class="form-banner info-banner">
+          <i class="bi bi-pencil-square"></i>
+          <span>Modification de l'inscription de <strong>{{ item.catechumene?.nom }} {{ item.catechumene?.prenoms }}</strong></span>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label" for="e_sec">Section</label>
+            <select id="e_sec" formControlName="section_id" class="form-control">
+              <option value="">Sélectionner une section</option>
+              @for (s of sections(); track s.id) {
+                <option [value]="s.id">{{ s.nom }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="e_niv">Niveau <span class="required">*</span></label>
+            <select id="e_niv" formControlName="niveau_id" class="form-control">
+              <option value="">Sélectionner un niveau</option>
+              @for (n of getFilteredNiveaux(editForm.controls.section_id.value); track n.id) {
+                <option [value]="n.id">{{ n.nom }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="e_cla">Classe</label>
+            <select id="e_cla" formControlName="classe_id" class="form-control">
+              <option value="">Non assignée</option>
+              @for (c of getFilteredClasses(editForm.controls.niveau_id.value); track c.id) {
+                <option [value]="c.id">{{ c.nom }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="e_ceb">CEB</label>
+            <select id="e_ceb" formControlName="ceb_id" class="form-control">
+              <option value="">Non affilié</option>
+              @for (ceb of cebs(); track ceb.id) {
+                <option [value]="ceb.id">{{ ceb.nom }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="e_mouv">Mouvement</label>
+            <select id="e_mouv" formControlName="mouvement_id" class="form-control">
+              <option value="">Aucun</option>
+              @for (m of mouvements(); track m.id) {
+                <option [value]="m.id">{{ m.nom }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="e_statut">Statut</label>
+            <select id="e_statut" formControlName="statut_inscription" class="form-control">
+              <option value="inscrit">Inscrit</option>
+              <option value="valide">Validé</option>
+              <option value="en_attente">En attente</option>
+              <option value="abandon">Abandon</option>
+            </select>
+          </div>
+
+          <div class="form-group full-width">
+            <div class="payment-info-note">
+              <i class="bi bi-info-circle-fill"></i>
+              <span>Les paiements et reçus sont consultables et gérés dans le module <strong>Opérations / Caisse</strong>.</span>
+            </div>
+          </div>
+
+          <div class="form-group full-width">
+            <label class="form-label" for="e_obs">Observation</label>
+            <textarea id="e_obs" formControlName="observation" rows="2" class="form-control"></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer-actions">
+          <app-button type="button" variant="ghost" (clicked)="onClose()">Annuler</app-button>
+          <app-button type="submit" variant="primary" [loading]="isLoading()" [disabled]="editForm.invalid || isLoading()">
+            <i class="bi bi-check-lg"></i>
+            <span>Enregistrer les modifications</span>
+          </app-button>
+        </div>
+      </form>
+    }
+
+  </div>
 </app-dialog>

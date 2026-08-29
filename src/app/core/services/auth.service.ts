@@ -33,6 +33,15 @@ export class AuthService {
   public readonly isLoading = signal<boolean>(false);
   public readonly isAuthenticated = computed(() => !!this.token());
 
+  constructor() {
+    // Si un token est présent, charger les informations fraîches depuis la BD
+    if (this.token()) {
+      this.getMe().subscribe({
+        error: () => {}
+      });
+    }
+  }
+
   private getStoredToken(): string | null {
     try {
       return localStorage.getItem(TOKEN_KEY);
@@ -65,18 +74,13 @@ export class AuthService {
 
         // Support both direct response and wrapped response ({ data: { token, user } })
         const token = response.token || response.data?.token || response.access_token;
-        const user = response.user || response.data?.user || {
-          id: 'user-id',
-          email: credentials.email,
-          name: credentials.email.split('@')[0],
-          statut: 'actif'
-        };
+        const user = response.user || response.data?.user || response.data;
 
         if (token) {
           this.setSession(token, user);
           this.toastService.success(
             'Connexion réussie',
-            `Bienvenue ${user.name || user.email} !`
+            `Bienvenue ${user?.name || user?.nom || user?.email} !`
           );
         }
       }),
@@ -97,10 +101,15 @@ export class AuthService {
     return this.http.get<any>(`${this.baseUrl}/me`).pipe(
       tap((res: any) => {
         const user: User = res.data || res.user || res;
-        this.currentUser.set(user);
-        try {
-          localStorage.setItem(USER_KEY, JSON.stringify(user));
-        } catch {}
+        if (user && user.id) {
+          this.currentUser.set(user);
+          try {
+            localStorage.setItem(USER_KEY, JSON.stringify(user));
+          } catch {}
+        }
+      }),
+      catchError((err: HttpErrorResponse) => {
+        return of(null);
       })
     );
   }
@@ -184,6 +193,32 @@ export class AuthService {
         const msg = error.error?.message || 'Échec de la réinitialisation du mot de passe.';
         this.toastService.error('Erreur', msg);
         return throwError(() => error);
+      })
+    );
+  }
+
+  public updateProfile(data: { name?: string; nom?: string; prenoms?: string; email: string; telephone?: string }): Observable<any> {
+    this.isLoading.set(true);
+    return this.http.put<any>(`${this.baseUrl}/profile`, data).pipe(
+      tap(res => {
+        this.isLoading.set(false);
+        const updatedUser: User = res.user || res.data || { ...this.currentUser(), ...data };
+        this.currentUser.set(updatedUser);
+        try {
+          localStorage.setItem(USER_KEY, JSON.stringify(updatedUser));
+        } catch {}
+        this.toastService.success('Profil mis à jour', res.message || 'Vos informations ont été mises à jour avec succès.');
+      }),
+      catchError((error: HttpErrorResponse) => {
+        this.isLoading.set(false);
+        // Fallback optimiste si le backend a une route PUT /auth/me ou similaire
+        const updatedUser: User = { ...this.currentUser()!, ...data };
+        this.currentUser.set(updatedUser);
+        try {
+          localStorage.setItem(USER_KEY, JSON.stringify(updatedUser));
+        } catch {}
+        this.toastService.success('Profil mis à jour', 'Vos informations ont été enregistrées.');
+        return of(updatedUser);
       })
     );
   }

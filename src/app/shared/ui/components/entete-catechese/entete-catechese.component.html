@@ -1,0 +1,75 @@
+<div class="entete-catechese-root" [class.with-border]="showBorder()">
+  <!-- Ligne Supérieure : Logo Paroisse (Gauche) | Infos Paroisse (Centre) | Logo Catéchèse (Droite) -->
+  <div class="entete-top-row">
+    <!-- 1. Logo Paroisse (Haut à gauche) -->
+    <div class="logo-side logo-left">
+      @if (logoParoisse()) {
+        <img [src]="logoParoisse()" alt="Logo Paroisse" class="logo-img" />
+      } @else {
+        <div class="logo-fallback">
+          <i class="bi bi-shield-shaded"></i>
+        </div>
+      }
+    </div>
+
+    <!-- 2. Informations de la Paroisse (Haut au centre - l'un en dessous de l'autre) -->
+    <div class="parish-center-block">
+      <!-- 1. Nom de la Paroisse -->
+      <h1 class="line-nom-paroisse">{{ nomParoisse() | uppercase }}</h1>
+
+      <!-- 2. Diocèse -->
+      <h2 class="line-diocese">{{ diocese() | uppercase }}</h2>
+
+      <!-- 3. Doyenné -->
+      @if (doyenne()) {
+        <h3 class="line-doyenne">{{ doyenne() | uppercase }}</h3>
+      }
+
+      <!-- 4. Commune ou Quartier - Adresse -->
+      <p class="line-localisation">{{ localisation() }}</p>
+
+      <!-- 5. Téléphone -->
+      @if (telephone()) {
+        <p class="line-telephone">Tél : {{ telephone() }}</p>
+      }
+
+      <div class="catechese-badge">
+        <span>COMMISSION PAROISSIALE DE CATÉCHÈSE</span>
+      </div>
+    </div>
+
+    <!-- 3. Logo Catéchèse (Haut à droite) -->
+    <div class="logo-side logo-right">
+      @if (logoCatechese()) {
+        <img [src]="logoCatechese()" alt="Logo Catéchèse" class="logo-img" />
+      } @else {
+        <div class="logo-fallback">
+          <i class="bi bi-book-half"></i>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Titre Spécifique du Document / Fiche / Relevé (si fourni) -->
+  @if (titreDocument()) {
+    <div class="document-title-block">
+      <h2 class="doc-main-title">{{ titreDocument() | uppercase }}</h2>
+
+      <div class="doc-meta-row">
+        @if (sousTitre()) {
+          <span class="meta-item">
+            <strong>{{ sousTitre() }}</strong>
+          </span>
+        }
+        @if (classeNom()) {
+          <span class="meta-item">
+            Classe : <strong>{{ classeNom() }}</strong>
+          </span>
+        }
+        <span class="meta-item">
+          Année Pastorale : <strong>{{ displayAnnee() }}</strong>
+        </span>
+      </div>
+    </div>
+  }
+</div>

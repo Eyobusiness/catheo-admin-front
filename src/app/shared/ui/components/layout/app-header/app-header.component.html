@@ -23,7 +23,6 @@
         <line x1="4" y1="18" x2="18" y2="18"></line>
       </svg>
     </button>
-
   </div>
 
   <!-- Header Global Search -->
@@ -51,16 +50,16 @@
     </app-button>
 
     <!-- Notifications Menu -->
-    <div class="header-dropdown-container">
+    <div class="header-dropdown-container notifications-menu-container">
       <button
         type="button"
         class="header-action-btn"
-        (click)="toggleNotifications()"
-        aria-label="Notifications médicales"
+        (click)="toggleNotifications($event)"
+        aria-label="Notifications pastorales"
       >
         <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
         @if (notificationCount() > 0) {
-          <span class="notification-dot">{{ notificationCount() }}</span>
+          <span class="notification-dot">{{ notificationCount() > 99 ? '99+' : notificationCount() }}</span>
         }
       </button>
 
@@ -79,57 +78,80 @@
           </div>
 
           <div class="dropdown-list">
-            <div class="notification-item unread">
-              <div class="notif-badge danger">
-                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            @for (notif of recentNotifications(); track notif.id) {
+              <div
+                class="notification-item"
+                [class.unread]="!notif.is_read"
+                (click)="onNotificationClick(notif)"
+                role="button"
+                tabindex="0"
+              >
+                <div
+                  class="notif-badge"
+                  [class.danger]="notif.couleur === 'danger' || notif.type === 'alerte'"
+                  [class.warning]="notif.couleur === 'warning' || notif.type === 'rappel'"
+                  [class.success]="notif.couleur === 'success' || notif.type === 'activite'"
+                  [class.info]="notif.couleur === 'info' || notif.couleur === 'primary' || (!notif.couleur && notif.type !== 'alerte' && notif.type !== 'rappel' && notif.type !== 'activite')"
+                >
+                  @if (notif.couleur === 'danger' || notif.type === 'alerte') {
+                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                  } @else if (notif.couleur === 'warning' || notif.type === 'rappel') {
+                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                  } @else if (notif.couleur === 'success' || notif.type === 'activite') {
+                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  } @else {
+                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                  }
+                </div>
+                <div class="notif-content">
+                  <div class="notif-header-row">
+                    <p class="notif-title">{{ notif.titre }}</p>
+                    @if (!notif.is_read) {
+                      <span class="unread-bullet"></span>
+                    }
+                  </div>
+                  <p class="notif-desc">{{ notif.message }}</p>
+                  <span class="notif-time">
+                    @if (notif.created_at) {
+                      {{ notif.created_at | date:'dd/MM/yyyy HH:mm' }}
+                    } @else {
+                      Récemment
+                    }
+                  </span>
+                </div>
               </div>
-              <div class="notif-content">
-                <p class="notif-title">Examen Urgent Requis</p>
-                <p class="notif-desc">Angioscanner thoracique demandé en urgence.</p>
-                <span class="notif-time">Il y a 10 min</span>
+            } @empty {
+              <div class="notif-empty-state">
+                <svg viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                <p>Aucune notification pour le moment</p>
               </div>
-            </div>
+            }
+          </div>
 
-            <div class="notification-item unread">
-              <div class="notif-badge success">
-                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              </div>
-              <div class="notif-content">
-                <p class="notif-title">Compte-rendu Radiologique Signé</p>
-                <p class="notif-desc">Pr. Koné a validé l'IRM Cérébrale de Kouassi M.</p>
-                <span class="notif-time">Il y a 25 min</span>
-              </div>
-            </div>
-
-            <div class="notification-item">
-              <div class="notif-badge info">
-                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-              </div>
-              <div class="notif-content">
-                <p class="notif-title">Paiement Caisse</p>
-                <p class="notif-desc">Règlement enregistré pour 150 000 FCFA.</p>
-                <span class="notif-time">Il y a 1h</span>
-              </div>
-            </div>
+          <div class="dropdown-footer">
+            <button type="button" class="view-all-btn" (click)="goToNotificationsPage()">
+              Voir toutes les notifications
+              <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
           </div>
         </div>
       }
     </div>
 
     <!-- User Profile Dropdown -->
-    <div class="header-dropdown-container">
+    <div class="header-dropdown-container user-menu-container">
       <button
         type="button"
         class="user-profile-btn"
-        (click)="toggleUserMenu()"
+        (click)="toggleUserMenu($event)"
         aria-label="Menu utilisateur"
       >
         <div class="user-avatar">
           <span>{{ userInitials() }}</span>
         </div>
         <div class="user-info">
-          <span class="user-name">{{ user()?.name || 'Administrateur' }}</span>
-          <span class="user-role">Paroisse CIM</span>
+          <span class="user-name">{{ displayName() }}</span>
+          <span class="user-role">{{ userRole() }}</span>
         </div>
         <svg class="chevron-icon" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="6 9 12 15 18 9"></polyline></svg>
       </button>
@@ -137,13 +159,17 @@
       @if (showUserMenu()) {
         <div class="dropdown-menu user-menu">
           <div class="user-menu-header">
-            <p class="user-menu-name">{{ user()?.name || 'Administrateur' }}</p>
-            <p class="user-menu-email">{{ user()?.email || 'admin@catheo.ci' }}</p>
+            <p class="user-menu-name">{{ displayName() }}</p>
+            <p class="user-menu-email">{{ user()?.email }}</p>
           </div>
           <div class="user-menu-divider"></div>
-          <a href="#profile" class="user-menu-item" (click)="toggleUserMenu()">
+          <a routerLink="/mon-profil" class="user-menu-item" (click)="toggleUserMenu($event)">
             <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
             Mon Profil
+          </a>
+          <a routerLink="/notifications" class="user-menu-item" (click)="toggleUserMenu($event)">
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            Centre de Notifications
           </a>
           <div class="user-menu-divider"></div>
           <button type="button" class="user-menu-item text-danger w-full-btn" (click)="onLogout()">

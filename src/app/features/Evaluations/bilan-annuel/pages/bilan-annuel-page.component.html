@@ -1,0 +1,310 @@
+<div class="page-container animate-fade-in">
+  <!-- 1. En-tête de page -->
+  <div class="page-header">
+    <div class="header-titles">
+      <h2 class="page-title">
+        <i class="bi bi-file-earmark-text"></i>
+        <span>Bilans Annuels & Décisions Pastorales</span>
+      </h2>
+      <p class="page-subtitle">
+        Passez en revue l'assiduité calculée, saisissez les participations (Messe, CEB, Mouvement) et validez les passages.
+      </p>
+    </div>
+
+    <div class="header-actions">
+      @if (isValide()) {
+        <span class="badge-locked">
+          <i class="bi bi-lock-fill"></i>
+          Bilan validé & officiel
+        </span>
+      } @else {
+        <button
+          type="button"
+          class="btn btn-primary"
+          [disabled]="service.isSaving() || filteredBilans().length === 0"
+          (click)="openValiderModal()"
+        >
+          <i class="bi bi-check2-circle"></i>
+          <span>{{ service.isSaving() ? 'Validation...' : 'Valider le bilan officiel' }}</span>
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- 2. KPI / Stats Cards (affiché en haut au-dessus des filtres) -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-icon icon-total">
+        <i class="bi bi-people-fill"></i>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-value">{{ statsBilan().total }}</span>
+        <span class="kpi-label">Effectif Total</span>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon icon-admis">
+        <i class="bi bi-check-circle-fill"></i>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-value">{{ statsBilan().admis }} ({{ statsBilan().tauxReussite }}%)</span>
+        <span class="kpi-label">Admis / Passage</span>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon icon-ajourne">
+        <i class="bi bi-hourglass-split"></i>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-value">{{ statsBilan().ajournes }}</span>
+        <span class="kpi-label">Ajournés</span>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon icon-non-admis">
+        <i class="bi bi-x-circle-fill"></i>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-value">{{ statsBilan().nonAdmis }}</span>
+        <span class="kpi-label">Non Admis</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Barre de Filtres (positionnée en dessous des statistiques) -->
+  <div class="toolbar-card">
+    <div class="filter-group">
+      <label class="filter-label">Section :</label>
+      <select
+        class="filter-select"
+        [ngModel]="selectedSectionId()"
+        (ngModelChange)="onSectionChange($event)"
+      >
+        <option value="">Toutes les sections</option>
+        @for (s of sections(); track s.id) {
+          <option [value]="s.id">{{ s.nom }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label class="filter-label">Niveau :</label>
+      <select
+        class="filter-select"
+        [ngModel]="selectedNiveauId()"
+        (ngModelChange)="onNiveauChange($event)"
+      >
+        <option value="">Tous les niveaux</option>
+        @for (n of filteredNiveaux(); track n.id) {
+          <option [value]="n.id">{{ n.nom }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="filter-group flex-2">
+      <label class="filter-label">Classe :</label>
+      <select
+        class="filter-select highlight-select"
+        [ngModel]="selectedClasseId()"
+        (ngModelChange)="onClasseChange($event)"
+      >
+        <option value="">Toutes les classes</option>
+        @for (c of filteredClasses(); track c.id) {
+          <option [value]="c.id">
+            {{ c.nom }}
+            @if (c.niveau; as niv) {
+              ({{ niv.nom }})
+            }
+          </option>
+        }
+      </select>
+    </div>
+  </div>
+
+  <!-- 4. Tableau du Bilan Annuel -->
+  <div class="card-table">
+    <div class="table-header-info">
+      <div class="search-box table-search">
+        <i class="bi bi-search search-icon"></i>
+        <input
+          type="text"
+          placeholder="Rechercher..."
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)"
+        />
+      </div>
+
+      <div class="info-title">
+        <i class="bi bi-list-check"></i>
+        <span>
+          Bilan de la Classe :
+          <strong>{{ selectedClasseName() }}</strong>
+          ({{ filteredBilans().length }} élève(s))
+        </span>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Matricule</th>
+            <th>Nom & Prénoms</th>
+            <th class="text-center">Moyenne Gén.</th>
+            <th class="text-center">Présence Cours</th>
+            <th class="text-center">Messe (nb)</th>
+            <th class="text-center">CEB (nb)</th>
+            <th class="text-center">Mouvement (nb)</th>
+            <th>Décision Pastorale</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (b of filteredBilans(); track b.catechumeneId) {
+            <tr class="data-row" [class.is-admis]="b.decision === 'Admis'" [class.is-non-admis]="b.decision === 'Non admis'">
+              <td>
+                <span class="badge-matricule">{{ b.matricule || 'N/A' }}</span>
+              </td>
+              <td>
+                <strong class="student-name">{{ b.nomPrenoms }}</strong>
+              </td>
+              <td class="text-center">
+                <span class="font-bold note-badge" [class.note-good]="b.moyenneGenerale >= 10" [class.note-bad]="b.moyenneGenerale < 10">
+                  {{ b.moyenneGenerale }} / 20
+                </span>
+              </td>
+              <td class="text-center">
+                <span
+                  class="pct-badge"
+                  [class.pct-good]="b.presenceCoursPct >= 80"
+                  [class.pct-bad]="b.presenceCoursPct < 80"
+                  title="Compté automatiquement par le système"
+                >
+                  <i class="bi bi-cpu me-1"></i>{{ b.presenceCoursPct }}%
+                </span>
+              </td>
+              <td class="text-center">
+                <div class="number-input-wrapper">
+                  <input
+                    type="number"
+                    min="0"
+                    class="table-input-number"
+                    [disabled]="isValide()"
+                    [ngModel]="b.presenceMesse"
+                    (ngModelChange)="updateField(b.catechumeneId, 'presenceMesse', $event)"
+                    placeholder="0"
+                  />
+                  <span class="input-unit">fois</span>
+                </div>
+              </td>
+              <td class="text-center">
+                <div class="number-input-wrapper">
+                  <input
+                    type="number"
+                    min="0"
+                    class="table-input-number"
+                    [disabled]="isValide()"
+                    [ngModel]="b.presenceCEB"
+                    (ngModelChange)="updateField(b.catechumeneId, 'presenceCEB', $event)"
+                    placeholder="0"
+                  />
+                  <span class="input-unit">fois</span>
+                </div>
+              </td>
+              <td class="text-center">
+                <div class="number-input-wrapper">
+                  <input
+                    type="number"
+                    min="0"
+                    class="table-input-number"
+                    [disabled]="isValide()"
+                    [ngModel]="b.presenceMouvement"
+                    (ngModelChange)="updateField(b.catechumeneId, 'presenceMouvement', $event)"
+                    placeholder="0"
+                  />
+                  <span class="input-unit">fois</span>
+                </div>
+              </td>
+              <td>
+                <select
+                  class="decision-select"
+                  [class.decision-admis]="b.decision === 'Admis'"
+                  [class.decision-non-admis]="b.decision === 'Non admis'"
+                  [class.decision-ajourne]="b.decision === 'Ajourné'"
+                  [disabled]="isValide()"
+                  [ngModel]="b.decision"
+                  (ngModelChange)="updateField(b.catechumeneId, 'decision', $event)"
+                >
+                  @for (dec of optionsDecision; track dec) {
+                    <option [value]="dec">{{ dec }}</option>
+                  }
+                </select>
+              </td>
+            </tr>
+          }
+          @if (filteredBilans().length === 0) {
+            <tr>
+              <td colspan="8" class="empty-cell">
+                <i class="bi bi-folder-x empty-icon"></i>
+                <p>Aucun catéchumène trouvé pour ce bilan de classe.</p>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-footer">
+      <span>Total élèves : <strong>{{ filteredBilans().length }}</strong></span>
+      @if (!isValide()) {
+        <button
+          type="button"
+          class="btn btn-primary btn-sm"
+          [disabled]="service.isSaving() || filteredBilans().length === 0"
+          (click)="openValiderModal()"
+        >
+          <i class="bi bi-check2-circle"></i>
+          <span>Valider le bilan</span>
+        </button>
+      }
+    </div>
+  </div>
+</div>
+
+<!-- MODAL : CONFIRMATION VALIDATION BILAN -->
+@if (isValidateModalOpen()) {
+  <div class="modal-overlay" (click)="closeValiderModal()">
+    <div class="modal-card modal-sm" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title-group text-primary">
+          <i class="bi bi-shield-check"></i>
+          <h3>Validation Officielle du Bilan</h3>
+        </div>
+        <button type="button" class="btn-close" (click)="closeValiderModal()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <p>
+          Êtes-vous sûr de vouloir valider officiellement le bilan annuel de la classe
+          <strong>"{{ selectedClasseName() }}"</strong> pour l'année <strong>{{ currentAnneePastorale() }}</strong> ?
+        </p>
+        <div class="alert-box">
+          <i class="bi bi-info-circle-fill"></i>
+          <span>Une fois validées, les décisions pastorales et mentions seront verrouillées.</span>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeValiderModal()">Annuler</button>
+        <button type="button" class="btn btn-primary" [disabled]="service.isSaving()" (click)="confirmValiderBilan()">
+          <i class="bi bi-check-lg"></i>
+          <span>Confirmer et Verrouiller</span>
+        </button>
+      </div>
+    </div>
+  </div>
+}

@@ -13,6 +13,14 @@
   color: var(--neutral-600);
 }
 
+.icon-btn > * {
+  pointer-events: none;
+}
+
+.icon-btn:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
 .icon-btn-sm {
   width: 32px;
   height: 32px;

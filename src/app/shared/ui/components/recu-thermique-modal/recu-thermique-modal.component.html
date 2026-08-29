@@ -1,0 +1,211 @@
+<app-dialog
+  [isOpen]="isOpen()"
+  title="Reçu de Paiement & Inscription"
+  size="md"
+  (closed)="onClose()"
+>
+  @if (recuData(); as data) {
+    <div dialog-body class="thermal-modal-container">
+      <!-- Format Switcher Bar (Screen only) -->
+      <div class="format-switcher-bar no-print">
+        <span class="switcher-label"><i class="bi bi-printer"></i> Imprimante Thermique :</span>
+        <div class="format-buttons-group">
+          <button
+            type="button"
+            class="format-btn"
+            [class.active]="selectedFormat() === '58mm'"
+            (click)="setFormat('58mm')"
+          >
+            <i class="bi bi-receipt"></i>
+            <span>58 mm (POS)</span>
+          </button>
+          <button
+            type="button"
+            class="format-btn"
+            [class.active]="selectedFormat() === '80mm'"
+            (click)="setFormat('80mm')"
+          >
+            <i class="bi bi-receipt-cutoff"></i>
+            <span>80 mm (POS)</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Thermal Receipt Preview Wrapper -->
+      <div class="thermal-preview-viewport">
+        <div
+          class="thermal-receipt"
+          [class.format-58mm]="selectedFormat() === '58mm'"
+          [class.format-80mm]="selectedFormat() === '80mm'"
+          id="thermal-printable-receipt"
+        >
+          <!-- 1. Header Paroisse -->
+          <div class="t-header text-center">
+            @if (logoParoisse()) {
+              <div class="t-logo-wrap">
+                <img [src]="logoParoisse()" alt="Logo Paroisse" class="t-logo-img" />
+              </div>
+            }
+            <h1 class="t-church-name">{{ nomParoisse() }}</h1>
+            @if (diocese()) {
+              <p class="t-diocese">{{ diocese() }}</p>
+            }
+            <p class="t-dept">COMMISSION DIOCÉSAINE DE CATÉCHÈSE</p>
+            @if (localisation()) {
+              <p class="t-contact">{{ localisation() }}</p>
+            }
+            @if (telephone()) {
+              <p class="t-contact">Tél : {{ telephone() }}</p>
+            }
+          </div>
+
+          <div class="t-divider">================================</div>
+
+          <!-- 2. Titre & Référence Reçu -->
+          <div class="t-title-box text-center">
+            <h2 class="t-receipt-title">*** REÇU DE PAIEMENT ***</h2>
+            <div class="t-ref-row">
+              <span class="t-ref">RÉF : {{ data.reference }}</span>
+            </div>
+            <div class="t-date-row">
+              <span>Date : {{ (data.date || '') | date:'dd/MM/yyyy à HH:mm' }}</span>
+            </div>
+          </div>
+
+          <div class="t-divider">--------------------------------</div>
+
+          <!-- 3. Informations Catéchumène / Inscription -->
+          <div class="t-section">
+            <div class="t-row">
+              <span class="t-label">CATÉCHUMÈNE :</span>
+            </div>
+            <div class="t-row t-val-bold">
+              <span>{{ data.catechumene_nom | uppercase }}</span>
+            </div>
+
+            @if (data.catechumene_matricule) {
+              <div class="t-row">
+                <span class="t-label">Matricule :</span>
+                <span class="t-val">{{ data.catechumene_matricule }}</span>
+              </div>
+            }
+
+            @if (data.classe_nom) {
+              <div class="t-row">
+                <span class="t-label">Classe :</span>
+                <span class="t-val t-val-bold">{{ data.classe_nom }}</span>
+              </div>
+            }
+
+            @if (data.niveau_nom) {
+              <div class="t-row">
+                <span class="t-label">Niveau :</span>
+                <span class="t-val">{{ data.niveau_nom }}</span>
+              </div>
+            }
+
+            <div class="t-row">
+              <span class="t-label">Année pastorale :</span>
+              <span class="t-val">{{ displayAnnee() }}</span>
+            </div>
+          </div>
+
+          <div class="t-divider">--------------------------------</div>
+
+          <!-- 4. Détail Règlement -->
+          <div class="t-section">
+            <div class="t-row">
+              <span class="t-label">MOTIF / OBJET :</span>
+            </div>
+            <div class="t-row">
+              <span class="t-val t-val-bold">{{ data.libelle }}</span>
+            </div>
+
+            <div class="t-row mt-1">
+              <span class="t-label">Mode règlement :</span>
+              <span class="t-val">{{ getModePaiementLabel(data.mode_paiement) }}</span>
+            </div>
+          </div>
+
+          <div class="t-divider">--------------------------------</div>
+
+          <!-- 5. Montants & Statut -->
+          <div class="t-amounts-box">
+            <div class="t-row t-total-row">
+              <span class="t-label">TOTAL DÛ :</span>
+              <span class="t-val">{{ data.montant_total | number:'1.0-0' }} F CFA</span>
+            </div>
+
+            <div class="t-row t-paid-row">
+              <span class="t-label">MONTANT REÇU :</span>
+              <span class="t-val t-val-bold">{{ (data.montant_recu || data.montant_paye) | number:'1.0-0' }} F CFA</span>
+            </div>
+
+            @if ((data.montant_rendu && data.montant_rendu > 0) || ((data.montant_recu || 0) > data.montant_total)) {
+              <div class="t-row t-rendu-row">
+                <span class="t-label">MONTANT RENDU :</span>
+                <span class="t-val t-val-bold">{{ (data.montant_rendu || ((data.montant_recu || 0) - data.montant_total)) | number:'1.0-0' }} F CFA</span>
+              </div>
+            }
+
+            <div class="t-row t-rest-row">
+              <span class="t-label">RESTE À PAYER :</span>
+              <span class="t-val">{{ data.montant_restant | number:'1.0-0' }} F CFA</span>
+            </div>
+
+            <div class="t-row t-status-row">
+              <span class="t-label">STATUT :</span>
+              <span class="t-val t-val-bold">
+                @if (data.montant_restant <= 0 && data.montant_paye > 0) {
+                  [ ENTIÈREMENT SOLDÉ ]
+                } @else if (data.montant_paye > 0) {
+                  [ PAIEMENT PARTIEL ]
+                } @else {
+                  [ EN ATTENTE ]
+                }
+              </span>
+            </div>
+          </div>
+
+          @if (data.notes) {
+            <div class="t-divider">--------------------------------</div>
+            <div class="t-notes">
+              <span class="t-label">Notes :</span>
+              <span class="t-val">{{ data.notes }}</span>
+            </div>
+          }
+
+          <div class="t-divider">================================</div>
+
+          <!-- 6. Pied de page du ticket -->
+          <div class="t-footer text-center">
+            <p class="t-sign">Émis par : {{ data.caissier_nom || 'Secrétariat Catéchèse' }}</p>
+            <p class="t-mention">« Conservez précieusement ce ticket comme reçu de paiement officiel »</p>
+            <p class="t-blessing">✝ Que le Seigneur vous bénisse ✝</p>
+            <div class="t-cut-line">----------------- COUPER ICI -----------------</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Modal Footer Actions (projected cleanly) -->
+  <div dialog-footer class="thermal-footer-actions no-print">
+    <app-button
+      type="button"
+      variant="ghost"
+      (clicked)="onClose()"
+    >
+      Fermer
+    </app-button>
+
+    <app-button
+      type="button"
+      variant="primary"
+      (clicked)="printReceipt()"
+    >
+      <i class="bi bi-printer-fill"></i>
+      <span>Imprimer Ticket ({{ selectedFormat() }})</span>
+    </app-button>
+  </div>
+</app-dialog>

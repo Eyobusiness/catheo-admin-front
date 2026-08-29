@@ -7,7 +7,7 @@ import { AppPagination } from '../../../../../shared/ui/components/tables/app-pa
 
 @Component({
   selector: 'app-preinscription-table',
-  imports: [CommonModule, DatePipe, AppIconButton, AppButton, AppPagination],
+  imports: [CommonModule, DatePipe, AppIconButton, AppPagination],
   templateUrl: './preinscription-table.component.html',
   styleUrl: './preinscription-table.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

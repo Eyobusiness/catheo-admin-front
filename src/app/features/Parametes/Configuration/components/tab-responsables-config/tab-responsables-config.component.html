@@ -93,7 +93,7 @@
                     <span class="full-name">
                       {{ resp.nom_prenoms }}
                     </span>
-                    <span class="sub-text">{{ resp.titre_fonction }}</span>
+                    <span class="sub-text">{{ resp.fonction || resp.titre_fonction }}</span>
                   </div>
                 </div>
               </td>
@@ -102,7 +102,7 @@
               <td>
                 <span class="fonction-badge">
                   <i class="bi bi-person-badge"></i>
-                  {{ resp.titre_fonction }}
+                  {{ resp.fonction || resp.titre_fonction }}
                 </span>
               </td>
 

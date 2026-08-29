@@ -16,44 +16,28 @@
         type="text"
         formControlName="titre"
         class="form-control"
-        placeholder="Titre"
+        placeholder="Titre de l'activité ou célébration"
       />
       @if (form.controls.titre.touched && form.controls.titre.invalid) {
         <span class="field-error">Le titre est obligatoire (min. 3 caractères).</span>
       }
     </div>
 
-    <!-- Type d'événement & Année Pastorale (2 colonnes) -->
-    <div class="form-row col-2">
-      <div class="form-group">
-        <label class="form-label" for="type">
-          Type d'activité <span class="required">*</span>
-        </label>
-        <input
-          id="type"
-          type="text"
-          formControlName="type"
-          class="form-control"
-          placeholder="Type (ex: Récollection, Messe, Pèlerinage...)"
-        />
-        @if (form.controls.type.touched && form.controls.type.invalid) {
-          <span class="field-error">Le type d'activité est obligatoire.</span>
-        }
-      </div>
-
-      <div class="form-group">
-        <label class="form-label" for="annee_catechese_id">
-          Année Pastorale
-        </label>
-        <select id="annee_catechese_id" formControlName="annee_catechese_id" class="form-control">
-          <option value="">Sélectionner une année</option>
-          @for (annee of annees(); track annee.id) {
-            <option [value]="annee.id">
-              {{ annee.libelle }} {{ annee.est_active ? '(En cours)' : '' }}
-            </option>
-          }
-        </select>
-      </div>
+    <!-- Type d'activité (Pleine largeur) -->
+    <div class="form-group">
+      <label class="form-label" for="type">
+        Type d'activité <span class="required">*</span>
+      </label>
+      <input
+        id="type"
+        type="text"
+        formControlName="type"
+        class="form-control"
+        placeholder="Type (ex: Récollection, Messe des jeunes, Pèlerinage, Kermesse...)"
+      />
+      @if (form.controls.type.touched && form.controls.type.invalid) {
+        <span class="field-error">Le type d'activité est obligatoire.</span>
+      }
     </div>
 
     <!-- Date, Heure Début & Heure Fin (3 colonnes) -->
@@ -68,6 +52,9 @@
           formControlName="date"
           class="form-control"
         />
+        @if (form.controls.date.touched && form.controls.date.invalid) {
+          <span class="field-error">La date est obligatoire.</span>
+        }
       </div>
 
       <div class="form-group">
@@ -115,15 +102,12 @@
           Public Cible
         </label>
         <select id="cible_type" formControlName="cible_type" class="form-control">
-          <option value="Tous">Tous (Toute la paroisse)</option>
-          <option value="Catéchumènes">Tous les Catéchumènes</option>
-          <option value="Animateurs">Animateurs / Catéchistes</option>
-          <option value="Parents">Parents des catéchumènes</option>
+          <option value="Tous">Tous (Catéchumènes & Animateurs)</option>
+          <option value="Catéchumènes">Catéchumènes</option>
+          <option value="Animateurs">Animateurs</option>
+          <option value="Section">Section spécifique</option>
           <option value="Niveau">Niveau spécifique</option>
           <option value="Classe">Classe spécifique</option>
-          <option value="Section">Section</option>
-          <option value="CEB">CEB</option>
-          <option value="Mouvement">Mouvement / Groupe</option>
         </select>
       </div>
 
@@ -132,12 +116,228 @@
           Statut
         </label>
         <select id="statut" formControlName="statut" class="form-control">
-          <option value="Planifié">Planifié (À venir)</option>
-          <option value="Réalisé">Réalisé (Effectué)</option>
+          <option value="Planifié">Planifié </option>
+          <option value="Réalisé">Réalisé</option>
           <option value="Annulé">Annulé</option>
         </select>
       </div>
     </div>
+
+    <!-- Conditions Dynamiques selon le Public Cible -->
+    @if (form.controls.cible_type.value === 'Tous') {
+      <div class="target-info-card">
+        <i class="bi bi-people-fill"></i>
+        <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+          <strong>Activité globale</strong>
+          <span>Cette activité concerne l'ensemble des <strong>Catéchumènes</strong> et l'ensemble des <strong>Animateurs</strong>.</span>
+        </div>
+      </div>
+    }
+
+    @if (form.controls.cible_type.value === 'Animateurs') {
+      <div class="target-selection-box">
+        <div class="target-section-block">
+          <div class="target-header-row">
+            <span class="target-section-title">
+              <i class="bi bi-person-badge"></i> Animateurs
+            </span>
+            <button type="button" class="btn-select-all" (click)="toggleAllAnimateurs()">
+              {{ selectedAnimateurIds().length === animateurs().length && animateurs().length > 0 ? 'Tout décocher' : 'Tout cocher' }}
+            </button>
+          </div>
+          <div class="checkbox-chips-grid">
+            @for (anim of animateurs(); track anim.id) {
+              <label class="chip-checkbox-label" [class.is-checked]="isAnimateurSelected(anim.id)">
+                <input
+                  type="checkbox"
+                  class="chip-checkbox-control"
+                  [checked]="isAnimateurSelected(anim.id)"
+                  (change)="toggleAnimateur(anim.id)"
+                />
+                <span>{{ anim.nom }} {{ anim.prenoms }}</span>
+              </label>
+            } @empty {
+              <span class="empty-chip-note">Aucun catéchiste enregistré</span>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (form.controls.cible_type.value === 'Catéchumènes') {
+      <div class="target-selection-box">
+        <!-- Sections -->
+        <div class="target-section-block">
+          <div class="target-header-row">
+            <span class="target-section-title">
+              <i class="bi bi-collection"></i> Sections concernées
+            </span>
+            <button type="button" class="btn-select-all" (click)="toggleAllSections()">
+              {{ selectedSectionIds().length === sections().length && sections().length > 0 ? 'Tout décocher' : 'Tout cocher' }}
+            </button>
+          </div>
+          <div class="checkbox-chips-grid">
+            @for (sec of sections(); track sec.id) {
+              <label class="chip-checkbox-label" [class.is-checked]="isSectionSelected(sec.id)">
+                <input
+                  type="checkbox"
+                  class="chip-checkbox-control"
+                  [checked]="isSectionSelected(sec.id)"
+                  (change)="toggleSection(sec.id)"
+                />
+                <span>{{ sec.nom }}</span>
+              </label>
+            } @empty {
+              <span class="empty-chip-note">Aucune section enregistrée</span>
+            }
+          </div>
+        </div>
+
+        <!-- Niveaux -->
+        <div class="target-section-block">
+          <div class="target-header-row">
+            <span class="target-section-title">
+              <i class="bi bi-layers"></i> Niveaux concernés
+            </span>
+            <button type="button" class="btn-select-all" (click)="toggleAllNiveaux()">
+              {{ selectedNiveauIds().length === niveaux().length && niveaux().length > 0 ? 'Tout décocher' : 'Tout cocher' }}
+            </button>
+          </div>
+          <div class="checkbox-chips-grid">
+            @for (niv of niveaux(); track niv.id) {
+              <label class="chip-checkbox-label" [class.is-checked]="isNiveauSelected(niv.id)">
+                <input
+                  type="checkbox"
+                  class="chip-checkbox-control"
+                  [checked]="isNiveauSelected(niv.id)"
+                  (change)="toggleNiveau(niv.id)"
+                />
+                <span>{{ niv.nom }}</span>
+              </label>
+            } @empty {
+              <span class="empty-chip-note">Aucun niveau enregistré</span>
+            }
+          </div>
+        </div>
+
+        <!-- Classes -->
+        <div class="target-section-block">
+          <div class="target-header-row">
+            <span class="target-section-title">
+              <i class="bi bi-mortarboard"></i> Classes concernées
+            </span>
+            <button type="button" class="btn-select-all" (click)="toggleAllClasses()">
+              {{ selectedClasseIds().length === classes().length && classes().length > 0 ? 'Tout décocher' : 'Tout cocher' }}
+            </button>
+          </div>
+          <div class="checkbox-chips-grid">
+            @for (cls of classes(); track cls.id) {
+              <label class="chip-checkbox-label" [class.is-checked]="isClasseSelected(cls.id)">
+                <input
+                  type="checkbox"
+                  class="chip-checkbox-control"
+                  [checked]="isClasseSelected(cls.id)"
+                  (change)="toggleClasse(cls.id)"
+                />
+                <span>{{ cls.nom }}</span>
+              </label>
+            } @empty {
+              <span class="empty-chip-note">Aucune classe enregistrée</span>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (form.controls.cible_type.value === 'Section') {
+      <div class="target-selection-box">
+        <div class="target-section-block">
+          <div class="target-header-row">
+            <span class="target-section-title">
+              <i class="bi bi-collection"></i> Sélectionner les Sections concernées
+            </span>
+            <button type="button" class="btn-select-all" (click)="toggleAllSections()">
+              {{ selectedSectionIds().length === sections().length && sections().length > 0 ? 'Tout décocher' : 'Tout cocher' }}
+            </button>
+          </div>
+          <div class="checkbox-chips-grid">
+            @for (sec of sections(); track sec.id) {
+              <label class="chip-checkbox-label" [class.is-checked]="isSectionSelected(sec.id)">
+                <input
+                  type="checkbox"
+                  class="chip-checkbox-control"
+                  [checked]="isSectionSelected(sec.id)"
+                  (change)="toggleSection(sec.id)"
+                />
+                <span>{{ sec.nom }}</span>
+              </label>
+            } @empty {
+              <span class="empty-chip-note">Aucune section disponible</span>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (form.controls.cible_type.value === 'Niveau') {
+      <div class="target-selection-box">
+        <div class="target-section-block">
+          <div class="target-header-row">
+            <span class="target-section-title">
+              <i class="bi bi-layers"></i> Sélectionner les Niveaux concernés
+            </span>
+            <button type="button" class="btn-select-all" (click)="toggleAllNiveaux()">
+              {{ selectedNiveauIds().length === niveaux().length && niveaux().length > 0 ? 'Tout décocher' : 'Tout cocher' }}
+            </button>
+          </div>
+          <div class="checkbox-chips-grid">
+            @for (niv of niveaux(); track niv.id) {
+              <label class="chip-checkbox-label" [class.is-checked]="isNiveauSelected(niv.id)">
+                <input
+                  type="checkbox"
+                  class="chip-checkbox-control"
+                  [checked]="isNiveauSelected(niv.id)"
+                  (change)="toggleNiveau(niv.id)"
+                />
+                <span>{{ niv.nom }}</span>
+              </label>
+            } @empty {
+              <span class="empty-chip-note">Aucun niveau disponible</span>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (form.controls.cible_type.value === 'Classe') {
+      <div class="target-selection-box">
+        <div class="target-section-block">
+          <div class="target-header-row">
+            <span class="target-section-title">
+              <i class="bi bi-mortarboard"></i> Sélectionner les Classes concernées
+            </span>
+            <button type="button" class="btn-select-all" (click)="toggleAllClasses()">
+              {{ selectedClasseIds().length === classes().length && classes().length > 0 ? 'Tout décocher' : 'Tout cocher' }}
+            </button>
+          </div>
+          <div class="checkbox-chips-grid">
+            @for (cls of classes(); track cls.id) {
+              <label class="chip-checkbox-label" [class.is-checked]="isClasseSelected(cls.id)">
+                <input
+                  type="checkbox"
+                  class="chip-checkbox-control"
+                  [checked]="isClasseSelected(cls.id)"
+                  (change)="toggleClasse(cls.id)"
+                />
+                <span>{{ cls.nom }}</span>
+              </label>
+            } @empty {
+              <span class="empty-chip-note">Aucune classe disponible</span>
+            }
+          </div>
+        </div>
+      </div>
+    }
 
     <!-- Description -->
     <div class="form-group">
@@ -149,7 +349,7 @@
         rows="2"
         formControlName="description"
         class="form-control"
-        placeholder="Description"
+        placeholder="Précisions sur l'organisation..."
       ></textarea>
     </div>
   </form>

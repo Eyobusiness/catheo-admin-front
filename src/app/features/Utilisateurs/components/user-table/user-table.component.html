@@ -11,16 +11,16 @@
       </tr>
     </thead>
     <tbody>
-      @for (user of users(); track user.id) {
+      @for (user of users(); track user.uuid || user.id) {
         <tr>
           <!-- User info -->
           <td>
             <div class="user-identity-cell">
               <div class="avatar-circle">
-                {{ getInitials(user.name) }}
+                {{ getInitials(user) }}
               </div>
               <div class="user-info">
-                <span class="user-name">{{ user.name }}</span>
+                <span class="user-name">{{ getDisplayName(user) }}</span>
                 <span class="user-email">
                   <i class="bi bi-envelope"></i>
                   {{ user.email }}
@@ -31,10 +31,10 @@
 
           <!-- Téléphone -->
           <td>
-            @if (user.telephone) {
+            @if (user.telephone || user.phone) {
               <span class="contact-line">
                 <i class="bi bi-telephone"></i>
-                {{ user.telephone }}
+                {{ user.telephone || user.phone }}
               </span>
             } @else {
               <span class="text-muted">—</span>
@@ -46,7 +46,7 @@
             @if (user.profil) {
               <span class="profil-badge" [class.system]="user.profil.is_system">
                 <i class="bi" [class.bi-shield-shaded]="user.profil.is_system" [class.bi-shield-check]="!user.profil.is_system"></i>
-                {{ user.profil.nom }}
+                {{ user.profil.nom || user.profil.name }}
               </span>
             } @else {
               <span class="badge-unassigned">Non assigné</span>
@@ -58,14 +58,13 @@
             <button
               type="button"
               class="status-toggle-pill"
-              [class.status-actif]="user.statut === 'actif'"
-              [class.status-inactif]="user.statut === 'inactif'"
-              [class.status-suspendu]="user.statut === 'suspendu'"
+              [class.status-actif]="user.statut === 'actif' || user.status === 'actif'"
+              [class.status-inactif]="user.statut === 'inactif' || user.status === 'inactif'"
               (click)="toggleNextStatus(user)"
-              title="Cliquer pour faire défiler le statut (Actif -> Inactif -> Suspendu)"
+              title="Cliquer pour basculer le statut (Actif / Inactif)"
             >
               <span class="status-dot"></span>
-              {{ user.statut === 'actif' ? 'Actif' : user.statut === 'inactif' ? 'Inactif' : 'Suspendu' }}
+              {{ (user.statut === 'actif' || user.status === 'actif') ? 'Actif' : 'Inactif' }}
             </button>
           </td>
 
@@ -73,7 +72,7 @@
           <td>
             <span class="date-cell">
               <i class="bi bi-calendar-event"></i>
-              {{ user.created_at }}
+              {{ user.created_at ? (user.created_at | date:'dd/MM/yyyy') : '—' }}
             </span>
           </td>
 

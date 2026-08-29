@@ -87,23 +87,65 @@
       </div>
     </div>
 
-    <!-- Options supplémentaires -->
+    <!-- Mot de passe Row -->
     @if (!isEditing()) {
-      <div class="checkbox-card">
-        <label class="checkbox-label" for="createUserAccount">
-          <input
-            id="createUserAccount"
-            type="checkbox"
-            formControlName="create_user_account"
-            class="checkbox-control"
-          />
-          <div class="checkbox-content">
-            <span class="checkbox-title">Créer un compte d'accès utilisateur</span>
-            <span class="checkbox-desc">Permet au catéchiste de se connecter à l'espace avec ses identifiants.</span>
-          </div>
+      <div class="form-group">
+        <label class="form-label" for="password">
+          Mot de passe <span class="required">*</span>
         </label>
+        <div class="password-input-wrapper">
+          <input
+            id="password"
+            [type]="showPassword() ? 'text' : 'password'"
+            formControlName="password"
+            class="form-control password-input"
+            placeholder="Mot de passe"
+            autocomplete="new-password"
+          />
+          <button
+            type="button"
+            class="btn-toggle-eye"
+            (click)="toggleShowPassword()"
+            [title]="showPassword() ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
+            aria-label="Afficher ou masquer le mot de passe"
+          >
+            <i [class]="showPassword() ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+          </button>
+        </div>
+        @if (form.controls.password.touched && form.controls.password.invalid) {
+          <span class="field-error">Le mot de passe est obligatoire (min. 6 caractères).</span>
+        }
       </div>
+
     } @else {
+      <div class="form-group">
+        <label class="form-label" for="editPassword">
+          Nouveau mot de passe <span class="optional-label">(Optionnel)</span>
+        </label>
+        <div class="password-input-wrapper">
+          <input
+            id="editPassword"
+            [type]="showPassword() ? 'text' : 'password'"
+            formControlName="password"
+            class="form-control password-input"
+            placeholder="Laisser vide pour ne pas modifier"
+            autocomplete="new-password"
+          />
+          <button
+            type="button"
+            class="btn-toggle-eye"
+            (click)="toggleShowPassword()"
+            [title]="showPassword() ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
+            aria-label="Afficher ou masquer le mot de passe"
+          >
+            <i [class]="showPassword() ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+          </button>
+        </div>
+        @if (form.controls.password.touched && form.controls.password.invalid) {
+          <span class="field-error">Le mot de passe doit comporter au moins 6 caractères.</span>
+        }
+      </div>
+
       <div class="form-group">
         <label class="form-label" for="statut">Statut du Catéchiste</label>
         <select id="statut" formControlName="statut" class="form-control">

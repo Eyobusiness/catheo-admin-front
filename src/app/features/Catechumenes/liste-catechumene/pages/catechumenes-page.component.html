@@ -8,17 +8,6 @@
         Gestion  des catéchumènes.
       </p>
     </div>
-
-    <div class="topbar-actions">
-      <app-button
-        variant="primary"
-        size="md"
-        icon="plus"
-        (clicked)="openCreateModal()"
-      >
-        Nouveau Catéchumène
-      </app-button>
-    </div>
   </section>
 
   <!-- KPI Badges Row -->
@@ -78,51 +67,50 @@
           }
         </div>
 
-        <!-- Status Filter -->
+        <!-- Section Filter -->
         <div class="select-wrapper">
-          <i class="bi bi-funnel select-prefix-icon"></i>
+          <i class="bi bi-diagram-3 select-prefix-icon"></i>
           <select
             class="filter-select-control"
-            [value]="statusFilter()"
-            (change)="onStatusFilterChange($event)"
+            [value]="sectionFilter()"
+            (change)="onSectionFilterChange($event)"
           >
-            <option value="">Tous les statuts</option>
-            <option value="actif">Actifs</option>
-            <option value="abandon">Abandons</option>
-            <option value="transfere">Transférés</option>
-            <option value="complete">Complétés</option>
+            <option value="">Toutes les sections</option>
+            @for (s of sections(); track s.id) {
+              <option [value]="s.id">{{ s.nom }}</option>
+            }
           </select>
           <i class="bi bi-chevron-down select-chevron-icon"></i>
         </div>
 
-        <!-- Sexe Filter -->
+        <!-- Niveau Filter -->
         <div class="select-wrapper">
-          <i class="bi bi-gender-ambiguous select-prefix-icon"></i>
+          <i class="bi bi-mortarboard select-prefix-icon"></i>
           <select
             class="filter-select-control"
-            [value]="sexeFilter()"
-            (change)="onSexeFilterChange($event)"
+            [value]="niveauFilter()"
+            (change)="onNiveauFilterChange($event)"
           >
-            <option value="">Tous les genres</option>
-            <option value="M">Masculin (M)</option>
-            <option value="F">Féminin (F)</option>
+            <option value="">Tous les niveaux</option>
+            @for (n of filteredNiveauxList(); track n.id) {
+              <option [value]="n.id">{{ n.nom }}</option>
+            }
           </select>
           <i class="bi bi-chevron-down select-chevron-icon"></i>
         </div>
 
-        <!-- Sacrements Filter -->
+        <!-- Classe Filter -->
         <div class="select-wrapper">
-          <i class="bi bi-shield select-prefix-icon"></i>
+          <i class="bi bi-building select-prefix-icon"></i>
           <select
             class="filter-select-control"
-            [value]="sacramentFilter()"
-            (change)="onSacramentFilterChange($event)"
+            [value]="classeFilter()"
+            (change)="onClasseFilterChange($event)"
           >
-            <option value="">Tous les sacrements</option>
-            <option value="baptise">Baptisés</option>
-            <option value="non_baptise">Non Baptisés</option>
-            <option value="communie">Communiés</option>
-            <option value="confirme">Confirmés</option>
+            <option value="">Toutes les classes</option>
+            @for (c of filteredClassesList(); track c.id) {
+              <option [value]="c.id">{{ c.nom }}</option>
+            }
           </select>
           <i class="bi bi-chevron-down select-chevron-icon"></i>
         </div>
@@ -144,28 +132,12 @@
     <!-- Table Sub-component -->
     <app-catechumene-table
       [catechumenes]="filteredCatechumenes()"
-      (createRequested)="openCreateModal()"
+      (createRequested)="redirectToInscription()"
       (viewRequested)="openDetailModal($event)"
-      (editRequested)="openEditModal($event)"
       (deleteRequested)="openDeleteModal($event)"
     />
   </app-card>
 </div>
-
-<!-- Form Modal -->
-<app-catechumene-form-modal
-  [isOpen]="isFormModalOpen()"
-  [isEditing]="isEditing()"
-  [catechumeneToEdit]="selectedItem()"
-  [cebs]="cebs()"
-  [annees]="annees()"
-  [sections]="sections()"
-  [niveaux]="niveaux()"
-  [classes]="classes()"
-  [isLoading]="isLoading()"
-  (formClosed)="closeModals()"
-  (formSubmitted)="handleFormSubmit($event)"
-/>
 
 <!-- Detail Modal with Parrains list & actions -->
 <app-catechumene-detail-modal
@@ -173,7 +145,6 @@
   [catechumene]="selectedItem()"
   [parrains]="parrains()"
   (modalClosed)="closeModals()"
-  (editRequested)="openEditModal($event)"
   (addParrainRequested)="openParrainModal($event)"
   (deleteParrainRequested)="handleDeleteParrain($event)"
 />

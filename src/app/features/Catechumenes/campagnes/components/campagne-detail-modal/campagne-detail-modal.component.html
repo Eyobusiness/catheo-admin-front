@@ -71,18 +71,31 @@
         </div>
       </div>
 
-      <!-- Liens publics & QR Code -->
-      @if (c.public_url || c.qr_code_url) {
-        <div class="public-links-section">
-          <h4 class="section-title"><i class="bi bi-share-fill"></i> Accès Public Paroissiens</h4>
-          @if (c.public_url) {
-            <div class="link-row">
-              <span class="link-label">Lien public :</span>
-              <a [href]="c.public_url" target="_blank" class="link-val">{{ c.public_url }}</a>
-            </div>
-          }
+      <!-- Liens publics & Accès direct -->
+      <div class="public-links-section">
+        <h4 class="section-title"><i class="bi bi-share-fill"></i> Accès Public Paroissiens</h4>
+        <div class="link-box-row">
+          <div class="link-display">
+            <i class="bi bi-link-45deg link-icon"></i>
+            <span class="link-val">{{ publicUrl() }}</span>
+          </div>
+          <div class="link-actions">
+            <button
+              type="button"
+              class="copy-btn"
+              [class.is-copied]="isCopied()"
+              (click)="copyLink()"
+              title="Copier le lien public"
+            >
+              <i [class]="'bi ' + (isCopied() ? 'bi-check2' : 'bi-clipboard')"></i>
+              <span>{{ isCopied() ? 'Copié !' : 'Copier' }}</span>
+            </button>
+            <a [href]="publicUrl()" target="_blank" class="open-link-btn" title="Tester le lien dans un nouvel onglet">
+              <i class="bi bi-box-arrow-up-right"></i>
+            </a>
+          </div>
         </div>
-      }
+      </div>
 
       <!-- Footer Actions -->
       <div class="modal-footer-actions">

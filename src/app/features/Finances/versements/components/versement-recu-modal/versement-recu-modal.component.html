@@ -1,0 +1,131 @@
+<app-dialog
+  [isOpen]="isOpen()"
+  title="Bordereau & Reçu de Versement"
+  size="lg"
+  (closed)="onClose()"
+>
+  @if (versement(); as vrs) {
+    <div dialog-body class="receipt-print-wrapper" id="versement-printable-area">
+      <!-- Receipt Header -->
+      <div class="receipt-header">
+        <div class="church-brand">
+          @if (logoParoisse()) {
+            <div class="church-logo-img-wrap">
+              <img [src]="logoParoisse()" alt="Logo de la Paroisse" class="church-logo-img" />
+            </div>
+          } @else {
+            <div class="church-logo-wrap">
+              <i class="bi bi-shield-shaded"></i>
+            </div>
+          }
+          <div class="church-details">
+            <h2 class="church-title">{{ nomParoisse() }}</h2>
+            <p class="church-sub">
+              @if (diocese()) {
+                <span>Diocèse de {{ diocese() }} • </span>
+              }
+              <span>Bureau de la Catéchèse</span>
+            </p>
+            @if (localisation()) {
+              <p class="church-loc">{{ localisation() }}</p>
+            }
+          </div>
+        </div>
+
+        <div class="receipt-meta-box">
+          <span class="meta-badge">REÇU OFFICIEL</span>
+          <span class="meta-ref">N° {{ vrs.reference }}</span>
+          <span class="meta-date">Date : {{ (vrs.created_at || vrs.updated_at || '') | date:'dd/MM/yyyy à HH:mm' }}</span>
+        </div>
+      </div>
+
+      <div class="receipt-divider"></div>
+
+      <!-- Title banner -->
+      <div class="receipt-banner">
+        <h3 class="banner-title">BORDEREAU DE VERSEMENT DE CAISSE</h3>
+        <span class="banner-subtitle">Justificatif officiel de remise de fonds de la catéchèse</span>
+      </div>
+
+      <!-- Main Receipt Content -->
+      <div class="receipt-body-grid">
+        <div class="receipt-item">
+          <span class="item-label"><i class="bi bi-calendar-check"></i> Période concernée</span>
+          <span class="item-value highlight">{{ vrs.periode_concernee }}</span>
+        </div>
+
+        <div class="receipt-item">
+          <span class="item-label"><i class="bi bi-person-badge"></i> Destinataire</span>
+          <span class="item-value highlight">{{ vrs.destinataire || 'Curé de la Paroisse' }}</span>
+        </div>
+
+        <div class="receipt-item">
+          <span class="item-label"><i class="bi bi-person-fill-check"></i> Déposant / Trésorier</span>
+          <span class="item-value">{{ vrs.effectue_par || vrs.user?.name || 'Trésorier de Catéchèse' }}</span>
+        </div>
+
+        <div class="receipt-item">
+          <span class="item-label"><i class="bi bi-credit-card-2-front"></i> Mode de règlement</span>
+          <span class="item-value">{{ getModeLabel(vrs.mode_remise) }}</span>
+        </div>
+      </div>
+
+      <!-- Total Amount Box -->
+      <div class="amount-banner-card">
+        <div class="amount-title">MONTANT TOTAL VERSÉ</div>
+        <div class="amount-value-display">
+          {{ vrs.montant_verse | number:'1.0-0' }} <span class="currency">FCFA</span>
+        </div>
+      </div>
+
+      @if (vrs.notes) {
+        <div class="receipt-notes-box">
+          <span class="notes-label"><i class="bi bi-info-circle"></i> Observations :</span>
+          <p class="notes-text">{{ vrs.notes }}</p>
+        </div>
+      }
+
+      <!-- Signature Section -->
+      <div class="signatures-row">
+        <div class="signature-box">
+          <span class="sign-label">Déposant</span>
+          <span class="sign-sub">« Bon pour versement »</span>
+          <div class="sign-space"></div>
+          <span class="sign-name">{{ vrs.effectue_par || vrs.user?.name || 'Signature' }}</span>
+        </div>
+
+        <div class="signature-box right">
+          <span class="sign-label">Le Réceptionnaire</span>
+          <span class="sign-sub">« Reçu le montant ci-dessus »</span>
+          <div class="sign-space"></div>
+          <span class="sign-name">{{ vrs.destinataire || 'Signature & Cachet' }}</span>
+        </div>
+      </div>
+
+      <!-- Footer watermark -->
+      <div class="receipt-footer">
+        <p>Document généré via le Système de Gestion Paroissiale {{ nomParoisse() }} — Fait foi de décharge de caisse.</p>
+      </div>
+    </div>
+  }
+
+  <!-- Footer Actions outside @if to project cleanly into dialog-footer slot -->
+  <div dialog-footer class="modal-footer-actions no-print">
+    <app-button
+      type="button"
+      variant="ghost"
+      (clicked)="onClose()"
+    >
+      Fermer
+    </app-button>
+
+    <app-button
+      type="button"
+      variant="primary"
+      (clicked)="printReceipt()"
+    >
+      <i class="bi bi-printer-fill"></i>
+      <span>Imprimer le Reçu</span>
+    </app-button>
+  </div>
+</app-dialog>

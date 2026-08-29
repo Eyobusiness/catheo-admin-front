@@ -1,0 +1,162 @@
+<div class="table-card-wrapper">
+  <div class="table-responsive">
+    <table class="medical-table">
+      <thead>
+        <tr>
+          <th class="col-date">Date & Heure</th>
+          <th class="col-titre">Titre de la leçon</th>
+          <th class="col-classe">Classe</th>
+          <th class="col-duree">Durée</th>
+          <th class="col-animateur">Animateur</th>
+          <th class="col-presences">Présences / Appel</th>
+          <th class="col-actions text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of paginatedSeances(); track item.id) {
+          <tr class="table-row">
+            <!-- Date -->
+            <td class="col-date">
+              <div class="date-cell">
+                <i class="bi bi-calendar-event"></i>
+                <span>{{ item.date_seance | date:'dd MMM yyyy' }}</span>
+              </div>
+            </td>
+
+            <!-- Titre de la leçon -->
+            <td class="col-titre">
+              <div class="titre-cell">
+                <span class="titre-main">{{ item.titre || item.titre_lecon }}</span>
+              </div>
+            </td>
+
+            <!-- Classe -->
+            <td class="col-classe">
+              <div class="classe-badge">
+                <i class="bi bi-door-open-fill"></i>
+                <span>{{ item.classe?.nom || 'Classe assignée' }}</span>
+                @if (item.classe?.niveau; as niv) {
+                  <span class="niveau-sub">({{ niv.nom }})</span>
+                }
+              </div>
+            </td>
+
+            <!-- Durée -->
+            <td class="col-duree">
+              <span class="duree-pill">
+                <i class="bi bi-clock"></i> {{ item.duree_minutes || 60 }} min
+              </span>
+            </td>
+
+            <!-- Animateur -->
+            <td class="col-animateur">
+              <div class="animateur-cell">
+                <i class="bi bi-person-badge"></i>
+                <span>
+                  @if (getAnimateurName(item); as animName) {
+                    {{ animName }}
+                  } @else {
+                    <span class="text-muted">Non assigné</span>
+                  }
+                </span>
+              </div>
+            </td>
+
+            <!-- Présences / Appel -->
+            <td class="col-presences">
+              <button
+                type="button"
+                class="presences-chip-btn"
+                [class.has-presences]="isAppelEffectue(item)"
+                [class.has-absents]="isAppelEffectue(item) && getAbsentCount(item) > 0"
+                (click)="onPresences(item)"
+                title="Cliquer pour faire l'appel ou modifier les présences"
+              >
+                <i [class]="isAppelEffectue(item) ? (getAbsentCount(item) > 0 ? 'bi bi-person-x-fill' : 'bi bi-check-circle-fill') : 'bi bi-clipboard-check'"></i>
+                @if (isAppelEffectue(item)) {
+                  @if (getAbsentCount(item) > 0) {
+                    <span><strong>{{ getAbsentCount(item) }}</strong> absent(s)</span>
+                  } @else {
+                    <span><strong>0</strong> absent</span>
+                  }
+                } @else {
+                  <span>Faire l'appel</span>
+                }
+              </button>
+            </td>
+
+            <!-- Actions -->
+            <td class="col-actions text-right">
+              <div class="actions-flex">
+                <!-- 1. Faire l'appel / Présences -->
+                <app-icon-button
+                  variant="success"
+                  size="sm"
+                  title="Faire l'appel et gérer les présences"
+                  ariaLabel="Présences"
+                  (clicked)="onPresences(item)"
+                >
+                  <i class="bi bi-check2-square"></i>
+                </app-icon-button>
+
+                <!-- 2. Modifier la séance -->
+                <app-icon-button
+                  variant="primary"
+                  size="sm"
+                  title="Modifier les informations de la séance"
+                  ariaLabel="Modifier"
+                  (clicked)="onEdit(item)"
+                >
+                  <i class="bi bi-pencil"></i>
+                </app-icon-button>
+
+                <!-- 3. Supprimer la séance -->
+                <app-icon-button
+                  variant="danger"
+                  size="sm"
+                  title="Supprimer la séance"
+                  ariaLabel="Supprimer"
+                  (clicked)="onDelete(item)"
+                >
+                  <i class="bi bi-trash3"></i>
+                </app-icon-button>
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="7" class="empty-cell">
+              <div class="empty-state-box">
+                <div class="empty-icon-wrap">
+                  <i class="bi bi-calendar-x"></i>
+                </div>
+                <h4 class="empty-title">Aucune séance trouvée</h4>
+                <p class="empty-desc">
+                  Créez et planifiez la première séance de catéchèse pour cette classe.
+                </p>
+                <app-button
+                  variant="primary"
+                  size="sm"
+                  icon="plus"
+                  (clicked)="createRequested.emit()"
+                >
+                  Nouvelle Séance
+                </app-button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (seances().length > 0) {
+    <app-pagination
+      [totalItems]="seances().length"
+      [currentPage]="currentPage()"
+      [pageSize]="pageSize()"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+    />
+  }
+</div>

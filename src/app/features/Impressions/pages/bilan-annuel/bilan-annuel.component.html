@@ -1,0 +1,129 @@
+<div class="print-page-wrapper">
+  <!-- Barre d'outils et de filtres (Masquée à l'impression) -->
+  <div class="print-toolbar no-print">
+    <div class="toolbar-top-row">
+      <div class="toolbar-left">
+        <h2 class="toolbar-page-title">Fiche de Bilan Annuel & Passage</h2>
+      </div>
+
+      <div class="toolbar-top-actions">
+        <div class="orientation-toggle">
+          <button type="button" [class.active]="orientation() === 'portrait'" (click)="toggleOrientation('portrait')">
+            <i class="bi bi-file-earmark"></i> Portrait
+          </button>
+          <button type="button" [class.active]="orientation() === 'landscape'" (click)="toggleOrientation('landscape')">
+            <i class="bi bi-file-earmark-landscape"></i> Paysage
+          </button>
+        </div>
+
+        <button type="button" class="btn-print" (click)="triggerPrint()">
+          <i class="bi bi-printer-fill"></i>
+          <span>Imprimer</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Filtres (Année supprimée, Section -> Niveau -> Classe dynamiques centrés) -->
+    <div class="toolbar-filters-row">
+      <div class="filter-group">
+        <label><i class="bi bi-diagram-3"></i> Section :</label>
+        <select [ngModel]="selectedSectionId()" (ngModelChange)="onSectionChange($event)">
+          <option value="tous">Toutes les sections</option>
+          @for (s of sections(); track s.id) { <option [value]="s.id">{{ s.nom }}</option> }
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label><i class="bi bi-layers"></i> Niveau :</label>
+        <select [ngModel]="selectedNiveauId()" (ngModelChange)="onNiveauChange($event)">
+          <option value="tous">Tous les niveaux</option>
+          @for (n of niveauxFiltres(); track n.id) { <option [value]="n.id">{{ n.nom }}</option> }
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label><i class="bi bi-mortarboard"></i> Classe :</label>
+        <select [ngModel]="selectedClasseId()" (ngModelChange)="selectedClasseId.set($event)">
+          <option value="tous">Toutes les classes</option>
+          @for (c of classesFiltrees(); track c.id) { <option [value]="c.id">{{ c.nom }}</option> }
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- DOCUMENT OFFICIEL IMPRIMABLE A4 -->
+  <div class="a4-document-container" [class.landscape-mode]="orientation() === 'landscape'">
+    <!-- En-tête officiel avec Logos Paroisse et Catéchèse -->
+    <app-header-paroisse-print customTitle="BILAN ANNUEL DE FIN D'ANNÉE"></app-header-paroisse-print>
+
+    <!-- Sous-titre officiel -->
+    <div class="doc-title-block">
+      <h2 class="doc-subtitle">{{ displayClasseTitle() }}</h2>
+    </div>
+
+    <!-- Tableau du bilan annuel avec les colonnes exactes demandées -->
+    <table class="official-print-table">
+      <thead>
+        <tr class="black-banner-row">
+          <th class="th-num" rowspan="2">N°</th>
+          <th class="th-name" rowspan="2">NOMS ET PRÉNOMS</th>
+          <th class="th-phone" rowspan="2">CONTACTS</th>
+          <th class="th-moyenne" rowspan="2">MOYENNE</th>
+          <th colspan="4" class="th-black-center">NOMBRE DE PRÉSENCES</th>
+          <th class="th-decision" rowspan="2">DÉCISION DU CONSEIL</th>
+        </tr>
+        <tr class="sub-cols-row">
+          <th class="th-pres">Cours</th>
+          <th class="th-pres">Messe</th>
+          <th class="th-pres">Mouvement</th>
+          <th class="th-pres">CEB</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (st of studentsList(); track st.id) {
+          <tr>
+            <td class="td-num">{{ st.num }}</td>
+            <td class="td-name">{{ st.nomPrenoms }}</td>
+            <td class="td-phone">{{ st.telephone }}</td>
+            <td class="td-moyenne"></td>
+            <td class="td-pres"></td>
+            <td class="td-pres"></td>
+            <td class="td-pres"></td>
+            <td class="td-pres"></td>
+            <td class="td-decision"></td>
+          </tr>
+        }
+        @if (studentsList().length === 0) {
+          @for (i of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]; track i) {
+            <tr>
+              <td class="td-num">{{ i }}</td>
+              <td class="td-name"></td>
+              <td class="td-phone">-</td>
+              <td class="td-moyenne"></td>
+              <td class="td-pres"></td>
+              <td class="td-pres"></td>
+              <td class="td-pres"></td>
+              <td class="td-pres"></td>
+              <td class="td-decision"></td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+
+    <!-- Signatures de part et d'autre -->
+    <div class="print-signatures-row">
+      <div class="sig-block sig-left">
+        <span class="sig-title">Le Catéchiste Responsable</span>
+        <div class="sig-space"></div>
+      </div>
+      <div class="sig-block sig-right">
+        <span class="sig-title">Le Curé / Prêtre Accompagnateur</span>
+        <div class="sig-space"></div>
+      </div>
+    </div>
+
+    <!-- Pied de page officiel -->
+    <app-footer-paroisse-print></app-footer-paroisse-print>
+  </div>
+</div>

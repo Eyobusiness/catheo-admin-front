@@ -2,11 +2,11 @@ import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } 
 import { AffectationAnimateurService } from '../services/affectation-animateur.service';
 import { AnimateurService } from '../../Animateurs/services/animateur.service';
 import { ClasseService } from '../../Classe/services/classe.service';
+import { AnneeCatecheseService } from '../../AnneesPastorales/services/annee-catechese.service';
 import { ToastService } from '../../../../core/services/toast.service';
 import {
   AffectationAnimateur,
   CreateAffectationAnimateurDto,
-  RoleAnimateur,
   UpdateAffectationAnimateurDto
 } from '../models/affectation-animateur.model';
 import { AppCard } from '../../../../shared/ui/components/layout/app-card/app-card.component';
@@ -32,6 +32,7 @@ export class AffectationsPageComponent implements OnInit {
   protected readonly affectationService = inject(AffectationAnimateurService);
   protected readonly animateurService = inject(AnimateurService);
   protected readonly classeService = inject(ClasseService);
+  protected readonly anneeService = inject(AnneeCatecheseService);
   protected readonly toastService = inject(ToastService);
 
   // Signals from Services
@@ -55,6 +56,7 @@ export class AffectationsPageComponent implements OnInit {
   });
 
   public ngOnInit(): void {
+    this.anneeService.getAll().subscribe();
     this.animateurService.getAll().subscribe();
     this.classeService.getAll().subscribe();
     this.affectationService.getAll().subscribe();
@@ -123,6 +125,7 @@ export class AffectationsPageComponent implements OnInit {
   protected closeFormModal(): void {
     this.isFormModalOpen.set(false);
     this.selectedAffectation.set(null);
+    this.isEditing.set(false);
   }
 
   protected handleView(aff: AffectationAnimateur): void {
@@ -145,24 +148,33 @@ export class AffectationsPageComponent implements OnInit {
           event.animateurLabel,
           event.classeLabel
         )
-        .subscribe(() => {
-          this.closeFormModal();
+        .subscribe({
+          next: () => this.closeFormModal(),
+          error: () => {}
         });
     } else {
+      const activeAnnee = this.anneeService.activeAnnee();
+      const payload: CreateAffectationAnimateurDto = {
+        ...(event.dto as CreateAffectationAnimateurDto),
+        annee_catechese_id: activeAnnee?.id
+      };
       this.affectationService
         .create(
-          event.dto as CreateAffectationAnimateurDto,
+          payload,
           event.animateurLabel,
           event.classeLabel
         )
-        .subscribe(() => {
-          this.closeFormModal();
+        .subscribe({
+          next: () => this.closeFormModal(),
+          error: () => {}
         });
     }
   }
 
-  protected handleToggleRole(event: { id: string; nextRole: RoleAnimateur }): void {
-    this.affectationService.patchRole(event.id, event.nextRole).subscribe();
+  protected handleToggleRole(event: { id: string; nextRole: string }): void {
+    this.affectationService.patchRole(event.id, event.nextRole).subscribe({
+      error: () => {}
+    });
   }
 
   protected openDeleteModal(aff: AffectationAnimateur): void {
@@ -178,8 +190,9 @@ export class AffectationsPageComponent implements OnInit {
   protected handleDeleteConfirm(): void {
     const target = this.itemToDelete();
     if (target) {
-      this.affectationService.delete(target.id).subscribe(() => {
-        this.closeDeleteModal();
+      this.affectationService.delete(target.id).subscribe({
+        next: () => this.closeDeleteModal(),
+        error: () => {}
       });
     }
   }

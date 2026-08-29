@@ -33,43 +33,13 @@ export class MouvementService {
   private readonly baseUrl = `${environment.apiUrl}/mouvements`;
 
   // Reactive state signals
-  public readonly mouvements = signal<Mouvement[]>([
-    {
-      id: '1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c91',
-      nom: 'Scouts et Guides de Côte d\'Ivoire',
-      responsable: 'Chef KOUADIO Ange',
-      telephone: '+225 07 44 55 66 77',
-      description: 'Mouvement d\'éducation populaire et de scoutisme catholique',
-      statut: 'Active',
-      statut_code: 'active',
-      total_inscriptions: 45,
-      created_at: '2026-08-01'
-    },
-    {
-      id: '2b3c4d5e-6f7a-8b9c-0d1e-2f3a4b5c6d92',
-      nom: 'Jeunesse Étudiante Catholique (JEC)',
-      responsable: 'Mlle KOFFI Estelle',
-      telephone: '+225 05 12 34 56 78',
-      description: 'Mouvement d\'apostolat des laïcs en milieu scolaire',
-      statut: 'Active',
-      statut_code: 'active',
-      total_inscriptions: 32,
-      created_at: '2026-08-05'
-    },
-    {
-      id: '3c4d5e6f-7a8b-9c0d-1e2f-3a4b5c6d7e93',
-      nom: 'Chœur Sainte Cécile',
-      responsable: 'Maître DIABATE Paul',
-      telephone: '+225 01 88 77 66 55',
-      description: 'Chorale paroissiale liturgique des jeunes',
-      statut: 'Active',
-      statut_code: 'active',
-      total_inscriptions: 26,
-      created_at: '2026-08-10'
-    }
-  ]);
+  public readonly mouvements = signal<Mouvement[]>([]);
 
   public readonly isLoading = signal<boolean>(false);
+
+  constructor() {
+    this.getAll().subscribe();
+  }
 
   public getAll(): Observable<Mouvement[]> {
     this.isLoading.set(true);

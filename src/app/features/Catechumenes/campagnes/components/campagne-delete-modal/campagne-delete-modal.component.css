@@ -1,3 +1,7 @@
+:host {
+  display: contents;
+}
+
 .delete-modal-body {
   display: flex;
   flex-direction: column;

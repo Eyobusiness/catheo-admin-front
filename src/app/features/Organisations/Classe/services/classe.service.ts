@@ -27,49 +27,13 @@ export class ClasseService {
   private readonly baseUrl = `${environment.apiUrl}/classes`;
 
   // Reactive state signals
-  public readonly classes = signal<Classe[]>([
-    {
-      id: '8f9e0d1c-2b3a-4f5e-6d7c-8b9a0f1e2d31',
-      nom: 'Saint Jean-Paul II',
-      capacite_max: 30,
-      statut: 'active',
-      niveau_id: '9f8e7d6c-5b4a-3f2e-1d0c-9b8a7f6e5d22',
-      effectif_actuel: 24,
-      niveau: {
-        id: '9f8e7d6c-5b4a-3f2e-1d0c-9b8a7f6e5d22',
-        nom: "1ère Année d'Initiation",
-        statut: 'Actif'
-      }
-    },
-    {
-      id: '7e8d9c0b-1a2f-3e4d-5c6b-7a8f9e0d1c32',
-      nom: 'Sainte Thérèse de Lisieux',
-      capacite_max: 25,
-      statut: 'active',
-      niveau_id: '8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c23',
-      effectif_actuel: 22,
-      niveau: {
-        id: '8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c23',
-        nom: "2ème Année d'Initiation",
-        statut: 'Actif'
-      }
-    },
-    {
-      id: '6d7c8b9a-0f1e-2d3c-4b5a-6f7e8d9c0b33',
-      nom: 'Saint Augustin',
-      capacite_max: 35,
-      statut: 'active',
-      niveau_id: '7b6a5c4d-3e2f-1a0b-9c8d-7e6f5a4b3c24',
-      effectif_actuel: 18,
-      niveau: {
-        id: '7b6a5c4d-3e2f-1a0b-9c8d-7e6f5a4b3c24',
-        nom: 'Préparation Confirmation (Ados)',
-        statut: 'Actif'
-      }
-    }
-  ]);
+  public readonly classes = signal<Classe[]>([]);
 
   public readonly isLoading = signal<boolean>(false);
+
+  constructor() {
+    this.getAll().subscribe();
+  }
 
   public getAll(): Observable<Classe[]> {
     this.isLoading.set(true);

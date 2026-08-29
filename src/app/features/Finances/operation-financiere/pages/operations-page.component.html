@@ -1,0 +1,135 @@
+<div class="operations-page">
+  <!-- Topbar Header -->
+  <section class="page-topbar">
+    <div class="topbar-headings">
+      
+      <h2 class="topbar-title">Opérations Financières</h2>
+      <p class="topbar-subtitle">
+        Suivez les créances.
+      </p>
+    </div>
+  </section>
+
+  <!-- KPI / Stats Summary Cards -->
+  <div class="kpi-grid">
+    <div class="kpi-card total">
+      <div class="kpi-icon"><i class="bi bi-receipt"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-number">{{ totalOperations() }}</span>
+        <span class="kpi-label">Total Opérations</span>
+      </div>
+    </div>
+
+    <div class="kpi-card warning">
+      <div class="kpi-icon"><i class="bi bi-hourglass-split"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-number">{{ totalEnAttente() }}</span>
+        <span class="kpi-label">En Attente de Paiement</span>
+      </div>
+    </div>
+
+    <div class="kpi-card info">
+      <div class="kpi-icon"><i class="bi bi-pie-chart"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-number">{{ totalPartiels() }}</span>
+        <span class="kpi-label">Paiements Partiels</span>
+      </div>
+    </div>
+
+    <div class="kpi-card success">
+      <div class="kpi-icon"><i class="bi bi-check2-circle"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-number">{{ totalPayes() }}</span>
+        <span class="kpi-label">Entièrement Payés</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Card with Table -->
+  <app-card title="Journal des Opérations & Paiements">
+    <!-- Filters Toolbar -->
+    <div class="filters-toolbar">
+      <div class="filters-left">
+        <!-- Search Input -->
+        <div class="search-input-wrapper">
+          <i class="bi bi-search search-icon"></i>
+          <input
+            type="text"
+            class="filter-search-control"
+            placeholder="Rechercher..."
+            [value]="searchQuery()"
+            (input)="onSearchChange($event)"
+          />
+          @if (searchQuery()) {
+            <button class="clear-search-btn" (click)="searchQuery.set('')" title="Effacer">
+              <i class="bi bi-x-circle-fill"></i>
+            </button>
+          }
+        </div>
+
+        <!-- Statut Filter -->
+        <div class="select-wrapper">
+          <i class="bi bi-funnel select-prefix-icon"></i>
+          <select
+            class="filter-select-control"
+            [value]="selectedStatutFilter()"
+            (change)="onStatutFilterChange($event)"
+          >
+            <option value="">Tous les statuts</option>
+            <option value="en_attente">En attente de règlement</option>
+            <option value="partiellement_paye">Partiellement payé</option>
+            <option value="paye">Entièrement réglé</option>
+            <option value="annule">Annulé</option>
+          </select>
+          <i class="bi bi-chevron-down select-chevron-icon"></i>
+        </div>
+      </div>
+
+      <div class="filters-right">
+        @if (hasActiveFilters()) {
+          <button class="reset-filter-btn" (click)="resetFilters()">
+            <i class="bi bi-arrow-counterclockwise"></i>
+            <span>Réinitialiser</span>
+          </button>
+        }
+        <span class="count-pill">
+          <strong>{{ filteredOperations().length }}</strong> opération(s)
+        </span>
+      </div>
+    </div>
+
+    <!-- Table Component -->
+    <app-operation-table
+      [operations]="filteredOperations()"
+      [isLoading]="isLoading()"
+      (encaisserRequested)="openEncaisserModal($event)"
+      (printReceiptRequested)="openRecuModal($event)"
+      (deleteRequested)="openDeleteModal($event)"
+    />
+  </app-card>
+</div>
+
+<!-- Encaisser Modal -->
+<app-operation-encaisser-modal
+  [isOpen]="isEncaisserModalOpen()"
+  [operation]="selectedOperation()"
+  [isLoading]="isLoading()"
+  (modalClosed)="closeModals()"
+  (encaissementSubmitted)="handleEncaissementSubmit($event)"
+/>
+
+<!-- Delete Modal -->
+<app-operation-delete-modal
+  [isOpen]="isDeleteModalOpen()"
+  [itemToDelete]="selectedOperation()"
+  [isLoading]="isLoading()"
+  (modalClosed)="closeModals()"
+  (confirmed)="handleDeleteConfirm()"
+/>
+
+<!-- Thermal Receipt Modal (58mm / 80mm) -->
+<app-recu-thermique-modal
+  [isOpen]="isRecuModalOpen()"
+  [recuData]="selectedRecuData()"
+  (modalClosed)="closeModals()"
+/>

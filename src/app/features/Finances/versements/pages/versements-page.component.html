@@ -1,0 +1,141 @@
+<div class="versements-page">
+  <!-- Topbar Header -->
+  <section class="page-topbar">
+    <div class="topbar-headings">
+      <h2 class="topbar-title">Versements Paroissiaux</h2>
+      <p class="topbar-subtitle">
+        Reversements périodiques des cotisations et recettes de catéchèse vers le Curé / la Paroisse.
+      </p>
+    </div>
+
+    <div class="topbar-actions">
+      <app-button
+        variant="primary"
+        size="md"
+        icon="plus"
+        (clicked)="openCreateModal()"
+      >
+        Nouveau Versement
+      </app-button>
+    </div>
+  </section>
+
+  <!-- KPI Cards -->
+  <div class="kpi-grid">
+    <!-- Total en Caisse -->
+    <div class="kpi-card total">
+      <div class="kpi-icon"><i class="bi bi-safe2"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-number">{{ kpis().total_en_caisse | number:'1.0-0' }} F</span>
+        <span class="kpi-label">Total Encaissé</span>
+      </div>
+    </div>
+
+    <!-- Total Déjà Versé -->
+    <div class="kpi-card success">
+      <div class="kpi-icon"><i class="bi bi-check-all"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-number">{{ kpis().total_deja_verse | number:'1.0-0' }} F</span>
+        <span class="kpi-label">Total Versé</span>
+      </div>
+    </div>
+
+    <!-- Reste à Reverser -->
+    <div class="kpi-card warning">
+      <div class="kpi-icon"><i class="bi bi-hourglass-split"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-number">{{ kpis().reste_a_reverser | number:'1.0-0' }} F</span>
+        <span class="kpi-label">Total à Reverser</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Card with Table -->
+  <app-card title="Historique des Versements Paroissiaux">
+    <!-- Filters Toolbar -->
+    <div class="filters-toolbar">
+      <div class="filters-left">
+        <!-- Search Input -->
+        <div class="search-input-wrapper">
+          <i class="bi bi-search search-icon"></i>
+          <input
+            type="text"
+            class="filter-search-control"
+            placeholder="Rechercher par référence, période, destinataire..."
+            [value]="searchQuery()"
+            (input)="onSearchChange($event)"
+          />
+          @if (searchQuery()) {
+            <button class="clear-search-btn" (click)="searchQuery.set('')" title="Effacer">
+              <i class="bi bi-x-circle-fill"></i>
+            </button>
+          }
+        </div>
+
+        <!-- Statut Filter -->
+        <div class="select-wrapper">
+          <i class="bi bi-funnel select-prefix-icon"></i>
+          <select
+            class="filter-select-control"
+            [value]="selectedStatutFilter()"
+            (change)="onStatutFilterChange($event)"
+          >
+            <option value="">Tous les statuts</option>
+            <option value="valide">Validé</option>
+            <option value="en_attente">En attente de confirmation</option>
+            <option value="annule">Annulé</option>
+          </select>
+          <i class="bi bi-chevron-down select-chevron-icon"></i>
+        </div>
+      </div>
+
+      <div class="filters-right">
+        @if (hasActiveFilters()) {
+          <button class="reset-filter-btn" (click)="resetFilters()">
+            <i class="bi bi-arrow-counterclockwise"></i>
+            <span>Réinitialiser</span>
+          </button>
+        }
+        <span class="count-pill">
+          <strong>{{ filteredVersements().length }}</strong> versement(s)
+        </span>
+      </div>
+    </div>
+
+    <!-- Table Component -->
+    <app-versement-table
+      [versements]="filteredVersements()"
+      [isLoading]="isLoading()"
+      (createRequested)="openCreateModal()"
+      (editRequested)="openEditModal($event)"
+      (deleteRequested)="openDeleteModal($event)"
+      (printRequested)="openRecuModal($event)"
+    />
+  </app-card>
+</div>
+
+<!-- Form Modal -->
+<app-versement-form-modal
+  [isOpen]="isFormModalOpen()"
+  [isEditing]="isEditing()"
+  [versementToEdit]="selectedVersement()"
+  [isLoading]="isLoading()"
+  (formClosed)="closeModals()"
+  (formSubmitted)="handleFormSubmit($event)"
+/>
+
+<!-- Delete Modal -->
+<app-versement-delete-modal
+  [isOpen]="isDeleteModalOpen()"
+  [itemToDelete]="selectedVersement()"
+  [isLoading]="isLoading()"
+  (modalClosed)="closeModals()"
+  (confirmed)="handleDeleteConfirm()"
+/>
+
+<!-- Printable Receipt Modal -->
+<app-versement-recu-modal
+  [isOpen]="isRecuModalOpen()"
+  [versement]="selectedVersementForRecu()"
+  (modalClosed)="closeRecuModal()"
+/>

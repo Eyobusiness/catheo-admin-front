@@ -1,0 +1,330 @@
+<div class="page-container animate-fade-in">
+  <!-- 1. En-tête de page -->
+  <div class="page-header">
+    <div class="header-titles">
+      <h2 class="page-title">
+        <i class="bi bi-pencil-square"></i>
+        <span>Saisie des Notes</span>
+      </h2>
+      <p class="page-subtitle">
+        Saisissez les notes de classe avec calcul automatique des moyennes et appréciations.
+      </p>
+    </div>
+
+    <div class="header-actions">
+      <button type="button" class="btn btn-secondary" (click)="openPrintModal()">
+        <i class="bi bi-printer"></i>
+        <span>Imprimer le Relevé</span>
+      </button>
+      <button
+        type="button"
+        class="btn btn-primary"
+        [disabled]="isSaving() || notesDraft().length === 0 || !selectedEvaluationId()"
+        (click)="submitNotes()"
+      >
+        <i class="bi bi-cloud-arrow-up-fill"></i>
+        <span>{{ isSaving() ? 'Enregistrement...' : 'Enregistrer les notes' }}</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- 2. KPI / Stats Cards (affiché en haut au-dessus des filtres) -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-icon icon-avg">
+        <i class="bi bi-graph-up-arrow"></i>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-value">{{ classeMoyenne() }} / 20</span>
+        <span class="kpi-label">Moyenne de la classe</span>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon icon-high">
+        <i class="bi bi-trophy-fill"></i>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-value">{{ highestNote() }} / {{ currentEvaluation()?.bareme || 20 }}</span>
+        <span class="kpi-label">Meilleure note</span>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon icon-low">
+        <i class="bi bi-arrow-down-circle"></i>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-value">{{ lowestNote() }} / {{ currentEvaluation()?.bareme || 20 }}</span>
+        <span class="kpi-label">Note la plus basse</span>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon icon-count">
+        <i class="bi bi-check2-all"></i>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-value">{{ enteredCount() }} / {{ totalElevesCount() }}</span>
+        <span class="kpi-label">Saisies effectuées</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Barre de Filtres & Recherche (positionnée en dessous des statistiques) -->
+  <div class="toolbar-card">
+    <div class="filter-group">
+      <label class="filter-label">Section :</label>
+      <select
+        class="filter-select"
+        [ngModel]="selectedSectionId()"
+        (ngModelChange)="onSectionChange($event)"
+      >
+        <option value="">Toutes les sections</option>
+        @for (s of sections(); track s.id) {
+          <option [value]="s.id">{{ s.nom }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label class="filter-label">Niveau :</label>
+      <select
+        class="filter-select"
+        [ngModel]="selectedNiveauId()"
+        (ngModelChange)="onNiveauChange($event)"
+      >
+        <option value="">Tous les niveaux</option>
+        @for (n of filteredNiveaux(); track n.id) {
+          <option [value]="n.id">{{ n.nom }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label class="filter-label">Classe :</label>
+      <select
+        class="filter-select highlight-select"
+        [ngModel]="selectedClasseId()"
+        (ngModelChange)="onClasseChange($event)"
+      >
+        <option value="">Toutes les classes</option>
+        @for (c of filteredClasses(); track c.id) {
+          <option [value]="c.id">
+            {{ c.nom }}
+            @if (c.niveau; as niv) {
+              ({{ niv.nom }})
+            }
+          </option>
+        }
+      </select>
+    </div>
+
+    <div class="filter-group flex-2">
+      <label class="filter-label">Évaluation * :</label>
+      <select
+        class="filter-select highlight-select"
+        [ngModel]="selectedEvaluationId()"
+        (ngModelChange)="onEvaluationChange($event)"
+      >
+        <option value="">Sélectionner une évaluation</option>
+        @for (ev of availableEvaluations(); track ev.id) {
+          <option [value]="ev.id">
+            {{ ev.nom }} ({{ ev.type }} • Coeff. {{ ev.coefficient }} • /{{ ev.bareme }})
+          </option>
+        }
+      </select>
+    </div>
+  </div>
+
+  <!-- 4. Tableau de Saisie des Notes -->
+  <div class="card-table">
+    <div class="table-header-info">
+      <div class="search-box table-search">
+        <i class="bi bi-search search-icon"></i>
+        <input
+          type="text"
+          placeholder="Rechercher..."
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)"
+        />
+      </div>
+
+      <div class="info-title">
+        <i class="bi bi-list-check"></i>
+        <span>
+          Liste des Catéchumènes —
+          <strong>{{ currentEvaluation()?.nom || 'Sélectionnez une évaluation' }}</strong>
+          @if (currentEvaluation(); as ev) {
+            <span class="bareme-tag">Barème : /{{ ev.bareme }} • Coeff : {{ ev.coefficient }}</span>
+          }
+        </span>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th style="width: 60px;">N°</th>
+            <th>Matricule</th>
+            <th>Nom & Prénoms</th>
+            <th style="width: 140px;" class="text-center">Note (/{{ currentEvaluation()?.bareme || 20 }}) *</th>
+            <th>Appréciation automatique / Observation</th>
+            <th class="text-center" style="width: 110px;">Statut</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (st of filteredDraft(); track st.catechumeneId; let i = $index) {
+            <tr class="data-row" [class.row-noted]="st.note !== null">
+              <td class="text-muted">{{ i + 1 }}</td>
+              <td>
+                <span class="badge-matricule">{{ st.matricule || 'N/A' }}</span>
+              </td>
+              <td>
+                <strong class="student-name">{{ st.nomPrenoms }}</strong>
+              </td>
+              <td class="text-center">
+                <div class="note-input-wrap">
+                  <input
+                    type="number"
+                    class="note-input"
+                    [class.is-valid-note]="st.note !== null"
+                    [class.is-empty-note]="st.note === null"
+                    min="0"
+                    [max]="currentEvaluation()?.bareme || 20"
+                    step="0.25"
+                    [value]="st.note !== null ? st.note : ''"
+                    (input)="onNoteInput(st.catechumeneId, $event)"
+                    placeholder="--"
+                  />
+                  <span class="note-max">/{{ currentEvaluation()?.bareme || 20 }}</span>
+                </div>
+              </td>
+              <td>
+                <input
+                  type="text"
+                  class="appreciation-input"
+                  [value]="st.appreciation || getAppreciation(st.note, currentEvaluation()?.bareme || 20)"
+                  (input)="onAppreciationInput(st.catechumeneId, $event)"
+                  placeholder="Ex : Très bon travail..."
+                />
+              </td>
+              <td class="text-center">
+                @if (st.note !== null) {
+                  <span class="status-pill noted">
+                    <i class="bi bi-check-circle-fill"></i> Saisi
+                  </span>
+                } @else {
+                  <span class="status-pill pending">
+                    <i class="bi bi-dash-circle"></i> En attente
+                  </span>
+                }
+              </td>
+            </tr>
+          }
+          @if (filteredDraft().length === 0) {
+            <tr>
+              <td colspan="6" class="empty-cell">
+                <i class="bi bi-people empty-icon"></i>
+                <p>Aucun catéchumène inscrit trouvé pour cette sélection.</p>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-footer">
+      <span>Total élèves dans la classe : <strong>{{ filteredDraft().length }}</strong></span>
+      <button
+        type="button"
+        class="btn btn-primary btn-sm"
+        [disabled]="isSaving() || notesDraft().length === 0 || !selectedEvaluationId()"
+        (click)="submitNotes()"
+      >
+        <i class="bi bi-save-fill"></i>
+        <span>Enregistrer</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL : PROCÈS-VERBAL / RELEVÉ OFFICIEL -->
+@if (isPrintModalOpen()) {
+  <div class="modal-overlay" (click)="closePrintModal()">
+    <div class="modal-card modal-lg print-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header no-print">
+        <div class="modal-title-group">
+          <i class="bi bi-file-earmark-spreadsheet"></i>
+          <h3>Relevé Récapitulatif des Notes de la classe</h3>
+        </div>
+        <button type="button" class="btn-close" (click)="closePrintModal()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <div class="print-document">
+        <!-- En-tête officiel de la catéchèse et de la paroisse -->
+        <app-entete-catechese
+          [titreDocument]="'Relevé Récapitulatif des Notes'"
+          [sousTitre]="'Épreuve : ' + (currentEvaluation()?.nom || 'Évaluation')"
+          [classeNom]="selectedClasseName() || currentEvaluation()?.classe?.libelle || ''"
+          [showBorder]="true"
+        ></app-entete-catechese>
+
+        <!-- Tableau imprimable du PV -->
+        <table class="pv-table">
+          <thead>
+            <tr>
+              <th style="width: 40px;">N°</th>
+              <th>Nom & Prénoms du Catéchumène</th>
+              <th style="width: 50px;" class="text-center">Sexe</th>
+              <th style="width: 80px;" class="text-center">Note</th>
+              <th style="width: 80px;" class="text-center">Moyenne</th>
+              <th style="width: 60px;" class="text-center">Rang</th>
+              <th>Appréciation du Catéchiste</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of recapNotesTable(); track row.catechumeneId) {
+              <tr>
+                <td class="text-center text-muted">{{ row.index }}</td>
+                <td><strong>{{ row.nomPrenoms }}</strong></td>
+                <td class="text-center">{{ row.genre }}</td>
+                <td class="text-center">
+                  <strong>{{ row.n1 !== null ? row.n1 : '-' }}</strong>
+                </td>
+                <td class="text-center font-bold">
+                  {{ row.moyenne !== null ? (row.moyenne + ' / 20') : '-' }}
+                </td>
+                <td class="text-center rank-cell">{{ row.rang }}</td>
+                <td>{{ row.appreciation || '-' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+
+        <!-- Signatures en bas du PV -->
+        <div class="pv-signatures">
+          <div class="sig-box">
+            <p class="sig-role">Le Catéchiste / Animateur</p>
+            <div class="sig-space"></div>
+          </div>
+          <div class="sig-box">
+            <p class="sig-role">Le Responsable de la Catéchèse</p>
+            <div class="sig-space"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer no-print">
+        <button type="button" class="btn btn-secondary" (click)="closePrintModal()">Fermer</button>
+        <button type="button" class="btn btn-primary" (click)="printDocument()">
+          <i class="bi bi-printer-fill"></i>
+          <span>Imprimer</span>
+        </button>
+      </div>
+    </div>
+  </div>
+}

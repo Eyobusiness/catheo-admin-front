@@ -62,12 +62,13 @@ export class MutationFormModalComponent {
   protected onSubmit(): void {
     if (this.form.valid) {
       const val = this.form.getRawValue();
+      const anneeId = val.annee_catechese_id || this.annees().find(a => a.est_active)?.id || this.annees()[0]?.id || '';
       const selectedCat = this.catechumenes().find(c => c.id === val.catechumene_id);
-      const selectedAnnee = this.annees().find(a => a.id === val.annee_catechese_id);
+      const selectedAnnee = this.annees().find(a => a.id === anneeId);
 
       const dto: CreateMutationCatechumeneDto = {
         catechumene_id: val.catechumene_id,
-        annee_catechese_id: val.annee_catechese_id,
+        annee_catechese_id: anneeId,
         paroisse_origine_nom: val.paroisse_origine_nom,
         paroisse_destination_nom: val.paroisse_destination_nom,
         date_mutation: val.date_mutation,

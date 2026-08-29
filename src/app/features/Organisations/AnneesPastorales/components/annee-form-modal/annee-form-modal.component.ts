@@ -46,7 +46,7 @@ export class AnneeFormModalComponent {
           libelle: item.libelle,
           date_debut: item.date_debut,
           date_fin: item.date_fin,
-          est_active: item.est_active
+          est_active: Boolean(item.est_active || item.statut === 'active')
         });
       } else {
         this.form.reset({

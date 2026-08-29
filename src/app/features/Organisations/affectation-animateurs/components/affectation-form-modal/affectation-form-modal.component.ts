@@ -1,9 +1,8 @@
-import { ChangeDetectionStrategy, Component, effect, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, input, output } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
   AffectationAnimateur,
   CreateAffectationAnimateurDto,
-  RoleAnimateur,
   UpdateAffectationAnimateurDto
 } from '../../models/affectation-animateur.model';
 import { Animateur } from '../../../Animateurs/models/animateur.model';
@@ -24,6 +23,7 @@ export class AffectationFormModalComponent {
   public readonly affectationToEdit = input<AffectationAnimateur | null>(null);
   public readonly animateurs = input<Animateur[]>([]);
   public readonly classes = input<Classe[]>([]);
+  public readonly existingAffectations = input<AffectationAnimateur[]>([]);
   public readonly isLoading = input<boolean>(false);
 
   public readonly formClosed = output<void>();
@@ -32,6 +32,22 @@ export class AffectationFormModalComponent {
     animateurLabel: string;
     classeLabel: string;
   }>();
+
+  protected readonly availableAnimateurs = computed(() => {
+    const allAnim = this.animateurs();
+    const existing = this.existingAffectations();
+    const isEdit = this.isEditing();
+    const currentEdit = this.affectationToEdit();
+    const currentEditAnimId = currentEdit?.animateur_id || currentEdit?.animateur?.id;
+
+    const assignedIds = new Set(
+      existing
+        .map(a => a.animateur_id || a.animateur?.id)
+        .filter((id): id is string => !!id && (!isEdit || id !== currentEditAnimId))
+    );
+
+    return allAnim.filter(anim => !assignedIds.has(anim.id));
+  });
 
   protected readonly form = new FormGroup({
     animateur_id: new FormControl('', {
@@ -42,7 +58,7 @@ export class AffectationFormModalComponent {
       nonNullable: true,
       validators: [Validators.required]
     }),
-    role: new FormControl<RoleAnimateur>('principal', {
+    role: new FormControl<string>('principal', {
       nonNullable: true,
       validators: [Validators.required]
     })
@@ -50,22 +66,45 @@ export class AffectationFormModalComponent {
 
   constructor() {
     effect(() => {
+      const open = this.isOpen();
       const item = this.affectationToEdit();
-      const availableAnimateurs = this.animateurs();
+      const isEdit = this.isEditing();
+      const freeAnimateurs = this.availableAnimateurs();
       const availableClasses = this.classes();
-      const defaultAnimateurId = availableAnimateurs.length > 0 ? availableAnimateurs[0].id : '';
-      const defaultClasseId = availableClasses.length > 0 ? availableClasses[0].id : '';
 
-      if (this.isEditing() && item) {
+      if (!open) {
+        return;
+      }
+
+      if (isEdit && item) {
+        const animId =
+          item.animateur_id ||
+          item.animateur?.id ||
+          (typeof item.animateur === 'string' ? item.animateur : '') ||
+          (freeAnimateurs.length > 0 ? freeAnimateurs[0].id : '');
+
+        const clsId =
+          item.classe_id ||
+          item.classe?.id ||
+          (typeof item.classe === 'string' ? item.classe : '') ||
+          (availableClasses.length > 0 ? availableClasses[0].id : '');
+
+        const roleVal = String(item.role || 'principal').toLowerCase().trim();
+        const finalRole = roleVal.includes('assist')
+          ? 'assistant'
+          : roleVal.includes('adj')
+          ? 'adjoint'
+          : 'principal';
+
         this.form.setValue({
-          animateur_id: item.animateur_id || item.animateur?.id || defaultAnimateurId,
-          classe_id: item.classe_id || item.classe?.id || defaultClasseId,
-          role: item.role || 'principal'
+          animateur_id: animId,
+          classe_id: clsId,
+          role: finalRole
         });
       } else {
         this.form.reset({
-          animateur_id: defaultAnimateurId,
-          classe_id: defaultClasseId,
+          animateur_id: freeAnimateurs.length > 0 ? freeAnimateurs[0].id : '',
+          classe_id: availableClasses.length > 0 ? availableClasses[0].id : '',
           role: 'principal'
         });
       }

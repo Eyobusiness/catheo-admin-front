@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { SectionService } from '../services/section.service';
 import { ToastService } from '../../../../core/services/toast.service';
 import { CreateSectionDto, Section, UpdateSectionDto } from '../models/section.model';
@@ -21,7 +21,7 @@ import { SectionDeleteModalComponent } from '../components/section-delete-modal/
   styleUrl: './sections-page.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SectionsPageComponent {
+export class SectionsPageComponent implements OnInit {
   protected readonly sectionService = inject(SectionService);
   protected readonly toastService = inject(ToastService);
 
@@ -36,6 +36,10 @@ export class SectionsPageComponent {
   protected readonly isEditing = signal<boolean>(false);
   protected readonly selectedSection = signal<Section | null>(null);
   protected readonly itemToDelete = signal<Section | null>(null);
+
+  public ngOnInit(): void {
+    this.sectionService.getAll().subscribe();
+  }
 
   protected readonly filteredSections = computed(() => {
     const q = this.searchQuery().toLowerCase().trim();
@@ -68,6 +72,7 @@ export class SectionsPageComponent {
   protected closeFormModal(): void {
     this.isFormModalOpen.set(false);
     this.selectedSection.set(null);
+    this.isEditing.set(false);
   }
 
   protected handleView(section: Section): void {
@@ -78,12 +83,13 @@ export class SectionsPageComponent {
   }
 
   protected handleFormSubmit(dto: CreateSectionDto | UpdateSectionDto): void {
-    if (this.isEditing() && this.selectedSection()) {
-      this.sectionService.update(this.selectedSection()!.id, dto).subscribe(() => {
+    const target = this.selectedSection();
+    if (this.isEditing() && target) {
+      this.sectionService.update(target.id, dto).subscribe(() => {
         this.closeFormModal();
       });
     } else {
-      this.sectionService.create(dto).subscribe(() => {
+      this.sectionService.create(dto as CreateSectionDto).subscribe(() => {
         this.closeFormModal();
       });
     }
@@ -112,3 +118,4 @@ export class SectionsPageComponent {
     }
   }
 }
+

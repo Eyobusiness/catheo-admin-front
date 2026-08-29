@@ -1,22 +1,138 @@
 <div class="paroisse-config-grid">
   <!-- Left Side: Main Configuration Form -->
   <div class="config-form-column">
-    <app-card title="Identité & Coordonnées de la Paroisse">
-      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="paroisse-form">
-        <!-- Nom officiel de la paroisse -->
+    <app-card title="Identité & Coordonnées de la Catéchèse">
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="paroisse-form" enctype="multipart/form-data">
+
+        <!-- Dual Logo Upload Section -->
+        <div class="logos-dual-section">
+          <!-- 1. Logo Paroisse -->
+          <div class="logo-upload-card">
+            <label class="form-label logo-card-title">
+              <i class="bi bi-building"></i>
+              Logo Paroisse
+            </label>
+            <div class="logo-preview-wrapper">
+              <div class="logo-preview-box" [class.has-image]="!!(logoParoissePreview() || form.controls.logo_paroisse.value)">
+                @if (logoParoissePreview() || form.controls.logo_paroisse.value) {
+                  <img
+                    [src]="logoParoissePreview() || form.controls.logo_paroisse.value"
+                    alt="Logo Paroisse"
+                    class="logo-preview-img"
+                  />
+                } @else {
+                  <div class="logo-placeholder-content">
+                    <i class="bi bi-building"></i>
+                  </div>
+                }
+              </div>
+
+              <!-- Hidden File Input -->
+              <input
+                #fileInputParoisse
+                type="file"
+                accept="image/png, image/jpeg, image/webp, image/svg+xml"
+                style="display: none;"
+                (change)="onLogoSelected($event, 'paroisse')"
+              />
+
+              <!-- Actions Group -->
+              <div class="logo-actions-group">
+                <button
+                  type="button"
+                  class="btn-upload-logo"
+                  (click)="fileInputParoisse.click()"
+                >
+                  <i class="bi bi-cloud-arrow-up-fill"></i>
+                  <span>{{ (logoParoissePreview() || form.controls.logo_paroisse.value) ? 'Changer' : 'Charger' }}</span>
+                </button>
+
+                @if (logoParoissePreview() || form.controls.logo_paroisse.value) {
+                  <button
+                    type="button"
+                    class="btn-remove-logo"
+                    title="Supprimer le logo paroisse"
+                    (click)="removeLogo('paroisse')"
+                  >
+                    <i class="bi bi-trash3-fill"></i>
+                  </button>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Logo Catéchèse -->
+          <div class="logo-upload-card">
+            <label class="form-label logo-card-title">
+              <i class="bi bi-book-half"></i>
+              Logo Catéchèse
+            </label>
+            <div class="logo-preview-wrapper">
+              <div class="logo-preview-box" [class.has-image]="!!(logoCatechesePreview() || form.controls.logo_catechese.value)">
+                @if (logoCatechesePreview() || form.controls.logo_catechese.value) {
+                  <img
+                    [src]="logoCatechesePreview() || form.controls.logo_catechese.value"
+                    alt="Logo Catéchèse"
+                    class="logo-preview-img"
+                  />
+                } @else {
+                  <div class="logo-placeholder-content">
+                    <i class="bi bi-book-half"></i>
+                  </div>
+                }
+              </div>
+
+              <!-- Hidden File Input -->
+              <input
+                #fileInputCatechese
+                type="file"
+                accept="image/png, image/jpeg, image/webp, image/svg+xml"
+                style="display: none;"
+                (change)="onLogoSelected($event, 'catechese')"
+              />
+
+              <!-- Actions Group -->
+              <div class="logo-actions-group">
+                <button
+                  type="button"
+                  class="btn-upload-logo"
+                  (click)="fileInputCatechese.click()"
+                >
+                  <i class="bi bi-cloud-arrow-up-fill"></i>
+                  <span>{{ (logoCatechesePreview() || form.controls.logo_catechese.value) ? 'Changer' : 'Charger' }}</span>
+                </button>
+
+                @if (logoCatechesePreview() || form.controls.logo_catechese.value) {
+                  <button
+                    type="button"
+                    class="btn-remove-logo"
+                    title="Supprimer le logo catéchèse"
+                    (click)="removeLogo('catechese')"
+                  >
+                    <i class="bi bi-trash3-fill"></i>
+                  </button>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-divider"></div>
+
+        <!-- Nom officiel de la catéchèse -->
         <div class="form-group">
           <label class="form-label" for="nom">
-            Nom officiel de la paroisse <span class="required">*</span>
+            Nom de la paroise <span class="required">*</span>
           </label>
           <input
             id="nom"
             type="text"
             formControlName="nom"
             class="form-control"
-            placeholder="Ex: Paroisse Cœur Immaculé de Marie"
+            placeholder="Ex: Catéchèse Paroisse Cœur Immaculé de Marie"
           />
           @if (form.controls.nom.touched && form.controls.nom.invalid) {
-            <span class="field-error">Le nom de la paroisse est obligatoire (min. 3 caractères).</span>
+            <span class="field-error">Le nom de la catéchèse est obligatoire (min. 3 caractères).</span>
           }
         </div>
 
@@ -82,7 +198,7 @@
         <div class="form-row col-2">
           <div class="form-group">
             <label class="form-label" for="telephone">
-              Téléphone du secrétariat
+              Téléphone
             </label>
             <div class="input-with-icon">
               <i class="bi bi-telephone prefix-icon"></i>
@@ -98,7 +214,7 @@
 
           <div class="form-group">
             <label class="form-label" for="email">
-              Adresse Email officielle
+              Adresse Email 
             </label>
             <div class="input-with-icon">
               <i class="bi bi-envelope prefix-icon"></i>
@@ -107,7 +223,7 @@
                 type="email"
                 formControlName="email"
                 class="form-control with-icon"
-                placeholder="contact@paroisse.ci"
+                placeholder="contact@catechese.ci"
               />
             </div>
             @if (form.controls.email.touched && form.controls.email.invalid) {
@@ -120,7 +236,7 @@
         <div class="form-row col-2">
           <div class="form-group">
             <label class="form-label" for="site_web">
-              Site Web / Page officielle
+              Site Web
             </label>
             <div class="input-with-icon">
               <i class="bi bi-globe prefix-icon"></i>
@@ -129,14 +245,14 @@
                 type="url"
                 formControlName="site_web"
                 class="form-control with-icon"
-                placeholder="https://www.paroisse.ci"
+                placeholder="https://www.catechese.ci"
               />
             </div>
           </div>
 
           <div class="form-group">
             <label class="form-label" for="adresse">
-              Adresse géographique & Repères
+              Adresse Quartier
             </label>
             <div class="input-with-icon">
               <i class="bi bi-geo-alt prefix-icon"></i>
@@ -151,11 +267,11 @@
           </div>
         </div>
 
-        <!-- Curé & Coordination -->
+        <!-- Curé/Aumônier & Coordination -->
         <div class="form-row col-2">
           <div class="form-group">
             <label class="form-label" for="cure_nom">
-              Nom du Curé de la paroisse
+              Curé / Aumônier référent
             </label>
             <input
               id="cure_nom"
@@ -188,25 +304,49 @@
             icon="check"
             [loading]="isSaving()"
           >
-            Enregistrer les Coordonnées
+            Enregistrer
           </app-button>
         </div>
       </form>
     </app-card>
   </div>
 
-  <!-- Right Side: Parish Summary Profile Card -->
+  <!-- Right Side: Catechese Summary Profile Card -->
   <div class="config-sidebar-column">
     <app-card title="Fiche Synthétique">
       <div class="parish-summary-card">
         <div class="parish-emblem-box">
-          <div class="emblem-circle">
-            <i class="bi bi-building-check"></i>
+          <div class="dual-emblem-wrapper">
+            <!-- Paroisse Emblem -->
+            <div class="emblem-circle" [class.has-logo]="!!(logoParoissePreview() || form.controls.logo_paroisse.value || paroisse().logo_paroisse || paroisse().logo_url)" title="Logo Paroisse">
+              @if (logoParoissePreview() || form.controls.logo_paroisse.value || paroisse().logo_paroisse || paroisse().logo_url) {
+                <img
+                  [src]="logoParoissePreview() || form.controls.logo_paroisse.value || paroisse().logo_paroisse || paroisse().logo_url"
+                  alt="Logo Paroisse"
+                  class="summary-logo-img"
+                />
+              } @else {
+                <i class="bi bi-building"></i>
+              }
+            </div>
+
+            <!-- Catechese Emblem -->
+            <div class="emblem-circle emblem-catechese" [class.has-logo]="!!(logoCatechesePreview() || form.controls.logo_catechese.value || paroisse().logo_catechese)" title="Logo Catéchèse">
+              @if (logoCatechesePreview() || form.controls.logo_catechese.value || paroisse().logo_catechese) {
+                <img
+                  [src]="logoCatechesePreview() || form.controls.logo_catechese.value || paroisse().logo_catechese"
+                  alt="Logo Catéchèse"
+                  class="summary-logo-img"
+                />
+              } @else {
+                <i class="bi bi-book-half"></i>
+              }
+            </div>
           </div>
-          <h4 class="parish-name-display">{{ paroisse().nom }}</h4>
+          <h4 class="parish-name-display">{{ paroisse().nom || 'Catéchèse Paroissiale' }}</h4>
           <span class="parish-code-pill">
             <i class="bi bi-upc-scan"></i>
-            {{ paroisse().code_paroisse }}
+            {{ paroisse().code_paroisse || 'CAT-001' }}
           </span>
           <span class="status-badge is-active">
             <span class="status-dot"></span>
@@ -225,11 +365,15 @@
           </div>
           <div class="summary-item">
             <span class="summary-label"><i class="bi bi-geo-alt-fill"></i> Localisation</span>
-            <span class="summary-value">{{ paroisse().commune }}, {{ paroisse().ville }}</span>
+            <span class="summary-value">{{ paroisse().commune ? paroisse().commune + ', ' : '' }}{{ paroisse().ville || 'Non renseigné' }}</span>
           </div>
           <div class="summary-item">
-            <span class="summary-label"><i class="bi bi-person-badge"></i> Curé</span>
+            <span class="summary-label"><i class="bi bi-person-badge"></i> Aumônier / Curé</span>
             <span class="summary-value cure">{{ paroisse().cure_nom || 'Non renseigné' }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label"><i class="bi bi-people"></i> Coordination</span>
+            <span class="summary-value">{{ paroisse().coordination_nom || 'Non renseigné' }}</span>
           </div>
           <div class="summary-item">
             <span class="summary-label"><i class="bi bi-telephone-fill"></i> Contact</span>

@@ -1,25 +1,37 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
-import { StatutUtilisateur, UserDto } from '../../models/user.model';
+import { CommonModule, DatePipe } from '@angular/common';
+import { StatutUtilisateur, UserItem } from '../../models/user.model';
 import { AppIconButton } from '../../../../shared/ui/components/buttons/app-icon-button/app-icon-button.component';
 import { AppButton } from '../../../../shared/ui/components/buttons/app-button/app-button.component';
 
 @Component({
   selector: 'app-user-table',
-  imports: [AppIconButton, AppButton],
+  imports: [CommonModule, DatePipe, AppIconButton, AppButton],
   templateUrl: './user-table.component.html',
   styleUrl: './user-table.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UserTableComponent {
-  public readonly users = input<UserDto[]>([]);
+  public readonly users = input<UserItem[]>([]);
   public readonly isLoading = input<boolean>(false);
 
   public readonly createRequested = output<void>();
-  public readonly editRequested = output<UserDto>();
-  public readonly deleteRequested = output<UserDto>();
-  public readonly statusChanged = output<{ user: UserDto; nextStatus: StatutUtilisateur }>();
+  public readonly editRequested = output<UserItem>();
+  public readonly deleteRequested = output<UserItem>();
+  public readonly statusChanged = output<{ user: UserItem; nextStatus: StatutUtilisateur }>();
 
-  protected getInitials(name: string): string {
+  protected getDisplayName(u: UserItem): string {
+    if (u.nom && u.prenoms) return `${u.nom} ${u.prenoms}`;
+    if (u.name) return u.name;
+    if (u.nom) return u.nom;
+    return u.email ? u.email.split('@')[0] : 'Utilisateur';
+  }
+
+  protected getInitials(u: UserItem): string {
+    if (u.nom && u.prenoms) {
+      return `${u.nom.charAt(0)}${u.prenoms.charAt(0)}`.toUpperCase();
+    }
+    const name = this.getDisplayName(u);
     if (!name) return 'U';
     const parts = name.trim().split(' ').filter(Boolean);
     if (parts.length >= 2) {
@@ -28,20 +40,17 @@ export class UserTableComponent {
     return name.substring(0, 2).toUpperCase() || 'U';
   }
 
-  protected onEdit(u: UserDto): void {
+  protected onEdit(u: UserItem): void {
     this.editRequested.emit(u);
   }
 
-  protected onDelete(u: UserDto): void {
+  protected onDelete(u: UserItem): void {
     this.deleteRequested.emit(u);
   }
 
-  protected toggleNextStatus(u: UserDto): void {
-    let next: StatutUtilisateur = 'actif';
-    if (u.statut === 'actif') next = 'inactif';
-    else if (u.statut === 'inactif') next = 'suspendu';
-    else if (u.statut === 'suspendu') next = 'actif';
-
+  protected toggleNextStatus(u: UserItem): void {
+    const isActif = u.statut === 'actif' || u.status === 'actif';
+    const next: StatutUtilisateur = isActif ? 'inactif' : 'actif';
     this.statusChanged.emit({ user: u, nextStatus: next });
   }
 }

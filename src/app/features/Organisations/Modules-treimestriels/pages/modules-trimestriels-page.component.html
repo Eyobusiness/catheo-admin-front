@@ -37,7 +37,7 @@
           <input
             type="text"
             class="filter-search-control"
-            placeholder="Rechercher..."
+            placeholder="Rechercher un module..."
             [value]="searchQuery()"
             (input)="onSearchChange($event)"
           />
@@ -46,22 +46,6 @@
               <i class="bi bi-x-circle-fill"></i>
             </button>
           }
-        </div>
-
-        <!-- Trimestre Filter Dropdown -->
-        <div class="filter-select-wrapper">
-          <i class="bi bi-calendar3-range select-prefix-icon"></i>
-          <select
-            class="filter-select-control"
-            [value]="selectedTrimestreFilter()"
-            (change)="onTrimestreFilterChange($event)"
-          >
-            <option value="">Tous les trimestres</option>
-            <option value="T1">1er Trimestre (T1)</option>
-            <option value="T2">2ème Trimestre (T2)</option>
-            <option value="T3">3ème Trimestre (T3)</option>
-          </select>
-          <i class="bi bi-chevron-down select-chevron-icon"></i>
         </div>
 
         <!-- Année Pastorale Filter Dropdown -->
@@ -103,7 +87,6 @@
       (viewRequested)="handleView($event)"
       (editRequested)="openEditModal($event)"
       (deleteRequested)="openDeleteModal($event)"
-      (toggleTrimestreRequested)="handleToggleTrimestre($event)"
     />
   </app-card>
 </div>

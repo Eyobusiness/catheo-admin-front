@@ -27,46 +27,13 @@ export class CebService {
   private readonly baseUrl = `${environment.apiUrl}/cebs`;
 
   // Reactive state signals
-  public readonly cebs = signal<Ceb[]>([
-    {
-      id: '1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c81',
-      nom: 'Sainte Famille de Nazareth',
-      responsable: 'M. KOUAKOU Emmanuel',
-      telephone: '+225 07 11 22 33 44',
-      adresse: 'Secteur Résidentiel - Rue des Jardins',
-      description: 'CEB du quartier résidentiel Nord',
-      statut: 'Active',
-      statut_code: 'active',
-      total_inscriptions: 28,
-      created_at: '2026-08-01'
-    },
-    {
-      id: '2b3c4d5e-6f7a-8b9c-0d1e-2f3a4b5c6d82',
-      nom: 'Saint Esprit',
-      responsable: 'Mme TOURE Blandine',
-      telephone: '+225 05 55 66 77 88',
-      adresse: 'Secteur Commerce - Carrefour Central',
-      description: 'CEB du centre commercial paroissial',
-      statut: 'Active',
-      statut_code: 'active',
-      total_inscriptions: 34,
-      created_at: '2026-08-05'
-    },
-    {
-      id: '3c4d5e6f-7a8b-9c0d-1e2f-3a4b5c6d7e83',
-      nom: 'Saint Michel Archange',
-      responsable: 'M. ADOU Pierre',
-      telephone: '+225 01 99 88 77 66',
-      adresse: 'Quartier Est - Voie Triomphale',
-      description: 'CEB couvrant les nouveaux lotissements Est',
-      statut: 'Active',
-      statut_code: 'active',
-      total_inscriptions: 19,
-      created_at: '2026-08-10'
-    }
-  ]);
+  public readonly cebs = signal<Ceb[]>([]);
 
   public readonly isLoading = signal<boolean>(false);
+
+  constructor() {
+    this.getAll().subscribe();
+  }
 
   public getAll(): Observable<Ceb[]> {
     this.isLoading.set(true);

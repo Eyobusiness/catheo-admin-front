@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, effect, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, input, output, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Animateur, AnimateurSexe, AnimateurStatut, CreateAnimateurDto, UpdateAnimateurDto } from '../../models/animateur.model';
 import { AppDialog } from '../../../../../shared/ui/components/dialogs/app-dialog/app-dialog.component';
@@ -19,6 +19,8 @@ export class AnimateurFormModalComponent {
 
   public readonly formClosed = output<void>();
   public readonly formSubmitted = output<CreateAnimateurDto | UpdateAnimateurDto>();
+
+  protected readonly showPassword = signal<boolean>(false);
 
   protected readonly form = new FormGroup({
     nom: new FormControl('', {
@@ -43,41 +45,63 @@ export class AnimateurFormModalComponent {
     profession: new FormControl('', {
       nonNullable: true
     }),
-    create_user_account: new FormControl<boolean>(false, {
+    create_user_account: new FormControl<boolean>(true, {
       nonNullable: true
     }),
     statut: new FormControl<AnimateurStatut>('actif', {
+      nonNullable: true
+    }),
+    password: new FormControl('', {
       nonNullable: true
     })
   });
 
   constructor() {
     effect(() => {
+      const open = this.isOpen();
       const item = this.animateurToEdit();
-      if (this.isEditing() && item) {
-        this.form.setValue({
-          nom: item.nom,
-          prenoms: item.prenoms,
-          sexe: item.sexe || 'M',
-          telephone: item.telephone || '',
-          email: item.email || '',
-          profession: item.profession || '',
-          create_user_account: !!item.user,
-          statut: item.statut || 'actif'
-        });
-      } else {
-        this.form.reset({
-          nom: '',
-          prenoms: '',
-          sexe: 'M',
-          telephone: '',
-          email: '',
-          profession: '',
-          create_user_account: false,
-          statut: 'actif'
-        });
+      const isEdit = this.isEditing();
+
+      if (open) {
+        this.showPassword.set(false);
+        if (isEdit && item) {
+          this.form.controls.password.clearValidators();
+          this.form.controls.password.setValidators([Validators.minLength(6)]);
+          this.form.controls.password.updateValueAndValidity();
+
+          this.form.patchValue({
+            nom: item.nom,
+            prenoms: item.prenoms,
+            sexe: item.sexe || 'M',
+            telephone: item.telephone || '',
+            email: item.email || '',
+            profession: item.profession || '',
+            create_user_account: !!item.user,
+            statut: item.statut || 'actif',
+            password: ''
+          });
+        } else {
+          this.form.controls.password.setValidators([Validators.required, Validators.minLength(6)]);
+          this.form.controls.password.updateValueAndValidity();
+
+          this.form.reset({
+            nom: '',
+            prenoms: '',
+            sexe: 'M',
+            telephone: '',
+            email: '',
+            profession: '',
+            create_user_account: true,
+            statut: 'actif',
+            password: ''
+          });
+        }
       }
     });
+  }
+
+  protected toggleShowPassword(): void {
+    this.showPassword.update(v => !v);
   }
 
   protected onClose(): void {
@@ -88,24 +112,29 @@ export class AnimateurFormModalComponent {
     if (this.form.valid) {
       const val = this.form.getRawValue();
       if (this.isEditing()) {
-        this.formSubmitted.emit({
-          nom: val.nom,
-          prenoms: val.prenoms,
+        const payload: UpdateAnimateurDto = {
+          nom: val.nom.trim(),
+          prenoms: val.prenoms.trim(),
           sexe: val.sexe,
-          telephone: val.telephone || undefined,
-          email: val.email || undefined,
-          profession: val.profession || undefined,
+          telephone: val.telephone?.trim() || undefined,
+          email: val.email?.trim() || undefined,
+          profession: val.profession?.trim() || undefined,
           statut: val.statut
-        });
+        };
+        if (val.password && val.password.trim().length > 0) {
+          payload.password = val.password;
+        }
+        this.formSubmitted.emit(payload);
       } else {
         this.formSubmitted.emit({
-          nom: val.nom,
-          prenoms: val.prenoms,
+          nom: val.nom.trim(),
+          prenoms: val.prenoms.trim(),
           sexe: val.sexe,
-          telephone: val.telephone || undefined,
-          email: val.email || undefined,
-          profession: val.profession || undefined,
-          create_user_account: val.create_user_account
+          telephone: val.telephone?.trim() || undefined,
+          email: val.email?.trim() || undefined,
+          profession: val.profession?.trim() || undefined,
+          create_user_account: val.create_user_account,
+          password: val.password || undefined
         });
       }
     } else {

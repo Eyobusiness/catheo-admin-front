@@ -1,0 +1,42 @@
+<app-dialog
+  [isOpen]="isOpen()"
+  title="Supprimer la Séance"
+  size="sm"
+  (closed)="onClose()"
+>
+  <div class="delete-modal-body">
+    <div class="delete-icon-wrapper">
+      <i class="bi bi-exclamation-triangle"></i>
+    </div>
+
+    <div class="delete-content">
+      <h4 class="delete-title">Êtes-vous sûr de vouloir supprimer cette séance ?</h4>
+      @if (itemToDelete(); as item) {
+        <p class="delete-desc">
+          La séance <strong>« {{ item.titre_lecon }} »</strong> pour la classe <strong>{{ item.classe?.nom }}</strong> sera définitivement supprimée ainsi que ses feuilles de présence.
+        </p>
+      }
+    </div>
+
+    <div class="modal-footer-actions">
+      <app-button
+        type="button"
+        variant="ghost"
+        (clicked)="onClose()"
+        [disabled]="isLoading()"
+      >
+        Annuler
+      </app-button>
+
+      <app-button
+        type="button"
+        variant="danger"
+        [loading]="isLoading()"
+        (clicked)="onConfirm()"
+      >
+        <i class="bi bi-trash3"></i>
+        <span>Supprimer définitivement</span>
+      </app-button>
+    </div>
+  </div>
+</app-dialog>

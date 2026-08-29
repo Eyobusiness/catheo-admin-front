@@ -28,7 +28,6 @@ import { PreinscriptionRejeterModalComponent } from '../components/preinscriptio
   selector: 'app-preinscriptions-page',
   imports: [
     AppCard,
-    AppButton,
     PreinscriptionTableComponent,
     PreinscriptionFormModalComponent,
     PreinscriptionDetailModalComponent,
@@ -58,7 +57,7 @@ export class PreinscriptionsPageComponent implements OnInit {
   // Local Page Filters
   protected readonly searchQuery = signal<string>('');
   protected readonly statusFilter = signal<string>('');
-  protected readonly typeFilter = signal<string>('');
+  protected readonly sectionFilter = signal<string>('');
 
   // Modals state
   protected readonly isFormModalOpen = signal<boolean>(false);
@@ -80,20 +79,20 @@ export class PreinscriptionsPageComponent implements OnInit {
   });
 
   protected readonly hasActiveFilters = computed(() => {
-    return !!this.searchQuery() || !!this.statusFilter() || !!this.typeFilter();
+    return !!this.searchQuery() || !!this.statusFilter() || !!this.sectionFilter();
   });
 
   protected readonly filteredPreinscriptions = computed(() => {
     const q = this.searchQuery().toLowerCase().trim();
     const sf = this.statusFilter();
-    const tf = this.typeFilter();
+    const secId = this.sectionFilter();
     let list = this.preinscriptions();
 
     if (sf) {
       list = list.filter(p => p.statut === sf);
     }
-    if (tf) {
-      list = list.filter(p => p.type_demande === tf);
+    if (secId) {
+      list = list.filter(p => p.section_souhaite_id === secId || p.section_souhaite?.id === secId);
     }
 
     if (!q) return list;
@@ -127,15 +126,15 @@ export class PreinscriptionsPageComponent implements OnInit {
     this.statusFilter.set(select.value);
   }
 
-  protected onTypeFilterChange(event: Event): void {
+  protected onSectionFilterChange(event: Event): void {
     const select = event.target as HTMLSelectElement;
-    this.typeFilter.set(select.value);
+    this.sectionFilter.set(select.value);
   }
 
   protected resetFilters(): void {
     this.searchQuery.set('');
     this.statusFilter.set('');
-    this.typeFilter.set('');
+    this.sectionFilter.set('');
   }
 
   protected openCreateModal(): void {

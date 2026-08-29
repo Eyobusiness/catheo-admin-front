@@ -1,18 +1,17 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpErrorResponse } from '@angular/common/http';
 import { finalize, Observable, catchError, of, tap, throwError } from 'rxjs';
 import {
   CreateUserDto,
-  StatutUtilisateur,
   UpdateUserDto,
-  UpdateUserStatusDto,
-  UserDto
+  UserItem,
+  UserListResponse,
+  UserPaginationMeta
 } from '../models/user.model';
-import { ProfilService } from '../Profil/services/profil.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { environment } from '../../../environments/environment';
 
-function extractArrayData(res: any): any[] {
+function extractArrayData(res: any): UserItem[] {
   if (!res) return [];
   if (Array.isArray(res)) return res;
   if (Array.isArray(res.data)) return res.data;
@@ -26,213 +25,189 @@ function extractArrayData(res: any): any[] {
   return [];
 }
 
-function extractObjectData(res: any): any {
-  if (!res) return null;
-  if (res.data && typeof res.data === 'object' && !Array.isArray(res.data)) return res.data;
-  if (res.user) return res.user;
-  if (res.utilisateur) return res.utilisateur;
-  return res;
-}
-
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
   private readonly http = inject(HttpClient);
   private readonly toastService = inject(ToastService);
-  private readonly profilService = inject(ProfilService);
-
-  private readonly usersUrl = `${environment.apiUrl}/users`;
+  private readonly apiUrl = `${environment.apiUrl}/users`;
 
   // Reactive state signals
-  public readonly users = signal<UserDto[]>([]);
+  public readonly usersList = signal<UserItem[]>([]);
+  public readonly users = this.usersList; // Alias for backward compatibility
+  public readonly pagination = signal<UserPaginationMeta | null>(null);
   public readonly isLoading = signal<boolean>(false);
   public readonly isSaving = signal<boolean>(false);
 
   constructor() {
-    this.getAll().subscribe();
+    this.getUsers().subscribe();
   }
 
-  public getAll(): Observable<UserDto[]> {
+  /**
+   * Charger la liste paginée des utilisateurs avec filtres
+   * GET /api/v1/users
+   */
+  public getUsers(
+    page: number = 1,
+    perPage: number = 15,
+    search?: string,
+    statut?: string,
+    profilId?: string
+  ): Observable<UserListResponse | any> {
     this.isLoading.set(true);
-    return this.http.get<any>(this.usersUrl).pipe(
-      tap(res => {
-        const raw = extractArrayData(res);
-        if (raw.length > 0) {
-          const normalized: UserDto[] = raw.map((item: any) => ({
-            id: item.id || `usr-${Date.now()}`,
-            name: item.name || item.nom_prenoms || `${item.nom || ''} ${item.prenoms || ''}`.trim() || 'Utilisateur',
-            email: item.email || '',
-            telephone: item.telephone || item.tel || item.contact,
-            statut: (item.statut === 'inactif' || item.statut === 'suspendu') ? item.statut : 'actif',
-            profil: item.profil || (item.profil_id ? this.profilService.profils().find(p => p.id === item.profil_id) : undefined),
-            paroisse: item.paroisse,
-            created_at: item.created_at || new Date().toISOString().split('T')[0]
-          }));
-          this.users.set(normalized);
-        }
-      }),
-      catchError(() => of(this.users())),
-      finalize(() => this.isLoading.set(false))
-    );
-  }
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('per_page', perPage.toString());
 
-  public getById(id: string): Observable<UserDto> {
-    return this.http.get<any>(`${this.usersUrl}/${id}`).pipe(
-      tap(res => {
-        const item = extractObjectData(res);
-        return item;
+    if (search && search.trim()) params = params.set('search', search.trim());
+    if (statut && statut !== 'tous') params = params.set('statut', statut);
+    if (profilId && profilId !== 'tous') params = params.set('profil_id', profilId);
+
+    return this.http.get<any>(this.apiUrl, { params }).pipe(
+      tap({
+        next: (res) => {
+          const list = extractArrayData(res);
+          this.usersList.set(list);
+          if (res?.meta) {
+            this.pagination.set(res.meta);
+          }
+          this.isLoading.set(false);
+        },
+        error: () => this.isLoading.set(false)
       }),
-      catchError(err => {
-        const found = this.users().find(u => u.id === id);
-        if (found) return of(found);
-        return throwError(() => err);
+      catchError((error: HttpErrorResponse) => {
+        this.isLoading.set(false);
+        this.toastService.error(
+          'Utilisateurs',
+          error.error?.message || 'Impossible de charger la liste des utilisateurs.'
+        );
+        return of({ status: 'error', meta: null, data: [] });
       })
     );
   }
 
-  public create(dto: CreateUserDto): Observable<UserDto> {
-    this.isSaving.set(true);
-    const assignedProfil = this.profilService.profils().find(p => p.id === dto.profil_id);
-
-    return this.http.post<any>(this.usersUrl, dto).pipe(
-      tap(res => {
-        const item = extractObjectData(res) || res;
-        const created: UserDto = {
-          id: item.id || `usr-${Date.now()}`,
-          name: item.name || dto.name,
-          email: item.email || dto.email,
-          telephone: item.telephone || dto.telephone,
-          statut: 'actif',
-          profil: item.profil || assignedProfil,
-          created_at: new Date().toISOString().split('T')[0]
-        };
-        this.addOrUpdateLocal(created);
-        this.toastService.success(
-          'Utilisateur Créé',
-          `Le compte "${created.name}" (${created.email}) a été créé avec le profil "${created.profil?.nom || 'Attribué'}".`
-        );
-      }),
-      catchError((err: HttpErrorResponse) => {
-        const newLocal: UserDto = {
-          id: `usr-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-          name: dto.name,
-          email: dto.email,
-          telephone: dto.telephone,
-          statut: 'actif',
-          profil: assignedProfil,
-          created_at: new Date().toISOString().split('T')[0]
-        };
-        this.addOrUpdateLocal(newLocal);
-        this.toastService.success(
-          'Utilisateur Créé',
-          `Le compte "${newLocal.name}" (${newLocal.email}) a été créé avec le profil "${newLocal.profil?.nom || 'Attribué'}".`
-        );
-        return of(newLocal);
-      }),
-      finalize(() => this.isSaving.set(false))
-    );
+  public getAll(search?: string, statut?: string, profilId?: string): Observable<any> {
+    return this.getUsers(1, 50, search, statut, profilId);
   }
 
-  public update(id: string, dto: UpdateUserDto): Observable<UserDto> {
-    this.isSaving.set(true);
-    const assignedProfil = dto.profil_id ? this.profilService.profils().find(p => p.id === dto.profil_id) : undefined;
-
-    return this.http.put<any>(`${this.usersUrl}/${id}`, dto).pipe(
-      tap(res => {
-        const item = extractObjectData(res) || res;
-        const current = this.users().find(u => u.id === id);
-        const updated: UserDto = {
-          ...current!,
-          ...item,
-          id,
-          name: dto.name || current?.name || '',
-          email: dto.email || current?.email || '',
-          telephone: dto.telephone !== undefined ? dto.telephone : current?.telephone,
-          profil: assignedProfil || current?.profil
-        };
-        this.addOrUpdateLocal(updated);
-        this.toastService.success(
-          'Compte Modifié',
-          `Les informations de "${updated.name}" ont été mises à jour.`
-        );
-      }),
-      catchError((err: HttpErrorResponse) => {
-        const current = this.users().find(u => u.id === id);
-        const updatedLocal: UserDto = {
-          ...current!,
-          id,
-          name: dto.name || current?.name || '',
-          email: dto.email || current?.email || '',
-          telephone: dto.telephone !== undefined ? dto.telephone : current?.telephone,
-          profil: assignedProfil || current?.profil
-        };
-        this.addOrUpdateLocal(updatedLocal);
-        this.toastService.success(
-          'Compte Modifié',
-          `Les informations de "${updatedLocal.name}" ont été mises à jour.`
-        );
-        return of(updatedLocal);
-      }),
-      finalize(() => this.isSaving.set(false))
-    );
+  /**
+   * Détails d'un utilisateur
+   * GET /api/v1/users/:id
+   */
+  public getUserById(id: string): Observable<{ status: string; data: UserItem }> {
+    return this.http.get<{ status: string; data: UserItem }>(`${this.apiUrl}/${id}`);
   }
 
-  public patchStatus(id: string, status: StatutUtilisateur): Observable<void> {
-    return this.http.patch<void>(`${this.usersUrl}/${id}/status`, { statut: status }).pipe(
-      tap(() => {
-        this.updateLocalStatus(id, status);
-        this.toastService.success(
-          'Statut Modifié',
-          `Le compte utilisateur est maintenant ${status}.`
-        );
+  public getById(id: string): Observable<any> {
+    return this.getUserById(id);
+  }
+
+  /**
+   * Créer un nouvel utilisateur
+   * POST /api/v1/users
+   */
+  public createUser(dto: CreateUserDto): Observable<{ status: string; message: string; data: UserItem }> {
+    this.isSaving.set(true);
+
+    return this.http.post<any>(this.apiUrl, dto).pipe(
+      tap((res) => {
+        this.isSaving.set(false);
+        this.toastService.success('Succès', res.message || 'Utilisateur créé avec succès.');
+        this.getUsers().subscribe();
       }),
-      catchError(() => {
-        this.updateLocalStatus(id, status);
-        this.toastService.success(
-          'Statut Modifié',
-          `Le compte utilisateur est maintenant ${status}.`
+      catchError((error: HttpErrorResponse) => {
+        this.isSaving.set(false);
+        this.toastService.error(
+          'Erreur de création',
+          error.error?.message || 'Impossible de créer l\'utilisateur.'
         );
-        return of(void 0);
+        return throwError(() => error);
       })
     );
   }
 
-  public delete(id: string): Observable<void> {
+  public create(dto: CreateUserDto): Observable<any> {
+    return this.createUser(dto);
+  }
+
+  /**
+   * Mettre à jour un utilisateur
+   * PUT /api/v1/users/:id
+   */
+  public updateUser(id: string, dto: UpdateUserDto): Observable<{ status: string; message: string; data: UserItem }> {
     this.isSaving.set(true);
-    return this.http.delete<void>(`${this.usersUrl}/${id}`).pipe(
-      tap(() => {
-        this.removeLocal(id);
-        this.toastService.success('Utilisateur Supprimé', 'Le compte a été retiré avec succès.');
+
+    return this.http.put<any>(`${this.apiUrl}/${id}`, dto).pipe(
+      tap((res) => {
+        this.isSaving.set(false);
+        this.toastService.success('Succès', res.message || 'Utilisateur mis à jour avec succès.');
+        this.getUsers().subscribe();
       }),
-      catchError(() => {
-        this.removeLocal(id);
-        this.toastService.success('Utilisateur Supprimé', 'Le compte a été retiré avec succès.');
-        return of(void 0);
-      }),
-      finalize(() => this.isSaving.set(false))
+      catchError((error: HttpErrorResponse) => {
+        this.isSaving.set(false);
+        this.toastService.error(
+          'Erreur de modification',
+          error.error?.message || 'Impossible de modifier l\'utilisateur.'
+        );
+        return throwError(() => error);
+      })
     );
   }
 
-  private addOrUpdateLocal(item: UserDto): void {
-    this.users.update(list => {
-      const idx = list.findIndex(u => u.id === item.id);
-      if (idx >= 0) {
-        const next = [...list];
-        next[idx] = item;
-        return next;
-      }
-      return [item, ...list];
-    });
+  public update(id: string, dto: UpdateUserDto): Observable<any> {
+    return this.updateUser(id, dto);
   }
 
-  private updateLocalStatus(id: string, status: StatutUtilisateur): void {
-    this.users.update(list =>
-      list.map(u => (u.id === id ? { ...u, statut: status } : u))
+  /**
+   * Basculer le statut Actif / Inactif
+   * PATCH /api/v1/users/:id/status
+   */
+  public toggleStatus(id: string, statut?: 'actif' | 'inactif'): Observable<{ status: string; message: string; data: UserItem }> {
+    return this.http.patch<any>(`${this.apiUrl}/${id}/status`, statut ? { statut } : {}).pipe(
+      tap((res) => {
+        this.toastService.success('Statut mis à jour', res.message || 'Le statut de l\'utilisateur a été modifié.');
+        this.getUsers().subscribe();
+      }),
+      catchError((error: HttpErrorResponse) => {
+        this.toastService.error(
+          'Erreur',
+          error.error?.message || 'Impossible de changer le statut de cet utilisateur.'
+        );
+        return throwError(() => error);
+      })
     );
   }
 
-  private removeLocal(id: string): void {
-    this.users.update(list => list.filter(u => u.id !== id));
+  public patchStatus(id: string, statut?: any): Observable<any> {
+    return this.toggleStatus(id, statut);
+  }
+
+  /**
+   * Supprimer un utilisateur (Soft Delete)
+   * DELETE /api/v1/users/:id
+   */
+  public deleteUser(id: string): Observable<{ status: string; message: string }> {
+    this.isSaving.set(true);
+
+    return this.http.delete<any>(`${this.apiUrl}/${id}`).pipe(
+      tap((res) => {
+        this.isSaving.set(false);
+        this.toastService.success('Supprimé', res.message || 'Utilisateur supprimé avec succès.');
+        this.getUsers().subscribe();
+      }),
+      catchError((error: HttpErrorResponse) => {
+        this.isSaving.set(false);
+        this.toastService.error(
+          'Erreur de suppression',
+          error.error?.message || 'Impossible de supprimer cet utilisateur.'
+        );
+        return throwError(() => error);
+      })
+    );
+  }
+
+  public delete(id: string): Observable<any> {
+    return this.deleteUser(id);
   }
 }

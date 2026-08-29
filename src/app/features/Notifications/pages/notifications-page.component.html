@@ -1,0 +1,243 @@
+<div class="notifications-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <div class="header-icon-box">
+        <i class="bi bi-bell-fill"></i>
+      </div>
+      <div>
+        <h1 class="page-title">Centre de Notifications & Alertes</h1>
+        <p class="page-subtitle">
+          Suivez les alertes d'inscriptions, rappels de séances pastorales, finances et activités de la paroisse
+        </p>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <app-button
+        variant="secondary"
+        icon="arrow-clockwise"
+        [loading]="isLoading()"
+        (clicked)="refresh()"
+      >
+        Actualiser
+      </app-button>
+
+      @if (unreadTotal() > 0) {
+        <app-button
+          variant="primary"
+          icon="check-all"
+          (clicked)="markAllAsRead()"
+        >
+          Tout marquer lu ({{ unreadTotal() }})
+        </app-button>
+      }
+    </div>
+  </div>
+
+  <!-- Main Card with Tabs & Filter Toolbar -->
+  <app-card>
+    <!-- Navigation Tabs -->
+    <div class="tabs-bar">
+      <button
+        type="button"
+        class="tab-btn"
+        [class.active]="activeTab() === 'all'"
+        (click)="setTab('all')"
+      >
+        <i class="bi bi-grid-fill"></i>
+        <span>Toutes</span>
+        <span class="tab-badge">{{ countAll() }}</span>
+      </button>
+
+      <button
+        type="button"
+        class="tab-btn tab-alerte"
+        [class.active]="activeTab() === 'alerte'"
+        (click)="setTab('alerte')"
+      >
+        <i class="bi bi-exclamation-octagon-fill"></i>
+        <span>Alertes</span>
+        @if (countAlertes() > 0) {
+          <span class="tab-badge danger">{{ countAlertes() }}</span>
+        }
+      </button>
+
+      <button
+        type="button"
+        class="tab-btn tab-activite"
+        [class.active]="activeTab() === 'activite'"
+        (click)="setTab('activite')"
+      >
+        <i class="bi bi-calendar-event-fill"></i>
+        <span>Activités</span>
+        @if (countActivites() > 0) {
+          <span class="tab-badge success">{{ countActivites() }}</span>
+        }
+      </button>
+
+      <button
+        type="button"
+        class="tab-btn tab-rappel"
+        [class.active]="activeTab() === 'rappel'"
+        (click)="setTab('rappel')"
+      >
+        <i class="bi bi-clock-history"></i>
+        <span>Rappels</span>
+        @if (countRappels() > 0) {
+          <span class="tab-badge warning">{{ countRappels() }}</span>
+        }
+      </button>
+    </div>
+
+    <!-- Filter Toolbar -->
+    <div class="filter-toolbar">
+      <div class="search-box">
+        <i class="bi bi-search search-icon"></i>
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Rechercher une alerte, un rappel, un mot-clé..."
+          [ngModel]="searchQuery()"
+          (ngModelChange)="onSearchChange($event)"
+        />
+        @if (searchQuery()) {
+          <button type="button" class="clear-search-btn" (click)="onSearchChange('')">
+            <i class="bi bi-x-circle-fill"></i>
+          </button>
+        }
+      </div>
+
+      <div class="filter-actions">
+        <button
+          type="button"
+          class="filter-pill-btn"
+          [class.active]="filterUnreadOnly()"
+          (click)="toggleUnreadFilter()"
+        >
+          <span class="pill-dot"></span>
+          Non lues uniquement ({{ unreadTotal() }})
+        </button>
+      </div>
+    </div>
+
+    <!-- Notifications List -->
+    <div class="notifications-list">
+      @if (isLoading() && filteredNotifications().length === 0) {
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <span>Chargement des alertes et notifications...</span>
+        </div>
+      } @else {
+        @for (notif of filteredNotifications(); track notif.id) {
+          <div
+            class="notif-card"
+            [class.unread]="!notif.is_read"
+            (click)="handleAction(notif)"
+            role="button"
+            tabindex="0"
+          >
+            <!-- Type Icon Badge -->
+            <div
+              class="notif-avatar"
+              [class.danger]="getBadgeType(notif) === 'danger'"
+              [class.warning]="getBadgeType(notif) === 'warning'"
+              [class.success]="getBadgeType(notif) === 'success'"
+              [class.info]="getBadgeType(notif) === 'info'"
+            >
+              @if (getBadgeType(notif) === 'danger') {
+                <i class="bi bi-exclamation-octagon-fill"></i>
+              } @else if (getBadgeType(notif) === 'warning') {
+                <i class="bi bi-exclamation-triangle-fill"></i>
+              } @else if (getBadgeType(notif) === 'success') {
+                <i class="bi bi-check-circle-fill"></i>
+              } @else {
+                <i class="bi bi-info-circle-fill"></i>
+              }
+            </div>
+
+            <!-- Content -->
+            <div class="notif-body">
+              <div class="notif-top">
+                <div class="notif-title-group">
+                  <span
+                    class="type-pill"
+                    [class.danger]="getBadgeType(notif) === 'danger'"
+                    [class.warning]="getBadgeType(notif) === 'warning'"
+                    [class.success]="getBadgeType(notif) === 'success'"
+                    [class.info]="getBadgeType(notif) === 'info'"
+                  >
+                    {{ getBadgeLabel(notif) }}
+                  </span>
+                  <h3 class="notif-heading">{{ notif.titre }}</h3>
+                </div>
+
+                <div class="notif-meta">
+                  <span class="notif-date">
+                    <i class="bi bi-clock"></i>
+                    {{ notif.created_at ? (notif.created_at | date:'dd MMM yyyy à HH:mm') : 'Récemment' }}
+                  </span>
+                  @if (!notif.is_read) {
+                    <span class="unread-tag">Nouveau</span>
+                  }
+                </div>
+              </div>
+
+              <p class="notif-text">{{ notif.message }}</p>
+
+              <!-- Actions inside card -->
+              <div class="notif-card-footer">
+                @if (notif.route_url) {
+                  <button
+                    type="button"
+                    class="action-btn primary-action"
+                    (click)="handleAction(notif)"
+                  >
+                    <i class="bi bi-arrow-right-circle-fill"></i>
+                    Consulter le dossier
+                  </button>
+                }
+
+                @if (!notif.is_read) {
+                  <button
+                    type="button"
+                    class="action-btn mark-read-action"
+                    (click)="markAsRead(notif, $event)"
+                  >
+                    <i class="bi bi-check2"></i>
+                    Marquer comme lu
+                  </button>
+                }
+              </div>
+            </div>
+          </div>
+        } @empty {
+          <div class="empty-state">
+            <div class="empty-icon-box">
+              <i class="bi bi-bell-slash"></i>
+            </div>
+            <h4 class="empty-title">Aucune notification trouvée</h4>
+            <p class="empty-desc">
+              @if (filterUnreadOnly()) {
+                Vous n'avez aucune notification non lue dans cette catégorie.
+              } @else if (searchQuery()) {
+                Aucun résultat ne correspond à la recherche "{{ searchQuery() }}".
+              } @else {
+                Toutes les opérations pastorales sont à jour.
+              }
+            </p>
+            @if (searchQuery() || filterUnreadOnly()) {
+              <button
+                type="button"
+                class="reset-filter-btn"
+                (click)="searchQuery.set(''); filterUnreadOnly.set(false); activeTab.set('all')"
+              >
+                Réinitialiser les filtres
+              </button>
+            }
+          </div>
+        }
+      }
+    </div>
+  </app-card>
+</div>

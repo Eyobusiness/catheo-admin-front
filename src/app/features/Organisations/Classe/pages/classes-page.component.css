@@ -71,7 +71,7 @@
   gap: 0.875rem;
   flex-wrap: wrap;
   flex: 1;
-  max-width: 800px;
+  max-width: 950px;
 }
 
 /* Search input wrapper */
@@ -80,8 +80,8 @@
   display: flex;
   align-items: center;
   flex: 1;
-  min-width: 260px;
-  max-width: 380px;
+  min-width: 220px;
+  max-width: 320px;
 }
 
 .search-icon {
@@ -129,13 +129,15 @@
   color: var(--neutral-600);
 }
 
-/* Niveau Select Wrapper */
-.niveau-select-wrapper {
+/* Select Filter Wrapper */
+.niveau-select-wrapper,
+.select-filter-wrapper {
   position: relative;
   display: flex;
   align-items: center;
-  min-width: 220px;
+  min-width: 195px;
 }
+
 
 .select-prefix-icon {
   position: absolute;

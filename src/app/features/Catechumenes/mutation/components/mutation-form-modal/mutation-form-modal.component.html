@@ -24,21 +24,7 @@
         }
       </div>
 
-      <!-- Année Pastorale -->
-      <div class="form-group full-width">
-        <label class="form-label" for="mut_annee_id">
-          Année Pastorale <span class="required">*</span>
-        </label>
-        <select id="mut_annee_id" formControlName="annee_catechese_id" class="form-control">
-          <option value="">Sélectionner l'année</option>
-          @for (a of annees(); track a.id) {
-            <option [value]="a.id">{{ a.libelle }} {{ a.est_active ? '(Active)' : '' }}</option>
-          }
-        </select>
-        @if (form.controls.annee_catechese_id.touched && form.controls.annee_catechese_id.errors?.['required']) {
-          <span class="field-error">L'année pastorale est obligatoire.</span>
-        }
-      </div>
+
 
       <!-- Paroisse Origine -->
       <div class="form-group">

@@ -1,0 +1,161 @@
+<div class="table-card-wrapper">
+  <div class="table-responsive">
+    <table class="medical-table">
+      <thead>
+        <tr>
+          <th class="col-ref">Référence</th>
+          <th class="col-cat">Catéchumène</th>
+          <th class="col-libelle">Libellé de l'opération</th>
+          <th class="col-montant">Montant</th>
+          <th class="col-echeance">Échéance</th>
+          <th class="col-statut">Statut</th>
+          <th class="col-actions text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of paginatedOperations(); track item.id) {
+          <tr class="table-row">
+            <!-- Référence -->
+            <td class="col-ref">
+              <span class="ref-pill">
+                <i class="bi bi-hash"></i> {{ item.reference }}
+              </span>
+            </td>
+
+            <!-- Catéchumène -->
+            <td class="col-cat">
+              <div class="cat-cell">
+                <div class="cat-avatar">
+                  <i class="bi bi-person"></i>
+                </div>
+                <div class="cat-info">
+                  @if (item.catechumene; as cat) {
+                    <span class="cat-name">{{ cat.nom_complet || (cat.nom + ' ' + (cat.prenoms || '')) }}</span>
+                    @if (cat.matricule || cat.code_catechumene) {
+                      <span class="cat-code">{{ cat.matricule || cat.code_catechumene }}</span>
+                    }
+                  } @else {
+                    <span class="cat-name">Non assigné</span>
+                  }
+                </div>
+              </div>
+            </td>
+
+            <!-- Libellé -->
+            <td class="col-libelle">
+              <div class="libelle-cell">
+                <span class="libelle-main">{{ getDisplayLibelle(item) }}</span>
+                @if (item.tarif_intitule || item.tarif?.intitule) {
+                  <span class="tarif-sub"><i class="bi bi-tag"></i> 
+                    {{ item.tarif_intitule || item.tarif?.intitule }}
+                </span>
+                }
+              </div>
+            </td>
+
+            <!-- Montant -->
+            <td class="col-montant">
+              <div class="montant-cell">
+                <span class="montant-amount">{{ (item.montant_total || item.montant || 0) | number:'1.0-0' }} <small>FCFA</small></span>
+                @if (item.statut === 'partiellement_paye' && item.montant_paye) {
+                  <span class="montant-paye-sub">Payé : {{ item.montant_paye | number:'1.0-0' }} F (Reste: {{ item.montant_restant | number:'1.0-0' }} F)</span>
+                }
+              </div>
+            </td>
+
+            <!-- Échéance -->
+            <td class="col-echeance">
+              @if (item.echeance) {
+                <span class="echeance-pill">
+                  <i class="bi bi-calendar-event"></i> {{ item.echeance | date:'dd MMM yyyy' }}
+                </span>
+              } @else {
+                <span class="text-muted">—</span>
+              }
+            </td>
+
+            <!-- Statut -->
+            <td class="col-statut">
+              <span [class]="'status-pill ' + getStatutBadgeClass(item.statut)">
+                @if (item.statut === 'paye') {
+                  <i class="bi bi-check-circle-fill"></i>
+                } @else if (item.statut === 'partiellement_paye') {
+                  <i class="bi bi-pie-chart-fill"></i>
+                } @else if (item.statut === 'annule') {
+                  <i class="bi bi-x-circle-fill"></i>
+                } @else {
+                  <i class="bi bi-clock-history"></i>
+                }
+                <span>{{ getStatutLabel(item.statut) }}</span>
+              </span>
+            </td>
+
+            <!-- Actions -->
+            <td class="col-actions text-right">
+              <div class="actions-flex">
+                <!-- 1. Encaisser au guichet (si non payé) -->
+                @if (item.statut !== 'paye' && item.statut !== 'annule') {
+                  <app-icon-button
+                    variant="success"
+                    size="sm"
+                    title="Encaisser"
+                    ariaLabel="Encaisser"
+                    (clicked)="onEncaisser(item)"
+                  >
+                    <i class="bi bi-cash-coin"></i>
+                  </app-icon-button>
+                }
+
+                <!-- Imprimer Reçu Thermique (58mm / 80mm) -->
+                <app-icon-button
+                  variant="info"
+                  size="sm"
+                  title="Imprimer Reçu Thermique (58mm / 80mm)"
+                  ariaLabel="Imprimer Reçu"
+                  (clicked)="onPrintReceipt(item)"
+                >
+                  <i class="bi bi-printer"></i>
+                </app-icon-button>
+
+                <!-- 2. Supprimer -->
+                <app-icon-button
+                  variant="danger"
+                  size="sm"
+                  title="Supprimer l'opération"
+                  ariaLabel="Supprimer"
+                  (clicked)="onDelete(item)"
+                >
+                  <i class="bi bi-trash3"></i>
+                </app-icon-button>
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="empty-cell">
+              <div class="empty-state-box">
+                <div class="empty-icon-wrap">
+                  <i class="bi bi-receipt-cutoff"></i>
+                </div>
+                <h4 class="empty-title">Aucune opération financière</h4>
+                <p class="empty-desc">
+                  Les opérations de paiement générées automatiquement lors des inscriptions ou par les tarifs apparaîtront ici.
+                </p>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (operations().length > 0) {
+    <app-pagination
+      [totalItems]="operations().length"
+      [currentPage]="currentPage()"
+      [pageSize]="pageSize()"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+    />
+  }
+</div>

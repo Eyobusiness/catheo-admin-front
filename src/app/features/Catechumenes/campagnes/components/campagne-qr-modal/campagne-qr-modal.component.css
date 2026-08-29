@@ -1,3 +1,7 @@
+:host {
+  display: contents;
+}
+
 .qr-modal-body {
   display: flex;
   flex-direction: column;

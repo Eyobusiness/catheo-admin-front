@@ -18,8 +18,53 @@ export const routes: Routes = [
   {
     path: 'dashboard',
     loadComponent: () =>
-      import('./features/UnderConstruction/under-construction.component').then(m => m.UnderConstructionComponent),
+      import('./features/Dashboard/pages/dashboard.component').then(m => m.DashboardComponent),
     data: { title: 'Tableau de Bord' }
+  },
+  {
+    path: 'mon-profil',
+    loadComponent: () =>
+      import('./features/Auth/pages/mon-profil/mon-profil-page.component').then(m => m.MonProfilPageComponent),
+    data: { title: 'Mon Profil & Sécurité' }
+  },
+  {
+    path: 'profile',
+    redirectTo: 'mon-profil',
+    pathMatch: 'full'
+  },
+
+  // --- Portail Public de Préinscription (Accessible par lien et QR code) ---
+  {
+    path: 'preinscription-publique',
+    loadComponent: () =>
+      import('./features/Catechumenes/preinscriptions/pages/public-preinscription/public-preinscription-page.component').then(
+        m => m.PublicPreinscriptionPageComponent
+      ),
+    data: { title: 'Préinscription en Ligne - Paroisse Cœur Immaculé de Marie' }
+  },
+  {
+    path: 'preinscription-publique/:campagneId',
+    loadComponent: () =>
+      import('./features/Catechumenes/preinscriptions/pages/public-preinscription/public-preinscription-page.component').then(
+        m => m.PublicPreinscriptionPageComponent
+      ),
+    data: { title: 'Préinscription en Ligne - Paroisse Cœur Immaculé de Marie' }
+  },
+  {
+    path: 'preinscriptions/campagne/:campagneId',
+    loadComponent: () =>
+      import('./features/Catechumenes/preinscriptions/pages/public-preinscription/public-preinscription-page.component').then(
+        m => m.PublicPreinscriptionPageComponent
+      ),
+    data: { title: 'Préinscription en Ligne - Paroisse Cœur Immaculé de Marie' }
+  },
+  {
+    path: 'preinscriptions/campagne',
+    loadComponent: () =>
+      import('./features/Catechumenes/preinscriptions/pages/public-preinscription/public-preinscription-page.component').then(
+        m => m.PublicPreinscriptionPageComponent
+      ),
+    data: { title: 'Préinscription en Ligne - Paroisse Cœur Immaculé de Marie' }
   },
 
   // --- Catéchumènes ---
@@ -63,86 +108,92 @@ export const routes: Routes = [
   // --- Gestion des Présences ---
   {
     path: 'seances',
-    loadComponent: () =>
-      import('./features/UnderConstruction/under-construction.component').then(m => m.UnderConstructionComponent),
-    data: { title: 'Gestion des Séances' }
+    loadChildren: () =>
+      import('./features/Presences/routes/presences.routes').then(m => m.PRESENCES_ROUTES),
+    data: { title: 'Gestion des Séances & Présences' }
   },
 
   // --- Évaluations ---
   {
     path: 'evaluations',
-    loadComponent: () =>
-      import('./features/UnderConstruction/under-construction.component').then(m => m.UnderConstructionComponent),
+    loadChildren: () =>
+      import('./features/Evaluations/evaluation/routes/evaluation.routes').then(m => m.EVALUATION_ROUTES),
     data: { title: 'Évaluations' }
   },
   {
     path: 'notes',
-    loadComponent: () =>
-      import('./features/UnderConstruction/under-construction.component').then(m => m.UnderConstructionComponent),
+    loadChildren: () =>
+      import('./features/Evaluations/notes/routes/notes.routes').then(m => m.NOTES_ROUTES),
     data: { title: 'Saisie des Notes' }
   },
   {
     path: 'bilans-annuels',
-    loadComponent: () =>
-      import('./features/UnderConstruction/under-construction.component').then(m => m.UnderConstructionComponent),
+    loadChildren: () =>
+      import('./features/Evaluations/bilan-annuel/routes/bilan-annuel.routes').then(m => m.BILAN_ANNUEL_ROUTES),
     data: { title: 'Bilans Annuels' }
   },
   {
     path: 'bulletins',
-    loadComponent: () =>
-      import('./features/UnderConstruction/under-construction.component').then(m => m.UnderConstructionComponent),
+    loadChildren: () =>
+      import('./features/Evaluations/bulletin/routes/bulletin.routes').then(m => m.BULLETIN_ROUTES),
     data: { title: 'Bulletins de Catéchèse' }
   },
 
   // --- Sacrements ---
   {
+    path: 'sacrements',
+    loadChildren: () =>
+      import('./features/Sacrements/routes/sacrements.routes').then(m => m.SACREMENTS_ROUTES),
+    data: { title: 'Sacrements' }
+  },
+  {
     path: 'sacrements/bapteme',
     loadComponent: () =>
-      import('./features/UnderConstruction/under-construction.component').then(m => m.UnderConstructionComponent),
+      import('./features/Sacrements/pages/bapteme/bapteme-page.component').then(m => m.BaptemePageComponent),
     data: { title: 'Sacrement du Baptême' }
   },
   {
     path: 'sacrements/premiere-communion',
     loadComponent: () =>
-      import('./features/UnderConstruction/under-construction.component').then(m => m.UnderConstructionComponent),
+      import('./features/Sacrements/pages/premiere-communion/premiere-communion-page.component').then(m => m.PremiereCommunionPageComponent),
     data: { title: 'Première Communion' }
   },
   {
     path: 'sacrements/confirmation',
     loadComponent: () =>
-      import('./features/UnderConstruction/under-construction.component').then(m => m.UnderConstructionComponent),
+      import('./features/Sacrements/pages/confirmation/confirmation-page.component').then(m => m.ConfirmationPageComponent),
     data: { title: 'Sacrement de Confirmation' }
   },
   {
     path: 'exceptions-pastorales',
     loadComponent: () =>
-      import('./features/UnderConstruction/under-construction.component').then(m => m.UnderConstructionComponent),
+      import('./features/Sacrements/pages/exceptions-pastorales/exceptions-pastorales-page.component').then(m => m.ExceptionsPastoralesPageComponent),
     data: { title: 'Exceptions Pastorales' }
   },
 
   // --- Finances ---
   {
     path: 'tarifications',
-    loadComponent: () =>
-      import('./features/UnderConstruction/under-construction.component').then(m => m.UnderConstructionComponent),
+    loadChildren: () =>
+      import('./features/Finances/tarification/routes/tarification.routes').then(m => m.TARIFICATION_ROUTES),
     data: { title: 'Tarification' }
   },
   {
     path: 'operations-financieres',
-    loadComponent: () =>
-      import('./features/UnderConstruction/under-construction.component').then(m => m.UnderConstructionComponent),
+    loadChildren: () =>
+      import('./features/Finances/operation-financiere/routes/operation.routes').then(m => m.OPERATION_FINANCIERE_ROUTES),
     data: { title: 'Opérations Financières' }
   },
   {
     path: 'caisse',
-    loadComponent: () =>
-      import('./features/UnderConstruction/under-construction.component').then(m => m.UnderConstructionComponent),
+    loadChildren: () =>
+      import('./features/Finances/caisse/routes/caisse.routes').then(m => m.CAISSE_ROUTES),
     data: { title: 'Gestion de la Caisse' }
   },
   {
     path: 'versements',
-    loadComponent: () =>
-      import('./features/UnderConstruction/under-construction.component').then(m => m.UnderConstructionComponent),
+    loadChildren: () =>
+      import('./features/Finances/versements/routes/versements.routes').then(m => m.VERSEMENTS_ROUTES),
     data: { title: 'Versements Paroissiaux' }
   },
 
@@ -156,80 +207,49 @@ export const routes: Routes = [
   {
     path: 'notifications',
     loadComponent: () =>
-      import('./features/UnderConstruction/under-construction.component').then(m => m.UnderConstructionComponent),
-    data: { title: 'Centre de Notifications' }
+      import('./features/Notifications/pages/notifications-page.component').then(m => m.NotificationsPageComponent),
+    data: { title: 'Centre de Notifications & Alertes' }
   },
 
   // --- Impressions ---
   {
-    path: 'impressions/fiche-notes',
-    loadComponent: () =>
-      import('./features/UnderConstruction/under-construction.component').then(m => m.UnderConstructionComponent),
-    data: { title: 'Impression - Fiche de Notes' }
-  },
-  {
-    path: 'impressions/liste-presence',
-    loadComponent: () =>
-      import('./features/UnderConstruction/under-construction.component').then(m => m.UnderConstructionComponent),
-    data: { title: 'Impression - Liste de Présence' }
-  },
-  {
-    path: 'impressions/bilan-annuel',
-    loadComponent: () =>
-      import('./features/UnderConstruction/under-construction.component').then(m => m.UnderConstructionComponent),
-    data: { title: 'Impression - Fiche de Bilan Annuel' }
-  },
-  {
-    path: 'impressions/suivi-sacramentel',
-    loadComponent: () =>
-      import('./features/UnderConstruction/under-construction.component').then(m => m.UnderConstructionComponent),
-    data: { title: 'Impression - Fiche de Suivi Sacramentel' }
-  },
-  {
-    path: 'impressions/renseignements-bapteme',
-    loadComponent: () =>
-      import('./features/UnderConstruction/under-construction.component').then(m => m.UnderConstructionComponent),
-    data: { title: 'Impression - Renseignements Baptême' }
-  },
-  {
-    path: 'impressions/renseignements-premiere-communion',
-    loadComponent: () =>
-      import('./features/UnderConstruction/under-construction.component').then(m => m.UnderConstructionComponent),
-    data: { title: 'Impression - Renseignements Première Communion' }
-  },
-  {
-    path: 'impressions/renseignements-confirmation',
-    loadComponent: () =>
-      import('./features/UnderConstruction/under-construction.component').then(m => m.UnderConstructionComponent),
-    data: { title: 'Impression - Renseignements Confirmation' }
+    path: 'impressions',
+    loadChildren: () =>
+      import('./features/Impressions/routes/impressions.routes').then(m => m.IMPRESSIONS_ROUTES),
+    data: { title: 'Centre d\'Impressions & Fiches Pastorales' }
   },
 
   // --- Documents Officiels ---
   {
+    path: 'documents',
+    loadChildren: () =>
+      import('./features/Documents/routes/documents.routes').then(m => m.DOCUMENTS_ROUTES),
+    data: { title: 'Documents Officiels' }
+  },
+  {
     path: 'modeles-documents',
     loadComponent: () =>
-      import('./features/UnderConstruction/under-construction.component').then(m => m.UnderConstructionComponent),
+      import('./features/Documents/pages/modeles/modeles.component').then(m => m.ModelesDocumentsPageComponent),
     data: { title: 'Modèles de Documents' }
   },
   {
     path: 'generation-documents',
     loadComponent: () =>
-      import('./features/UnderConstruction/under-construction.component').then(m => m.UnderConstructionComponent),
+      import('./features/Documents/pages/generation/generation.component').then(m => m.GenerationDocumentsPageComponent),
     data: { title: 'Génération de Documents' }
   },
 
-  // --- Rapports & Statistiques ---
+  // --- Rapports & Bilan Pastoral ---
   {
     path: 'statistiques',
-    loadComponent: () =>
-      import('./features/UnderConstruction/under-construction.component').then(m => m.UnderConstructionComponent),
-    data: { title: 'Statistiques & Indicateurs' }
+    redirectTo: 'rapports',
+    pathMatch: 'full'
   },
   {
     path: 'rapports',
     loadComponent: () =>
-      import('./features/UnderConstruction/under-construction.component').then(m => m.UnderConstructionComponent),
-    data: { title: 'Rapports Pastoraux' }
+      import('./features/Rapports/pages/rapports/rapports-page.component').then(m => m.RapportsPageComponent),
+    data: { title: 'Rapport Pastoral & Bilan Annuel' }
   },
 
   // --- Organisation ---

@@ -51,9 +51,9 @@
             (change)="onRoleFilterChange($event)"
           >
             <option value="">Tous les rôles</option>
-            <option value="principal">Catéchiste Principal</option>
-            <option value="adjoint">Catéchiste Adjoint</option>
-            <option value="assistant">Assistant / Aide</option>
+            <option value="principal">Principal</option>
+            <!-- <option value="adjoint">Catéchiste Adjoint</option> -->
+            <option value="assistant">Assistant</option>
           </select>
           <i class="bi bi-chevron-down select-chevron-icon"></i>
         </div>
@@ -108,6 +108,7 @@
   [affectationToEdit]="selectedAffectation()"
   [animateurs]="animateurs()"
   [classes]="classes()"
+  [existingAffectations]="affectations()"
   [isLoading]="isLoading()"
   (formClosed)="closeFormModal()"
   (formSubmitted)="handleFormSubmit($event)"

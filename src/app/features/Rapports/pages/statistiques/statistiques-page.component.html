@@ -1,0 +1,194 @@
+<div class="page-container animate-fade-in">
+  <!-- En-tête de page -->
+  <div class="page-header no-print">
+    <div class="header-titles">
+      <h2 class="page-title">
+        <i class="bi bi-graph-up-arrow text-primary"></i>
+        <span>Statistiques & Indicateurs Pastoraux</span>
+      </h2>
+      <p class="page-subtitle">
+        Visualisation analytique des effectifs, taux d'assiduité, résultats d'évaluations et progression sacramentelle.
+      </p>
+    </div>
+
+    <div class="header-actions">
+      <button type="button" class="btn btn-secondary" (click)="printDashboard()">
+        <i class="bi bi-printer"></i>
+        <span>Imprimer les statistiques</span>
+      </button>
+
+      <button type="button" class="btn btn-primary" (click)="service.fetchBackendStats()">
+        <i class="bi bi-arrow-clockwise"></i>
+        <span>Actualiser les données</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Barre de Filtres -->
+  <div class="toolbar-card no-print">
+    <div class="filter-group">
+      <label class="filter-label">Année pastorale :</label>
+      <select class="filter-select" [ngModel]="filterAnnee()" (ngModelChange)="filterAnnee.set($event)">
+        <option value="2025-2026">2025-2026 (En cours)</option>
+        <option value="2024-2025">2024-2025 (Précédente)</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label class="filter-label">Section pastorale :</label>
+      <select class="filter-select" [ngModel]="filterSection()" (ngModelChange)="filterSection.set($event)">
+        <option value="tous">Toutes les sections</option>
+        <option value="Enfants">Enfants</option>
+        <option value="Jeunes">Jeunes</option>
+        <option value="Adultes">Adultes</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- 4 KPIs Principaux -->
+  <div class="kpi-grid">
+    <div class="kpi-card total-card">
+      <div class="kpi-icon icon-inscrits">
+        <i class="bi bi-people-fill"></i>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-value">{{ stats().totalInscrits }}</span>
+        <span class="kpi-label">Effectif Total Inscrits</span>
+        <span class="kpi-sub">Garçons : {{ stats().totalGarcons }} • Filles : {{ stats().totalFilles }}</span>
+      </div>
+    </div>
+
+    <div class="kpi-card assiduite-card">
+      <div class="kpi-icon icon-assiduite">
+        <i class="bi bi-calendar2-check-fill"></i>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-value">{{ stats().tauxAssiduiteGlobal }}%</span>
+        <span class="kpi-label">Taux d'Assiduité Global</span>
+        <span class="kpi-sub positive"><i class="bi bi-arrow-up-short"></i> +3.2% vs trimestre 1</span>
+      </div>
+    </div>
+
+    <div class="kpi-card reussite-card">
+      <div class="kpi-icon icon-reussite">
+        <i class="bi bi-award-fill"></i>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-value">{{ stats().tauxReussiteGlobal }}%</span>
+        <span class="kpi-label">Taux de Réussite / Délibérations</span>
+        <span class="kpi-sub positive"><i class="bi bi-check2-circle"></i> Moyenne générale : 14.5/20</span>
+      </div>
+    </div>
+
+    <div class="kpi-card sacrements-card">
+      <div class="kpi-icon icon-sacrements">
+        <i class="bi bi-droplet-half"></i>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-value">{{ stats().totalSacrementsValides }} / {{ stats().totalSacrementsPrevus }}</span>
+        <span class="kpi-label">Sacrements d'Initiation Reçus</span>
+        <span class="kpi-sub"><i class="bi bi-shield-check"></i> 79.8% d'accomplissement</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Grille Graphiques & Visualisations -->
+  <div class="charts-grid">
+    <!-- Évolution mensuelle de l'assiduité -->
+    <div class="chart-card">
+      <div class="card-header-clean">
+        <div class="header-badge-title">
+          <i class="bi bi-graph-up text-primary"></i>
+          <h4>Évolution de l'Assiduité Mensuelle (%)</h4>
+        </div>
+        <span class="card-tag">Catéchèse & Messe</span>
+      </div>
+
+      <div class="chart-bars-container">
+        @for (m of stats().evolutionPresenceMensuelle; track m.mois) {
+          <div class="bar-col">
+            <div class="bar-track">
+              <div class="bar-fill" [style.height.%]="m.taux" [class.high]="m.taux >= 90" [class.medium]="m.taux < 90 && m.taux >= 85" [class.low]="m.taux < 85">
+                <span class="bar-val-tooltip">{{ m.taux }}%</span>
+              </div>
+            </div>
+            <span class="bar-label">{{ m.mois }}</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Répartition & Avancement des Sacrements -->
+    <div class="chart-card">
+      <div class="card-header-clean">
+        <div class="header-badge-title">
+          <i class="bi bi-patch-check-fill text-warning"></i>
+          <h4>Progression des Sacrements d'Initiation</h4>
+        </div>
+        <span class="card-tag">Année 2025-2026</span>
+      </div>
+
+      <div class="sacrements-progress-list">
+        @for (sac of stats().statistiquesSacrements; track sac.sacrement) {
+          <div class="sac-item">
+            <div class="sac-meta">
+              <strong>{{ sac.sacrement }}</strong>
+              <span>{{ sac.valides }} validés / {{ sac.candidats }} candidats ({{ sac.tauxAccomplissement }}%)</span>
+            </div>
+            <div class="progress-bar-track">
+              <div class="progress-bar-fill" [style.width.%]="sac.tauxAccomplissement" [class.bap]="sac.sacrement === 'Baptême'" [class.com]="sac.sacrement === 'Première Communion'" [class.conf]="sac.sacrement === 'Confirmation'"></div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Répartition détaillée par Niveau & Classe -->
+  <div class="card-table">
+    <div class="card-header-clean" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color);">
+      <div class="header-badge-title">
+        <i class="bi bi-layers-fill text-primary"></i>
+        <h4>Indicateurs Clés par Niveau d'Étude Catéchétique</h4>
+      </div>
+      <span class="card-tag">Synthèse pédagogique & financière</span>
+    </div>
+
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Niveau</th>
+            <th class="text-center">Effectif Total</th>
+            <th class="text-center">Déjà Baptisés</th>
+            <th class="text-center">Non Baptisés</th>
+            <th class="text-center">Moyenne Générale</th>
+            <th class="text-center">Taux Recouvrement</th>
+            <th class="text-right">Performance Globale</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (niv of stats().repartitionNiveaux; track niv.niveau) {
+            <tr class="data-row">
+              <td><strong>{{ niv.niveau }}</strong></td>
+              <td class="text-center"><span class="badge-effectif">{{ niv.effectif }}</span></td>
+              <td class="text-center text-success font-bold">{{ niv.baptises }}</td>
+              <td class="text-center text-warning font-bold">{{ niv.nonBaptises }}</td>
+              <td class="text-center font-bold text-primary">{{ niv.moyenneGenerale }} / 20</td>
+              <td class="text-center">
+                <span class="recouvrement-pill" [class.high]="niv.tauxRecouvrement >= 90" [class.med]="niv.tauxRecouvrement < 90">
+                  {{ niv.tauxRecouvrement }}%
+                </span>
+              </td>
+              <td class="text-right">
+                <div class="perf-bar">
+                  <div class="perf-fill" [style.width.%]="(niv.moyenneGenerale / 20) * 100"></div>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

@@ -23,7 +23,17 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
-      if (error.status === 401 && !req.url.includes('/auth/login')) {
+      // Déterminer si l'utilisateur est actuellement sur une route publique
+      const currentPath = (typeof window !== 'undefined' ? window.location.pathname : '') || router.url || '';
+      const isPublicRoute =
+        currentPath.includes('/preinscriptions/campagne') ||
+        currentPath.includes('/preinscription-publique') ||
+        currentPath.startsWith('/auth') ||
+        currentPath.startsWith('/login') ||
+        req.url.includes('/preinscriptions/public') ||
+        req.url.includes('/preinscriptions/campagne');
+
+      if (error.status === 401 && !req.url.includes('/auth/login') && !isPublicRoute) {
         authService.clearSession();
         router.navigate(['/auth/login']);
       }

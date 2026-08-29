@@ -1,0 +1,301 @@
+:host {
+  display: contents;
+}
+
+.thermal-modal-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Format Switcher Bar */
+.format-switcher-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: var(--neutral-100, #f1f5f9);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid var(--border-color, #e2e8f0);
+}
+
+.switcher-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--neutral-700, #334155);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.format-buttons-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.format-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.85rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1.5px solid var(--neutral-300, #cbd5e1);
+  background: #ffffff;
+  color: var(--neutral-700, #475569);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.format-btn:hover {
+  background: var(--neutral-50, #f8fafc);
+  border-color: var(--primary-400, #38bdf8);
+}
+
+.format-btn.active {
+  background: var(--primary-600, #0284c7);
+  color: #ffffff;
+  border-color: var(--primary-600, #0284c7);
+  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);
+}
+
+/* Preview Viewport */
+.thermal-preview-viewport {
+  background: #64748b;
+  padding: 1.5rem 1rem;
+  border-radius: var(--radius-md, 8px);
+  display: flex;
+  justify-content: center;
+  overflow-x: auto;
+}
+
+/* Thermal Receipt Ticket Body */
+.thermal-receipt {
+  background: #ffffff;
+  color: #000000;
+  font-family: 'Courier New', Courier, monospace, sans-serif;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  padding: 1rem 0.75rem;
+  line-height: 1.25;
+  transition: width 0.3s ease;
+}
+
+/* 58mm POS Format */
+.thermal-receipt.format-58mm {
+  width: 58mm;
+  max-width: 58mm;
+  font-size: 11px;
+}
+
+/* 80mm POS Format */
+.thermal-receipt.format-80mm {
+  width: 80mm;
+  max-width: 80mm;
+  font-size: 13px;
+}
+
+.t-logo-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0.35rem;
+}
+
+.t-logo-img {
+  max-width: 48px;
+  max-height: 48px;
+  object-fit: contain;
+}
+
+.t-church-name {
+  font-size: 1.1em;
+  font-weight: 900;
+  margin: 0;
+  line-height: 1.15;
+}
+
+.t-diocese {
+  font-size: 0.85em;
+  font-weight: 700;
+  margin: 0.15rem 0 0;
+}
+
+.t-dept {
+  font-size: 0.8em;
+  font-weight: 600;
+  margin: 0.15rem 0 0;
+}
+
+.t-contact {
+  font-size: 0.75em;
+  margin: 0.1rem 0 0;
+}
+
+.t-divider {
+  font-size: 0.75em;
+  letter-spacing: -0.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-align: center;
+  margin: 0.35rem 0;
+}
+
+.t-title-box {
+  margin: 0.3rem 0;
+}
+
+.t-receipt-title {
+  font-size: 1.05em;
+  font-weight: 900;
+  margin: 0;
+}
+
+.t-ref-row, .t-date-row {
+  font-size: 0.85em;
+  font-weight: 600;
+  margin-top: 0.15rem;
+}
+
+.t-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.t-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.t-label {
+  font-size: 0.85em;
+  font-weight: 700;
+}
+
+.t-val {
+  font-size: 0.9em;
+  text-align: right;
+}
+
+.t-val-bold {
+  font-weight: 900;
+}
+
+.t-amounts-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.t-total-row {
+  font-weight: 700;
+}
+
+.t-paid-row {
+  font-size: 1.05em;
+  font-weight: 900;
+}
+
+.t-rest-row {
+  font-size: 0.9em;
+}
+
+.t-status-row {
+  margin-top: 0.2rem;
+  font-size: 0.95em;
+}
+
+.t-notes {
+  font-size: 0.8em;
+  font-style: italic;
+}
+
+.t-footer {
+  margin-top: 0.4rem;
+}
+
+.t-sign {
+  font-size: 0.85em;
+  font-weight: 700;
+  margin: 0;
+}
+
+.t-mention {
+  font-size: 0.75em;
+  margin: 0.25rem 0 0;
+}
+
+.t-blessing {
+  font-size: 0.85em;
+  font-weight: 800;
+  margin: 0.35rem 0 0;
+}
+
+.t-cut-line {
+  font-size: 0.7em;
+  letter-spacing: -0.5px;
+  margin-top: 0.5rem;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.thermal-footer-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+/* Print CSS */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .no-print,
+  .app-header,
+  .app-sidebar,
+  .dialog-header,
+  .dialog-footer,
+  .modal-backdrop {
+    display: none !important;
+  }
+
+  #thermal-printable-receipt,
+  #thermal-printable-receipt * {
+    visibility: visible;
+  }
+
+  #thermal-printable-receipt {
+    position: absolute;
+    left: 0;
+    top: 0;
+    margin: 0;
+    padding: 2mm;
+    box-shadow: none !important;
+    border: none !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  #thermal-printable-receipt.format-58mm {
+    width: 54mm !important;
+    max-width: 54mm !important;
+    font-size: 10pt !important;
+  }
+
+  #thermal-printable-receipt.format-80mm {
+    width: 76mm !important;
+    max-width: 76mm !important;
+    font-size: 11pt !important;
+  }
+
+  @page {
+    margin: 0;
+    size: auto;
+  }
+}

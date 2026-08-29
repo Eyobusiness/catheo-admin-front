@@ -6,52 +6,21 @@
   (closed)="onClose()"
 >
   <form [formGroup]="form" (ngSubmit)="onSubmit()" dialog-body class="module-form">
-    <!-- Année Pastorale Selection -->
+    <!-- Libellé du Module -->
     <div class="form-group">
-      <label class="form-label" for="anneeId">
-        Année Pastorale <span class="required">*</span>
+      <label class="form-label" for="libelle">
+        Libellé du Module <span class="required">*</span>
       </label>
-      <select id="anneeId" formControlName="annee_catechese_id" class="form-control">
-        <option value="" disabled>Sélectionner une année</option>
-        @for (annee of annees(); track annee.id) {
-          <option [value]="annee.id">
-            {{ annee.libelle }} @if (annee.est_active) { (En cours) }
-          </option>
-        }
-      </select>
-      @if (form.controls.annee_catechese_id.touched && form.controls.annee_catechese_id.invalid) {
-        <span class="field-error">Veuillez sélectionner l'année pastorale.</span>
+      <input
+        id="libelle"
+        type="text"
+        formControlName="libelle"
+        class="form-control"
+        placeholder="Ex: 1er Trimestre, Module 1 : Découverte..."
+      />
+      @if (form.controls.libelle.touched && form.controls.libelle.invalid) {
+        <span class="field-error">Le libellé est obligatoire (min. 3 caractères).</span>
       }
-    </div>
-
-    <!-- Trimestre Code & Libellé Row -->
-    <div class="form-row col-2">
-      <div class="form-group">
-        <label class="form-label" for="trimestre">
-          Trimestre <span class="required">*</span>
-        </label>
-        <select id="trimestre" formControlName="trimestre" class="form-control">
-          <option value="T1">1er Trimestre (T1)</option>
-          <option value="T2">2ème Trimestre (T2)</option>
-          <option value="T3">3ème Trimestre (T3)</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label" for="libelle">
-          Libellé du Module <span class="required">*</span>
-        </label>
-        <input
-          id="libelle"
-          type="text"
-          formControlName="libelle"
-          class="form-control"
-          placeholder="Libellé"
-        />
-        @if (form.controls.libelle.touched && form.controls.libelle.invalid) {
-          <span class="field-error">Le libellé est obligatoire (min. 3 caractères).</span>
-        }
-      </div>
     </div>
 
     <!-- Dates Début & Fin Row -->
@@ -85,6 +54,17 @@
           <span class="field-error">La date de fin est requise.</span>
         }
       </div>
+    </div>
+
+    <!-- Statut Selection -->
+    <div class="form-group">
+      <label class="form-label" for="statut">
+        Statut du Module <span class="required">*</span>
+      </label>
+      <select id="statut" formControlName="statut" class="form-control">
+        <option value="en cours">En cours</option>
+        <option value="termine">Terminé</option>
+      </select>
     </div>
   </form>
 

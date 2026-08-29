@@ -198,7 +198,7 @@ export class CampagnePreinscriptionService {
     const id = typeof campagneOrId === 'string' ? campagneOrId : campagneOrId.id;
     const current = typeof campagneOrId === 'string' ? this.campagnes().find(c => c.id === id) : campagneOrId;
 
-    return this.http.patch<any>(`${this.baseUrl}/${id}`, { statut: nouveauStatut }).pipe(
+    return this.http.patch<any>(`${this.baseUrl}/${id}/statut`, { statut: nouveauStatut }).pipe(
       tap(res => {
         const item = res.data || res;
         const updated: CampagnePreinscriptionDto = {

@@ -33,6 +33,10 @@ export class PreinscriptionValiderModalComponent {
 
   constructor() {
     effect(() => {
+      if (!this.isOpen()) {
+        return;
+      }
+
       const item = this.preinscription();
       const nivs = this.niveaux();
       const defaultNiv = item?.niveau_souhaite_id || item?.niveau_souhaite?.id || (nivs.length > 0 ? nivs[0].id : '');

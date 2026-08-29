@@ -26,17 +26,17 @@
     <!-- Fonction & Téléphone -->
     <div class="form-row col-2">
       <div class="form-group">
-        <label class="form-label" for="titre_fonction">
+        <label class="form-label" for="fonction">
           Fonction <span class="required">*</span>
         </label>
         <input
-          id="titre_fonction"
+          id="fonction"
           type="text"
-          formControlName="titre_fonction"
+          formControlName="fonction"
           class="form-control"
-          placeholder="Ex: Coordinateur, Curé, Vicaire..."
+          placeholder="Ex: Coordinateur, Curé de la Paroisse, Vicaire..."
         />
-        @if (form.controls.titre_fonction.touched && form.controls.titre_fonction.invalid) {
+        @if (form.controls.fonction.touched && form.controls.fonction.invalid) {
           <span class="field-error">La fonction est obligatoire.</span>
         }
       </div>
@@ -77,7 +77,8 @@
       [loading]="isLoading()"
       (clicked)="onSubmit()"
     >
-      {{ isEditing() ? 'Enregistrer' : 'Ajouter le Responsable' }}
+      {{ isEditing() ? 'Modifier' : 'Enregistrer' }}
     </app-button>
   </div>
 </app-dialog>
+

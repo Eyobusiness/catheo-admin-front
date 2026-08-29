@@ -6,36 +6,6 @@
 >
   <form [formGroup]="form" (ngSubmit)="onSubmit()" class="campagne-form-body">
     <div class="form-grid">
-      <!-- Année pastorale -->
-      <div class="form-group">
-        <label class="form-label" for="annee_catechese_id">
-          Année Pastorale <span class="required">*</span>
-        </label>
-        <select id="annee_catechese_id" formControlName="annee_catechese_id" class="form-control">
-          <option value="">Sélectionner une année</option>
-          @for (a of annees(); track a.id) {
-            <option [value]="a.id">
-              {{ a.libelle }} {{ a.est_active ? '(Active)' : '' }}
-            </option>
-          }
-        </select>
-        @if (form.controls.annee_catechese_id.touched && form.controls.annee_catechese_id.errors?.['required']) {
-          <span class="field-error">L'année pastorale est obligatoire.</span>
-        }
-      </div>
-
-      <!-- Statut -->
-      <div class="form-group">
-        <label class="form-label" for="camp_statut">
-          Statut de la Campagne <span class="required">*</span>
-        </label>
-        <select id="camp_statut" formControlName="statut" class="form-control">
-          <option value="ouverte">Ouverte (Inscriptions autorisées)</option>
-          <option value="fermee">Fermée (Clôturée)</option>
-          <option value="suspendue">Suspendue (En pause)</option>
-        </select>
-      </div>
-
       <!-- Titre de la Campagne -->
       <div class="form-group full-width">
         <label class="form-label" for="camp_titre">
@@ -116,6 +86,18 @@
           </div>
         </div>
       }
+
+      <!-- Statut (placé tout à la fin) -->
+      <div class="form-group full-width">
+        <label class="form-label" for="camp_statut">
+          Statut de la Campagne <span class="required">*</span>
+        </label>
+        <select id="camp_statut" formControlName="statut" class="form-control">
+          <option value="ouverte">Ouverte</option>
+          <option value="fermee">Fermée</option>
+          <option value="suspendue">Suspendue</option>
+        </select>
+      </div>
     </div>
 
     <!-- Modal Footer Actions -->

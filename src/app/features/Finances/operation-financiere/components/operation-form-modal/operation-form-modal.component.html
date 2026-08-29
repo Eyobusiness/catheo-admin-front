@@ -1,0 +1,118 @@
+<app-dialog
+  [isOpen]="isOpen()"
+  [title]="isEditing() ? 'Modifier l\'Opération Financière' : 'Nouvel Avis de Paiement / Opération'"
+  size="md"
+  (closed)="onClose()"
+>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="operation-form-body">
+    <!-- Catéchumène -->
+    <div class="form-group">
+      <label class="form-label" for="op_cat_id">
+        Catéchumène Concerné (Optionnel)
+      </label>
+      <div class="select-wrapper">
+        <select id="op_cat_id" formControlName="catechumene_id" class="form-control">
+          <option [ngValue]="null">Sélectionner un catéchumène (ou laisser vide)</option>
+          @for (c of catechumenes(); track c.id) {
+            <option [value]="c.id">
+              {{ c.nom }} {{ c.prenoms }}
+              @if (c.code_catechumene) {
+                ({{ c.code_catechumene }})
+              }
+            </option>
+          }
+        </select>
+        <i class="bi bi-chevron-down select-chevron"></i>
+      </div>
+    </div>
+
+    <!-- Modèle de Tarif Pré-configuré -->
+    <div class="form-group">
+      <label class="form-label" for="op_tarif_id">
+        Appliquer un Tarif Pré-configuré (Optionnel)
+      </label>
+      <div class="select-wrapper">
+        <select id="op_tarif_id" formControlName="tarif_id" class="form-control" (change)="onTarifSelect($event)">
+          <option [ngValue]="null">Saisie libre / Personnalisée</option>
+          @for (t of tarifs(); track t.id) {
+            <option [value]="t.id">{{ t.intitule }} — {{ t.montant }} FCFA</option>
+          }
+        </select>
+        <i class="bi bi-chevron-down select-chevron"></i>
+      </div>
+      <span class="field-hint">La sélection d'un tarif remplit automatiquement le libellé et le montant.</span>
+    </div>
+
+    <!-- Libellé de l'opération -->
+    <div class="form-group">
+      <label class="form-label" for="op_libelle">
+        Libellé de l'opération <span class="required">*</span>
+      </label>
+      <input
+        id="op_libelle"
+        type="text"
+        formControlName="libelle"
+        class="form-control"
+        placeholder="Ex: Frais d'inscription annuelle, Retraite spirituelle..."
+      />
+      @if (form.controls.libelle.touched && form.controls.libelle.errors?.['required']) {
+        <span class="field-error">Le libellé est obligatoire.</span>
+      }
+    </div>
+
+    <div class="form-row-2">
+      <!-- Montant (FCFA) -->
+      <div class="form-group">
+        <label class="form-label" for="op_montant">
+          Montant (en FCFA) <span class="required">*</span>
+        </label>
+        <input
+          id="op_montant"
+          type="number"
+          step="500"
+          min="1"
+          formControlName="montant"
+          class="form-control"
+        />
+        @if (form.controls.montant.touched && form.controls.montant.errors?.['required']) {
+          <span class="field-error">Le montant est obligatoire.</span>
+        }
+      </div>
+
+      <!-- Échéance de paiement -->
+      <div class="form-group">
+        <label class="form-label" for="op_echeance">
+          Date d'Échéance (Optionnel)
+        </label>
+        <input
+          id="op_echeance"
+          type="date"
+          formControlName="echeance"
+          class="form-control"
+        />
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="modal-footer-actions">
+      <app-button
+        type="button"
+        variant="ghost"
+        (clicked)="onClose()"
+        [disabled]="isLoading()"
+      >
+        Annuler
+      </app-button>
+
+      <app-button
+        type="submit"
+        variant="primary"
+        [loading]="isLoading()"
+        [disabled]="form.invalid || isLoading()"
+      >
+        <i class="bi bi-check-lg"></i>
+        <span>{{ isEditing() ? 'Enregistrer les modifications' : 'Créer l\'opération' }}</span>
+      </app-button>
+    </div>
+  </form>
+</app-dialog>

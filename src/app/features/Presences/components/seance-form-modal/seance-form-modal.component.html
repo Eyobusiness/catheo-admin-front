@@ -1,0 +1,149 @@
+<app-dialog
+  [isOpen]="isOpen()"
+  [title]="isEditing() ? 'Modifier la Séance de Cours' : 'Nouvelle Séance de Catéchèse'"
+  size="md"
+  (closed)="onClose()"
+>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="seance-form-body">
+    <!-- Classe Selector -->
+    <div class="form-group">
+      <label class="form-label" for="seance_classe_id">
+        Classe / Groupe <span class="required">*</span>
+      </label>
+      <div class="select-wrapper">
+        <select
+          id="seance_classe_id"
+          formControlName="classe_id"
+          class="form-control"
+          (change)="onClasseChange($event)"
+        >
+          <option value="">Sélectionner une classe</option>
+          @for (c of classes(); track c.id) {
+            <option [value]="c.id">
+              {{ c.nom }}
+              @if (c.niveau; as niv) {
+                - {{ niv.nom }}
+              }
+            </option>
+          }
+        </select>
+        <i class="bi bi-chevron-down select-chevron"></i>
+      </div>
+      @if (form.controls.classe_id.touched && form.controls.classe_id.errors?.['required']) {
+        <span class="field-error">La classe est obligatoire.</span>
+      }
+      @if (getAssignedAnimateurName(); as animName) {
+        <div class="assigned-anim-badge">
+          <i class="bi bi-person-badge-fill"></i>
+          <span>Animateur assigné : <strong>{{ animName }}</strong></span>
+        </div>
+      }
+    </div>
+
+    <!-- Titre de la séance / leçon -->
+    <div class="form-group">
+      <label class="form-label" for="seance_titre">
+        Titre de la leçon / Thème de la séance <span class="required">*</span>
+      </label>
+      <input
+        id="seance_titre"
+        type="text"
+        formControlName="titre"
+        class="form-control"
+        placeholder="Ex: Leçon 4 - Le Credo et les Articles de Foi"/>
+      @if (form.controls.titre.touched && form.controls.titre.errors?.['required']) {
+        <span class="field-error">Le titre de la leçon est obligatoire.</span>
+      }
+      @if (form.controls.titre.touched && form.controls.titre.errors?.['minlength']) {
+        <span class="field-error">Le titre doit comporter au moins 3 caractères.</span>
+      }
+    </div>
+
+    <!-- Date de séance et horaires (Début / Fin) -->
+    <div class="form-row-3">
+      <!-- Date -->
+      <div class="form-group">
+        <label class="form-label" for="seance_date_seance">
+          Date de séance <span class="required">*</span>
+        </label>
+        <input
+          id="seance_date_seance"
+          type="date"
+          formControlName="date_seance"
+          class="form-control"
+        />
+        @if (form.controls.date_seance.touched && form.controls.date_seance.errors?.['required']) {
+          <span class="field-error">La date est requise.</span>
+        }
+      </div>
+
+      <!-- Heure Début -->
+      <div class="form-group">
+        <label class="form-label" for="seance_heure_debut">
+          Heure Début <span class="required">*</span>
+        </label>
+        <input
+          id="seance_heure_debut"
+          type="time"
+          formControlName="heure_debut"
+          class="form-control"
+        />
+        @if (form.controls.heure_debut.touched && form.controls.heure_debut.errors?.['required']) {
+          <span class="field-error">L'heure de début est requise.</span>
+        }
+      </div>
+
+      <!-- Heure Fin -->
+      <div class="form-group">
+        <label class="form-label" for="seance_heure_fin">
+          Heure Fin <span class="required">*</span>
+        </label>
+        <input
+          id="seance_heure_fin"
+          type="time"
+          formControlName="heure_fin"
+          class="form-control"
+        />
+        @if (form.controls.heure_fin.touched && form.controls.heure_fin.errors?.['required']) {
+          <span class="field-error">L'heure de fin est requise.</span>
+        }
+      </div>
+    </div>
+
+    <!-- Description / Remarques -->
+    <div class="form-group">
+      <label class="form-label" for="seance_description">
+        Description ou Objectifs pédagogiques (Optionnel)
+      </label>
+      <textarea
+        id="seance_description"
+        rows="3"
+        formControlName="description"
+        class="form-control textarea-control"
+        placeholder="Précisions sur les supports de cours, chants, prières..."
+      ></textarea>
+    </div>
+
+    <!-- Modal Actions -->
+    <div class="modal-footer-actions">
+      <app-button
+        type="button"
+        variant="ghost"
+        (clicked)="onClose()"
+        [disabled]="isLoading()"
+      >
+        Annuler
+      </app-button>
+
+      <app-button
+        type="submit"
+        variant="primary"
+        [loading]="isLoading()"
+        [disabled]="form.invalid || isLoading()"
+      >
+        <i class="bi bi-check-lg"></i>
+        <span>{{ isEditing() ? 'Modifier' : 'Créer la séance' }}</span>
+      </app-button>
+    </div>
+  </form>
+</app-dialog>

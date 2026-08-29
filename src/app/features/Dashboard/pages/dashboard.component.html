@@ -1,0 +1,40 @@
+<div class="dashboard-page">
+  <!-- Topbar Header -->
+  <section class="page-topbar">
+    <div class="topbar-headings">
+      <div class="title-with-badge">
+        <h2 class="topbar-title">Tableau de Bord Pastoral</h2>
+        @if (dashboardData()?.annee_active?.libelle) {
+          <span class="active-year-badge">
+            <i class="bi bi-calendar-check-fill"></i>
+            Année pastorale {{ dashboardData()?.annee_active?.libelle }}
+          </span>
+        }
+      </div>
+      <p class="topbar-subtitle">
+        Synthèse générale des effectifs, catéchistes, sacrements et alertes administratives.
+      </p>
+    </div>
+
+    <!-- Refresh Action -->
+    <div class="topbar-controls">
+      <app-button
+        variant="ghost"
+        size="md"
+        icon="arrow-clockwise"
+        [loading]="isLoading()"
+        (clicked)="refreshData()"
+      >
+        Actualiser
+      </app-button>
+    </div>
+  </section>
+
+  <!-- Parish Dashboard Content Area -->
+  <div class="dashboard-content-area">
+    <app-admin-dashboard-view
+      [data]="dashboardData()"
+      [isLoading]="isLoading()"
+    />
+  </div>
+</div>

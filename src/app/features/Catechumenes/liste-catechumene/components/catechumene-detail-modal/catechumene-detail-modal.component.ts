@@ -18,7 +18,6 @@ export class CatechumeneDetailModalComponent {
   public readonly parrains = input<ParrainMarraineDto[]>([]);
 
   public readonly modalClosed = output<void>();
-  public readonly editRequested = output<CatechumeneDto>();
   public readonly addParrainRequested = output<CatechumeneDto>();
   public readonly deleteParrainRequested = output<string>();
 
@@ -30,11 +29,6 @@ export class CatechumeneDetailModalComponent {
 
   protected onClose(): void {
     this.modalClosed.emit();
-  }
-
-  protected onEdit(): void {
-    const c = this.catechumene();
-    if (c) this.editRequested.emit(c);
   }
 
   protected onAddParrain(): void {

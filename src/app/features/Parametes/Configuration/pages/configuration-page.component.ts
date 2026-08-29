@@ -32,15 +32,15 @@ export class ConfigurationPageComponent implements OnInit {
   protected readonly tabs: TabConfigItem[] = [
     {
       id: 'paroisse',
-      label: 'Configuration Paroisse',
+      label: 'Configuration Catéchèse',
       icon: 'bi bi-building-gear',
-      description: 'Identité, diocèse, localisation & coordonnées'
+      description: 'Identité, centre, diocèse & coordonnées'
     },
     {
       id: 'responsables',
       label: 'Responsables',
       icon: 'bi bi-people-fill',
-      description: 'Clergé, directoire & équipe pastorale'
+      description: 'Aumôniers, directoire & équipe catéchétique'
     },
     {
       id: 'apparence',

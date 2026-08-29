@@ -3,7 +3,6 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import {
   CreateModuleTrimestrielDto,
   ModuleTrimestriel,
-  TrimestreCode,
   UpdateModuleTrimestrielDto
 } from '../../models/module-trimestriel.model';
 import { AnneeCatechese } from '../../../AnneesPastorales/models/annee-catechese.model';
@@ -28,14 +27,6 @@ export class ModuleTrimestrielFormModalComponent {
   public readonly formSubmitted = output<CreateModuleTrimestrielDto | UpdateModuleTrimestrielDto>();
 
   protected readonly form = new FormGroup({
-    annee_catechese_id: new FormControl('', {
-      nonNullable: true,
-      validators: [Validators.required]
-    }),
-    trimestre: new FormControl<TrimestreCode>('T1', {
-      nonNullable: true,
-      validators: [Validators.required]
-    }),
     libelle: new FormControl('', {
       nonNullable: true,
       validators: [Validators.required, Validators.minLength(3)]
@@ -47,6 +38,10 @@ export class ModuleTrimestrielFormModalComponent {
     date_fin: new FormControl('', {
       nonNullable: true,
       validators: [Validators.required]
+    }),
+    statut: new FormControl<string>('en cours', {
+      nonNullable: true,
+      validators: [Validators.required]
     })
   });
 
@@ -55,26 +50,26 @@ export class ModuleTrimestrielFormModalComponent {
       const open = this.isOpen();
       const item = this.moduleToEdit();
       const isEdit = this.isEditing();
-      const availableAnnees = this.annees();
-      const activeAnnee = availableAnnees.find(a => a.est_active);
-      const defaultAnneeId = activeAnnee ? activeAnnee.id : (availableAnnees[0]?.id || '');
 
       if (open) {
         if (isEdit && item) {
-          this.form.setValue({
-            annee_catechese_id: item.annee_catechese_id || item.annee_catechese?.id || defaultAnneeId,
-            trimestre: item.trimestre || 'T1',
+          const rawStatut = String(item.statut || '').trim().toLowerCase();
+          const statutVal = (rawStatut === 'termine' || rawStatut === 'terminé' || rawStatut === 'completed' || rawStatut === 'past')
+            ? 'termine'
+            : 'en cours';
+
+          this.form.patchValue({
             libelle: item.libelle || '',
             date_debut: item.date_debut || '',
-            date_fin: item.date_fin || ''
+            date_fin: item.date_fin || '',
+            statut: statutVal
           });
         } else {
           this.form.reset({
-            annee_catechese_id: defaultAnneeId,
-            trimestre: 'T1',
             libelle: '',
             date_debut: '',
-            date_fin: ''
+            date_fin: '',
+            statut: 'en cours'
           });
         }
       }
@@ -88,16 +83,24 @@ export class ModuleTrimestrielFormModalComponent {
   protected onSubmit(): void {
     if (this.form.valid) {
       const val = this.form.getRawValue();
+      const activeAnnee = this.annees().find(a => a.est_active);
+      const activeAnneeId = activeAnnee ? activeAnnee.id : (this.annees()[0]?.id || '');
+      
+      const anneeId = this.isEditing() && this.moduleToEdit()?.annee_catechese_id
+        ? this.moduleToEdit()!.annee_catechese_id!
+        : activeAnneeId;
+
       this.formSubmitted.emit({
-        annee_catechese_id: val.annee_catechese_id,
-        trimestre: val.trimestre,
-        libelle: val.libelle,
+        annee_catechese_id: anneeId,
+        libelle: val.libelle.trim(),
         date_debut: val.date_debut,
-        date_fin: val.date_fin
+        date_fin: val.date_fin,
+        statut: val.statut
       });
     } else {
       this.form.markAllAsTouched();
     }
   }
 }
+
 

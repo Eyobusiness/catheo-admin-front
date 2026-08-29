@@ -23,10 +23,10 @@
             type="text"
             formControlName="nom"
             class="form-control"
-            placeholder="Ex: Coordinateur de Catéchèse, Secrétaire, Animateur..."
+            placeholder="Ex: Secrétaire Paroissial, Catéchiste, Trésorier..."
           />
           @if (form.controls.nom.touched && form.controls.nom.invalid) {
-            <span class="field-error">L'intitulé du profil est obligatoire.</span>
+            <span class="field-error">L'intitulé du profil est obligatoire (min 2 caractères).</span>
           }
         </div>
 
@@ -39,22 +39,22 @@
             type="text"
             formControlName="description"
             class="form-control"
-            placeholder="Ex: Gestion intégrale des inscriptions, présences et bilans"
+            placeholder="Ex: Gestion des inscriptions, catéchumènes et attestations."
           />
         </div>
       </div>
     </div>
 
-    <!-- Section 2: Matrice des Permissions -->
+    <!-- Section 2: Matrice des Permissions Granulaires -->
     <div class="form-section">
       <div class="permissions-header">
         <div class="header-titles">
           <h4 class="section-title mb-0">
             <i class="bi bi-shield-check"></i>
-            Matrice des Permissions & Menus
+            Matrice des Permissions & Accès aux Menus
           </h4>
           <span class="permissions-counter-badge">
-            <strong>{{ selectedPermissions().size }}</strong> / {{ allAvailableKeys().length }} permission(s) active(s)
+            <strong>{{ selectedCount() }}</strong> action(s) sélectionnée(s)
           </span>
         </div>
 
@@ -62,87 +62,173 @@
           type="button"
           class="toggle-all-btn"
           [class.all-checked]="isAllSelected()"
-          (click)="toggleAllPermissions()"
+          (click)="toggleAllGlobalPermissions()"
         >
           <i class="bi" [class.bi-check-all]="!isAllSelected()" [class.bi-x-lg]="isAllSelected()"></i>
           {{ isAllSelected() ? 'Tout Décocher' : 'Tout Sélectionner' }}
         </button>
       </div>
 
-      <!-- Tree Grid -->
-      <div class="permissions-tree-wrapper">
-        @for (node of permissionsTree(); track node.code) {
-          <div class="module-group-card">
-            <!-- Module Group Header -->
-            <div class="module-group-header">
-              <div class="module-group-info">
-                <i class="bi bi-folder2-open folder-icon"></i>
-                <span class="module-group-title">{{ node.menu }}</span>
-              </div>
-              <button
-                type="button"
-                class="group-select-btn"
-                [class.active]="isNodeAllSelected(node)"
-                (click)="toggleNodePermissions(node)"
-              >
-                {{ isNodeAllSelected(node) ? 'Tout décocher' : 'Tout cocher' }}
-              </button>
-            </div>
-
-            <!-- If node has direct permissions -->
-            @if (node.permissions && node.permissions.length > 0) {
-              <div class="permissions-chips-grid">
-                @for (perm of node.permissions; track perm.key) {
-                  <label class="permission-chip" [class.checked]="isPermissionChecked(perm.key)">
+      <!-- Table Matrix Grid (No overlapping) -->
+      <div class="matrix-table-container">
+        <table class="matrix-table">
+          <thead>
+            <tr>
+              <th class="th-module">Module / Menu</th>
+              <th class="th-action text-center"><i class="bi bi-eye"></i> Lecture</th>
+              <th class="th-action text-center"><i class="bi bi-plus-circle"></i> Création</th>
+              <th class="th-action text-center"><i class="bi bi-pencil"></i> Modification</th>
+              <th class="th-action text-center"><i class="bi bi-trash"></i> Suppression</th>
+              <th class="th-toggle text-center">Raccourci</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (root of permissionsTree(); track root.uuid || root.reference) {
+              <!-- Root Menu Header Row -->
+              <tr class="row-root-menu">
+                <td class="td-module">
+                  <div class="module-title-cell">
+                    @if (root.icon) {
+                      <i class="bi {{ root.icon }} menu-icon"></i>
+                    } @else {
+                      <i class="bi bi-folder2-open menu-icon"></i>
+                    }
+                    <span class="root-name">{{ root.libelle || root.menu }}</span>
+                    @if (root.reference) {
+                      <span class="ref-pill">{{ root.reference }}</span>
+                    }
+                  </div>
+                </td>
+                <td class="td-action text-center">
+                  <label class="action-check-label">
                     <input
                       type="checkbox"
-                      [checked]="isPermissionChecked(perm.key)"
-                      (change)="togglePermission(perm.key)"
+                      class="custom-check"
+                      [checked]="isActionChecked(root.uuid || root.reference, 'read')"
+                      (change)="toggleAction(root.uuid || root.reference, 'read')"
                     />
-                    <span class="chip-label">{{ perm.label }}</span>
                   </label>
-                }
-              </div>
-            }
+                </td>
+                <td class="td-action text-center">
+                  <label class="action-check-label">
+                    <input
+                      type="checkbox"
+                      class="custom-check"
+                      [checked]="isActionChecked(root.uuid || root.reference, 'create')"
+                      (change)="toggleAction(root.uuid || root.reference, 'create')"
+                    />
+                  </label>
+                </td>
+                <td class="td-action text-center">
+                  <label class="action-check-label">
+                    <input
+                      type="checkbox"
+                      class="custom-check"
+                      [checked]="isActionChecked(root.uuid || root.reference, 'update')"
+                      (change)="toggleAction(root.uuid || root.reference, 'update')"
+                    />
+                  </label>
+                </td>
+                <td class="td-action text-center">
+                  <label class="action-check-label">
+                    <input
+                      type="checkbox"
+                      class="custom-check"
+                      [checked]="isActionChecked(root.uuid || root.reference, 'delete')"
+                      (change)="toggleAction(root.uuid || root.reference, 'delete')"
+                    />
+                  </label>
+                </td>
+                <td class="td-toggle text-center">
+                  <button
+                    type="button"
+                    class="btn-row-toggle"
+                    [class.active]="isRootMenuAllChecked(root)"
+                    (click)="toggleRootMenuAndSubmenus(root)"
+                  >
+                    {{ isRootMenuAllChecked(root) ? 'Décocher' : 'Tout' }}
+                  </button>
+                </td>
+              </tr>
 
-            <!-- If node has sub-menus -->
-            @if (node.sous_menus && node.sous_menus.length > 0) {
-              <div class="submenus-list">
-                @for (sm of node.sous_menus; track sm.code) {
-                  <div class="submenu-row">
-                    <div class="submenu-title-col">
-                      <span class="submenu-name">
-                        <i class="bi bi-arrow-return-right"></i>
-                        {{ sm.nom }}
-                      </span>
+              <!-- Sub-menu Rows -->
+              @if (root.sousMenus && root.sousMenus.length > 0) {
+                @for (sm of root.sousMenus; track sm.uuid || sm.reference) {
+                  <tr class="row-sub-menu">
+                    <td class="td-module sub-indent">
+                      <div class="sub-title-cell">
+                        <i class="bi bi-arrow-return-right sub-indent-icon"></i>
+                        @if (sm.icon) {
+                          <i class="bi {{ sm.icon }} sub-menu-icon"></i>
+                        }
+                        <span class="sub-name">{{ sm.libelle }}</span>
+                      </div>
+                    </td>
+                    <td class="td-action text-center">
+                      <label class="action-check-label">
+                        <input
+                          type="checkbox"
+                          class="custom-check"
+                          [checked]="isActionChecked(sm.uuid || sm.reference, 'read')"
+                          (change)="toggleAction(sm.uuid || sm.reference, 'read')"
+                        />
+                      </label>
+                    </td>
+                    <td class="td-action text-center">
+                      <label class="action-check-label">
+                        <input
+                          type="checkbox"
+                          class="custom-check"
+                          [checked]="isActionChecked(sm.uuid || sm.reference, 'create')"
+                          (change)="toggleAction(sm.uuid || sm.reference, 'create')"
+                        />
+                      </label>
+                    </td>
+                    <td class="td-action text-center">
+                      <label class="action-check-label">
+                        <input
+                          type="checkbox"
+                          class="custom-check"
+                          [checked]="isActionChecked(sm.uuid || sm.reference, 'update')"
+                          (change)="toggleAction(sm.uuid || sm.reference, 'update')"
+                        />
+                      </label>
+                    </td>
+                    <td class="td-action text-center">
+                      <label class="action-check-label">
+                        <input
+                          type="checkbox"
+                          class="custom-check"
+                          [checked]="isActionChecked(sm.uuid || sm.reference, 'delete')"
+                          (change)="toggleAction(sm.uuid || sm.reference, 'delete')"
+                        />
+                      </label>
+                    </td>
+                    <td class="td-toggle text-center">
                       <button
                         type="button"
-                        class="sub-select-btn"
-                        [class.active]="isSubMenuAllSelected(sm)"
-                        (click)="toggleSubMenuPermissions(sm)"
+                        class="btn-row-toggle sub"
+                        [class.active]="isMenuAllChecked(sm)"
+                        (click)="toggleAllActionsForMenu(sm)"
                       >
-                        {{ isSubMenuAllSelected(sm) ? 'Décocher' : 'Tout cocher' }}
+                        {{ isMenuAllChecked(sm) ? 'Décocher' : 'Tout' }}
                       </button>
-                    </div>
-
-                    <div class="permissions-chips-grid">
-                      @for (perm of sm.permissions; track perm.key) {
-                        <label class="permission-chip" [class.checked]="isPermissionChecked(perm.key)">
-                          <input
-                            type="checkbox"
-                            [checked]="isPermissionChecked(perm.key)"
-                            (change)="togglePermission(perm.key)"
-                          />
-                          <span class="chip-label">{{ perm.label }}</span>
-                        </label>
-                      }
-                    </div>
-                  </div>
+                    </td>
+                  </tr>
                 }
-              </div>
+              }
+            } @empty {
+              <tr>
+                <td colspan="6" class="empty-cell text-center">
+                  <div class="empty-permissions-hint">
+                    <i class="bi bi-shield-slash"></i>
+                    <p>Chargement des menus et permissions...</p>
+                  </div>
+                </td>
+              </tr>
             }
-          </div>
-        }
+          </tbody>
+        </table>
       </div>
     </div>
   </form>

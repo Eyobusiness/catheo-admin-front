@@ -1,0 +1,129 @@
+<div class="table-card-wrapper">
+  <div class="table-responsive">
+    <table class="medical-table">
+      <thead>
+        <tr>
+          <th class="col-date">Date Mouvement</th>
+          <th class="col-ref">Réf. Pièce</th>
+          <th class="col-libelle">Libellé & Catégorie</th>
+          <th class="col-type">Type Opération</th>
+          <th class="col-montant">Montant (FCFA)</th>
+          <th class="col-actions text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of paginatedMouvements(); track item.id) {
+          <tr class="table-row">
+            <!-- Date -->
+            <td class="col-date">
+              <span class="date-pill">
+                <i class="bi bi-calendar-check"></i> {{ item.date_mouvement | date:'dd/MM/yyyy' }}
+              </span>
+            </td>
+
+            <!-- Réf Pièce / Document -->
+            <td class="col-ref">
+              @if (item.reference_document) {
+                <span class="ref-pill">
+                  <i class="bi bi-receipt"></i> {{ item.reference_document }}
+                </span>
+              } @else {
+                <span class="text-muted">—</span>
+              }
+            </td>
+
+            <!-- Libellé & Catégorie -->
+            <td class="col-libelle">
+              <div class="libelle-cell">
+                <span class="libelle-main">{{ item.libelle }}</span>
+                <span class="categorie-sub">
+                  <i class="bi bi-folder2"></i> {{ item.categorie }}
+                </span>
+              </div>
+            </td>
+
+            <!-- Type Opération -->
+            <td class="col-type">
+              <span class="type-pill" [class]="getTypeBadgeClass(item.type_mouvement)">
+                @if (isEntree(item.type_mouvement)) {
+                  <i class="bi bi-arrow-down-left-circle-fill"></i>
+                } @else {
+                  <i class="bi bi-arrow-up-right-circle-fill"></i>
+                }
+                <span>{{ getTypeLabel(item.type_mouvement) }}</span>
+              </span>
+            </td>
+
+            <!-- Montant -->
+            <td class="col-montant">
+              <span class="montant-val" [class.entree]="isEntree(item.type_mouvement)" [class.sortie]="!isEntree(item.type_mouvement)">
+                {{ isEntree(item.type_mouvement) ? '+' : '-' }}{{ item.montant | number:'1.0-0' }} <small>FCFA</small>
+              </span>
+            </td>
+
+            <!-- Actions -->
+            <td class="col-actions text-right">
+              <div class="actions-flex">
+                <!-- Rembourser (si entrée de caisse) -->
+                @if (isEntree(item.type_mouvement)) {
+                  <app-icon-button
+                    variant="danger"
+                    size="sm"
+                    title="Effectuer un remboursement"
+                    ariaLabel="Rembourser"
+                    (clicked)="onRembourser(item)"
+                  >
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                  </app-icon-button>
+                }
+
+                <!-- Supprimer -->
+                <app-icon-button
+                  variant="danger"
+                  size="sm"
+                  title="Supprimer l'écriture"
+                  ariaLabel="Supprimer"
+                  (clicked)="onDelete(item)"
+                >
+                  <i class="bi bi-trash3"></i>
+                </app-icon-button>
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="empty-cell">
+              <div class="empty-state-box">
+                <div class="empty-icon-wrap">
+                  <i class="bi bi-wallet2"></i>
+                </div>
+                <h4 class="empty-title">Aucun mouvement en caisse</h4>
+                <p class="empty-desc">
+                  Les encaissements de catéchèse et les opérations de caisse apparaîtront ici.
+                </p>
+                <app-button
+                  variant="primary"
+                  size="sm"
+                  icon="plus"
+                  (clicked)="createRequested.emit()"
+                >
+                  Enregistrer une Dépense
+                </app-button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (mouvements().length > 0) {
+    <app-pagination
+      [totalItems]="mouvements().length"
+      [currentPage]="currentPage()"
+      [pageSize]="pageSize()"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+    />
+  }
+</div>

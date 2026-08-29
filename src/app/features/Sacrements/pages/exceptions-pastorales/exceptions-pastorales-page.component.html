@@ -1,0 +1,348 @@
+<div class="page-container animate-fade-in">
+  <!-- En-tête de page -->
+  <div class="page-header">
+    <div class="header-titles">
+      <h2 class="page-title">
+        <i class="bi bi-shield-check text-primary"></i>
+        <span>Exceptions & Dérogations Pastorales</span>
+      </h2>
+      <p class="page-subtitle">
+        Registre centralisé des autorisations et dispenses accordées par le Curé ou l'Autorité Diocésaine.
+      </p>
+    </div>
+
+    <div class="header-actions">
+      <button type="button" class="btn btn-secondary" (click)="printSheet()">
+        <i class="bi bi-printer"></i>
+        <span>Imprimer les dérogations</span>
+      </button>
+
+      <button type="button" class="btn btn-primary" (click)="openAddModal()">
+        <i class="bi bi-plus-circle-fill"></i>
+        <span>Nouvelle dérogation</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Statistiques & KPIs -->
+  <div class="kpi-grid">
+    <div class="kpi-card total-card">
+      <div class="kpi-icon icon-total">
+        <i class="bi bi-shield-exclamation"></i>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-value">{{ stats().total }}</span>
+        <span class="kpi-label">Dérogations Accordées</span>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon icon-enfants">
+        <i class="bi bi-droplet"></i>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-value">{{ stats().bapteme }}</span>
+        <span class="kpi-label">Baptême</span>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon icon-jeunes">
+        <i class="bi bi-cup-hot"></i>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-value">{{ stats().communion }}</span>
+        <span class="kpi-label">1ère Communion</span>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon icon-adultes">
+        <i class="bi bi-patch-check"></i>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-value">{{ stats().confirmation }}</span>
+        <span class="kpi-label">Confirmation</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Barre de Filtres & Recherche -->
+  <div class="toolbar-card">
+    <div class="search-box">
+      <i class="bi bi-search search-icon"></i>
+      <input
+        type="text"
+        placeholder="Rechercher par nom, classe, autorité..."
+        [ngModel]="searchQuery()"
+        (ngModelChange)="searchQuery.set($event)"
+      />
+    </div>
+
+    <div class="filter-group">
+      <label class="filter-label">Section :</label>
+      <select class="filter-select" [ngModel]="filterSection()" (ngModelChange)="onSectionChange($event)">
+        <option value="">Toutes les sections</option>
+        @for (s of sections(); track s.id) {
+          <option [value]="s.id">{{ s.nom }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label class="filter-label">Niveau :</label>
+      <select class="filter-select" [ngModel]="filterNiveau()" (ngModelChange)="onNiveauChange($event)">
+        <option value="">Tous les niveaux</option>
+        @for (n of filteredNiveauxList(); track n.id) {
+          <option [value]="n.id">{{ n.nom }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label class="filter-label">Classe :</label>
+      <select class="filter-select" [ngModel]="filterClasse()" (ngModelChange)="filterClasse.set($event)">
+        <option value="">Toutes les classes</option>
+        @for (c of filteredClassesList(); track c.id) {
+          <option [value]="c.id">{{ c.nom }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label class="filter-label">Sacrement :</label>
+      <select class="filter-select" [ngModel]="filterSacrement()" (ngModelChange)="filterSacrement.set($event)">
+        <option value="tous">Tous les sacrements</option>
+        <option value="Baptême">Baptême</option>
+        <option value="Première Communion">Première Communion</option>
+        <option value="Confirmation">Confirmation</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label class="filter-label">Motif :</label>
+      <select class="filter-select" [ngModel]="filterMotif()" (ngModelChange)="filterMotif.set($event)">
+        <option value="tous">Tous les motifs</option>
+        @for (m of motifsList; track m) {
+          <option [value]="m">{{ m }}</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  <!-- Tableau des Exceptions -->
+  <div class="card-table">
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Date d'accord</th>
+            <th>Catéchumène</th>
+            <th>Section & Classe</th>
+            <th>Sacrement concerné</th>
+            <th>Motif de la dérogation</th>
+            <th>Autorisé par</th>
+            <th>Observations</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (exc of filteredExceptions(); track exc.id) {
+            <tr class="data-row">
+              <td>
+                <span class="item-date">{{ exc.dateAjout }}</span>
+              </td>
+              <td>
+                <strong class="item-nom">{{ exc.catechumeneNomComplet }}</strong>
+              </td>
+              <td>
+                <span class="item-classe">{{ exc.section }} • {{ exc.classe }}</span>
+              </td>
+              <td>
+                <span class="sacrement-badge" [class.bap]="exc.sacrementType === 'Baptême'" [class.com]="exc.sacrementType === 'Première Communion'" [class.conf]="exc.sacrementType === 'Confirmation'">
+                  {{ exc.sacrementType }}
+                </span>
+              </td>
+              <td>
+                <span class="motif-pill">{{ exc.motif }}</span>
+              </td>
+              <td>
+                <span class="item-auth">
+                  <i class="bi bi-person-check-fill"></i>
+                  {{ exc.autorisePar }}
+                </span>
+              </td>
+              <td>
+                <span class="item-obs">{{ exc.observation || '—' }}</span>
+              </td>
+              <td class="text-right">
+                <button type="button" class="action-btn delete-btn" (click)="openDeleteModal(exc)" title="Supprimer la dérogation">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </td>
+            </tr>
+          }
+          @if (filteredExceptions().length === 0) {
+            <tr>
+              <td colspan="8" class="empty-cell">
+                <i class="bi bi-shield-slash empty-icon"></i>
+                <p>Aucune exception ou dérogation pastorale enregistrée.</p>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-footer">
+      <span class="footer-count">
+        {{ filteredExceptions().length }} dérogation(s) active(s)
+      </span>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- MODAL : AJOUTER UNE NOUVELLE DÉROGATION                                    -->
+<!-- ========================================================================= -->
+@if (isAddModalOpen()) {
+  <div class="modal-overlay" (click)="isAddModalOpen.set(false)">
+    <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <i class="bi bi-shield-plus text-primary"></i>
+          <h3>Enregistrer une Dérogation Pastorale</h3>
+        </div>
+        <button type="button" class="btn-close" (click)="isAddModalOpen.set(false)">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <div class="modal-body form-grid">
+        <div class="form-group">
+          <label class="form-label">Rechercher le catéchumène *</label>
+          <div class="search-box width-100">
+            <i class="bi bi-search search-icon"></i>
+            <input
+              type="text"
+              placeholder="Rechercher par nom, prénom, classe..."
+              [ngModel]="catSearchQuery()"
+              (ngModelChange)="catSearchQuery.set($event)"
+            />
+          </div>
+        </div>
+
+        <div class="results-table-box">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Nom & Prénoms</th>
+                <th>Section</th>
+                <th>Classe</th>
+                <th>Niveau</th>
+                <th class="text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (c of searchedCatechumenes(); track c.id) {
+                <tr class="data-row" [class.selected-row]="selectedCatechumene()?.id === c.id">
+                  <td><strong>{{ c.nom }} {{ c.prenoms }}</strong></td>
+                  <td>{{ c.section }}</td>
+                  <td>{{ c.classe }}</td>
+                  <td><span class="chip-niveau">{{ c.niveau }}</span></td>
+                  <td class="text-right">
+                    <button
+                      type="button"
+                      class="btn btn-sm"
+                      [class.btn-primary]="selectedCatechumene()?.id === c.id"
+                      [class.btn-secondary]="selectedCatechumene()?.id !== c.id"
+                      (click)="selectCatechumene(c)"
+                    >
+                      {{ selectedCatechumene()?.id === c.id ? 'Sélectionné ✓' : 'Choisir' }}
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        @if (selectedCatechumene()) {
+          <div class="exception-form-box animate-fade-in">
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label class="form-label">Sacrement accordé *</label>
+                <select class="form-control" [ngModel]="newExceptionForm().sacrementType" (ngModelChange)="newExceptionForm().sacrementType = $event">
+                  @for (s of sacrementsTypes; track s) {
+                    <option [value]="s">{{ s }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="form-group flex-1">
+                <label class="form-label">Motif de dérogation *</label>
+                <select class="form-control" [ngModel]="newExceptionForm().motif" (ngModelChange)="newExceptionForm().motif = $event">
+                  @for (m of motifsList; track m) {
+                    <option [value]="m">{{ m }}</option>
+                  }
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Autorisé par (Autorité pastorale) *</label>
+              <input type="text" class="form-control" [ngModel]="newExceptionForm().autorisePar" (ngModelChange)="newExceptionForm().autorisePar = $event" placeholder="Ex: Père Curé / Mgr l'Archevêque" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Observations et justification canonique</label>
+              <textarea class="form-control" rows="2" placeholder="Précisez les circonstances de la dérogation..." [ngModel]="newExceptionForm().observation" (ngModelChange)="newExceptionForm().observation = $event"></textarea>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="isAddModalOpen.set(false)">Annuler</button>
+        @if (selectedCatechumene()) {
+          <button type="button" class="btn btn-primary" (click)="saveNewException()">
+            <i class="bi bi-check-lg"></i>
+            <span>Enregistrer la dérogation</span>
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+<!-- CONFIRMATION SUPPRESSION -->
+@if (isDeleteModalOpen()) {
+  <div class="modal-overlay" (click)="isDeleteModalOpen.set(false)">
+    <div class="modal-card modal-sm" (click)="$event.stopPropagation()">
+      <div class="modal-header header-danger">
+        <div class="modal-title-group">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+          <h3>Supprimer la dérogation ?</h3>
+        </div>
+        <button type="button" class="btn-close" (click)="isDeleteModalOpen.set(false)">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>Voulez-vous révoquer la dérogation pastorale pour <strong>« {{ selectedException()?.catechumeneNomComplet }} »</strong> ({{ selectedException()?.sacrementType }}) ?</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="isDeleteModalOpen.set(false)">Annuler</button>
+        <button type="button" class="btn btn-danger" (click)="confirmDelete()">Supprimer</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- TOAST -->
+@if (showToast()) {
+  <div class="toast-floating" [class.success]="toastType() === 'success'" [class.danger]="toastType() === 'danger'" [class.info]="toastType() === 'info'">
+    <i class="bi" [class.bi-check-circle]="toastType() === 'success'" [class.bi-x-circle]="toastType() === 'danger'" [class.bi-info-circle]="toastType() === 'info'"></i>
+    <span>{{ toastMessage() }}</span>
+  </div>
+}

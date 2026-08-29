@@ -1,0 +1,238 @@
+<div class="print-page-wrapper">
+  <!-- Barre d'outils (Masquée à l'impression) -->
+  <div class="print-toolbar no-print">
+    <div class="toolbar-top-row">
+      <div class="toolbar-left">
+        <h2 class="toolbar-page-title">Fiche de Renseignements sacrement de baptême</h2>
+      </div>
+
+      <div class="toolbar-top-actions">
+        <div class="mode-toggle-group">
+          <button
+            type="button"
+            class="btn-toggle"
+            [class.active]="modeImpression() === 'classe'"
+            (click)="setMode('classe')"
+          >
+            <i class="bi bi-collection"></i> Par Classe
+          </button>
+          <button
+            type="button"
+            class="btn-toggle"
+            [class.active]="modeImpression() === 'prerempli'"
+            (click)="setMode('prerempli')"
+          >
+            <i class="bi bi-person"></i> Individuel
+          </button>
+          <button
+            type="button"
+            class="btn-toggle"
+            [class.active]="modeImpression() === 'vierge'"
+            (click)="setMode('vierge')"
+          >
+            <i class="bi bi-file-earmark"></i> Vierge
+          </button>
+        </div>
+
+        <button type="button" class="btn-print" (click)="triggerPrint()">
+          <i class="bi bi-printer-fill"></i>
+          <span>Imprimer {{ modeImpression() === 'classe' ? ('(' + filteredCatechumenes().length + ' fiches)') : '' }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Filtres -->
+    @if (modeImpression() !== 'vierge') {
+      <div class="toolbar-filters-row">
+        <div class="filter-group">
+          <label>Section :</label>
+          <select [ngModel]="selectedSectionId()" (ngModelChange)="onSectionChange($event)">
+            <option value="tous">Toutes les sections</option>
+            @for (s of sections(); track s.id) { <option [value]="s.id">{{ s.nom }}</option> }
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Niveau :</label>
+          <select [ngModel]="selectedNiveauId()" (ngModelChange)="onNiveauChange($event)">
+            <option value="tous">Tous les niveaux</option>
+            @for (n of niveauxFiltres(); track n.id) { <option [value]="n.id">{{ n.nom }}</option> }
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Classe :</label>
+          <select [ngModel]="selectedClasseId()" (ngModelChange)="selectedClasseId.set($event)">
+            <option value="tous">Toutes les classes</option>
+            @for (cl of classesFiltrees(); track cl.id) { <option [value]="cl.id">{{ cl.nom }}</option> }
+          </select>
+        </div>
+
+        @if (modeImpression() === 'prerempli') {
+          <div class="filter-group flex-grow">
+            <label>Catéchumène :</label>
+            <select [ngModel]="selectedCatechumeneId()" (ngModelChange)="selectedCatechumeneId.set($event)">
+              @for (c of filteredCatechumenes(); track c.id) {
+                <option [value]="c.id">{{ c.matricule || c.code_catechumene }} - {{ c.nom }} {{ c.prenoms }}</option>
+              }
+            </select>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- IMPRESSION PAR LOT (TOUTE LA CLASSE) OU UNIQUE / VIERGE -->
+  @if (modeImpression() === 'classe') {
+    @for (cat of filteredCatechumenes(); track cat.id) {
+      <div class="a4-document-container page-break-always">
+        <ng-container *ngTemplateOutlet="sheetTemplate; context: { $implicit: cat }"></ng-container>
+      </div>
+    }
+  } @else {
+    <div class="a4-document-container">
+      <ng-container *ngTemplateOutlet="sheetTemplate; context: { $implicit: currentCatechumene() }"></ng-container>
+    </div>
+  }
+
+  <!-- TEMPLATE RÉUTILISABLE FICHE BAPTÊME -->
+  <ng-template #sheetTemplate let-c>
+    <!-- En-tête Paroissial Officiel avec Photo du Catéchumène -->
+    <app-header-paroisse-print
+      customTitle="FICHE DE RENSEIGNEMENTS SACREMENT DE BAPTÊME"
+      [isFicheIndividuelle]="true"
+      [photoProfil]="c?.photo_url || c?.photo_path || c?.photo || null"
+    ></app-header-paroisse-print>
+
+    <div class="sheet-body">
+      <div class="form-dotted-line">
+        <span class="lbl">Année pastorale :</span>
+        <span class="val">{{ c ? '' : '' }}</span>
+      </div>
+
+      <div class="form-dotted-line">
+        <span class="lbl">Nom et prénoms :</span>
+        <span class="val bold">{{ c ? (c.nom + ' ' + c.prenoms) : '' }}</span>
+      </div>
+
+      <div class="form-dotted-row">
+        <div class="form-dotted-line flex-45">
+          <span class="lbl">Date de naissance :</span>
+          <span class="val">{{ c?.dateNaissance || '' }}</span>
+        </div>
+        <div class="form-dotted-line flex-55">
+          <span class="lbl">Lieu de naissance :</span>
+          <span class="val">{{ c?.lieuNaissance || '' }}</span>
+        </div>
+      </div>
+
+      <div class="form-dotted-line">
+        <span class="lbl">Profession :</span>
+        <span class="val">{{ c?.profession || '' }}</span>
+      </div>
+
+      <div class="form-dotted-line">
+        <span class="lbl highlight-pink">Contact :</span>
+        <span class="val">{{ c?.telephone || '' }}</span>
+      </div>
+
+      <div class="form-dotted-line">
+        <span class="lbl">Domicilié à :</span>
+        <span class="val">{{ c?.domicile || '' }}</span>
+      </div>
+
+      <div class="form-dotted-line">
+        <span class="lbl">Nom du père :</span>
+        <span class="val">{{ c?.nomPere || c?.parentTuteur?.nom || '' }}</span>
+      </div>
+
+      <div class="form-dotted-line">
+        <span class="lbl highlight-pink">Origine du père (ville d'origine) :</span>
+        <span class="val">{{ c?.originePere || '' }}</span>
+      </div>
+
+      <div class="form-dotted-line">
+        <span class="lbl">Nom de la mère :</span>
+        <span class="val">{{ c?.nomMere || '' }}</span>
+      </div>
+
+      <div class="form-dotted-line">
+        <span class="lbl highlight-pink">Origine de la mère (ville d'origine) :</span>
+        <span class="val">{{ c?.origineMere || '' }}</span>
+      </div>
+
+      <!-- BLOC PARRAIN -->
+      <div class="sacrament-subheading">PARRAIN</div>
+
+      <div class="form-dotted-line">
+        <span class="lbl">Nom et prénoms du parrain :</span>
+        <span class="val">{{ c?.parrainDetail?.nom || (c?.parrainMarraine?.sexe === 'M' ? c?.parrainMarraine?.nom : '') }}</span>
+      </div>
+
+      <div class="form-dotted-line">
+        <span class="lbl">Domicilié à :</span>
+        <span class="val">{{ c?.parrainDetail?.domicile || '' }}</span>
+      </div>
+
+      <div class="form-dotted-line">
+        <span class="lbl">Contact :</span>
+        <span class="val">{{ c?.parrainDetail?.telephone || (c?.parrainMarraine?.sexe === 'M' ? c?.parrainMarraine?.telephone : '') }}</span>
+      </div>
+
+      <div class="form-dotted-line">
+        <span class="lbl">Représenté par (en cas d'absence) :</span>
+        <span class="val">{{ c?.parrainDetail?.representantPar || '' }}</span>
+      </div>
+
+      <div class="form-dotted-line">
+        <span class="lbl">Contact :</span>
+        <span class="val">{{ c?.parrainDetail?.representantContact || '' }}</span>
+      </div>
+
+      <!-- BLOC MARRAINE -->
+      <div class="sacrament-subheading">MARRAINE</div>
+
+      <div class="form-dotted-line">
+        <span class="lbl">Nom et prénoms de la marraine :</span>
+        <span class="val">{{ c?.marraineDetail?.nom || (c?.parrainMarraine?.sexe === 'F' ? c?.parrainMarraine?.nom : '') }}</span>
+      </div>
+
+      <div class="form-dotted-row">
+        <div class="form-dotted-line flex-60">
+          <span class="lbl">Domiciliée à :</span>
+          <span class="val">{{ c?.marraineDetail?.domicile || '' }}</span>
+        </div>
+        <div class="form-dotted-line flex-40">
+          <span class="lbl">Contact :</span>
+          <span class="val">{{ c?.marraineDetail?.telephone || (c?.parrainMarraine?.sexe === 'F' ? c?.parrainMarraine?.telephone : '') }}</span>
+        </div>
+      </div>
+
+      <div class="form-dotted-line">
+        <span class="lbl">Représentée par (en cas d'absence) :</span>
+        <span class="val">{{ c?.marraineDetail?.representantPar || '' }}</span>
+      </div>
+
+      <div class="form-dotted-line">
+        <span class="lbl">Contact :</span>
+        <span class="val">{{ c?.marraineDetail?.representantContact || '' }}</span>
+      </div>
+
+      <!-- DOSSIER À FOURNIR -->
+      <div class="dossier-fournir-box">
+        <strong class="dossier-title">DOSSIER A FOURNIR</strong>
+        <ol class="dossier-list">
+          <li>
+            Photocopie du carnet de baptême à jour du parrain ou de la marraine :
+            <span class="highlight-pink">(1 : page de couverture — 2 : page des sacrements — 3 : page du denier de culte à jour)</span>
+          </li>
+          <li>Photocopie de l'extrait d'acte de naissance</li>
+          <li>Une (1) photo d'identité</li>
+        </ol>
+      </div>
+
+      <!-- Pied de page officiel -->
+      <app-footer-paroisse-print></app-footer-paroisse-print>
+    </div>
+  </ng-template>
+</div>

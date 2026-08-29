@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { UserService } from '../services/user.service';
 import { ProfilService } from '../Profil/services/profil.service';
-import { CreateUserDto, StatutUtilisateur, UpdateUserDto, UserDto } from '../models/user.model';
+import { CreateUserDto, StatutUtilisateur, UpdateUserDto, UserItem } from '../models/user.model';
 import { AppCard } from '../../../shared/ui/components/layout/app-card/app-card.component';
 import { AppPagination } from '../../../shared/ui/components/tables/app-pagination/app-pagination.component';
 import { AppIconButton } from '../../../shared/ui/components/buttons/app-icon-button/app-icon-button.component';
@@ -30,15 +30,16 @@ export class UsersPageComponent {
   protected readonly profilService = inject(ProfilService);
 
   // State signals
-  protected readonly users = this.userService.users;
-  protected readonly profils = this.profilService.profils;
+  protected readonly users = this.userService.usersList;
+  protected readonly profils = this.profilService.profilsList;
   protected readonly isLoading = this.userService.isLoading;
   protected readonly isSaving = this.userService.isSaving;
 
   // Pagination signals
   protected readonly currentPage = signal<number>(1);
-  protected readonly pageSize = signal<number>(10);
-  protected readonly pageSizeOptions = signal<number[]>([10, 25, 50, 100]);
+  protected readonly pageSize = signal<number>(15);
+  protected readonly pageSizeOptions = signal<number[]>([10, 15, 25, 50, 100]);
+
   // Local filter signals
   protected readonly searchQuery = signal<string>('');
   protected readonly selectedProfilFilter = signal<string>('');
@@ -48,8 +49,8 @@ export class UsersPageComponent {
   protected readonly isFormModalOpen = signal<boolean>(false);
   protected readonly isDeleteModalOpen = signal<boolean>(false);
   protected readonly isEditing = signal<boolean>(false);
-  protected readonly selectedUser = signal<UserDto | null>(null);
-  protected readonly itemToDelete = signal<UserDto | null>(null);
+  protected readonly selectedUser = signal<UserItem | null>(null);
+  protected readonly itemToDelete = signal<UserItem | null>(null);
 
   protected readonly filteredUsers = computed(() => {
     const q = this.searchQuery().toLowerCase().trim();
@@ -58,17 +59,19 @@ export class UsersPageComponent {
     let list = this.users();
 
     if (profId) {
-      list = list.filter(u => u.profil?.id === profId);
+      list = list.filter(u => u.profil?.uuid === profId || u.profil?.id === profId);
     }
 
     if (status) {
-      list = list.filter(u => u.statut === status);
+      list = list.filter(u => u.statut === status || u.status === status);
     }
 
     if (!q) return list;
     return list.filter(u =>
-      u.name.toLowerCase().includes(q) ||
-      u.email.toLowerCase().includes(q) ||
+      (u.name && u.name.toLowerCase().includes(q)) ||
+      (u.nom && u.nom.toLowerCase().includes(q)) ||
+      (u.prenoms && u.prenoms.toLowerCase().includes(q)) ||
+      (u.email && u.email.toLowerCase().includes(q)) ||
       (u.telephone && u.telephone.includes(q)) ||
       (u.profil && u.profil.nom.toLowerCase().includes(q))
     );
@@ -85,19 +88,19 @@ export class UsersPageComponent {
 
   // KPI Computeds
   protected readonly totalCount = computed(() => this.users().length);
-  protected readonly activeCount = computed(() => this.users().filter(u => u.statut === 'actif').length);
-  protected readonly inactiveCount = computed(() => this.users().filter(u => u.statut === 'inactif').length);
-  protected readonly suspendedCount = computed(() => this.users().filter(u => u.statut === 'suspendu').length);
+  protected readonly activeCount = computed(() => this.users().filter(u => u.statut === 'actif' || u.status === 'actif').length);
+  protected readonly inactiveCount = computed(() => this.users().filter(u => u.statut === 'inactif' || u.status === 'inactif').length);
+  protected readonly suspendedCount = computed(() => 0);
 
   protected onSearchChange(event: Event): void {
     const input = event.target as HTMLInputElement;
     this.searchQuery.set(input.value);
-    // Reset pagination when search changes
     this.currentPage.set(1);
   }
 
   protected clearSearch(): void {
     this.searchQuery.set('');
+    this.currentPage.set(1);
   }
 
   protected onProfilFilterChange(event: Event): void {
@@ -120,10 +123,14 @@ export class UsersPageComponent {
   }
 
   protected refreshList(): void {
-    this.userService.getAll().subscribe();
-    this.profilService.getAll().subscribe();
-    // Reset pagination to first page after refresh
-    this.currentPage.set(1);
+    this.userService.getUsers(
+      this.currentPage(),
+      this.pageSize(),
+      this.searchQuery(),
+      this.selectedStatutFilter(),
+      this.selectedProfilFilter()
+    ).subscribe();
+    this.profilService.getProfils().subscribe();
   }
 
   protected onPageChange(page: number): void {
@@ -142,7 +149,7 @@ export class UsersPageComponent {
     this.isFormModalOpen.set(true);
   }
 
-  protected openEditModal(u: UserDto): void {
+  protected openEditModal(u: UserItem): void {
     this.isEditing.set(true);
     this.selectedUser.set(u);
     this.isFormModalOpen.set(true);
@@ -155,29 +162,29 @@ export class UsersPageComponent {
 
   protected handleFormSubmit(dto: CreateUserDto | UpdateUserDto): void {
     if (this.isEditing() && this.selectedUser()) {
+      const id = this.selectedUser()!.uuid || this.selectedUser()!.id;
       this.userService
-        .update(this.selectedUser()!.id, dto as UpdateUserDto)
+        .updateUser(id, dto as UpdateUserDto)
         .subscribe(() => {
           this.closeFormModal();
         });
     } else {
       this.userService
-        .create(dto as CreateUserDto)
+        .createUser(dto as CreateUserDto)
         .subscribe(() => {
           this.closeFormModal();
         });
     }
-    // After any add/update, reset to first page to show newest items
-    this.currentPage.set(1);
   }
 
   // Status changed
-  protected handleStatusChanged(event: { user: UserDto; nextStatus: StatutUtilisateur }): void {
-    this.userService.patchStatus(event.user.id, event.nextStatus).subscribe();
+  protected handleStatusChanged(event: { user: UserItem; nextStatus: StatutUtilisateur }): void {
+    const id = event.user.uuid || event.user.id;
+    this.userService.toggleStatus(id, event.nextStatus as ('actif' | 'inactif')).subscribe();
   }
 
   // Delete modal
-  protected openDeleteModal(u: UserDto): void {
+  protected openDeleteModal(u: UserItem): void {
     this.itemToDelete.set(u);
     this.isDeleteModalOpen.set(true);
   }
@@ -190,12 +197,9 @@ export class UsersPageComponent {
   protected handleDeleteConfirm(): void {
     const target = this.itemToDelete();
     if (target) {
-      this.userService.delete(target.id).subscribe(() => {
+      const id = target.uuid || target.id;
+      this.userService.deleteUser(id).subscribe(() => {
         this.closeDeleteModal();
-        // After deletion, stay on current page if possible
-        const total = this.filteredUsers().length;
-        const maxPage = Math.ceil(total / this.pageSize());
-        if (this.currentPage() > maxPage) this.currentPage.set(maxPage);
       });
     }
   }

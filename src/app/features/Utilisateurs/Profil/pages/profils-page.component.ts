@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { ProfilService } from '../services/profil.service';
-import { CreateProfilDto, ProfilDto, UpdateProfilDto } from '../models/profil.model';
+import { CreateProfilDto, ProfilItem, UpdateProfilDto } from '../models/profil.model';
 import { AppCard } from '../../../../shared/ui/components/layout/app-card/app-card.component';
 import { AppButton } from '../../../../shared/ui/components/buttons/app-button/app-button.component';
 import { AppIconButton } from '../../../../shared/ui/components/buttons/app-icon-button/app-icon-button.component';
@@ -26,7 +26,7 @@ export class ProfilsPageComponent {
   protected readonly profilService = inject(ProfilService);
 
   // State signals
-  protected readonly profils = this.profilService.profils;
+  protected readonly profils = this.profilService.profilsList;
   protected readonly isLoading = this.profilService.isLoading;
   protected readonly isSaving = this.profilService.isSaving;
 
@@ -38,8 +38,8 @@ export class ProfilsPageComponent {
   protected readonly isFormModalOpen = signal<boolean>(false);
   protected readonly isDeleteModalOpen = signal<boolean>(false);
   protected readonly isEditing = signal<boolean>(false);
-  protected readonly selectedProfil = signal<ProfilDto | null>(null);
-  protected readonly itemToDelete = signal<ProfilDto | null>(null);
+  protected readonly selectedProfil = signal<ProfilItem | null>(null);
+  protected readonly itemToDelete = signal<ProfilItem | null>(null);
 
   protected readonly filteredProfils = computed(() => {
     const q = this.searchQuery().toLowerCase().trim();
@@ -47,20 +47,23 @@ export class ProfilsPageComponent {
     let list = this.profils();
 
     if (status) {
-      list = list.filter(p => p.statut === status);
+      list = list.filter(p => p.statut_code === status || p.statut?.toLowerCase() === status.toLowerCase());
     }
 
     if (!q) return list;
     return list.filter(p =>
-      p.nom.toLowerCase().includes(q) ||
-      p.code.toLowerCase().includes(q) ||
+      (p.nom && p.nom.toLowerCase().includes(q)) ||
+      (p.name && p.name.toLowerCase().includes(q)) ||
+      (p.code && p.code.toLowerCase().includes(q)) ||
       (p.description && p.description.toLowerCase().includes(q))
     );
   });
 
   // KPI Computeds
   protected readonly totalCount = computed(() => this.profils().length);
-  protected readonly activeCount = computed(() => this.profils().filter(p => p.statut === 'actif').length);
+  protected readonly activeCount = computed(() =>
+    this.profils().filter(p => p.statut_code === 'actif' || p.statut?.toLowerCase() === 'actif').length
+  );
   protected readonly systemCount = computed(() => this.profils().filter(p => p.is_system).length);
 
   protected onSearchChange(event: Event): void {
@@ -83,7 +86,7 @@ export class ProfilsPageComponent {
   }
 
   protected refreshList(): void {
-    this.profilService.getAll().subscribe();
+    this.profilService.getProfils().subscribe();
     this.profilService.getPermissionsTree().subscribe();
   }
 
@@ -94,7 +97,7 @@ export class ProfilsPageComponent {
     this.isFormModalOpen.set(true);
   }
 
-  protected openEditModal(p: ProfilDto): void {
+  protected openEditModal(p: ProfilItem): void {
     this.isEditing.set(true);
     this.selectedProfil.set(p);
     this.isFormModalOpen.set(true);
@@ -107,14 +110,15 @@ export class ProfilsPageComponent {
 
   protected handleFormSubmit(dto: CreateProfilDto | UpdateProfilDto): void {
     if (this.isEditing() && this.selectedProfil()) {
+      const id = this.selectedProfil()!.uuid || this.selectedProfil()!.id;
       this.profilService
-        .update(this.selectedProfil()!.id, dto as UpdateProfilDto)
+        .updateProfil(id, dto as UpdateProfilDto)
         .subscribe(() => {
           this.closeFormModal();
         });
     } else {
       this.profilService
-        .create(dto as CreateProfilDto)
+        .createProfil(dto as CreateProfilDto)
         .subscribe(() => {
           this.closeFormModal();
         });
@@ -122,14 +126,14 @@ export class ProfilsPageComponent {
   }
 
   // Toggle status
-  protected handleToggleStatus(p: ProfilDto): void {
+  protected handleToggleStatus(p: ProfilItem): void {
     if (p.is_system) return;
-    const nextStatus: 'actif' | 'inactif' = p.statut === 'actif' ? 'inactif' : 'actif';
-    this.profilService.patchStatus(p.id, nextStatus).subscribe();
+    const id = p.uuid || p.id;
+    this.profilService.toggleStatus(id).subscribe();
   }
 
   // Delete modal
-  protected openDeleteModal(p: ProfilDto): void {
+  protected openDeleteModal(p: ProfilItem): void {
     this.itemToDelete.set(p);
     this.isDeleteModalOpen.set(true);
   }
@@ -142,7 +146,8 @@ export class ProfilsPageComponent {
   protected handleDeleteConfirm(): void {
     const target = this.itemToDelete();
     if (target) {
-      this.profilService.delete(target.id).subscribe(() => {
+      const id = target.uuid || target.id;
+      this.profilService.deleteProfil(id).subscribe(() => {
         this.closeDeleteModal();
       });
     }

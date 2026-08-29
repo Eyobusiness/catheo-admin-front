@@ -50,6 +50,7 @@ export class TabResponsablesConfigComponent {
     if (!q) return list;
     return list.filter(r =>
       (r.nom_prenoms && r.nom_prenoms.toLowerCase().includes(q)) ||
+      (r.fonction && r.fonction.toLowerCase().includes(q)) ||
       (r.titre_fonction && r.titre_fonction.toLowerCase().includes(q)) ||
       (r.telephone && r.telephone.includes(q))
     );

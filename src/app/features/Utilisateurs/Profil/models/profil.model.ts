@@ -1,94 +1,100 @@
-export type StatutProfil = 'actif' | 'inactif';
-
-export interface MenuActionFlagsDto {
-  create: boolean;
-  read: boolean;
-  update: boolean;
-  delete: boolean;
-  restore: boolean;
-  force_delete: boolean;
+export interface MenuActionPermission {
+  read?: boolean;
+  create?: boolean;
+  update?: boolean;
+  delete?: boolean;
+  restore?: boolean;
+  force_delete?: boolean;
+  can_read?: boolean;
+  can_create?: boolean;
+  can_update?: boolean;
+  can_delete?: boolean;
+  can_restore?: boolean;
+  can_force_delete?: boolean;
 }
 
-export interface MenuDto {
-  id: string;
+export interface SousMenuItem {
   uuid: string;
   libelle: string;
-  icon?: string;
-  path?: string;
   reference: string;
-  ordre: number;
-  is_active: boolean;
-  parent_id?: string;
-  sousMenus?: MenuDto[];
+  path: string;
+  icon?: string;
+  ordre?: number;
+  permissions: MenuActionPermission;
 }
 
-export interface AccessibleMenuDto {
+export interface MenuTreeItem {
   uuid: string;
+  menu?: string;
   libelle: string;
-  icon?: string;
-  path?: string;
   reference: string;
-  ordre: number;
-  permissions: MenuActionFlagsDto;
-  sousMenus?: AccessibleMenuDto[];
+  code?: string;
+  path: string;
+  icon?: string;
+  ordre?: number;
+  total_actions?: number;
+  permissions: MenuActionPermission;
+  sousMenus: SousMenuItem[];
 }
 
-export interface ProfilMenuPermissionDto {
-  uuid?: string;
-  profil_id: string;
-  menu_id: string;
-  can_read: boolean;
-  can_create: boolean;
-  can_update: boolean;
-  can_delete: boolean;
-  can_restore: boolean;
-  can_force_delete: boolean;
-}
-
-export interface PermissionItemDto {
-  key: string;
-  label: string;
-}
-
-export interface SubMenuPermissionDto {
+export interface ProfilItem {
+  id: string; // UUID
+  uuid: string;
   nom: string;
-  code: string;
-  permissions: PermissionItemDto[];
-}
-
-export interface PermissionTreeNodeDto {
-  menu: string;
-  code: string;
-  permissions?: PermissionItemDto[];
-  sous_menus?: SubMenuPermissionDto[];
-}
-
-export interface ProfilDto {
-  id: string;
-  uuid?: string;
-  nom: string;
+  name?: string;
   code: string;
   description?: string;
-  statut?: 'Actif' | 'Inactif' | 'actif' | 'inactif';
-  statut_code?: 'actif' | 'inactif';
+  statut: 'Actif' | 'Inactif' | 'actif' | 'inactif';
+  statut_code: 'actif' | 'inactif';
   permissions: string[];
-  total_permissions?: number;
+  total_permissions: number;
   is_system: boolean;
-  users_count?: number;
-  menus?: AccessibleMenuDto[];
+  users_count: number;
+  menus?: MenuTreeItem[];
   created_at?: string;
 }
 
-export type Profil = ProfilDto;
+export type ProfilDto = ProfilItem;
+export type Profil = ProfilItem;
 
 export interface CreateProfilDto {
   nom: string;
+  code?: string;
   description?: string;
-  permissions: string[];
+  statut?: 'actif' | 'inactif';
+  permissions?: string[];
+  menu_permissions?: {
+    uuid?: string;
+    menu_id?: number | string;
+    reference?: string;
+    permissions: {
+      read: boolean;
+      create: boolean;
+      update: boolean;
+      delete: boolean;
+      restore?: boolean;
+      force_delete?: boolean;
+    };
+    sousMenus?: {
+      uuid?: string;
+      reference?: string;
+      permissions: {
+        read: boolean;
+        create: boolean;
+        update: boolean;
+        delete: boolean;
+        restore?: boolean;
+        force_delete?: boolean;
+      };
+    }[];
+  }[];
 }
 
 export interface UpdateProfilDto {
   nom?: string;
+  code?: string;
   description?: string;
+  statut?: 'actif' | 'inactif';
   permissions?: string[];
+  menu_permissions?: CreateProfilDto['menu_permissions'];
 }

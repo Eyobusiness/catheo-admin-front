@@ -32,6 +32,12 @@ export class SectionTableComponent {
     return list.slice(start, start + size);
   });
 
+  protected isSectionActive(section: Section): boolean {
+    if (!section) return false;
+    const s = String(section.statut || '').trim().toLowerCase();
+    return s === 'actif' || s === 'active' || s === '1' || s === 'true';
+  }
+
   protected onView(section: Section): void {
     this.viewRequested.emit(section);
   }
@@ -61,3 +67,4 @@ export class SectionTableComponent {
     this.currentPage.set(1);
   }
 }
+

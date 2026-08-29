@@ -1,16 +1,14 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { finalize, Observable, catchError, of, tap, throwError } from 'rxjs';
+import { HttpClient, HttpParams, HttpErrorResponse } from '@angular/common/http';
+import { Observable, catchError, of, tap, throwError } from 'rxjs';
+import { environment } from '../../../../environments/environment';
+import { ToastService } from '../../../../core/services/toast.service';
 import {
   CreateProfilDto,
-  MenuDto,
-  PermissionTreeNodeDto,
-  ProfilDto,
+  MenuTreeItem,
+  ProfilItem,
   UpdateProfilDto
 } from '../models/profil.model';
-import { ToastService } from '../../../../core/services/toast.service';
-import { environment } from '../../../../environments/environment';
-import { APP_MENU } from '../../../../core/constants/menu';
 
 function extractArrayData(res: any): any[] {
   if (!res) return [];
@@ -24,318 +22,169 @@ function extractArrayData(res: any): any[] {
   return [];
 }
 
-function extractObjectData(res: any): any {
-  if (!res) return null;
-  if (res.data && typeof res.data === 'object' && !Array.isArray(res.data)) return res.data;
-  if (res.profil) return res.profil;
-  return res;
-}
-
 @Injectable({
   providedIn: 'root'
 })
 export class ProfilService {
   private readonly http = inject(HttpClient);
   private readonly toastService = inject(ToastService);
+  private readonly apiUrl = `${environment.apiUrl}/profils`;
 
-  private readonly profilsUrl = `${environment.apiUrl}/profils`;
-  private readonly menusUrl = `${environment.apiUrl}/menus`;
-
-  // Reactive state signals
-  public readonly profils = signal<ProfilDto[]>([]);
-  public readonly menus = signal<MenuDto[]>([]);
-  public readonly permissionsTree = signal<PermissionTreeNodeDto[]>([]);
-
+  // Reactive State Signals
+  public readonly profilsList = signal<ProfilItem[]>([]);
+  public readonly profils = this.profilsList; // Alias for backward compatibility
+  public readonly permissionsTree = signal<MenuTreeItem[]>([]);
   public readonly isLoading = signal<boolean>(false);
   public readonly isSaving = signal<boolean>(false);
 
   constructor() {
-    this.getMenus().subscribe();
     this.getPermissionsTree().subscribe();
-    this.getAll().subscribe();
+    this.getProfils().subscribe();
   }
 
-  // ==========================================
-  // 1. MENUS & PERMISSION TREE
-  // ==========================================
-
-  public getMenus(): Observable<MenuDto[]> {
-    return this.http.get<any>(this.menusUrl).pipe(
-      tap(res => {
-        const raw = extractArrayData(res);
-        if (raw.length > 0) {
-          this.menus.set(raw);
-        }
-      }),
-      catchError(() => {
-        // Fallback to APP_MENU structure
-        const fallbackMenus: MenuDto[] = APP_MENU.map((m: any) => ({
-          id: String(m.id || m.code),
-          uuid: `menu-${m.code}`,
-          libelle: m.libelle,
-          icon: m.icon,
-          path: m.path,
-          reference: m.reference,
-          ordre: m.order || 1,
-          is_active: true,
-          sousMenus: (m.sousMenus || []).map((sm: any) => ({
-            id: String(sm.id || sm.code),
-            uuid: `menu-${sm.code}-${sm.reference}`,
-            libelle: sm.libelle,
-            icon: sm.icon,
-            path: sm.path,
-            reference: sm.reference,
-            ordre: sm.order || 1,
-            is_active: true
-          }))
-        }));
-        this.menus.set(fallbackMenus);
-        return of(fallbackMenus);
-      })
-    );
-  }
-
-  public getPermissionsTree(): Observable<PermissionTreeNodeDto[]> {
-    return this.http.get<any>(`${this.profilsUrl}/permissions-tree`).pipe(
-      tap(res => {
-        const raw = extractArrayData(res);
-        if (raw.length > 0) {
-          this.permissionsTree.set(raw);
-        }
-      }),
-      catchError(() => {
-        const tree = this.buildDefaultPermissionTree();
+  /**
+   * Charger l'arbre complet des menus racines et permissions pour construire le formulaire
+   * GET /api/v1/profils/permissions-tree
+   */
+  public getPermissionsTree(): Observable<{ status: string; data: MenuTreeItem[] }> {
+    return this.http.get<any>(`${this.apiUrl}/permissions-tree`).pipe(
+      tap((res) => {
+        const tree = Array.isArray(res) ? res : (res?.data || []);
         this.permissionsTree.set(tree);
-        return of(tree);
+      }),
+      catchError((error: HttpErrorResponse) => {
+        return of({ status: 'error', data: [] });
       })
     );
   }
 
-  private buildDefaultPermissionTree(): PermissionTreeNodeDto[] {
-    return APP_MENU.map((m: any) => {
-      const node: PermissionTreeNodeDto = {
-        menu: m.libelle,
-        code: m.reference || m.code
-      };
-
-      if (m.sousMenus && m.sousMenus.length > 0) {
-        node.sous_menus = m.sousMenus.map((sm: any) => ({
-          nom: sm.libelle,
-          code: sm.reference,
-          permissions: [
-            { key: `${sm.reference}.read`, label: 'Lecture / Consultation' },
-            { key: `${sm.reference}.create`, label: 'Création / Ajout' },
-            { key: `${sm.reference}.update`, label: 'Modification' },
-            { key: `${sm.reference}.delete`, label: 'Suppression' }
-          ]
-        }));
-      } else {
-        node.permissions = [
-          { key: `${m.reference}.read`, label: 'Lecture / Consultation' },
-          { key: `${m.reference}.create`, label: 'Création / Ajout' },
-          { key: `${m.reference}.update`, label: 'Modification' },
-          { key: `${m.reference}.delete`, label: 'Suppression' }
-        ];
-      }
-
-      return node;
-    });
-  }
-
-  // ==========================================
-  // 2. PROFILS CRUD
-  // ==========================================
-
-  public getAll(): Observable<ProfilDto[]> {
+  /**
+   * Charger la liste des profils avec recherche & filtre de statut
+   * GET /api/v1/profils
+   */
+  public getProfils(search?: string, statut?: string): Observable<{ status: string; data: ProfilItem[] }> {
     this.isLoading.set(true);
-    return this.http.get<any>(this.profilsUrl).pipe(
-      tap(res => {
-        const raw = extractArrayData(res);
-        if (raw.length > 0) {
-          const normalized: ProfilDto[] = raw.map((item: any) => ({
-            id: item.id || `prof-${Date.now()}`,
-            uuid: item.uuid,
-            nom: item.nom || item.name || '',
-            code: item.code || item.nom?.toLowerCase().replace(/\s+/g, '_') || '',
-            description: item.description || '',
-            statut: (item.statut === 'Inactif' || item.statut === 'inactif' || item.statut_code === 'inactif') ? 'inactif' : 'actif',
-            statut_code: (item.statut === 'Inactif' || item.statut === 'inactif' || item.statut_code === 'inactif') ? 'inactif' : 'actif',
-            permissions: Array.isArray(item.permissions) ? item.permissions : [],
-            total_permissions: item.total_permissions !== undefined ? item.total_permissions : (Array.isArray(item.permissions) ? item.permissions.length : 0),
-            is_system: !!item.is_system,
-            users_count: item.users_count || 0,
-            menus: item.menus,
-            created_at: item.created_at
-          }));
-          this.profils.set(normalized);
-        }
-      }),
-      catchError(() => of(this.profils())),
-      finalize(() => this.isLoading.set(false))
-    );
-  }
+    let params = new HttpParams();
+    if (search && search.trim()) params = params.set('search', search.trim());
+    if (statut && statut !== 'tous') params = params.set('statut', statut);
 
-  public getById(id: string): Observable<ProfilDto> {
-    return this.http.get<any>(`${this.profilsUrl}/${id}`).pipe(
-      tap(res => {
-        const item = extractObjectData(res);
-        return item;
+    return this.http.get<any>(this.apiUrl, { params }).pipe(
+      tap({
+        next: (res) => {
+          const list = extractArrayData(res);
+          this.profilsList.set(list);
+          this.isLoading.set(false);
+        },
+        error: () => this.isLoading.set(false)
       }),
-      catchError((err: unknown) => {
-        const found = this.profils().find(p => p.id === id);
-        if (found) return of(found);
-        return throwError(() => err);
+      catchError((error: HttpErrorResponse) => {
+        this.isLoading.set(false);
+        this.toastService.error('Profils', error.error?.message || 'Impossible de charger la liste des profils.');
+        return of({ status: 'error', data: [] });
       })
     );
   }
 
-  public create(dto: CreateProfilDto): Observable<ProfilDto> {
-    this.isSaving.set(true);
-    return this.http.post<any>(this.profilsUrl, dto).pipe(
-      tap(res => {
-        const item = extractObjectData(res) || res;
-        const created: ProfilDto = {
-          id: item.id || `prof-${Date.now()}`,
-          uuid: item.uuid,
-          nom: item.nom || dto.nom,
-          code: item.code || dto.nom.toLowerCase().replace(/\s+/g, '_'),
-          description: item.description || dto.description || '',
-          statut: 'actif',
-          statut_code: 'actif',
-          permissions: item.permissions || dto.permissions || [],
-          total_permissions: (dto.permissions || []).length,
-          is_system: false,
-          users_count: 0,
-          created_at: new Date().toISOString().split('T')[0]
-        };
-        this.addOrUpdateLocal(created);
-        this.toastService.success(
-          'Profil Créé avec Succès',
-          `Le profil "${created.nom}" avec ${created.permissions.length} permission(s) a été enregistré.`
-        );
-      }),
-      catchError((err: HttpErrorResponse) => {
-        const newLocal: ProfilDto = {
-          id: `prof-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-          nom: dto.nom,
-          code: dto.nom.toLowerCase().replace(/\s+/g, '_'),
-          description: dto.description || '',
-          statut: 'actif',
-          statut_code: 'actif',
-          permissions: dto.permissions || [],
-          total_permissions: (dto.permissions || []).length,
-          is_system: false,
-          users_count: 0,
-          created_at: new Date().toISOString().split('T')[0]
-        };
-        this.addOrUpdateLocal(newLocal);
-        this.toastService.success(
-          'Profil Créé avec Succès',
-          `Le profil "${newLocal.nom}" avec ${newLocal.permissions.length} permission(s) a été enregistré.`
-        );
-        return of(newLocal);
-      }),
-      finalize(() => this.isSaving.set(false))
-    );
+  // Alias getAll for components
+  public getAll(search?: string, statut?: string): Observable<any> {
+    return this.getProfils(search, statut);
   }
 
-  public update(id: string, dto: UpdateProfilDto): Observable<ProfilDto> {
-    this.isSaving.set(true);
-    return this.http.put<any>(`${this.profilsUrl}/${id}`, dto).pipe(
-      tap(res => {
-        const item = extractObjectData(res) || res;
-        const current = this.profils().find(p => p.id === id);
-        const updated: ProfilDto = {
-          ...current!,
-          ...item,
-          id,
-          nom: dto.nom || current?.nom || '',
-          description: dto.description !== undefined ? dto.description : current?.description,
-          permissions: dto.permissions || current?.permissions || [],
-          total_permissions: (dto.permissions || current?.permissions || []).length
-        };
-        this.addOrUpdateLocal(updated);
-        this.toastService.success(
-          'Profil Mis à Jour',
-          `Les permissions et détails du profil "${updated.nom}" ont été enregistrés.`
-        );
-      }),
-      catchError((err: HttpErrorResponse) => {
-        const current = this.profils().find(p => p.id === id);
-        const updatedLocal: ProfilDto = {
-          ...current!,
-          id,
-          nom: dto.nom || current?.nom || '',
-          description: dto.description !== undefined ? dto.description : current?.description,
-          permissions: dto.permissions || current?.permissions || [],
-          total_permissions: (dto.permissions || current?.permissions || []).length
-        };
-        this.addOrUpdateLocal(updatedLocal);
-        this.toastService.success(
-          'Profil Mis à Jour',
-          `Les permissions et détails du profil "${updatedLocal.nom}" ont été enregistrés.`
-        );
-        return of(updatedLocal);
-      }),
-      finalize(() => this.isSaving.set(false))
-    );
+  /**
+   * Détails d'un profil
+   * GET /api/v1/profils/:id
+   */
+  public getProfilById(id: string): Observable<{ status: string; data: ProfilItem }> {
+    return this.http.get<{ status: string; data: ProfilItem }>(`${this.apiUrl}/${id}`);
   }
 
-  public patchStatus(id: string, status: 'actif' | 'inactif'): Observable<void> {
-    return this.http.patch<void>(`${this.profilsUrl}/${id}/status`, { statut: status }).pipe(
-      tap(() => {
-        this.updateLocalStatus(id, status);
-        this.toastService.success(
-          'Statut Modifié',
-          `Le profil est désormais ${status === 'actif' ? 'Actif' : 'Inactif'}.`
-        );
+  public getById(id: string): Observable<any> {
+    return this.getProfilById(id);
+  }
+
+  /**
+   * Créer un profil avec sa matrice de permissions
+   * POST /api/v1/profils
+   */
+  public createProfil(dto: CreateProfilDto): Observable<{ status: string; message: string; data: ProfilItem }> {
+    this.isSaving.set(true);
+    return this.http.post<any>(this.apiUrl, dto).pipe(
+      tap((res) => {
+        this.isSaving.set(false);
+        this.toastService.success('Succès', res.message || 'Profil créé avec succès.');
+        this.getProfils().subscribe();
       }),
-      catchError(() => {
-        this.updateLocalStatus(id, status);
-        this.toastService.success(
-          'Statut Modifié',
-          `Le profil est désormais ${status === 'actif' ? 'Actif' : 'Inactif'}.`
-        );
-        return of(void 0);
+      catchError((error: HttpErrorResponse) => {
+        this.isSaving.set(false);
+        this.toastService.error('Erreur de création', error.error?.message || 'Impossible de créer le profil.');
+        return throwError(() => error);
       })
     );
   }
 
-  public delete(id: string): Observable<void> {
+  public create(dto: CreateProfilDto): Observable<any> {
+    return this.createProfil(dto);
+  }
+
+  /**
+   * Mettre à jour un profil existant
+   * PUT /api/v1/profils/:id
+   */
+  public updateProfil(id: string, dto: UpdateProfilDto): Observable<{ status: string; message: string; data: ProfilItem }> {
     this.isSaving.set(true);
-    return this.http.delete<void>(`${this.profilsUrl}/${id}`).pipe(
-      tap(() => {
-        this.removeLocal(id);
-        this.toastService.success('Profil Supprimé', 'Le profil a été retiré du système.');
+    return this.http.put<any>(`${this.apiUrl}/${id}`, dto).pipe(
+      tap((res) => {
+        this.isSaving.set(false);
+        this.toastService.success('Succès', res.message || 'Profil mis à jour avec succès.');
+        this.getProfils().subscribe();
       }),
-      catchError(() => {
-        this.removeLocal(id);
-        this.toastService.success('Profil Supprimé', 'Le profil a été retiré du système.');
-        return of(void 0);
-      }),
-      finalize(() => this.isSaving.set(false))
+      catchError((error: HttpErrorResponse) => {
+        this.isSaving.set(false);
+        this.toastService.error('Erreur de modification', error.error?.message || 'Impossible de modifier le profil.');
+        return throwError(() => error);
+      })
     );
   }
 
-  private addOrUpdateLocal(item: ProfilDto): void {
-    this.profils.update(list => {
-      const idx = list.findIndex(p => p.id === item.id);
-      if (idx >= 0) {
-        const next = [...list];
-        next[idx] = item;
-        return next;
-      }
-      return [item, ...list];
-    });
+  public update(id: string, dto: UpdateProfilDto): Observable<any> {
+    return this.updateProfil(id, dto);
   }
 
-  private updateLocalStatus(id: string, status: 'actif' | 'inactif'): void {
-    this.profils.update(list =>
-      list.map(p => (p.id === id ? { ...p, statut: status, statut_code: status } : p))
+  /**
+   * Activer / Désactiver un profil
+   * PATCH /api/v1/profils/:id/status
+   */
+  public toggleStatus(id: string): Observable<{ status: string; message: string; data: ProfilItem }> {
+    return this.http.patch<any>(`${this.apiUrl}/${id}/status`, {}).pipe(
+      tap((res) => {
+        this.toastService.success('Statut modifié', res.message || 'Le statut du profil a été mis à jour.');
+        this.getProfils().subscribe();
+      }),
+      catchError((error: HttpErrorResponse) => {
+        this.toastService.error('Erreur', error.error?.message || 'Impossible de changer le statut.');
+        return throwError(() => error);
+      })
     );
   }
 
-  private removeLocal(id: string): void {
-    this.profils.update(list => list.filter(p => p.id !== id));
+  /**
+   * Supprimer un profil personnalisé
+   * DELETE /api/v1/profils/:id
+   */
+  public deleteProfil(id: string): Observable<{ status: string; message: string }> {
+    return this.http.delete<any>(`${this.apiUrl}/${id}`).pipe(
+      tap((res) => {
+        this.toastService.success('Supprimé', res.message || 'Profil supprimé avec succès.');
+        this.getProfils().subscribe();
+      }),
+      catchError((error: HttpErrorResponse) => {
+        this.toastService.error('Erreur de suppression', error.error?.message || 'Impossible de supprimer le profil.');
+        return throwError(() => error);
+      })
+    );
+  }
+
+  public delete(id: string): Observable<any> {
+    return this.deleteProfil(id);
   }
 }

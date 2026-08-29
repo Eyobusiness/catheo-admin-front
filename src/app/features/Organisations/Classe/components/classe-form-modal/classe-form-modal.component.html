@@ -6,14 +6,37 @@
   (closed)="onClose()"
 >
   <form [formGroup]="form" (ngSubmit)="onSubmit()" dialog-body class="classe-form">
-    <!-- Niveau Parent Selection -->
+    <!-- Section Selection -->
+    <div class="form-group">
+      <label class="form-label" for="sectionId">
+        Section Pastorale <span class="required">*</span>
+      </label>
+      <select
+        id="sectionId"
+        formControlName="section_id"
+        class="form-control"
+        (change)="onSectionChange($event)"
+      >
+        <option value="" disabled>Sélectionner une section</option>
+        @for (sec of sections(); track sec.id) {
+          <option [value]="sec.id">{{ sec.nom }} ({{ sec.code }})</option>
+        }
+      </select>
+      @if (form.controls.section_id.touched && form.controls.section_id.invalid) {
+        <span class="field-error">Veuillez sélectionner une section.</span>
+      }
+    </div>
+
+    <!-- Niveau Parent Selection (Filtered by selected Section) -->
     <div class="form-group">
       <label class="form-label" for="niveauId">
         Niveau de Catéchèse <span class="required">*</span>
       </label>
       <select id="niveauId" formControlName="niveau_id" class="form-control">
-        <option value="" disabled>Sélectionner un niveau</option>
-        @for (niv of niveaux(); track niv.id) {
+        <option value="" disabled>
+          {{ filteredNiveaux().length > 0 ? 'Sélectionner un niveau' : 'Aucun niveau disponible pour cette section' }}
+        </option>
+        @for (niv of filteredNiveaux(); track niv.id) {
           <option [value]="niv.id">{{ niv.nom }}</option>
         }
       </select>
@@ -32,12 +55,13 @@
         type="text"
         formControlName="nom"
         class="form-control"
-        placeholder="Nom"
+        placeholder="Ex: Classe Saint Jean-Paul II, Groupe A..."
       />
       @if (form.controls.nom.touched && form.controls.nom.invalid) {
         <span class="field-error">Le nom de la classe est obligatoire.</span>
       }
     </div>
+
 
     <!-- Capacité & Statut Row -->
     <div class="form-row col-2">
@@ -62,7 +86,7 @@
       <div class="form-group">
         <label class="form-label" for="statut">Statut</label>
         <select id="statut" formControlName="statut" class="form-control">
-          <option value="active">Active (Ouverte)</option>
+          <option value="active">Active</option>
           <option value="inactive">Inactive</option>
         </select>
       </div>

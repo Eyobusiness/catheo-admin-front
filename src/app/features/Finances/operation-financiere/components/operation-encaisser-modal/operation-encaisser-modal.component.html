@@ -1,0 +1,163 @@
+<app-dialog
+  [isOpen]="isOpen()"
+  title="Encaissement au Guichet & Émission de Reçu"
+  size="md"
+  (closed)="onClose()"
+>
+  <div class="encaisser-modal-body">
+    <!-- Operation Summary Banner -->
+    @if (operation(); as op) {
+      <div class="op-summary-card">
+        <div class="op-summary-header">
+          <span class="ref-badge"><i class="bi bi-hash"></i> {{ op.reference }}</span>
+          <span class="due-amount">{{ op.montant | number:'1.0-0' }} FCFA</span>
+        </div>
+        <div class="op-summary-meta">
+          <div class="meta-item">
+            <span class="label">Catéchumène :</span>
+            <span class="val">{{ op.catechumene ? (op.catechumene.nom + ' ' + op.catechumene.prenoms) : 'Non assigné' }}</span>
+          </div>
+          <div class="meta-item">
+            <span class="label">Objet :</span>
+            <span class="val">{{ op.libelle }}</span>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Payment Form -->
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="payment-form">
+      <div class="form-row-2">
+        <!-- Mode de Paiement -->
+        <div class="form-group">
+          <label class="form-label" for="enc_mode">
+            Mode de Règlement <span class="required">*</span>
+          </label>
+          <div class="select-wrapper">
+            <select id="enc_mode" formControlName="mode_paiement" class="form-control">
+              <option value="especes">Espèces (Guichet)</option>
+              <option value="mobile_money">Mobile Money (Wave / OM / Moov / MTN)</option>
+              <option value="cheque">Chèque Bancaire</option>
+              <option value="virement">Virement Bancaire</option>
+              <option value="carte_bancaire">Carte Bancaire / TPE</option>
+            </select>
+            <i class="bi bi-chevron-down select-chevron"></i>
+          </div>
+        </div>
+
+        <!-- Montant à Imputer / Payer -->
+        <div class="form-group">
+          <label class="form-label" for="enc_montant">
+            Montant Dû / À Payer (FCFA) <span class="required">*</span>
+          </label>
+          <input
+            id="enc_montant"
+            type="number"
+            min="1"
+            formControlName="montant"
+            class="form-control"
+          />
+          @if (form.controls.montant.touched && form.controls.montant.errors?.['required']) {
+            <span class="field-error">Le montant à imputer est requis.</span>
+          }
+        </div>
+      </div>
+
+      <!-- Billets remis / Montant Reçu & Monnaie à rendre -->
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="form-label" for="enc_montant_recu">
+            Montant Reçu / Billet Remis (FCFA)
+          </label>
+          <input
+            id="enc_montant_recu"
+            type="number"
+            min="0"
+            formControlName="montant_recu"
+            class="form-control highlight-input"
+            placeholder="Ex: 20000"
+            (input)="onMontantRecuInput($event)"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">
+            Monnaie Rendue au Fidèle
+          </label>
+          <div class="change-return-box" [class.has-change]="monnaieRendue() > 0">
+            <span class="change-label"><i class="bi bi-arrow-return-left"></i> À RENDRE :</span>
+            <span class="change-val">{{ monnaieRendue() | number:'1.0-0' }} FCFA</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row-2">
+        <!-- Date de Paiement -->
+        <div class="form-group">
+          <label class="form-label" for="enc_date">
+            Date du Paiement <span class="required">*</span>
+          </label>
+          <input
+            id="enc_date"
+            type="date"
+            formControlName="date_paiement"
+            class="form-control"
+          />
+          @if (form.controls.date_paiement.touched && form.controls.date_paiement.errors?.['required']) {
+            <span class="field-error">La date est requise.</span>
+          }
+        </div>
+
+        <!-- Réf Transaction (ex: Wave ID ou N° chèque) -->
+        <div class="form-group">
+          <label class="form-label" for="enc_ref_tx">
+            Réf Transaction / N° Chèque
+          </label>
+          <input
+            id="enc_ref_tx"
+            type="text"
+            formControlName="reference_transaction"
+            class="form-control"
+            placeholder="Ex: TX-90823, CHQ-10492"
+          />
+        </div>
+      </div>
+
+      <!-- Notes / Remarques -->
+      <div class="form-group">
+        <label class="form-label" for="enc_notes">
+          Remarques de Caisse (Optionnel)
+        </label>
+        <input
+          id="enc_notes"
+          type="text"
+          formControlName="notes"
+          class="form-control"
+          placeholder="Ex: Payé par le tuteur au bureau paroissial..."
+        />
+      </div>
+
+      <!-- Actions -->
+      <div class="modal-footer-actions">
+        <app-button
+          type="button"
+          variant="ghost"
+          (clicked)="onClose()"
+          [disabled]="isLoading()"
+        >
+          Annuler
+        </app-button>
+
+        <app-button
+          type="submit"
+          variant="success"
+          [loading]="isLoading()"
+          [disabled]="form.invalid || isLoading()"
+        >
+          <i class="bi bi-printer-fill"></i>
+          <span>Valider l'Encaissement & Émettre le Reçu</span>
+        </app-button>
+      </div>
+    </form>
+  </div>
+</app-dialog>

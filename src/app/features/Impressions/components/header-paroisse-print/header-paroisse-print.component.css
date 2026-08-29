@@ -1,0 +1,138 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.print-header-container {
+  font-family: 'Times New Roman', Times, serif, Arial, sans-serif;
+  color: #000;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.print-header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  margin-bottom: 6px;
+  gap: 12px;
+}
+
+.logo-box {
+  width: 75px;
+  height: 75px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #ccc;
+  padding: 3px;
+  background: #fff;
+  flex-shrink: 0;
+  border-radius: 4px;
+}
+
+.photo-box {
+  width: 80px;
+  height: 90px;
+  border: 1.5px solid #333;
+  padding: 2px;
+  background: #f9fafb;
+  box-sizing: border-box;
+}
+
+.print-logo {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.print-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 2px;
+}
+
+.photo-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+}
+
+.user-icon {
+  font-size: 1.9rem;
+  color: #6b7280;
+}
+
+.photo-txt {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #4b5563;
+}
+
+.church-icon {
+  font-size: 2.2rem;
+  color: #1e3a8a;
+}
+
+.parish-info-center {
+  flex: 1;
+  text-align: center;
+  padding: 0 4px;
+}
+
+.line-diocese {
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.line-doyenne {
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin: 1px 0;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.line-paroisse {
+  font-size: 1.05rem;
+  font-weight: 800;
+  margin: 2px 0;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.line-contact {
+  font-size: 0.75rem;
+  margin: 1px 0;
+  color: #111;
+  font-weight: 500;
+}
+
+.header-divider-line {
+  width: 100%;
+  height: 1.5px;
+  background-color: #000;
+  margin: 6px 0 4px 0;
+}
+
+.custom-title-block {
+  margin: 4px 0 2px 0;
+  text-align: center;
+}
+
+.custom-title-text {
+  font-size: 1.15rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  margin: 2px 0 0 0;
+  letter-spacing: 0.03em;
+  text-decoration: underline;
+}

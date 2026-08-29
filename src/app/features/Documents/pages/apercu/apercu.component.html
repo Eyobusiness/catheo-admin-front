@@ -1,0 +1,71 @@
+<div class="apercu-page-wrapper">
+  <!-- Barre d'actions supérieure (masquée à l'impression) -->
+  <div class="top-action-bar no-print">
+    <div class="top-action-left">
+      <button type="button" class="btn btn-secondary" (click)="retourHistorique()">
+        <i class="bi bi-arrow-left"></i>
+        <span>Retour</span>
+      </button>
+
+      @if (documentGenere()) {
+        <div class="doc-badge-info">
+          <span class="doc-type-badge">{{ documentGenere()!.type_document }}</span>
+          <span class="doc-name-title">{{ documentGenere()!.titre }}</span>
+          @if (getCatechumeneDisplayName()) {
+            <span class="doc-cat-mat">— {{ getCatechumeneDisplayName() }} ({{ getCatechumeneMatricule() }})</span>
+          }
+        </div>
+      }
+    </div>
+
+    <div class="top-action-right">
+      <button type="button" class="btn btn-primary btn-print" (click)="imprimerDocument()">
+        <i class="bi bi-printer-fill"></i>
+        <span>Imprimer</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- FEUILLE DE DOCUMENT OFFICIEL FORMAT A4 -->
+  @if (documentGenere()) {
+    <div class="a4-container">
+      <div class="a4-page" id="printableDocument">
+        <!-- EN-TÊTE INSTITUTIONNEL OFFICIEL PAROISSIAL (Configuration backend) -->
+        <app-entete-catechese [showBorder]="false" />
+
+        <div class="header-divider-double"></div>
+
+        <!-- CORPS DU DOCUMENT (CONTENU FUSIONNÉ) -->
+        <div class="a4-body" [innerHTML]="safeContenuRendu()"></div>
+
+        <!-- PIED DE PAGE OFFICIEL AVEC LIEU, DATE & SIGNATURE DU CURÉ -->
+        <div class="a4-footer">
+          <div class="footer-left-seal">
+            <div class="seal-placeholder">
+              <span></span>
+            </div>
+          </div>
+          <div class="footer-right-signature">
+            <div class="signature-date">Fait à {{ service.paroisseInfo().nom }}, le {{ currentDateFormatted() }}</div>
+            <div class="signature-name">{{ service.paroisseInfo().cureNom }}</div>
+            <div class="signature-space">
+              <span class="sig-note"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- PIED DE PAGE DISCRET BAS DE FEUILLE -->
+        <div class="a4-bottom-bar">
+          <span>Catheo • Documents Officiels Paroissiaux • Réf : {{ documentGenere()!.reference_document || documentGenere()!.id }}</span>
+        </div>
+      </div>
+    </div>
+  } @else {
+    <div class="not-found-box no-print">
+      <i class="bi bi-file-earmark-x"></i>
+      <h3>Document non trouvé</h3>
+      <p>Le document demandé est introuvable ou en cours de chargement...</p>
+      <button type="button" class="btn btn-primary" (click)="retourHistorique()">Retourner à la génération</button>
+    </div>
+  }
+</div>

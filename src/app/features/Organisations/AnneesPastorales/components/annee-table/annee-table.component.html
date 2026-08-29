@@ -35,13 +35,18 @@
             </td>
 
             <td>
-              @if (annee.est_active) {
+              @if (annee.est_active || annee.statut === 'active') {
                 <span class="active-badge">
                   <span class="pulse-dot"></span>
                   Année Active
                 </span>
+              } @else if (annee.statut === 'preparation') {
+                <span class="preparation-badge">
+                  <i class="bi bi-hourglass-split"></i>
+                  En préparation
+                </span>
               } @else {
-                <span class="inactive-badge">Inactive</span>
+                <span class="inactive-badge">Clôturée</span>
               }
             </td>
 

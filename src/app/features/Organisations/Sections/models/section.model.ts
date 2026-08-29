@@ -1,27 +1,26 @@
-export type SectionStatut = 'actif' | 'inactif';
-
 export interface Section {
   id: string;
   nom: string;
   code: string;
-  description: string;
+  description?: string;
   ordre: number;
-  statut: SectionStatut;
+  statut: string;
   total_niveaux?: number;
 }
 
 export interface CreateSectionDto {
   nom: string;
   code: string;
-  description: string;
+  description?: string;
   ordre: number;
-  statut: SectionStatut;
+  statut: string;
 }
 
 export interface UpdateSectionDto {
-  nom: string;
-  code: string;
-  description: string;
-  ordre: number;
-  statut: SectionStatut;
+  nom?: string;
+  code?: string;
+  description?: string;
+  ordre?: number;
+  statut?: string;
 }
+

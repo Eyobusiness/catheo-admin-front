@@ -54,6 +54,18 @@
               <span class="value">{{ item.telephone }}</span>
             </div>
           }
+          @if (item.classe_scolaire) {
+            <div class="info-row">
+              <span class="label">Classe Scolaire :</span>
+              <span class="value">{{ item.classe_scolaire }}</span>
+            </div>
+          }
+          @if (item.profession) {
+            <div class="info-row">
+              <span class="label">Profession :</span>
+              <span class="value">{{ item.profession }}</span>
+            </div>
+          }
           @if (item.situation_matrimoniale) {
             <div class="info-row">
               <span class="label">Situation Matrimoniale :</span>

@@ -3,138 +3,173 @@
     <table class="medical-table">
       <thead>
         <tr>
-          <th>Titre de la Campagne</th>
-          <th>Année Pastorale</th>
-          <th>Période</th>
-          <th>Sections Autorisées</th>
-          <th>Demandes</th>
-          <th>Statut</th>
-          <th class="text-right">Actions</th>
+          <th class="col-main">Campagne</th>
+          <th class="col-annee">Année Pastorale</th>
+          <th class="col-periode">Période</th>
+          <th class="col-sections">Sections</th>
+          <!-- <th class="col-demandes">Demandes</th> -->
+          <th class="col-statut">Statut</th>
+          <th class="col-actions text-right">Actions</th>
         </tr>
       </thead>
       <tbody>
         @for (campagne of paginatedCampagnes(); track campagne.id) {
           <tr class="table-row">
-            <td>
+            <!-- Campagne & Accès -->
+            <td class="col-main">
               <div class="campagne-name-cell">
-                <div class="campagne-icon-box" [class.is-open-icon]="campagne.statut === 'ouverte'">
+                <div
+                  class="campagne-icon-box"
+                  [class.is-open]="campagne.statut === 'ouverte'"
+                  [class.is-closed]="campagne.statut === 'fermee'"
+                  [class.is-suspended]="campagne.statut === 'suspendue'"
+                >
                   <i class="bi bi-megaphone-fill"></i>
                 </div>
                 <div class="campagne-meta">
-                  <span class="campagne-title">{{ campagne.titre }}</span>
-                  @if (campagne.public_url) {
-                    <a [href]="campagne.public_url" target="_blank" class="public-link" title="Ouvrir le lien public">
-                      <i class="bi bi-link-45deg"></i> Lien public
-                    </a>
-                  }
+                  <div class="campagne-title-row">
+                    <span class="campagne-title" (click)="onView(campagne)">{{ campagne.titre }}</span>
+                  </div>
                 </div>
               </div>
             </td>
 
-            <td>
-              <div class="annee-box">
-                <i class="bi bi-calendar4-week"></i>
+            <!-- Année Pastorale -->
+            <td class="col-annee">
+              <div class="annee-pill">
+                <i class="bi bi-calendar3"></i>
                 <span>{{ campagne.annee_catechese?.libelle || 'Année Pastorale' }}</span>
               </div>
             </td>
 
-            <td>
+            <!-- Période & Échéance -->
+            <td class="col-periode">
               <div class="date-range-box">
-                <i class="bi bi-calendar-range"></i>
-                <span>{{ campagne.date_debut | date:'dd MMM yyyy' }} &rarr; {{ campagne.date_fin | date:'dd MMM yyyy' }}</span>
+                <div class="date-dates">
+                  <i class="bi bi-calendar-range"></i>
+                  <span>{{ campagne.date_debut | date:'dd MMM yyyy' }} <br>
+                    {{ campagne.date_fin | date:'dd MMM yyyy' }}</span>
+                </div>
+                <!-- @if (campagne.statut === 'ouverte') {
+                  @let rem = getDaysRemainingInfo(campagne.date_fin);
+                  <span [class]="'echeance-badge ' + rem.class">
+                    {{ rem.label }}
+                  </span>
+                } -->
               </div>
             </td>
 
-            <td>
+            <!-- Sections Autorisées -->
+            <td class="col-sections">
               <div class="sections-badges-wrapper">
                 @if (campagne.sections_autorisees && campagne.sections_autorisees.length > 0) {
                   @for (sec of campagne.sections_autorisees; track sec) {
                     <span class="section-chip-badge">{{ sec }}</span>
                   }
                 } @else {
-                  <span class="text-muted-xs">Toutes les sections</span>
+                  <span class="text-muted-all">Toutes les sections</span>
                 }
               </div>
             </td>
 
-            <td>
-              <div class="count-badge">
-                <i class="bi bi-person-check-fill"></i>
-                <span><strong>{{ campagne.preinscriptions_count || 0 }}</strong> demandes</span>
+            <!-- Demandes -->
+            <!-- <td class="col-demandes">
+              <div class="count-badge" [class.has-count]="(campagne.preinscriptions_count || 0) > 0">
+                <i class="bi bi-people-fill"></i>
+                <span><strong>{{ campagne.preinscriptions_count || 0 }}</strong> dossier(s)</span>
               </div>
-            </td>
+            </td> -->
 
-            <td>
+            <!-- Statut -->
+            <td class="col-statut">
               @switch (campagne.statut) {
                 @case ('ouverte') {
-                  <span class="badge-open">
+                  <span class="badge-status open">
                     <span class="pulse-dot"></span>
-                    Ouverte
+                    <span>Ouverte</span>
                   </span>
                 }
                 @case ('fermee') {
-                  <span class="badge-closed">Clôturée</span>
+                  <span class="badge-status closed">
+                    <i class="bi bi-lock-fill"></i>
+                    <span>Clôturée</span>
+                  </span>
                 }
                 @case ('suspendue') {
-                  <span class="badge-suspended">Suspendue</span>
+                  <span class="badge-status suspended">
+                    <i class="bi bi-pause-circle-fill"></i>
+                    <span>Suspendue</span>
+                  </span>
                 }
                 @default {
-                  <span class="badge-closed">{{ campagne.statut }}</span>
+                  <span class="badge-status closed">{{ campagne.statut }}</span>
                 }
               }
             </td>
 
-            <td class="text-right">
+            <!-- Actions Group -->
+            <td class="col-actions text-right">
               <div class="actions-flex">
-                <!-- Toggle Statut -->
+                <!-- 1. Copier le lien public -->
                 <app-icon-button
-                  [variant]="campagne.statut === 'ouverte' ? 'success' : 'ghost'"
+                  [variant]="copiedId() === campagne.id ? 'success' : 'secondary'"
                   size="sm"
-                  [title]="campagne.statut === 'ouverte' ? 'Clôturer la campagne' : 'Ouvrir la campagne'"
-                  ariaLabel="Statut"
-                  (clicked)="onToggleStatus(campagne)"
+                  [title]="copiedId() === campagne.id ? 'Lien copié dans le presse-papier !' : 'Copier le lien public de préinscription'"
+                  ariaLabel="Copier lien"
+                  (clicked)="copyPublicUrl($event, campagne)"
                 >
-                  <i [class]="'bi ' + (campagne.statut === 'ouverte' ? 'bi-toggle-on' : 'bi-toggle-off')"></i>
+                  <i [class]="'bi ' + (copiedId() === campagne.id ? 'bi-check-lg' : 'bi-link-45deg')"></i>
                 </app-icon-button>
 
-                <!-- QR Code & Partage -->
+                <!-- 2. QR Code & Partage -->
                 <app-icon-button
-                  variant="secondary"
+                  variant="info"
                   size="sm"
-                  title="Partager le lien & QR Code"
+                  title="Afficher le QR Code & Partage"
                   ariaLabel="QR Code"
                   (clicked)="onQr(campagne)"
                 >
                   <i class="bi bi-qr-code-scan"></i>
                 </app-icon-button>
 
-                <!-- Voir -->
+                <!-- 3. Basculer Statut (Ouvrir/Fermer) -->
                 <app-icon-button
-                  variant="info"
+                  [variant]="campagne.statut === 'ouverte' ? 'success' : 'ghost'"
                   size="sm"
-                  title="Voir les détails"
+                  [title]="campagne.statut === 'ouverte' ? 'Clôturer les inscriptions' : 'Ouvrir les inscriptions'"
+                  ariaLabel="Statut"
+                  (clicked)="onToggleStatus(campagne)"
+                >
+                  <i [class]="'bi ' + (campagne.statut === 'ouverte' ? 'bi-toggle-on' : 'bi-toggle-off')"></i>
+                </app-icon-button>
+
+                <!-- 4. Voir détails -->
+                <app-icon-button
+                  variant="ghost"
+                  size="sm"
+                  title="Voir les détails complets"
                   ariaLabel="Voir"
                   (clicked)="onView(campagne)"
                 >
                   <i class="bi bi-eye"></i>
                 </app-icon-button>
 
-                <!-- Modifier -->
+                <!-- 5. Modifier -->
                 <app-icon-button
                   variant="primary"
                   size="sm"
-                  title="Modifier"
+                  title="Modifier la campagne"
                   ariaLabel="Modifier"
                   (clicked)="onEdit(campagne)"
                 >
                   <i class="bi bi-pencil"></i>
                 </app-icon-button>
 
-                <!-- Supprimer -->
+                <!-- 6. Supprimer -->
                 <app-icon-button
                   variant="danger"
                   size="sm"
-                  title="Supprimer"
+                  title="Supprimer la campagne"
                   ariaLabel="Supprimer"
                   (clicked)="onDelete(campagne)"
                 >
@@ -147,11 +182,15 @@
           <tr>
             <td colspan="7" class="empty-table-cell">
               <div class="empty-state-box">
-                <i class="bi bi-megaphone" style="font-size: 2.25rem;"></i>
-                <p class="empty-title">Aucune campagne de préinscription</p>
-                <p class="empty-desc">Créez votre première campagne pour lancer les inscriptions.</p>
-                <app-button variant="primary" size="sm" icon="plus" (clicked)="onCreate()">
-                  Nouvelle Campagne
+                <div class="empty-illustration-circle">
+                  <i class="bi bi-megaphone"></i>
+                </div>
+                <h4 class="empty-title">Aucune campagne de préinscription trouvée</h4>
+                <p class="empty-desc">
+                  Créez une nouvelle campagne pour ouvrir les inscriptions en ligne et générer des QR Codes pour vos fidèles.
+                </p>
+                <app-button variant="primary" size="md" icon="plus" (clicked)="onCreate()">
+                  Créer une Campagne
                 </app-button>
               </div>
             </td>
@@ -171,3 +210,4 @@
     />
   }
 </div>
+

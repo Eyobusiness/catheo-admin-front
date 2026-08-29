@@ -6,21 +6,39 @@
   (closed)="onClose()"
 >
   <form [formGroup]="form" (ngSubmit)="onSubmit()" dialog-body class="user-form-layout">
-    <!-- Nom complet -->
-    <div class="form-group">
-      <label class="form-label" for="name">
-        Nom complet & Prénoms <span class="required">*</span>
-      </label>
-      <input
-        id="name"
-        type="text"
-        formControlName="name"
-        class="form-control"
-        placeholder="Ex: Abbé Ferdinand KOUADIO"
-      />
-      @if (form.controls.name.touched && form.controls.name.invalid) {
-        <span class="field-error">Le nom de l'utilisateur est obligatoire.</span>
-      }
+    <!-- Nom et Prénoms -->
+    <div class="form-row col-2">
+      <div class="form-group">
+        <label class="form-label" for="nom">
+          Nom de famille <span class="required">*</span>
+        </label>
+        <input
+          id="nom"
+          type="text"
+          formControlName="nom"
+          class="form-control"
+          placeholder="Ex: KOUASSI"
+        />
+        @if (form.controls.nom.touched && form.controls.nom.invalid) {
+          <span class="field-error">Le nom est obligatoire (min 2 caractères).</span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="prenoms">
+          Prénoms <span class="required">*</span>
+        </label>
+        <input
+          id="prenoms"
+          type="text"
+          formControlName="prenoms"
+          class="form-control"
+          placeholder="Ex: Jean-Marc"
+        />
+        @if (form.controls.prenoms.touched && form.controls.prenoms.invalid) {
+          <span class="field-error">Les prénoms sont obligatoires.</span>
+        }
+      </div>
     </div>
 
     <!-- Email & Téléphone -->
@@ -34,7 +52,7 @@
           type="email"
           formControlName="email"
           class="form-control"
-          placeholder="nom@paroissecim.ci"
+          placeholder="jean.kouassi@catheo.ci"
         />
         @if (form.controls.email.touched && form.controls.email.invalid) {
           <span class="field-error">Une adresse email valide est requise.</span>
@@ -43,14 +61,14 @@
 
       <div class="form-group">
         <label class="form-label" for="telephone">
-          Téléphone
+          Numéro de Téléphone
         </label>
         <input
           id="telephone"
           type="tel"
           formControlName="telephone"
           class="form-control"
-          placeholder="+225 07 00 00 00 00"
+          placeholder="+225 07 08 09 10 11"
         />
       </div>
     </div>
@@ -62,8 +80,8 @@
       </label>
       <select id="profil_id" formControlName="profil_id" class="form-control select-control">
         <option value="" disabled>Sélectionner un profil...</option>
-        @for (profil of profils(); track profil.id) {
-          <option [value]="profil.id">
+        @for (profil of profils(); track profil.uuid || profil.id) {
+          <option [value]="profil.uuid || profil.id">
             {{ profil.nom }} ({{ profil.total_permissions !== undefined ? profil.total_permissions : profil.permissions.length }} permissions)
           </option>
         }

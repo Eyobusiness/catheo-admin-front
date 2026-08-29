@@ -6,6 +6,15 @@ import { AppHeader } from './shared/ui/components/layout/app-header/app-header.c
 import { AppFooter } from './shared/ui/components/layout/app-footer/app-footer.component';
 import { AppToast } from './shared/ui/components/feedback/app-toast/app-toast.component';
 
+import { ThemeService } from './core/services/theme.service';
+
+function getInitialUrl(): string {
+  if (typeof window !== 'undefined' && window.location) {
+    return window.location.pathname || '/';
+  }
+  return '/';
+}
+
 @Component({
   selector: 'app-root',
   imports: [
@@ -20,12 +29,23 @@ import { AppToast } from './shared/ui/components/feedback/app-toast/app-toast.co
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class App {
+  private readonly themeService = inject(ThemeService);
   private readonly router = inject(Router);
-  protected readonly currentUrl = signal<string>(this.router.url);
+  protected readonly currentUrl = signal<string>(getInitialUrl());
 
   protected readonly isAuthRoute = computed(() => {
     const url = this.currentUrl();
-    return url.startsWith('/auth') || url.startsWith('/login');
+    const path = typeof window !== 'undefined' ? window.location.pathname : '';
+    return (
+      url.startsWith('/auth') ||
+      url.startsWith('/login') ||
+      url.startsWith('/preinscription-publique') ||
+      url.startsWith('/preinscriptions/campagne') ||
+      path.startsWith('/auth') ||
+      path.startsWith('/login') ||
+      path.startsWith('/preinscription-publique') ||
+      path.startsWith('/preinscriptions/campagne')
+    );
   });
 
   constructor() {

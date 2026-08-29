@@ -42,8 +42,24 @@
           }
         </div>
 
+        <!-- Section Filter Dropdown -->
+        <div class="select-filter-wrapper">
+          <i class="bi bi-diagram-2 select-prefix-icon"></i>
+          <select
+            class="filter-select-control"
+            [value]="selectedSectionFilter()"
+            (change)="onSectionFilterChange($event)"
+          >
+            <option value="">Toutes les sections</option>
+            @for (sec of sections(); track sec.id) {
+              <option [value]="sec.id">{{ sec.nom }}</option>
+            }
+          </select>
+          <i class="bi bi-chevron-down select-chevron-icon"></i>
+        </div>
+
         <!-- Niveau Filter Dropdown -->
-        <div class="niveau-select-wrapper">
+        <div class="select-filter-wrapper">
           <i class="bi bi-layers select-prefix-icon"></i>
           <select
             class="filter-select-control"
@@ -51,7 +67,7 @@
             (change)="onNiveauFilterChange($event)"
           >
             <option value="">Tous les niveaux</option>
-            @for (niv of niveaux(); track niv.id) {
+            @for (niv of filteredNiveauxForFilter(); track niv.id) {
               <option [value]="niv.id">{{ niv.nom }}</option>
             }
           </select>
@@ -91,6 +107,7 @@
   [isOpen]="isFormModalOpen()"
   [isEditing]="isEditing()"
   [classeToEdit]="selectedClasse()"
+  [sections]="sections()"
   [niveaux]="niveaux()"
   [isLoading]="isLoading()"
   (formClosed)="closeFormModal()"
@@ -105,3 +122,4 @@
   (modalClosed)="closeDeleteModal()"
   (confirmed)="handleDeleteConfirm()"
 />
+

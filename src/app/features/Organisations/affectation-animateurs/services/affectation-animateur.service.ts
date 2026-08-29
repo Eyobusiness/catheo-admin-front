@@ -1,10 +1,10 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Observable, catchError, of, tap, throwError } from 'rxjs';
 import {
   AffectationAnimateur,
+  AffectationFilterParams,
   CreateAffectationAnimateurDto,
-  RoleAnimateur,
   UpdateAffectationAnimateurDto
 } from '../models/affectation-animateur.model';
 import { ToastService } from '../../../../core/services/toast.service';
@@ -32,123 +32,51 @@ export class AffectationAnimateurService {
   private readonly baseUrl = `${environment.apiUrl}/affectations-animateurs`;
 
   // Reactive state signals
-  public readonly affectations = signal<AffectationAnimateur[]>([
-    {
-      id: '1f2e3d4c-5b6a-7f8e-9d0c-1b2a3f4e5d61',
-      role: 'principal',
-      date_affectation: '2026-09-01',
-      animateur_id: '1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c61',
-      classe_id: '8f9e0d1c-2b3a-4f5e-6d7c-8b9a0f1e2d31',
-      animateur: {
-        id: '1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c61',
-        matricule: 'CAT-2026-001',
-        nom: 'KOUASSI',
-        prenoms: 'Jean-Marc',
-        sexe: 'M',
-        statut: 'actif',
-        telephone: '+225 07 01 02 03 04'
-      },
-      classe: {
-        id: '8f9e0d1c-2b3a-4f5e-6d7c-8b9a0f1e2d31',
-        nom: 'Saint Jean-Paul II',
-        capacite_max: 30,
-        statut: 'active',
-        niveau: {
-          id: '9f8e7d6c-5b4a-3f2e-1d0c-9b8a7f6e5d22',
-          nom: "1ère Année d'Initiation",
-          statut: 'Actif'
-        }
-      }
-    },
-    {
-      id: '2e3d4c5b-6a7f-8e9d-0c1b-2a3f4e5d6c72',
-      role: 'adjoint',
-      date_affectation: '2026-09-01',
-      animateur_id: '2b3c4d5e-6f7a-8b9c-0d1e-2f3a4b5c6d72',
-      classe_id: '8f9e0d1c-2b3a-4f5e-6d7c-8b9a0f1e2d31',
-      animateur: {
-        id: '2b3c4d5e-6f7a-8b9c-0d1e-2f3a4b5c6d72',
-        matricule: 'CAT-2026-002',
-        nom: 'YAO',
-        prenoms: 'Marie-Noëlle',
-        sexe: 'F',
-        statut: 'actif',
-        telephone: '+225 05 06 07 08 09'
-      },
-      classe: {
-        id: '8f9e0d1c-2b3a-4f5e-6d7c-8b9a0f1e2d31',
-        nom: 'Saint Jean-Paul II',
-        capacite_max: 30,
-        statut: 'active',
-        niveau: {
-          id: '9f8e7d6c-5b4a-3f2e-1d0c-9b8a7f6e5d22',
-          nom: "1ère Année d'Initiation",
-          statut: 'Actif'
-        }
-      }
-    },
-    {
-      id: '3d4c5b6a-7f8e-9d0c-1b2a-3f4e5d6c7b83',
-      role: 'principal',
-      date_affectation: '2026-09-05',
-      animateur_id: '3c4d5e6f-7a8b-9c0d-1e2f-3a4b5c6d7e83',
-      classe_id: '7e8d9c0b-1a2f-3e4d-5c6b-7a8f9e0d1c32',
-      animateur: {
-        id: '3c4d5e6f-7a8b-9c0d-1e2f-3a4b5c6d7e83',
-        matricule: 'CAT-2026-003',
-        nom: 'KONE',
-        prenoms: 'David',
-        sexe: 'M',
-        statut: 'actif',
-        telephone: '+225 01 02 03 04 05'
-      },
-      classe: {
-        id: '7e8d9c0b-1a2f-3e4d-5c6b-7a8f9e0d1c32',
-        nom: 'Sainte Thérèse de Lisieux',
-        capacite_max: 25,
-        statut: 'active',
-        niveau: {
-          id: '8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c23',
-          nom: "2ème Année d'Initiation",
-          statut: 'Actif'
-        }
-      }
-    }
-  ]);
-
+  public readonly affectations = signal<AffectationAnimateur[]>([]);
   public readonly isLoading = signal<boolean>(false);
 
-  public getAll(): Observable<AffectationAnimateur[]> {
+  constructor() {
+    this.getAll().subscribe();
+  }
+
+  public getAll(filters?: AffectationFilterParams): Observable<AffectationAnimateur[]> {
     this.isLoading.set(true);
-    return this.http.get<any>(this.baseUrl).pipe(
+    let params = new HttpParams();
+    if (filters) {
+      if (filters.annee_catechese_id) params = params.set('annee_catechese_id', filters.annee_catechese_id);
+      if (filters.classe_id) params = params.set('classe_id', filters.classe_id);
+      if (filters.animateur_id) params = params.set('animateur_id', filters.animateur_id);
+      if (filters.search) params = params.set('search', filters.search);
+    }
+
+    return this.http.get<any>(this.baseUrl, { params }).pipe(
       tap(res => {
         const raw = extractArrayData(res);
-        if (raw.length > 0) {
-          const normalized: AffectationAnimateur[] = raw.map((item: any) => ({
-            id: item.id,
-            role: item.role || 'principal',
-            date_affectation: item.date_affectation || new Date().toISOString().split('T')[0],
-            animateur_id: item.animateur_id || item.animateur?.id,
-            classe_id: item.classe_id || item.classe?.id,
-            animateur: item.animateur || {
-              id: item.animateur_id || 'unknown',
-              nom: 'Catéchiste',
-              prenoms: '',
-              sexe: 'M',
-              statut: 'actif'
-            },
-            classe: item.classe || {
-              id: item.classe_id || 'unknown',
-              nom: 'Classe',
-              capacite_max: 30,
-              statut: 'active'
-            }
-          }));
-          this.affectations.set(normalized);
-        }
+        const normalized: AffectationAnimateur[] = raw.map((item: any) => ({
+          id: item.id,
+          annee_catechese_id: item.annee_catechese_id || item.annee_id,
+          role: item.role || 'principal',
+          date_affectation: item.date_affectation || new Date().toISOString().split('T')[0],
+          animateur_id: item.animateur_id || item.animateur?.id,
+          classe_id: item.classe_id || item.classe?.id,
+          animateur: item.animateur || {
+            id: item.animateur_id || 'unknown',
+            nom: 'Catéchiste',
+            prenoms: '',
+            sexe: 'M',
+            statut: 'actif'
+          },
+          classe: item.classe || {
+            id: item.classe_id || 'unknown',
+            nom: 'Classe',
+            capacite_max: 30,
+            statut: 'active'
+          }
+        }));
+        this.affectations.set(normalized);
         this.isLoading.set(false);
       }),
-      catchError(() => {
+      catchError(err => {
         this.isLoading.set(false);
         return of(this.affectations());
       })
@@ -171,7 +99,17 @@ export class AffectationAnimateurService {
 
   public create(dto: CreateAffectationAnimateurDto, animateurLabel?: string, classeLabel?: string): Observable<AffectationAnimateur> {
     this.isLoading.set(true);
-    return this.http.post<any>(this.baseUrl, dto).pipe(
+
+    const payload: any = {
+      animateur_id: dto.animateur_id,
+      classe_id: dto.classe_id,
+      role: dto.role || 'principal'
+    };
+    if (dto.annee_catechese_id) {
+      payload.annee_catechese_id = dto.annee_catechese_id;
+    }
+
+    return this.http.post<any>(this.baseUrl, payload).pipe(
       tap(res => {
         this.isLoading.set(false);
         const item: any = res.data || res;
@@ -197,39 +135,32 @@ export class AffectationAnimateurService {
         };
         this.addOrUpdateLocal(created);
         this.toastService.success('Affectation Enregistrée', 'Le catéchiste a été affecté à la classe.');
+        this.getAll().subscribe();
       }),
       catchError((err: HttpErrorResponse) => {
         this.isLoading.set(false);
-        const newLocal: AffectationAnimateur = {
-          id: `uuid-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-          role: dto.role || 'principal',
-          date_affectation: new Date().toISOString().split('T')[0],
-          animateur_id: dto.animateur_id,
-          classe_id: dto.classe_id,
-          animateur: {
-            id: dto.animateur_id,
-            nom: animateurLabel || 'Catéchiste',
-            prenoms: '',
-            sexe: 'M',
-            statut: 'actif'
-          },
-          classe: {
-            id: dto.classe_id,
-            nom: classeLabel || 'Classe',
-            capacite_max: 30,
-            statut: 'active'
-          }
-        };
-        this.addOrUpdateLocal(newLocal);
-        this.toastService.success('Affectation Enregistrée', 'Le catéchiste a été affecté à la classe.');
-        return of(newLocal);
+        const errorMsg = err.error?.message || err.error?.error || 'Impossible d\'enregistrer l\'affectation.';
+        this.toastService.error('Erreur', errorMsg);
+        return throwError(() => err);
       })
     );
   }
 
   public update(id: string, dto: UpdateAffectationAnimateurDto, animateurLabel?: string, classeLabel?: string): Observable<AffectationAnimateur> {
     this.isLoading.set(true);
-    return this.http.put<any>(`${this.baseUrl}/${id}`, dto).pipe(
+
+    const payload: any = {};
+    if (dto.animateur_id) payload.animateur_id = dto.animateur_id;
+    if (dto.classe_id) payload.classe_id = dto.classe_id;
+    if (dto.role) payload.role = dto.role;
+
+    return this.http.put<any>(`${this.baseUrl}/${id}`, payload).pipe(
+      catchError((putErr: HttpErrorResponse) => {
+        if (putErr.status === 405 || putErr.status === 404) {
+          return this.http.patch<any>(`${this.baseUrl}/${id}`, payload);
+        }
+        return throwError(() => putErr);
+      }),
       tap(res => {
         this.isLoading.set(false);
         const item: any = res.data || res;
@@ -246,24 +177,23 @@ export class AffectationAnimateurService {
         };
         this.addOrUpdateLocal(updated);
         this.toastService.success('Affectation Modifiée', 'Les détails ont été mis à jour.');
+        this.getAll().subscribe();
       }),
       catchError((err: HttpErrorResponse) => {
         this.isLoading.set(false);
-        const current = this.affectations().find(a => a.id === id);
-        const updatedLocal: AffectationAnimateur = {
-          ...current!,
-          id,
-          role: dto.role || current?.role || 'principal',
-          animateur_id: dto.animateur_id || current?.animateur_id,
-          classe_id: dto.classe_id || current?.classe_id,
-          animateur: animateurLabel ? { ...current!.animateur, nom: animateurLabel } : current!.animateur,
-          classe: classeLabel ? { ...current!.classe, nom: classeLabel } : current!.classe
-        };
-        this.addOrUpdateLocal(updatedLocal);
-        this.toastService.success('Affectation Modifiée', 'Les détails ont été mis à jour.');
-        return of(updatedLocal);
+        const errorMsg = err.error?.message || err.error?.error || 'Impossible de modifier l\'affectation.';
+        this.toastService.error('Erreur', errorMsg);
+        return throwError(() => err);
       })
     );
+  }
+
+  public patch(id: string, dto: UpdateAffectationAnimateurDto): Observable<AffectationAnimateur> {
+    return this.update(id, dto);
+  }
+
+  public patchRole(id: string, nextRole: string): Observable<AffectationAnimateur> {
+    return this.update(id, { role: nextRole });
   }
 
   public delete(id: string): Observable<void> {
@@ -273,35 +203,13 @@ export class AffectationAnimateurService {
         this.isLoading.set(false);
         this.removeLocal(id);
         this.toastService.success('Affectation Supprimée', "L'affectation a été annulée.");
+        this.getAll().subscribe();
       }),
-      catchError(() => {
+      catchError((err: HttpErrorResponse) => {
         this.isLoading.set(false);
-        this.removeLocal(id);
-        this.toastService.success('Affectation Supprimée', "L'affectation a été annulée.");
-        return of(void 0);
-      })
-    );
-  }
-
-  public patchRole(id: string, nextRole: RoleAnimateur): Observable<AffectationAnimateur> {
-    return this.http.patch<any>(`${this.baseUrl}/${id}`, { role: nextRole }).pipe(
-      tap(res => {
-        const item = res.data || res;
-        const current = this.affectations().find(a => a.id === id);
-        if (current) {
-          const updated = { ...current, ...item, role: nextRole };
-          this.addOrUpdateLocal(updated);
-          this.toastService.info('Rôle Mis à Jour', `Le rôle est maintenant : ${nextRole}`);
-        }
-      }),
-      catchError(() => {
-        const current = this.affectations().find(a => a.id === id);
-        if (current) {
-          const updated = { ...current, role: nextRole };
-          this.addOrUpdateLocal(updated);
-          this.toastService.info('Rôle Mis à Jour', `Le rôle est maintenant : ${nextRole}`);
-        }
-        return of(current!);
+        const errorMsg = err.error?.message || err.error?.error || 'Impossible de supprimer l\'affectation.';
+        this.toastService.error('Erreur', errorMsg);
+        return throwError(() => err);
       })
     );
   }

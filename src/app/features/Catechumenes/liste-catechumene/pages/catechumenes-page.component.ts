@@ -1,28 +1,15 @@
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { CatechumeneService } from '../services/catechumene.service';
-import { CebService } from '../../../Organisations/Ceb/services/ceb.service';
-import { AnneeCatecheseService } from '../../../Organisations/AnneesPastorales/services/annee-catechese.service';
 import { SectionService } from '../../../Organisations/Sections/services/section.service';
 import { NiveauService } from '../../../Organisations/Niveaux/services/niveau.service';
 import { ClasseService } from '../../../Organisations/Classe/services/classe.service';
-import { InscriptionAnnuelleService } from '../../inscriptions-annuelles/services/inscription-annuelle.service';
-import { ToastService } from '../../../../core/services/toast.service';
 import {
   CatechumeneDto,
-  CreateCatechumeneDto,
-  UpdateCatechumeneDto,
-  CreateParrainMarraineDto,
-  StatutCatechumene
+  CreateParrainMarraineDto
 } from '../models/catechumene.model';
-import { Ceb } from '../../../Organisations/Ceb/models/ceb.model';
-import { AnneeCatecheseDto } from '../../../Organisations/AnneesPastorales/models/annee-catechese.model';
-import { Section } from '../../../Organisations/Sections/models/section.model';
-import { NiveauDto } from '../../../Organisations/Niveaux/models/niveau.model';
-import { ClasseDto } from '../../../Organisations/Classe/models/classe.model';
 import { AppCard } from '../../../../shared/ui/components/layout/app-card/app-card.component';
-import { AppButton } from '../../../../shared/ui/components/buttons/app-button/app-button.component';
 import { CatechumeneTableComponent } from '../components/catechumene-table/catechumene-table.component';
-import { CatechumeneFormModalComponent } from '../components/catechumene-form-modal/catechumene-form-modal.component';
 import { CatechumeneDetailModalComponent } from '../components/catechumene-detail-modal/catechumene-detail-modal.component';
 import { ParrainModalComponent } from '../components/parrain-modal/parrain-modal.component';
 import { CatechumeneDeleteModalComponent } from '../components/catechumene-delete-modal/catechumene-delete-modal.component';
@@ -31,9 +18,7 @@ import { CatechumeneDeleteModalComponent } from '../components/catechumene-delet
   selector: 'app-catechumenes-page',
   imports: [
     AppCard,
-    AppButton,
     CatechumeneTableComponent,
-    CatechumeneFormModalComponent,
     CatechumeneDetailModalComponent,
     ParrainModalComponent,
     CatechumeneDeleteModalComponent
@@ -43,19 +28,14 @@ import { CatechumeneDeleteModalComponent } from '../components/catechumene-delet
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CatechumenesPageComponent implements OnInit {
+  private readonly router = inject(Router);
   protected readonly catechumeneService = inject(CatechumeneService);
-  protected readonly cebService = inject(CebService);
-  protected readonly anneeService = inject(AnneeCatecheseService);
   protected readonly sectionService = inject(SectionService);
   protected readonly niveauService = inject(NiveauService);
   protected readonly classeService = inject(ClasseService);
-  protected readonly inscriptionService = inject(InscriptionAnnuelleService);
-  protected readonly toastService = inject(ToastService);
 
   // Signals
   protected readonly catechumenes = this.catechumeneService.catechumenes;
-  protected readonly cebs = this.cebService.cebs;
-  protected readonly annees = this.anneeService.annees;
   protected readonly sections = this.sectionService.sections;
   protected readonly niveaux = this.niveauService.niveaux;
   protected readonly classes = this.classeService.classes;
@@ -64,16 +44,27 @@ export class CatechumenesPageComponent implements OnInit {
 
   // Local Page Filters
   protected readonly searchQuery = signal<string>('');
-  protected readonly statusFilter = signal<string>('');
-  protected readonly sexeFilter = signal<string>('');
-  protected readonly sacramentFilter = signal<string>(''); // '' | 'baptise' | 'non_baptise' | 'communie' | 'confirme'
+  protected readonly sectionFilter = signal<string>('');
+  protected readonly niveauFilter = signal<string>('');
+  protected readonly classeFilter = signal<string>('');
+
+  // Dynamic cascading lists
+  protected readonly filteredNiveauxList = computed(() => {
+    const secId = this.sectionFilter();
+    if (!secId) return this.niveaux();
+    return this.niveaux().filter(n => n.section_id === secId || n.section?.id === secId);
+  });
+
+  protected readonly filteredClassesList = computed(() => {
+    const nivId = this.niveauFilter();
+    if (!nivId) return this.classes();
+    return this.classes().filter(c => c.niveau_id === nivId || c.niveau?.id === nivId);
+  });
 
   // Modals state
-  protected readonly isFormModalOpen = signal<boolean>(false);
   protected readonly isDetailModalOpen = signal<boolean>(false);
   protected readonly isParrainModalOpen = signal<boolean>(false);
   protected readonly isDeleteModalOpen = signal<boolean>(false);
-  protected readonly isEditing = signal<boolean>(false);
   protected readonly selectedItem = signal<CatechumeneDto | null>(null);
   protected readonly itemToDelete = signal<CatechumeneDto | null>(null);
 
@@ -90,29 +81,35 @@ export class CatechumenesPageComponent implements OnInit {
   });
 
   protected readonly hasActiveFilters = computed(() => {
-    return !!this.searchQuery() || !!this.statusFilter() || !!this.sexeFilter() || !!this.sacramentFilter();
+    return !!this.searchQuery() || !!this.sectionFilter() || !!this.niveauFilter() || !!this.classeFilter();
   });
 
   protected readonly filteredCatechumenes = computed(() => {
     const q = this.searchQuery().toLowerCase().trim();
-    const sf = this.statusFilter();
-    const sexef = this.sexeFilter();
-    const sacrf = this.sacramentFilter();
+    const secId = this.sectionFilter();
+    const nivId = this.niveauFilter();
+    const claId = this.classeFilter();
     let list = this.catechumenes();
 
-    if (sf) {
-      list = list.filter(c => c.statut === sf);
+    if (secId) {
+      list = list.filter(c => {
+        if ((c as any).section_id === secId || (c as any).section?.id === secId) return true;
+        return c.inscriptions_annuelles?.some((i: any) => i.section_id === secId || i.section?.id === secId);
+      });
     }
 
-    if (sexef) {
-      list = list.filter(c => c.sexe === sexef);
+    if (nivId) {
+      list = list.filter(c => {
+        if ((c as any).niveau_id === nivId || (c as any).niveau?.id === nivId) return true;
+        return c.inscriptions_annuelles?.some((i: any) => i.niveau_id === nivId || i.niveau?.id === nivId);
+      });
     }
 
-    if (sacrf) {
-      if (sacrf === 'baptise') list = list.filter(c => c.est_baptise);
-      if (sacrf === 'non_baptise') list = list.filter(c => !c.est_baptise);
-      if (sacrf === 'communie') list = list.filter(c => !!c.date_premiere_communion);
-      if (sacrf === 'confirme') list = list.filter(c => !!c.date_confirmation);
+    if (claId) {
+      list = list.filter(c => {
+        if ((c as any).classe_id === claId || (c as any).classe?.id === claId) return true;
+        return c.inscriptions_annuelles?.some((i: any) => i.classe_id === claId || i.classe?.id === claId);
+      });
     }
 
     if (!q) return list;
@@ -128,8 +125,6 @@ export class CatechumenesPageComponent implements OnInit {
 
   public ngOnInit(): void {
     this.catechumeneService.getAll().subscribe();
-    this.cebService.getAll().subscribe();
-    this.anneeService.getAll().subscribe();
     this.sectionService.getAll().subscribe();
     this.niveauService.getAll().subscribe();
     this.classeService.getAll().subscribe();
@@ -144,39 +139,33 @@ export class CatechumenesPageComponent implements OnInit {
     this.searchQuery.set('');
   }
 
-  protected onStatusFilterChange(event: Event): void {
+  protected onSectionFilterChange(event: Event): void {
     const select = event.target as HTMLSelectElement;
-    this.statusFilter.set(select.value);
+    this.sectionFilter.set(select.value);
+    this.niveauFilter.set('');
+    this.classeFilter.set('');
   }
 
-  protected onSexeFilterChange(event: Event): void {
+  protected onNiveauFilterChange(event: Event): void {
     const select = event.target as HTMLSelectElement;
-    this.sexeFilter.set(select.value);
+    this.niveauFilter.set(select.value);
+    this.classeFilter.set('');
   }
 
-  protected onSacramentFilterChange(event: Event): void {
+  protected onClasseFilterChange(event: Event): void {
     const select = event.target as HTMLSelectElement;
-    this.sacramentFilter.set(select.value);
+    this.classeFilter.set(select.value);
   }
 
   protected resetFilters(): void {
     this.searchQuery.set('');
-    this.statusFilter.set('');
-    this.sexeFilter.set('');
-    this.sacramentFilter.set('');
+    this.sectionFilter.set('');
+    this.niveauFilter.set('');
+    this.classeFilter.set('');
   }
 
-  protected openCreateModal(): void {
-    this.isEditing.set(false);
-    this.selectedItem.set(null);
-    this.isFormModalOpen.set(true);
-  }
-
-  protected openEditModal(item: CatechumeneDto): void {
-    this.isEditing.set(true);
-    this.selectedItem.set(item);
-    this.isFormModalOpen.set(true);
-    this.isDetailModalOpen.set(false);
+  protected redirectToInscription(): void {
+    this.router.navigate(['/inscriptions-annuelles']);
   }
 
   protected openDetailModal(item: CatechumeneDto): void {
@@ -197,45 +186,11 @@ export class CatechumenesPageComponent implements OnInit {
   }
 
   protected closeModals(): void {
-    this.isFormModalOpen.set(false);
     this.isDetailModalOpen.set(false);
     this.isParrainModalOpen.set(false);
     this.isDeleteModalOpen.set(false);
     this.selectedItem.set(null);
     this.itemToDelete.set(null);
-  }
-
-  protected handleFormSubmit(event: {
-    dto: CreateCatechumeneDto | UpdateCatechumeneDto;
-    ceb?: Ceb;
-    inscriptionData?: {
-      annee_catechese_id?: string;
-      section_id?: string;
-      niveau_id?: string;
-      classe_id?: string;
-    };
-  }): void {
-    if (this.isEditing() && this.selectedItem()) {
-      this.catechumeneService.update(this.selectedItem()!.id, event.dto as UpdateCatechumeneDto, event.ceb).subscribe(() => {
-        this.closeModals();
-      });
-    } else {
-      this.catechumeneService.create(event.dto as CreateCatechumeneDto, event.ceb).subscribe(created => {
-        if (created?.id && event.inscriptionData?.annee_catechese_id && event.inscriptionData?.niveau_id) {
-          this.inscriptionService.create({
-            catechumene_id: created.id,
-            annee_catechese_id: event.inscriptionData.annee_catechese_id,
-            section_id: event.inscriptionData.section_id,
-            niveau_id: event.inscriptionData.niveau_id,
-            classe_id: event.inscriptionData.classe_id,
-            ceb_id: (event.dto as CreateCatechumeneDto).ceb_id,
-            statut_inscription: event.inscriptionData.classe_id ? 'valide' : 'inscrit',
-            frais_inscription_payes: false
-          }).subscribe();
-        }
-        this.closeModals();
-      });
-    }
   }
 
   protected handleAddParrain(event: CreateParrainMarraineDto): void {

@@ -1,0 +1,314 @@
+<div class="page-container animate-fade-in">
+  <!-- En-tête de page -->
+  <div class="page-header">
+    <div class="header-titles">
+      <h1 class="page-title">
+        <i class="bi bi-magic"></i>
+        <span>Génération de Documents</span>
+      </h1>
+      <p class="page-subtitle">
+        Fusionnez instantanément les données des catéchumènes dans les modèles officiels de la paroisse.
+      </p>
+    </div>
+  </div>
+
+  <!-- ASSISTANT DE GÉNÉRATION EN 3 ÉTAPES -->
+  <div class="wizard-card">
+    <div class="wizard-steps-grid">
+      <!-- ÉTAPE 1 : CHOIX DU CATÉCHUMÈNE -->
+      <div class="step-card" [class.step-complete]="selectedCatechumene()">
+        <div class="step-header">
+          <span class="step-num">1</span>
+          <div>
+            <h4 class="step-title">Sélectionner un catéchumène</h4>
+            <p class="step-sub">Recherchez par nom, matricule ou contact</p>
+          </div>
+        </div>
+
+        @if (!selectedCatechumene()) {
+          <div class="search-cat-box">
+            <i class="bi bi-search search-icon"></i>
+            <input
+              type="text"
+              placeholder="Rechercher par nom, prénoms, matricule ou contact..."
+              [ngModel]="searchQuery()"
+              (ngModelChange)="searchQuery.set($event)"
+            />
+            @if (searchQuery()) {
+              <button class="clear-search-btn" (click)="searchQuery.set('')" title="Effacer">
+                <i class="bi bi-x-circle-fill"></i>
+              </button>
+            }
+          </div>
+
+          @if (catechumeneService.isLoading()) {
+            <div class="empty-search-hint">
+              <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+              <span>Chargement des catéchumènes...</span>
+            </div>
+          } @else if (searchResults().length > 0) {
+            <div class="cat-search-results">
+              @for (c of searchResults(); track c.id) {
+                <div class="cat-result-item" (click)="selectCatechumene(c)">
+                  <div class="cat-avatar">
+                    <i class="bi bi-person-fill"></i>
+                  </div>
+                  <div class="cat-info">
+                    <strong>{{ c.nom_complet }}</strong>
+                    <div class="cat-sub">
+                      <span class="mat-tag">{{ c.matricule }}</span>
+                      @if (c.classe || c.niveau) {
+                        <span> • {{ c.niveau || '' }} {{ c.classe ? '(' + c.classe + ')' : '' }}</span>
+                      }
+                      @if (c.telephone) {
+                        <span> • Tél: {{ c.telephone }}</span>
+                      }
+                    </div>
+                  </div>
+                  <button type="button" class="btn-select-mini">
+                    Choisir <i class="bi bi-arrow-right"></i>
+                  </button>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="empty-search-hint">
+              <i class="bi bi-search"></i>
+              <span>Aucun catéchumène trouvé{{ searchQuery() ? ' pour « ' + searchQuery() + ' »' : '' }}.</span>
+            </div>
+          }
+        } @else {
+          <!-- Carte Catéchumène Sélectionné -->
+          <div class="cat-selected-card">
+            <div class="cat-selected-content">
+              <div class="cat-avatar-big">
+                <i class="bi bi-person-check-fill"></i>
+              </div>
+              <div class="cat-summary-details">
+                <h4>{{ selectedCatechumene()!.nom_complet }}</h4>
+                <div class="cat-badge-line">
+                  <span class="chip-badge primary">{{ selectedCatechumene()!.matricule }}</span>
+                  @if (selectedCatechumene()!.section) {
+                    <span class="chip-badge">{{ selectedCatechumene()!.section }}</span>
+                  }
+                  @if (selectedCatechumene()!.niveau) {
+                    <span class="chip-badge">{{ selectedCatechumene()!.niveau }}</span>
+                  }
+                  @if (selectedCatechumene()!.classe) {
+                    <span class="chip-badge">{{ selectedCatechumene()!.classe }}</span>
+                  }
+                  @if (selectedCatechumene()!.telephone) {
+                    <span class="chip-badge"><i class="bi bi-telephone"></i> {{ selectedCatechumene()!.telephone }}</span>
+                  }
+                </div>
+              </div>
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" (click)="resetCatechumeneSelection()">
+              <i class="bi bi-arrow-repeat"></i> Changer
+            </button>
+          </div>
+        }
+      </div>
+
+      <!-- ÉTAPE 2 : CHOIX DU MODÈLE -->
+      <div class="step-card" [class.step-complete]="selectedModeleId()">
+        <div class="step-header">
+          <span class="step-num">2</span>
+          <div>
+            <h4 class="step-title">Choisir le modèle de document</h4>
+            <p class="step-sub">Sélectionnez le modèle officiel à générer</p>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top: 1rem;">
+          <label class="form-label">Modèle officiel *</label>
+          <select class="form-select-custom" [ngModel]="selectedModeleId()" (ngModelChange)="selectedModeleId.set($event)">
+            <option value="">-- Sélectionnez un modèle actif --</option>
+            @for (m of service.modelesActifs(); track m.id) {
+              <option [value]="m.id">{{ m.titre }} ({{ m.type_document }})</option>
+            }
+          </select>
+        </div>
+
+        @if (selectedModeleId()) {
+          <div class="extra-inputs-box">
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label class="form-label">Moyenne (optionnel)</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  [ngModel]="moyenneNote()"
+                  (ngModelChange)="moyenneNote.set($event)"
+                  placeholder="Ex : 16.50"
+                />
+              </div>
+              <div class="form-group flex-2">
+                <label class="form-label">Décision (optionnel)</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  [ngModel]="decisionEvaluation()"
+                  (ngModelChange)="decisionEvaluation.set($event)"
+                  placeholder="Ex : Admis(e) en année supérieure"
+                />
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- ÉTAPE 3 : FUSION ET CRÉATION -->
+      <div class="step-card step-action">
+        <div class="step-header">
+          <span class="step-num">3</span>
+          <div>
+            <h4 class="step-title">Générer & Fusionner</h4>
+            <p class="step-sub">Création instantanée et aperçu A4</p>
+          </div>
+        </div>
+
+        <p class="step-instruction">
+          Le moteur de fusion officiel va générer le document avec toutes les balises remplies pour le catéchumène sélectionné.
+        </p>
+
+        <button
+          type="button"
+          class="btn btn-primary btn-generate-big"
+          [disabled]="!selectedCatechumene() || !selectedModeleId() || service.isLoading()"
+          (click)="genererDocumentOfficiel()"
+        >
+          @if (service.isLoading()) {
+            <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+            <span>Génération en cours...</span>
+          } @else {
+            <i class="bi bi-stars"></i>
+            <span>Générer le document</span>
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLEAU DE L'HISTORIQUE DE GÉNÉRATION -->
+  <div class="card-table">
+    <div class="table-header-bar">
+      <div>
+        <h3 class="table-section-title">
+          <i class="bi bi-clock-history"></i>
+          <span>Historique des Documents Générés</span>
+        </h3>
+        <p class="table-section-sub">Consultez, réimprimez ou téléchargez les documents officiels édités</p>
+      </div>
+
+      <div class="search-box search-box-sm">
+        <i class="bi bi-search search-icon"></i>
+        <input
+          type="text"
+          placeholder="Filtrer l'historique..."
+          [ngModel]="historySearchQuery()"
+          (ngModelChange)="historySearchQuery.set($event)"
+        />
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Date & Réf.</th>
+            <th>Catéchumène</th>
+            <th>Document</th>
+            <th>Type</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (doc of filteredHistory(); track doc.id) {
+            <tr class="data-row">
+              <td>
+                <div class="text-date"><strong>{{ doc.date_generation | date:'dd/MM/yyyy' }}</strong></div>
+                <div class="text-time">{{ doc.reference_document }}</div>
+              </td>
+              <td>
+                <div class="item-nom"><strong>{{ getCatechumeneDisplayName(doc) }}</strong></div>
+                <div class="item-mat">{{ getCatechumeneMatricule(doc) }}</div>
+              </td>
+              <td>
+                <span class="modele-name">{{ doc.titre }}</span>
+              </td>
+              <td>
+                <span class="cat-badge" [class.attestation]="doc.type_document === 'attestation'"
+                                      [class.certificat]="doc.type_document === 'certificat'"
+                                      [class.convocation]="doc.type_document === 'convocation'"
+                                      [class.carte]="doc.type_document === 'carte'"
+                                      [class.fiche]="doc.type_document === 'fiche'">
+                  {{ doc.type_document }}
+                </span>
+              </td>
+              <td class="text-right">
+                <div class="action-group">
+                  <button type="button" class="action-btn view-btn" title="Voir l'aperçu A4 imprimable" (click)="voirDocumentApercu(doc.id)">
+                    <i class="bi bi-eye"></i>
+                  </button>
+
+                  <button type="button" class="action-btn print-btn" title="Imprimer le document" (click)="voirDocumentApercu(doc.id)">
+                    <i class="bi bi-printer"></i>
+                  </button>
+
+                  <button type="button" class="action-btn delete-btn" title="Supprimer de l'historique" (click)="openDeleteConfirm(doc)">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+          @if (filteredHistory().length === 0 && !service.isLoading()) {
+            <tr>
+              <td colspan="5" class="empty-cell">
+                <i class="bi bi-folder-x empty-icon"></i>
+                <p>Aucun document dans l'historique.</p>
+              </td>
+            </tr>
+          }
+          @if (service.isLoading()) {
+            <tr>
+              <td colspan="5" class="loading-cell">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p>Chargement des documents générés...</p>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-footer">
+      <span class="footer-count">Total : {{ filteredHistory().length }} document(s) généré(s)</span>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SUPPRESSION HISTORIQUE -->
+@if (isDeleteConfirmOpen()) {
+  <div class="modal-overlay" (click)="isDeleteConfirmOpen.set(false)">
+    <div class="modal-card modal-sm" (click)="$event.stopPropagation()">
+      <div class="modal-header header-danger">
+        <div class="modal-title-group">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+          <h3>Supprimer de l'historique ?</h3>
+        </div>
+        <button type="button" class="btn-close" (click)="isDeleteConfirmOpen.set(false)">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>Voulez-vous supprimer le document <strong>« {{ selectedDocToDelete()?.titre }} »</strong> de <strong>{{ selectedDocToDelete() ? getCatechumeneDisplayName(selectedDocToDelete()!) : '' }}</strong> ?</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="isDeleteConfirmOpen.set(false)">Annuler</button>
+        <button type="button" class="btn btn-danger" (click)="confirmDeleteDoc()">Supprimer</button>
+      </div>
+    </div>
+  </div>
+}

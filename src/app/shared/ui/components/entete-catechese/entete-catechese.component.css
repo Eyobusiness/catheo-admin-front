@@ -1,0 +1,185 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.entete-catechese-root {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  color: #0f172a;
+  font-family: 'Times New Roman', Times, serif, system-ui, -apple-system, sans-serif;
+  box-sizing: border-box;
+}
+
+.entete-catechese-root.with-border {
+  border-bottom: 2px solid #0f172a;
+  padding-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Ligne Supérieure : Logos et Bloc Central */
+.entete-top-row {
+  display: grid;
+  grid-template-columns: 90px 1fr 90px;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+}
+
+/* Boîte Logos (Gauche & Droite) */
+.logo-side {
+  width: 85px;
+  height: 85px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-left {
+  justify-content: flex-start;
+}
+
+.logo-right {
+  justify-content: flex-end;
+}
+
+.logo-img {
+  max-width: 85px;
+  max-height: 85px;
+  object-fit: contain;
+}
+
+.logo-fallback {
+  width: 75px;
+  height: 75px;
+  border-radius: 50%;
+  border: 1.5px dashed #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  font-size: 1.8rem;
+  background: #f8fafc;
+}
+
+/* Bloc d'informations centré (l'un en dessous de l'autre) */
+.parish-center-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.15rem;
+}
+
+/* 1. Nom de la Paroisse */
+.line-nom-paroisse {
+  font-size: 1.25rem;
+  font-weight: 900;
+  margin: 0;
+  line-height: 1.2;
+  letter-spacing: 0.03em;
+  color: #0f172a;
+}
+
+/* 2. Diocèse */
+.line-diocese {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.2;
+  color: #1e293b;
+  letter-spacing: 0.04em;
+}
+
+/* 3. Doyenné */
+.line-doyenne {
+  font-size: 0.82rem;
+  font-weight: 700;
+  margin: 0;
+  color: #334155;
+  letter-spacing: 0.02em;
+}
+
+/* 4. Commune ou Quartier - Adresse */
+.line-localisation {
+  font-size: 0.8rem;
+  margin: 0;
+  color: #475569;
+}
+
+/* 5. Téléphone */
+.line-telephone {
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin: 0;
+  color: #475569;
+}
+
+/* Badge Commission de Catéchèse */
+.catechese-badge {
+  margin-top: 0.35rem;
+  display: inline-block;
+  padding: 0.15rem 0.6rem;
+  border-top: 1px solid #cbd5e1;
+  border-bottom: 1px solid #cbd5e1;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #0f172a;
+}
+
+/* Section Titre du Document */
+.document-title-block {
+  margin-top: 1.25rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.doc-main-title {
+  font-size: 1.15rem;
+  font-weight: 900;
+  margin: 0;
+  letter-spacing: 0.05em;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  color: #000;
+}
+
+.doc-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+  color: #1e293b;
+  margin-top: 0.25rem;
+}
+
+.meta-item strong {
+  color: #000;
+}
+
+/* PRINT MEDIA */
+@media print {
+  .entete-catechese-root {
+    color: #000 !important;
+  }
+  .line-nom-paroisse,
+  .line-diocese,
+  .line-doyenne,
+  .line-localisation,
+  .line-telephone,
+  .catechese-badge {
+    color: #000 !important;
+  }
+  .logo-fallback {
+    border-color: #000 !important;
+    color: #000 !important;
+  }
+}
