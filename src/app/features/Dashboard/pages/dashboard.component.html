@@ -16,8 +16,17 @@
       </p>
     </div>
 
-    <!-- Refresh Action -->
+    <!-- Actions -->
     <div class="topbar-controls">
+      <app-button
+        variant="primary"
+        size="md"
+        icon="file-earmark-pdf"
+        (clicked)="printRapportAnnuel()"
+      >
+        Rapport Annuel (PDF)
+      </app-button>
+
       <app-button
         variant="ghost"
         size="md"

@@ -6,6 +6,8 @@ export interface ParoisseConfiguration {
   nom: string;
   nom_paroisse?: string;
   code_paroisse: string;
+  prefixe_matricule?: string;
+  prefixe_recu?: string;
   diocese?: string;
   doyenne?: string;
   ville?: string;
@@ -29,6 +31,8 @@ export interface ParoisseConfiguration {
 export interface UpdateParoisseConfigurationDto {
   nom?: string;
   nom_paroisse?: string;
+  prefixe_matricule?: string;
+  prefixe_recu?: string;
   diocese?: string;
   doyenne?: string;
   ville?: string;

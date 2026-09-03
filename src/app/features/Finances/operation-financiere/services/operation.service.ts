@@ -327,15 +327,53 @@ export class OperationFinanciereService {
       montant_restant: montantRestant,
       echeance: this.optionalString(item['echeance']) ?? (fb['echeance'] as string | undefined),
       statut,
-      annee_catechese_id: this.pickString(item['annee_catechese_id'], fb['annee_catechese_id']),
-      annee_libelle: this.pickString(item['annee_libelle'], fb['annee_libelle']),
+      annee_catechese_id: this.pickString(
+        item['annee_catechese_id'],
+        item['annee_id'],
+        (item['annee_catechese'] as any)?.id,
+        (item['annee_catechese'] as any)?.uuid,
+        (item['inscription_annuelle'] as any)?.annee_catechese_id,
+        (item['inscription_annuelle'] as any)?.annee_id,
+        fb['annee_catechese_id']
+      ),
+      annee_libelle: this.pickString(
+        item['annee_libelle'],
+        (item['annee_catechese'] as any)?.libelle,
+        (item['annee_catechese'] as any)?.nom,
+        (item['inscription_annuelle'] as any)?.annee_libelle,
+        (item['inscription_annuelle'] as any)?.annee_catechese?.libelle,
+        fb['annee_libelle']
+      ),
       annee_catechese: (item['annee_catechese'] as any) || (fb['annee_catechese'] as any),
-      catechumene_id: this.pickString(item['catechumene_id'], fb['catechumene_id']),
+      catechumene_id: this.pickString(
+        item['catechumene_id'],
+        rawCat?.id,
+        rawCat?.uuid,
+        (item['inscription_annuelle'] as any)?.catechumene_id,
+        (item['inscription_annuelle'] as any)?.catechumene?.id,
+        fb['catechumene_id']
+      ),
       catechumene,
-      tarif_id: this.pickString(item['tarif_id'], fb['tarif_id']),
-      tarif_intitule: this.pickString(item['tarif_intitule'], (item['tarif'] as any)?.intitule, fb['tarif_intitule']),
+      tarif_id: this.pickString(
+        item['tarif_id'],
+        (item['tarif'] as any)?.id,
+        (item['tarif'] as any)?.uuid,
+        (item['lignes_paiements'] as any)?.[0]?.tarif_id,
+        (item['lignes'] as any)?.[0]?.tarif_id,
+        fb['tarif_id']
+      ),
+      tarif_intitule: this.pickString(
+        item['tarif_intitule'],
+        (item['tarif'] as any)?.intitule,
+        (item['tarif'] as any)?.libelle,
+        fb['tarif_intitule']
+      ),
       tarif: (item['tarif'] as any) || (fb['tarif'] as any),
-      inscription_annuelle_id: this.pickString(item['inscription_annuelle_id'], fb['inscription_annuelle_id']),
+      inscription_annuelle_id: this.pickString(
+        item['inscription_annuelle_id'],
+        (item['inscription_annuelle'] as any)?.id,
+        fb['inscription_annuelle_id']
+      ),
       lignes_paiements: (item['lignes_paiements'] as any) || (fb['lignes_paiements'] as any) || [],
       created_at: this.optionalString(item['created_at']) ?? (fb['created_at'] as string | undefined),
       updated_at: this.optionalString(item['updated_at']) ?? (fb['updated_at'] as string | undefined)

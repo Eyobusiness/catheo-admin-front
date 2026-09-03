@@ -19,6 +19,7 @@ import { CatechumeneService } from '../../../Catechumenes/liste-catechumene/serv
 import { SeanceService } from '../../../Presences/services/seance.service';
 import { AnneeCatecheseService } from '../../../../core/services/annee-catechese.service';
 import { EnteteCatecheseComponent } from '../../../../shared/ui/components/entete-catechese/entete-catechese.component';
+import { PdfService } from '../../../../core/services/pdf.service';
 
 @Component({
   selector: 'app-bulletin-page',
@@ -36,6 +37,7 @@ export class BulletinPageComponent implements OnInit {
   public readonly catechumeneService = inject(CatechumeneService);
   public readonly seanceService = inject(SeanceService);
   public readonly anneeService = inject(AnneeCatecheseService);
+  private readonly pdfService = inject(PdfService);
 
   // Signaux des services
   public readonly sections = this.sectionService.sections;
@@ -287,6 +289,18 @@ export class BulletinPageComponent implements OnInit {
   }
 
   public printBulletin(): void {
-    window.print();
+    const bilan = this.selectedBilan();
+    if (!bilan) return;
+
+    const filters: any = {
+      catechumene_id: bilan.catechumeneId,
+      classe_id: this.selectedClasseId()
+    };
+
+    this.pdfService.previewBilanAnnuelPdf(filters, {
+      title: `Bulletin Évaluation — ${bilan.nomPrenoms}`,
+      subtitle: `Classe : ${bilan.classe || 'Catéchèse'}`,
+      fileName: `bulletin-${bilan.matricule || 'eval'}.pdf`
+    });
   }
 }

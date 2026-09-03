@@ -12,7 +12,7 @@ export const AUTH_ROUTES: Routes = [
     loadComponent: () =>
       import('../pages/login-page/login-page.component').then(m => m.LoginPageComponent),
     canActivate: [guestGuard],
-    data: { title: 'Connexion - Cathéo CIM' }
+    data: { title: 'Connexion - Cathéo' }
   },
   {
     path: 'forgot-password',
@@ -21,7 +21,7 @@ export const AUTH_ROUTES: Routes = [
         m => m.ForgotPasswordPageComponent
       ),
     canActivate: [guestGuard],
-    data: { title: 'Mot de passe oublié - Cathéo CIM' }
+    data: { title: 'Mot de passe oublié - Cathéo' }
   },
   {
     path: 'reset-password',
@@ -30,6 +30,6 @@ export const AUTH_ROUTES: Routes = [
         m => m.ResetPasswordPageComponent
       ),
     canActivate: [guestGuard],
-    data: { title: 'Réinitialisation du mot de passe - Cathéo CIM' }
+    data: { title: 'Réinitialisation du mot de passe - Cathéo' }
   }
 ];

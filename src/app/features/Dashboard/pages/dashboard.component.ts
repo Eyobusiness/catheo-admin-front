@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/cor
 import { CommonModule } from '@angular/common';
 import { DashboardService } from '../services/dashboard.service';
 import { SystemNotificationService } from '../../../core/services/system-notification.service';
+import { PdfService } from '../../../core/services/pdf.service';
 import { AdminDashboardViewComponent } from '../components/admin-dashboard-view/admin-dashboard-view.component';
 import { AppButton } from '../../../shared/ui/components/buttons/app-button/app-button.component';
 
@@ -19,6 +20,7 @@ import { AppButton } from '../../../shared/ui/components/buttons/app-button/app-
 export class DashboardComponent implements OnInit {
   protected readonly dashboardService = inject(DashboardService);
   protected readonly notificationService = inject(SystemNotificationService);
+  protected readonly pdfService = inject(PdfService);
 
   protected readonly isLoading = this.dashboardService.isLoading;
   protected readonly dashboardData = this.dashboardService.dashboardData;
@@ -30,5 +32,13 @@ export class DashboardComponent implements OnInit {
   protected refreshData(): void {
     this.dashboardService.getSummary().subscribe();
     this.notificationService.fetchAlertsSummary().subscribe();
+  }
+
+  public printRapportAnnuel(): void {
+    const active = this.dashboardData()?.annee_active;
+    this.pdfService.previewRapportAnnuelPdf({
+      annee_catechese_id: active?.id,
+      anneeLibelle: active?.libelle
+    });
   }
 }

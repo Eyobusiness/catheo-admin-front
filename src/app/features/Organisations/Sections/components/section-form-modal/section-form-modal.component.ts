@@ -32,7 +32,7 @@ export class SectionFormModalComponent {
     description: new FormControl('', {
       nonNullable: true
     }),
-    ordre: new FormControl<number>(1, {
+    ordre_affichage: new FormControl<number>(1, {
       nonNullable: true,
       validators: [Validators.required, Validators.min(1)]
     }),
@@ -56,7 +56,7 @@ export class SectionFormModalComponent {
             nom: item.nom || '',
             code: item.code || '',
             description: item.description || '',
-            ordre: item.ordre ?? 1,
+            ordre_affichage: item.ordre_affichage ?? 1,
             statut: statutVal
           });
         } else {
@@ -64,7 +64,7 @@ export class SectionFormModalComponent {
             nom: '',
             code: '',
             description: '',
-            ordre: 1,
+            ordre_affichage: 1,
             statut: 'actif'
           });
         }
@@ -83,7 +83,7 @@ export class SectionFormModalComponent {
         nom: val.nom.trim(),
         code: val.code.trim().toUpperCase(),
         description: val.description ? val.description.trim() : '',
-        ordre: Number(val.ordre) || 1,
+        ordre_affichage: Number(val.ordre_affichage) || 1,
         statut: val.statut || 'actif'
       });
     } else {

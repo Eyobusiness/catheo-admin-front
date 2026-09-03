@@ -15,6 +15,7 @@ import {
   CatechumeneSacrement,
   MotifException
 } from '../../models/sacrements.model';
+import { PdfService } from '../../../../core/services/pdf.service';
 
 @Component({
   selector: 'app-premiere-communion-page',
@@ -28,6 +29,7 @@ export class PremiereCommunionPageComponent {
   public readonly sectionService = inject(SectionService);
   public readonly niveauService = inject(NiveauService);
   public readonly classeService = inject(ClasseService);
+  private readonly pdfService = inject(PdfService);
 
   // Signaux de données de la BD
   public readonly sections = this.sectionService.sections;
@@ -307,7 +309,18 @@ export class PremiereCommunionPageComponent {
   }
 
   public printList(): void {
-    window.print();
+    const filters: any = {
+      sacrement: 'communion'
+    };
+    if (this.filterSection()) filters.section_id = this.filterSection();
+    if (this.filterNiveau()) filters.niveau_id = this.filterNiveau();
+    if (this.filterClasse()) filters.classe_id = this.filterClasse();
+
+    this.pdfService.previewSuiviSacramentalPdf(filters, {
+      title: 'Registre de Première Communion',
+      subtitle: 'Sacrement de la Première Communion',
+      fileName: 'registre-premiere-communion.pdf'
+    });
   }
 
   private triggerToast(msg: string, type: 'success' | 'danger' | 'warning' | 'info'): void {

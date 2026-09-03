@@ -1,0 +1,355 @@
+/* RAPPORT PASTORAL ANNUEL — A4 PORTRAIT */
+@page {
+  size: A4 portrait;
+  margin: 8mm 12mm;
+}
+
+:host {
+  display: block;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  color: #111827;
+  background-color: transparent;
+}
+
+.rapport-doc-container {
+  width: 100%;
+  max-width: 190mm;
+  margin: 0 auto;
+  background: #ffffff;
+  padding: 4mm 6mm;
+  box-sizing: border-box;
+}
+
+/* Header */
+.doc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #0f172a;
+  padding-bottom: 6px;
+  margin-bottom: 10px;
+}
+
+.header-logo-col {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.parish-logo,
+.catechese-logo {
+  max-width: 52px;
+  max-height: 52px;
+  object-fit: contain;
+}
+
+.header-center-col {
+  flex: 1;
+  text-align: center;
+  padding: 0 10px;
+}
+
+.doc-diocese {
+  font-size: 8.5pt;
+  font-weight: 700;
+  color: #475569;
+  letter-spacing: 0.5px;
+}
+
+.doc-doyenne {
+  font-size: 7.5pt;
+  color: #64748b;
+}
+
+.doc-parish-title {
+  font-size: 13pt;
+  font-weight: 900;
+  color: #0f172a;
+  margin: 2px 0;
+  letter-spacing: 0.5px;
+}
+
+.doc-service-title {
+  font-size: 8.5pt;
+  font-weight: 800;
+  color: #1e3a8a;
+  letter-spacing: 0.5px;
+}
+
+/* Bannière */
+.rapport-title-box {
+  text-align: center;
+  background: #f8fafc;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 4px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+}
+
+.title-badge {
+  display: inline-block;
+  font-size: 6.5pt;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 2px 8px;
+  background: #1e3a8a;
+  color: #ffffff;
+  border-radius: 3px;
+  margin-bottom: 4px;
+}
+
+.rapport-main-title {
+  font-size: 13pt;
+  font-weight: 900;
+  color: #0f172a;
+  margin: 2px 0;
+  letter-spacing: 0.5px;
+}
+
+.rapport-year {
+  font-size: 8.5pt;
+  color: #475569;
+}
+
+/* Dashboard KPIs */
+.kpi-dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.kpi-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+}
+
+.kpi-card.kpi-primary {
+  border-left: 5px solid #1e3a8a;
+  background: #f0fdf4;
+}
+
+.kpi-card.kpi-success {
+  border-left: 5px solid #059669;
+  background: #ecfdf5;
+}
+
+.kpi-card.kpi-accent {
+  border-left: 5px solid #7c3aed;
+  background: #faf5ff;
+}
+
+.kpi-card.kpi-warning {
+  border-left: 5px solid #d97706;
+  background: #fffbeb;
+}
+
+.kpi-icon {
+  font-size: 20pt;
+}
+
+.kpi-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.kpi-value {
+  font-size: 14pt;
+  font-weight: 900;
+  color: #0f172a;
+  line-height: 1.1;
+}
+
+.kpi-label {
+  font-size: 8pt;
+  font-weight: 700;
+  color: #334155;
+}
+
+.kpi-sub {
+  font-size: 7pt;
+  color: #64748b;
+  margin-top: 1px;
+}
+
+/* Sections */
+.doc-section {
+  margin-bottom: 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  padding: 6px 10px;
+  background: #ffffff;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 8.5pt;
+  font-weight: 800;
+  color: #1e3a8a;
+  border-bottom: 1px solid #cbd5e1;
+  padding-bottom: 4px;
+  margin: 0 0 6px 0;
+}
+
+.section-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  background: #1e3a8a;
+  color: #ffffff;
+  border-radius: 50%;
+  font-size: 7.5pt;
+  font-weight: 900;
+}
+
+/* Report Table */
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 8pt;
+}
+
+.report-table th {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  padding: 4px 8px;
+  font-weight: 700;
+  color: #1e293b;
+  text-align: left;
+  font-size: 7.5pt;
+}
+
+.report-table td {
+  border: 1px solid #e2e8f0;
+  padding: 4px 8px;
+  color: #1e293b;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.font-bold {
+  font-weight: 700;
+}
+
+/* Sacrements row */
+.sacrament-stats-row {
+  display: flex;
+  gap: 12px;
+}
+
+.sac-box {
+  flex: 1;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  border-radius: 4px;
+  padding: 6px 10px;
+  text-align: center;
+}
+
+.sac-label {
+  display: block;
+  font-size: 7.5pt;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+}
+
+.sac-number {
+  display: block;
+  font-size: 14pt;
+  font-weight: 900;
+  color: #1e3a8a;
+  margin: 2px 0;
+}
+
+.sac-unit {
+  display: block;
+  font-size: 6.5pt;
+  color: #64748b;
+}
+
+/* Indicateurs */
+.indicators-row {
+  display: flex;
+  justify-content: space-around;
+  padding: 4px 0;
+}
+
+.ind-item {
+  font-size: 8pt;
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+}
+
+.ind-lbl {
+  color: #475569;
+}
+
+.text-success { color: #059669; }
+.text-primary { color: #1e3a8a; }
+
+/* Signatures */
+.rapport-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 14px;
+}
+
+.sig-block {
+  flex: 1;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  padding: 6px 8px;
+  background: #fafafa;
+}
+
+.sig-title {
+  font-size: 7.5pt;
+  font-weight: 700;
+  color: #334155;
+  text-transform: uppercase;
+  display: block;
+}
+
+.sig-space {
+  height: 36px;
+  border-bottom: 1px dashed #94a3b8;
+  margin-top: 2px;
+}
+
+.sig-space-stamp {
+  height: 36px;
+  border: 1px dashed #94a3b8;
+  border-radius: 3px;
+  margin-top: 2px;
+  background: #ffffff;
+}
+
+.rapport-empty-state {
+  padding: 30px;
+  text-align: center;
+  color: #64748b;
+}
+
+/* Print CSS */
+@media print {
+  .rapport-doc-container {
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+}

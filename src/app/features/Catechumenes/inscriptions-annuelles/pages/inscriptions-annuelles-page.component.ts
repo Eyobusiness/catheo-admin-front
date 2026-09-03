@@ -7,6 +7,8 @@ import { NiveauService } from '../../../Organisations/Niveaux/services/niveau.se
 import { ClasseService } from '../../../Organisations/Classe/services/classe.service';
 import { CebService } from '../../../Organisations/Ceb/services/ceb.service';
 import { MouvementService } from '../../../Organisations/Mouvements/services/mouvement.service';
+import { OperationFinanciereService } from '../../../Finances/operation-financiere/services/operation.service';
+import { AuthService } from '../../../../core/services/auth.service';
 import { ToastService } from '../../../../core/services/toast.service';
 import {
   InscriptionAnnuelleDto,
@@ -50,6 +52,7 @@ import { RecuPaiementData } from '../../../../shared/ui/components/recu-thermiqu
 })
 export class InscriptionsAnnuellesPageComponent implements OnInit {
   protected readonly inscriptionService = inject(InscriptionAnnuelleService);
+  protected readonly operationService = inject(OperationFinanciereService);
   protected readonly catechumeneService = inject(CatechumeneService);
   protected readonly anneeService = inject(AnneeCatecheseService);
   protected readonly sectionService = inject(SectionService);
@@ -69,6 +72,33 @@ export class InscriptionsAnnuellesPageComponent implements OnInit {
   protected readonly cebs = this.cebService.cebs;
   protected readonly mouvements = this.mouvementService.mouvements;
   protected readonly isLoading = this.inscriptionService.isLoading;
+  protected readonly isSaving = signal<boolean>(false);
+  protected readonly isFormLoading = computed(() =>
+    this.isSaving() ||
+    this.inscriptionService.isLoading() ||
+    this.catechumeneService.isLoading()
+  );
+
+  // Inscriptions synchronisées avec l'état réel des opérations financières
+  protected readonly enrichedInscriptions = computed(() => {
+    const list = this.inscriptions();
+    const ops = this.operationService.operations();
+    if (ops.length === 0) return list;
+
+    return list.map(ins => {
+      if (ins.frais_inscription_payes) return ins;
+      const catId = ins.catechumene_id || ins.catechumene?.id;
+      const insId = ins.id;
+      const hasPaidOp = ops.some(op => {
+        const matchId = (op.inscription_annuelle_id && op.inscription_annuelle_id === insId) ||
+          (catId && (op.catechumene_id === catId || (op.catechumene as any)?.id === catId));
+        if (!matchId) return false;
+        return op.statut === 'paye' || op.montant_restant === 0 || (op.montant_paye > 0 && op.montant_paye >= (op.montant_total || op.montant || 0));
+      });
+
+      return hasPaidOp ? { ...ins, frais_inscription_payes: true } : ins;
+    });
+  });
 
   // Local Page Filters
   protected readonly searchQuery = signal<string>('');
@@ -103,7 +133,7 @@ export class InscriptionsAnnuellesPageComponent implements OnInit {
 
   // Stats
   protected readonly stats = computed(() => {
-    const list = this.inscriptions();
+    const list = this.enrichedInscriptions();
     return {
       total: list.length,
       valides: list.filter(i => i.statut_inscription === 'valide').length,
@@ -123,7 +153,7 @@ export class InscriptionsAnnuellesPageComponent implements OnInit {
     const clf = this.classeFilter();
     const sf = this.statutFilter();
     const ff = this.fraisFilter();
-    let list = this.inscriptions();
+    let list = this.enrichedInscriptions();
 
     if (secId) {
       list = list.filter(i => i.section_id === secId || i.section?.id === secId || (i.niveau && (i.niveau.section_id === secId || i.niveau.section?.id === secId)));
@@ -161,6 +191,7 @@ export class InscriptionsAnnuellesPageComponent implements OnInit {
 
   public ngOnInit(): void {
     this.inscriptionService.getAll().subscribe();
+    this.operationService.getAll().subscribe();
     this.catechumeneService.getAll().subscribe();
     this.anneeService.getAll().subscribe();
     this.sectionService.getAll().subscribe();
@@ -239,35 +270,74 @@ export class InscriptionsAnnuellesPageComponent implements OnInit {
     this.isDeleteModalOpen.set(true);
   }
 
+  protected readonly authService = inject(AuthService);
+
   protected openRecuModal(item: InscriptionAnnuelleDto): void {
     const raw = item as any;
     const cat = item.catechumene as any;
-    const catNom = cat?.nom_complet || (cat ? `${cat.nom || ''} ${cat.prenoms || ''}`.trim() : 'Catéchumène');
-    const matricule = cat?.matricule || cat?.code_catechumene;
-    const classeNom = item.classe?.nom || raw.classe_nom;
-    const niveauNom = item.niveau?.nom || raw.niveau_nom;
-    const sectionNom = item.section?.nom || raw.section_nom;
-    const anneeLib = item.annee_catechese?.libelle || raw.annee_libelle;
-    const montantFrais = raw.frais_inscription ?? raw.montant_paye ?? raw.montant ?? 15000;
-    const isPaye = raw.frais_payes === true || item.frais_inscription_payes === true || item.statut_inscription === 'valide';
+    const catId = item.catechumene_id || cat?.id;
+    const insId = item.id;
+
+    // Chercher l'opération financière réelle associée
+    const ops = this.operationService.operations();
+    const op = ops.find(o =>
+      (o.inscription_annuelle_id && o.inscription_annuelle_id === insId) ||
+      (catId && (o.catechumene_id === catId || o.catechumene?.id === catId))
+    );
+
+    const catNom = cat?.nom_complet || (cat ? `${cat.nom || ''} ${cat.prenoms || ''}`.trim() : ((op as any)?.catechumene_nom || raw.catechumene_nom || ''));
+    const matricule = cat?.matricule || cat?.code_catechumene || (op as any)?.matricule || raw.matricule || '';
+    const classeNom = item.classe?.nom || raw.classe_nom || (op as any)?.classe_nom || '';
+    const niveauNom = item.niveau?.nom || raw.niveau_nom || (op as any)?.niveau_nom || '';
+    const sectionNom = item.section?.nom || raw.section_nom || (op as any)?.section_nom || '';
+    const anneeLib = item.annee_catechese?.libelle || raw.annee_libelle || op?.annee_libelle || this.anneeService.activeAnnee()?.libelle || '';
+
+    const isPaye = op?.statut === 'paye' || raw.frais_payes === true || item.frais_inscription_payes === true;
+    const montantTotal = op ? (op.montant_total ?? op.montant ?? 0) : (raw.frais_inscription ?? raw.montant ?? raw.montant_paye ?? 0);
+    const montantPaye = op ? (op.montant_paye ?? (isPaye ? montantTotal : 0)) : (isPaye ? montantTotal : (raw.montant_paye ?? 0));
+    const montantRestant = op ? (op.montant_restant ?? (isPaye ? 0 : Math.max(0, montantTotal - montantPaye))) : (isPaye ? 0 : Math.max(0, montantTotal - montantPaye));
+
+    const currentUser = this.authService.currentUser();
+    const caissierName = (op as any)?.caissier_nom ||
+      (op as any)?.cree_par?.nom ||
+      (op as any)?.cree_par?.name ||
+      raw.caissier_nom ||
+      (currentUser ? (currentUser.nom && currentUser.prenoms ? `${currentUser.nom} ${currentUser.prenoms}` : (currentUser.name || currentUser.nom || '')) : '') ||
+      '';
+
+    const rawLignes = (op as any)?.lignes || (op as any)?.details || raw.lignes || [];
+    const lignes = Array.isArray(rawLignes) && rawLignes.length > 0
+      ? rawLignes.map((l: any) => ({
+          designation: l.designation || l.tarif_nom || l.nom || `Frais de catéchèse - ${niveauNom || 'Inscription'}`,
+          quantite: l.quantite || 1,
+          montant_unitaire: l.montant_unitaire ?? l.tarif?.montant ?? l.montant ?? 0,
+          montant: l.montant !== undefined ? l.montant : ((l.quantite || 1) * (l.montant_unitaire || 0))
+        }))
+      : [{
+          designation: op?.libelle || `Frais d'inscription & scolarité - ${niveauNom || 'Année pastorale'}`,
+          quantite: 1,
+          montant_unitaire: montantTotal,
+          montant: montantTotal
+        }];
 
     this.selectedRecuData.set({
-      reference: item.code_inscription || raw.numero_recu || `INS-${(item.id || 'AUTO').substring(0, 8).toUpperCase()}`,
-      date: item.date_inscription || item.created_at || new Date().toISOString(),
+      reference: op?.reference || item.code_inscription || raw.numero_recu || `INS-${(item.id || '').substring(0, 8).toUpperCase()}`,
+      date: (op?.updated_at || op?.created_at || item.date_inscription || item.created_at || new Date().toISOString()),
       catechumene_nom: catNom,
       catechumene_matricule: matricule,
       classe_nom: classeNom,
       niveau_nom: niveauNom,
       section_nom: sectionNom,
       annee_pastorale: anneeLib,
-      libelle: `Frais d'inscription & scolarité - ${niveauNom || 'Année pastorale'}`,
-      type_operation: 'inscription',
-      montant_total: montantFrais,
-      montant_paye: isPaye ? montantFrais : (raw.montant_paye || 0),
-      montant_restant: isPaye ? 0 : Math.max(0, montantFrais - (raw.montant_paye || 0)),
-      mode_paiement: raw.mode_paiement || 'Espèces',
-      statut: isPaye ? 'paye' : 'en_attente',
-      caissier_nom: 'Secrétariat Catéchèse'
+      libelle: op?.libelle || `Frais d'inscription & scolarité - ${niveauNom || 'Année pastorale'}`,
+      type_operation: op?.type_tarif || 'inscription',
+      montant_total: montantTotal,
+      montant_paye: montantPaye,
+      montant_restant: montantRestant,
+      mode_paiement: (op as any)?.mode_paiement || raw.mode_paiement || 'Espèces',
+      statut: isPaye ? 'paye' : (op?.statut || 'en_attente'),
+      caissier_nom: caissierName,
+      lignes
     });
     this.isRecuModalOpen.set(true);
   }
@@ -277,6 +347,7 @@ export class InscriptionsAnnuellesPageComponent implements OnInit {
     this.isDetailModalOpen.set(false);
     this.isDeleteModalOpen.set(false);
     this.isRecuModalOpen.set(false);
+    this.isSaving.set(false);
     this.selectedItem.set(null);
     this.itemToDelete.set(null);
   }
@@ -290,6 +361,7 @@ export class InscriptionsAnnuellesPageComponent implements OnInit {
     ceb?: Ceb;
     mouvement?: Mouvement;
   }): void {
+    this.isSaving.set(true);
     this.catechumeneService.create(event.catechumeneData, event.ceb).subscribe({
       next: (createdCat) => {
         const currentAnnee = this.annees().find(a => a.est_active) || (this.annees().length > 0 ? this.annees()[0] : undefined);
@@ -304,12 +376,18 @@ export class InscriptionsAnnuellesPageComponent implements OnInit {
           classe: event.classe,
           ceb: event.ceb,
           mouvement: event.mouvement
-        }).subscribe(() => {
-          this.closeModals();
+        }).subscribe({
+          next: () => {
+            this.isSaving.set(false);
+            this.closeModals();
+          },
+          error: () => {
+            this.isSaving.set(false);
+          }
         });
       },
       error: () => {
-        this.toastService.error('Erreur', "La création du catéchumène n'a pas pu aboutir.");
+        this.isSaving.set(false);
       }
     });
   }
@@ -325,6 +403,7 @@ export class InscriptionsAnnuellesPageComponent implements OnInit {
     ceb?: Ceb;
     mouvement?: Mouvement;
   }): void {
+    this.isSaving.set(true);
     const currentAnnee = this.annees().find(a => a.est_active) || (this.annees().length > 0 ? this.annees()[0] : undefined);
     event.inscriptionData.annee_catechese_id = currentAnnee ? currentAnnee.id : '';
 
@@ -340,8 +419,14 @@ export class InscriptionsAnnuellesPageComponent implements OnInit {
       classe: event.classe,
       ceb: event.ceb,
       mouvement: event.mouvement
-    }).subscribe(() => {
-      this.closeModals();
+    }).subscribe({
+      next: () => {
+        this.isSaving.set(false);
+        this.closeModals();
+      },
+      error: () => {
+        this.isSaving.set(false);
+      }
     });
   }
 
@@ -355,13 +440,26 @@ export class InscriptionsAnnuellesPageComponent implements OnInit {
     ceb?: Ceb;
     mouvement?: Mouvement;
   }): void {
+    this.isSaving.set(true);
     if (this.isEditing() && this.selectedItem()) {
-      this.inscriptionService.update(this.selectedItem()!.id, event.dto as UpdateInscriptionAnnuelleDto, event).subscribe(() => {
-        this.closeModals();
+      this.inscriptionService.update(this.selectedItem()!.id, event.dto as UpdateInscriptionAnnuelleDto, event).subscribe({
+        next: () => {
+          this.isSaving.set(false);
+          this.closeModals();
+        },
+        error: () => {
+          this.isSaving.set(false);
+        }
       });
     } else {
-      this.inscriptionService.create(event.dto as CreateInscriptionAnnuelleDto, event).subscribe(() => {
-        this.closeModals();
+      this.inscriptionService.create(event.dto as CreateInscriptionAnnuelleDto, event).subscribe({
+        next: () => {
+          this.isSaving.set(false);
+          this.closeModals();
+        },
+        error: () => {
+          this.isSaving.set(false);
+        }
       });
     }
   }

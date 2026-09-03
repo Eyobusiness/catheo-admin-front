@@ -15,6 +15,7 @@ import {
   CatechumeneSacrement,
   MotifException
 } from '../../models/sacrements.model';
+import { PdfService } from '../../../../core/services/pdf.service';
 
 @Component({
   selector: 'app-bapteme-page',
@@ -28,6 +29,7 @@ export class BaptemePageComponent {
   public readonly sectionService = inject(SectionService);
   public readonly niveauService = inject(NiveauService);
   public readonly classeService = inject(ClasseService);
+  private readonly pdfService = inject(PdfService);
 
   // Signaux des données de la base de données
   public readonly sections = this.sectionService.sections;
@@ -311,7 +313,18 @@ export class BaptemePageComponent {
   }
 
   public printList(): void {
-    window.print();
+    const filters: any = {
+      sacrement: 'bapteme'
+    };
+    if (this.filterSection()) filters.section_id = this.filterSection();
+    if (this.filterNiveau()) filters.niveau_id = this.filterNiveau();
+    if (this.filterClasse()) filters.classe_id = this.filterClasse();
+
+    this.pdfService.previewSuiviSacramentalPdf(filters, {
+      title: 'Registre des Candidats au Baptême',
+      subtitle: 'Sacrement du Baptême',
+      fileName: 'registre-candidats-bapteme.pdf'
+    });
   }
 
   private triggerToast(msg: string, type: 'success' | 'danger' | 'warning' | 'info'): void {

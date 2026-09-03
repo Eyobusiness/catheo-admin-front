@@ -1,0 +1,124 @@
+@if (data(); as d) {
+  <article class="sacramental-doc-container">
+    <!-- EN-TÊTE PAYSAGE OFFICIEL -->
+    <header class="doc-header-landscape">
+      <div class="header-logo-col left">
+        @if (logoParoisse()) {
+          <img [src]="logoParoisse()" alt="Logo Paroisse" class="parish-logo" />
+        }
+      </div>
+
+      <div class="header-center-col">
+        @if (diocese()) {
+          <div class="doc-diocese">{{ diocese() | uppercase }}</div>
+        }
+        <h1 class="doc-parish-title">{{ nomParoisse() | uppercase }}</h1>
+        <div class="doc-doc-title">REGISTRE DE SUIVI SACRAMENTAL — {{ sacrementTitle() }}</div>
+        <div class="doc-sub-filter">
+          <span>Année Pastorale : <strong>{{ anneePastorale() }}</strong></span>
+          @if (d.section_nom) { <span> • Section : <strong>{{ d.section_nom }}</strong></span> }
+          @if (d.niveau_nom) { <span> • Niveau : <strong>{{ d.niveau_nom }}</strong></span> }
+          @if (d.classe_nom) { <span> • Classe : <strong>{{ d.classe_nom }}</strong></span> }
+        </div>
+      </div>
+
+      <div class="header-logo-col right">
+        @if (logoCatechese()) {
+          <img [src]="logoCatechese()" alt="Logo Catéchèse" class="catechese-logo" />
+        }
+      </div>
+    </header>
+
+    <!-- TABLEAU OFFICIEL DES CANDIDATS AU SACREMENT -->
+    <table class="official-sacrament-table">
+      <thead>
+        <tr>
+          <th class="th-num">N°</th>
+          <th class="th-mat">MATRICULE</th>
+          <th class="th-name">NOMS ET PRÉNOMS DU CANDIDAT</th>
+          <th class="th-gender">SEXE</th>
+          <th class="th-check">EXTRAIT NAISS.</th>
+          <th class="th-check">CERTIF. BAPT.</th>
+          <th class="th-check">CASUEL</th>
+          <th class="th-check">RETRAITE</th>
+          <th class="th-parrain">PARRAIN / MARRAINE</th>
+          <th class="th-status">DÉCISION DU CONSEIL</th>
+          <th class="th-obs">OBSERVATION</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (c of candidatsList(); track c.id) {
+          <tr>
+            <td class="td-num">{{ c.num }}</td>
+            <td class="td-mat">{{ c.matricule }}</td>
+            <td class="td-name font-bold">{{ c.nom_complet || (c.nom + ' ' + (c.prenoms || '')) }}</td>
+            <td class="td-gender">{{ c.sexe }}</td>
+            <td class="td-check">
+              <span class="check-box" [class.checked]="c.extrait_naissance_fourni">
+                {{ c.extrait_naissance_fourni ? '✓' : '✗' }}
+              </span>
+            </td>
+            <td class="td-check">
+              <span class="check-box" [class.checked]="c.certificat_bapteme_fourni">
+                {{ c.certificat_bapteme_fourni ? '✓' : '✗' }}
+              </span>
+            </td>
+            <td class="td-check">
+              <span class="check-box" [class.checked]="c.casuel_paye">
+                {{ c.casuel_paye ? '✓' : '✗' }}
+              </span>
+            </td>
+            <td class="td-check">
+              <span class="check-box" [class.checked]="c.retraite_effectuee">
+                {{ c.retraite_effectuee ? '✓' : '✗' }}
+              </span>
+            </td>
+            <td class="td-parrain">{{ c.parrain_marraine_nom || '-' }}</td>
+            <td class="td-status">
+              <span class="decision-pill" [class.admis]="c.statut_admissibilite === 'admis'" [class.attente]="c.statut_admissibilite === 'en_attente'" [class.refuse]="c.statut_admissibilite === 'refuse'">
+                {{ c.statut_admissibilite === 'admis' ? 'Admis(e)' : c.statut_admissibilite === 'refuse' ? 'Refusé(e)' : 'En attente' }}
+              </span>
+            </td>
+            <td class="td-obs">{{ c.observation || '' }}</td>
+          </tr>
+        }
+        @if (candidatsList().length === 0) {
+          <tr>
+            <td colspan="11" class="td-empty">Aucun candidat enregistré pour ce sacrement.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <!-- STATISTIQUES SACRAMENTELLES -->
+    @if (d.statistiques) {
+      <div class="stats-summary-bar">
+        <div class="stat-pill">Total Candidats : <strong>{{ d.statistiques.total_candidats }}</strong></div>
+        <div class="stat-pill success">Dossiers Complets : <strong>{{ d.statistiques.dossiers_complets }}</strong></div>
+        <div class="stat-pill warning">Dossiers Incomplets : <strong>{{ d.statistiques.dossiers_incomplets }}</strong></div>
+        <div class="stat-pill">Casuels Réglés : <strong>{{ d.statistiques.casuels_regles }}</strong></div>
+        <div class="stat-pill">Retraites Validées : <strong>{{ d.statistiques.retraites_validees }}</strong></div>
+      </div>
+    }
+
+    <!-- SIGNATURES DU CONSEIL PASTORAL -->
+    <footer class="sacrament-footer">
+      <div class="sig-box">
+        <span class="sig-role">Le Responsable des Sacrements</span>
+        <div class="sig-line"></div>
+      </div>
+      <div class="sig-box">
+        <span class="sig-role">Le Catéchiste de Niveau</span>
+        <div class="sig-line"></div>
+      </div>
+      <div class="sig-box">
+        <span class="sig-role">Le Curé de la Paroisse (Admis pour célébration)</span>
+        <div class="sig-stamp"></div>
+      </div>
+    </footer>
+  </article>
+} @else {
+  <div class="sacrament-empty-state">
+    <p>Aucune fiche de suivi sacramental disponible.</p>
+  </div>
+}

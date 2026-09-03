@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, effect, inject, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CreateUserDto, UpdateUserDto, UserItem } from '../../models/user.model';
 import { ProfilService } from '../../Profil/services/profil.service';
@@ -23,7 +23,14 @@ export class UserFormModalComponent {
   public readonly formClosed = output<void>();
   public readonly formSubmitted = output<CreateUserDto | UpdateUserDto>();
 
-  protected readonly profils = this.profilService.profilsList;
+  // Profils disponibles dans la catéchèse (le super admin est exclu — il gère depuis son propre espace)
+  protected readonly profils = computed(() =>
+    this.profilService.profilsList().filter(p =>
+      p.code !== 'super_admin' &&
+      p.code !== 'SUPER_ADMIN' &&
+      p.code?.toLowerCase() !== 'super_admin'
+    )
+  );
 
   protected readonly form = new FormGroup({
     nom: new FormControl('', {

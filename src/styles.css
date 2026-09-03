@@ -316,3 +316,66 @@ a {
   margin-left: 0.875rem !important;
 }
 
+/* ==========================================================================
+   ISOLATION GLOBALE DE L'IMPRESSION (WINDOW.PRINT)
+   Masque systématiquement sidebar, navbar, footer, menus et chrome d'application.
+   ========================================================================== */
+@media print {
+  /* 1. Masquer toute l'application par défaut */
+  body * {
+    visibility: hidden;
+  }
+
+  /* 2. Afficher UNIQUEMENT le document d'impression actif et son contenu */
+  .catheo-printable-document,
+  .catheo-printable-document * {
+    visibility: visible !important;
+  }
+
+  /* 3. Positionner le document pour l'impression physique */
+  .catheo-printable-document {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    box-shadow: none !important;
+    border: none !important;
+    transform: none !important; /* Désactiver tout zoom d'écran */
+  }
+
+  /* 4. Masquer absolument tous les boutons, outils et éléments annotés .no-print */
+  .no-print,
+  .no-print *,
+  app-sidebar,
+  app-header,
+  app-footer,
+  .app-sidebar,
+  .app-main-wrapper > app-header,
+  .app-main-wrapper > app-footer,
+  .btn,
+  button,
+  app-button,
+  .print-toolbar,
+  .pdf-preview-header {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  /* 5. Configuration de la page imprimée */
+  html, body {
+    width: 100% !important;
+    height: auto !important;
+    min-height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    overflow: visible !important;
+  }
+}
+
+

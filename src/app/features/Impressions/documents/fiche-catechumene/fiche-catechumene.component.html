@@ -1,0 +1,288 @@
+@if (data(); as c) {
+  <article class="fiche-doc-container">
+    <!-- EN-TÊTE OFFICIEL PAROISSIAL -->
+    <header class="doc-header">
+      <div class="header-logo-col left">
+        @if (logoParoisse()) {
+          <img [src]="logoParoisse()" alt="Logo Paroisse" class="parish-logo-img" />
+        }
+      </div>
+
+      <div class="header-center-col">
+        @if (diocese()) {
+          <div class="doc-diocese">{{ diocese() | uppercase }}</div>
+        }
+        @if (doyenne()) {
+          <div class="doc-doyenne">{{ doyenne() | uppercase }}</div>
+        }
+        <h1 class="doc-parish-title">{{ nomParoisse() | uppercase }}</h1>
+        <div class="doc-service-title">COMMISSION PAROISSIALE DE CATÉCHÈSE</div>
+        @if (contactsParoisse()) {
+          <div class="doc-contacts">{{ contactsParoisse() }}</div>
+        }
+      </div>
+
+      <div class="header-logo-col right">
+        @if (logoCatechese()) {
+          <img [src]="logoCatechese()" alt="Logo Catéchèse" class="catechese-logo-img" />
+        }
+      </div>
+    </header>
+
+    <!-- BANNIÈRE TITRE DU DOCUMENT AVEC PHOTO -->
+    <div class="doc-title-banner-box">
+      <div class="title-details">
+        <h2 class="doc-main-title">FICHE INDIVIDUELLE DU CATÉCHUMÈNE</h2>
+        <div class="doc-meta-sub">
+          <span class="sub-item">Année Pastorale : <strong>{{ anneePastorale() }}</strong></span>
+          <span class="sub-separator">•</span>
+          <span class="sub-item">Éditée le : <strong>{{ '' | date:'dd/MM/yyyy' }}</strong></span>
+        </div>
+      </div>
+
+      <!-- CARTOUCHE MATRICULE & PHOTO -->
+      <div class="badge-photo-box">
+        <div class="matricule-cartouche">
+          <span class="mat-lbl">MATRICULE</span>
+          <span class="mat-val">{{ c.matricule || c.code_catechumene || 'CAT-00' }}</span>
+        </div>
+
+        <div class="photo-frame">
+          @if (c.photo_url || c.photo_path) {
+            <img [src]="c.photo_url || c.photo_path" alt="Photo d'identité" class="student-photo" />
+          } @else {
+            <div class="photo-placeholder">
+              <span class="photo-icon">👤</span>
+              <span class="photo-text">PHOTO D'IDENTITÉ</span>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- 1. IDENTIFICATION & ÉTAT CIVIL -->
+    <section class="doc-section">
+      <h3 class="section-title">
+        <span class="section-num">1</span>
+        <span>IDENTITÉ & ÉTAT CIVIL DU CATÉCHUMÈNE</span>
+      </h3>
+
+      <div class="form-grid">
+        <div class="grid-item span-2">
+          <span class="item-label">Nom et Prénoms :</span>
+          <span class="item-value strong uppercase">{{ c.nom }} {{ c.prenoms }}</span>
+        </div>
+
+        <div class="grid-item">
+          <span class="item-label">Sexe :</span>
+          <span class="item-value">{{ c.sexe === 'M' ? 'Masculin (M)' : 'Féminin (F)' }}</span>
+        </div>
+
+        <div class="grid-item">
+          <span class="item-label">Date de naissance :</span>
+          <span class="item-value">{{ (c.date_naissance | date:'dd/MM/yyyy') || '-' }}</span>
+        </div>
+
+        <div class="grid-item">
+          <span class="item-label">Lieu de naissance :</span>
+          <span class="item-value">{{ c.lieu_naissance || '-' }}</span>
+        </div>
+
+        <div class="grid-item">
+          <span class="item-label">Profession / Scolarité :</span>
+          <span class="item-value">{{ c.profession || c.classe_scolaire || '-' }}</span>
+        </div>
+
+        <div class="grid-item">
+          <span class="item-label">Situation matrimoniale :</span>
+          <span class="item-value">{{ c.situation_matrimoniale || '-' }}</span>
+        </div>
+
+        <div class="grid-item">
+          <span class="item-label">Téléphone personnel :</span>
+          <span class="item-value">{{ c.telephone || '-' }}</span>
+        </div>
+
+        <div class="grid-item span-2">
+          <span class="item-label">Domicile / Adresse :</span>
+          <span class="item-value">{{ c.domicile || c.adresse || '-' }}</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. FILIATION & PARENTS / TUTEUR -->
+    <section class="doc-section">
+      <h3 class="section-title">
+        <span class="section-num">2</span>
+        <span>FILIATION & CONTACTS DES PARENTS / TUTEURS</span>
+      </h3>
+
+      <div class="form-grid">
+        <div class="grid-item">
+          <span class="item-label">Nom du Père :</span>
+          <span class="item-value strong">{{ c.nom_pere || '-' }}</span>
+        </div>
+
+        <div class="grid-item">
+          <span class="item-label">Origine du Père :</span>
+          <span class="item-value">{{ c.origine_pere || '-' }}</span>
+        </div>
+
+        <div class="grid-item">
+          <span class="item-label">Téléphone du Père :</span>
+          <span class="item-value">{{ c.telephone_pere || '-' }}</span>
+        </div>
+
+        <div class="grid-item">
+          <span class="item-label">Nom de la Mère :</span>
+          <span class="item-value strong">{{ c.nom_mere || '-' }}</span>
+        </div>
+
+        <div class="grid-item">
+          <span class="item-label">Origine de la Mère :</span>
+          <span class="item-value">{{ c.origine_mere || '-' }}</span>
+        </div>
+
+        <div class="grid-item">
+          <span class="item-label">Téléphone de la Mère :</span>
+          <span class="item-value">{{ c.telephone_mere || '-' }}</span>
+        </div>
+
+        <div class="grid-item">
+          <span class="item-label">Nom du Tuteur Légal :</span>
+          <span class="item-value strong">{{ c.nom_tuteur || '-' }}</span>
+        </div>
+
+        <div class="grid-item span-2">
+          <span class="item-label">Téléphone du Tuteur :</span>
+          <span class="item-value">{{ c.telephone_tuteur || '-' }}</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. ÉTAT SACRAMENTAL & INITIATION -->
+    <section class="doc-section">
+      <h3 class="section-title">
+        <span class="section-num">3</span>
+        <span>PARCOURS SACRAMENTAL & REGISTRES</span>
+      </h3>
+
+      <table class="sacraments-print-table">
+        <thead>
+          <tr>
+            <th class="col-sacrament">Sacrement</th>
+            <th>Statut</th>
+            <th>Date</th>
+            <th>Lieu & Paroisse</th>
+            <th>N° Carnet / Registre</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="sacrament-name font-bold">Baptême</td>
+            <td>
+              <span class="status-pill" [class.done]="c.est_baptise">
+                {{ c.est_baptise ? 'Reçu' : 'Non reçu (Candidat)' }}
+              </span>
+            </td>
+            <td>{{ (c.date_bapteme | date:'dd/MM/yyyy') || '-' }}</td>
+            <td>{{ c.paroisse_bapteme || c.lieu_bapteme || '-' }}</td>
+            <td>{{ c.num_carnet_bapteme || '-' }}</td>
+          </tr>
+          <tr>
+            <td class="sacrament-name font-bold">Première Communion</td>
+            <td>
+              <span class="status-pill" [class.done]="!!c.date_premiere_communion">
+                {{ c.date_premiere_communion ? 'Reçu' : 'Non reçu' }}
+              </span>
+            </td>
+            <td>{{ (c.date_premiere_communion | date:'dd/MM/yyyy') || '-' }}</td>
+            <td>{{ c.paroisse_premiere_communion || '-' }}</td>
+            <td>-</td>
+          </tr>
+          <tr>
+            <td class="sacrament-name font-bold">Confirmation</td>
+            <td>
+              <span class="status-pill" [class.done]="!!c.date_confirmation">
+                {{ c.date_confirmation ? 'Reçu' : 'Non reçu' }}
+              </span>
+            </td>
+            <td>{{ (c.date_confirmation | date:'dd/MM/yyyy') || '-' }}</td>
+            <td>{{ c.paroisse_confirmation || '-' }}</td>
+            <td>Ministre : {{ c.ministre_confirmation || '-' }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="parrain-line-box">
+        <span class="item-label">Parrain / Marraine désigné(e) :</span>
+        <span class="item-value strong">{{ parrainNom() }}</span>
+      </div>
+    </section>
+
+    <!-- 4. INSCRIPTION PASTORALE COURANTE -->
+    <section class="doc-section">
+      <h3 class="section-title">
+        <span class="section-num">4</span>
+        <span>AFFECTATION PASTORALE (ANNÉE EN COURS)</span>
+      </h3>
+
+      <div class="form-grid">
+        <div class="grid-item">
+          <span class="item-label">Section :</span>
+          <span class="item-value strong">{{ sectionNom() }}</span>
+        </div>
+
+        <div class="grid-item">
+          <span class="item-label">Niveau :</span>
+          <span class="item-value strong">{{ niveauNom() }}</span>
+        </div>
+
+        <div class="grid-item">
+          <span class="item-label">Classe :</span>
+          <span class="item-value strong">{{ classeNom() }}</span>
+        </div>
+
+        <div class="grid-item">
+          <span class="item-label">Session :</span>
+          <span class="item-value">{{ sessionNom() }}</span>
+        </div>
+
+        <div class="grid-item">
+          <span class="item-label">Communauté Éclésiale de Base (CEB) :</span>
+          <span class="item-value">{{ cebNom() }}</span>
+        </div>
+
+        <div class="grid-item">
+          <span class="item-label">Statut du dossier :</span>
+          <span class="item-value uppercase strong">{{ c.statut }}</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. SIGNATURES & VALIDATIONS -->
+    <footer class="doc-signatures-footer">
+      <div class="sig-block">
+        <span class="sig-header">Le Catéchiste Responsable</span>
+        <span class="sig-sub">Nom & Signature</span>
+        <div class="sig-area"></div>
+      </div>
+
+      <div class="sig-block center">
+        <span class="sig-header">Le Secrétariat Paroissial</span>
+        <span class="sig-sub">Visa & Date d'enregistrement</span>
+        <div class="sig-area"></div>
+      </div>
+
+      <div class="sig-block">
+        <span class="sig-header">Le Curé de la Paroisse</span>
+        <span class="sig-sub">Signature & Cachet Paroissial</span>
+        <div class="sig-area-stamp"></div>
+      </div>
+    </footer>
+  </article>
+} @else {
+  <div class="fiche-empty-state">
+    <p>Aucune information de catéchumène trouvée.</p>
+  </div>
+}

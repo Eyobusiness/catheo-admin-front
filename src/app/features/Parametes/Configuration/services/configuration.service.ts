@@ -1,4 +1,4 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, inject, signal, effect } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { finalize, Observable, catchError, of, tap, throwError } from 'rxjs';
 import {
@@ -53,6 +53,9 @@ function extractArrayData(res: any): any[] {
   return [];
 }
 
+const FAVICON_STORAGE_KEY = 'catheo_paroisse_favicon';
+const PAROISSE_STORAGE_KEY = 'catheo_paroisse_config';
+
 @Injectable({
   providedIn: 'root'
 })
@@ -66,12 +69,36 @@ export class ConfigurationService {
   private readonly responsablesUrl = `${environment.apiUrl}/responsables-catechese`;
   private readonly fallbackResponsablesUrl = `${environment.apiUrl}/responsables-paroisse`;
 
+  private getStoredParoisseConfig(): ParoisseConfiguration | null {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        const raw = localStorage.getItem(PAROISSE_STORAGE_KEY);
+        return raw ? JSON.parse(raw) : null;
+      }
+    } catch {
+      return null;
+    }
+    return null;
+  }
+
+  private saveParoisseConfigToStorage(config: ParoisseConfiguration): void {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage && config) {
+        localStorage.setItem(PAROISSE_STORAGE_KEY, JSON.stringify(config));
+      }
+    } catch {
+      // Ignore localStorage errors
+    }
+  }
+
   // --- Reactive State Signals ---
-  public readonly paroisseConfig = signal<ParoisseConfiguration>({
+  public readonly paroisseConfig = signal<ParoisseConfiguration>(this.getStoredParoisseConfig() || {
     id: '',
     nom: '',
     nom_paroisse: '',
     code_paroisse: '',
+    prefixe_matricule: '',
+    prefixe_recu: '',
     diocese: '',
     doyenne: '',
     ville: '',
@@ -105,10 +132,47 @@ export class ConfigurationService {
   public readonly isSaving = signal<boolean>(false);
 
   constructor() {
-    // Automatically load data directly from database on initialization
+    // 1. Initialiser le favicon depuis le cache si disponible
+    this.initFaviconFromStorage();
+
+    // 2. Automatically load data directly from database on initialization
     this.getParoisseConfig().subscribe();
     this.getApparenceConfig().subscribe();
     this.getResponsables().subscribe();
+
+    // 3. Mettre à jour dynamiquement le favicon dès que le logo de la paroisse change
+    effect(() => {
+      const p = this.paroisseConfig();
+      const logoParoisse = p?.logo_paroisse_url || p?.logo_paroisse || p?.logo_url;
+
+      if (logoParoisse) {
+        // La paroisse a un logo → l'utiliser comme favicon
+        this.updateFavicon(logoParoisse);
+      } else if (p?.id) {
+        // Config chargée depuis l'API (id présent) mais sans logo
+        // → effacer le cache de la paroisse précédente et revenir au logo par défaut
+        this.resetFaviconToDefault();
+      }
+    });
+  }
+
+  public resolveAssetUrl(path: string | null | undefined): string {
+    if (!path) return '';
+    const trimmed = String(path).trim();
+    if (!trimmed) return '';
+    if (
+      trimmed.startsWith('data:') ||
+      trimmed.startsWith('blob:') ||
+      trimmed.startsWith('http://') ||
+      trimmed.startsWith('https://')
+    ) {
+      return trimmed;
+    }
+    if (trimmed.startsWith('assets/') || trimmed.startsWith('logo/')) {
+      return trimmed;
+    }
+    const backendBase = environment.apiUrl.replace(/\/api(\/v1)?\/?$/, '');
+    return trimmed.startsWith('/') ? `${backendBase}${trimmed}` : `${backendBase}/${trimmed}`;
   }
 
   // ==========================================
@@ -122,8 +186,10 @@ export class ConfigurationService {
       tap(res => {
         const item = extractObjectData(res);
         if (item) {
-          const logoP = item.logo_paroisse_url || item.logo_paroisse || item.logo_url || item.logo || '';
-          const logoC = item.logo_catechese_url || item.logo_catechese || '';
+          const rawLogoP = item.logo_paroisse_url || item.logo_paroisse || item.logo_url || item.logo || '';
+          const rawLogoC = item.logo_catechese_url || item.logo_catechese || '';
+          const logoP = this.resolveAssetUrl(rawLogoP);
+          const logoC = this.resolveAssetUrl(rawLogoC);
           const nomVal = item.nom_paroisse || item.nom || item.libelle || item.name || '';
 
           const normalized: ParoisseConfiguration = {
@@ -131,6 +197,8 @@ export class ConfigurationService {
             nom: nomVal,
             nom_paroisse: nomVal,
             code_paroisse: item.code_paroisse || item.code || '',
+            prefixe_matricule: item.prefixe_matricule || item.prefix_matricule || '',
+            prefixe_recu: item.prefixe_recu || item.prefix_recu || '',
             diocese: item.diocese || '',
             doyenne: item.doyenne || '',
             ville: item.ville || '',
@@ -151,6 +219,7 @@ export class ConfigurationService {
             updated_at: item.updated_at
           };
           this.paroisseConfig.set(normalized);
+          this.saveParoisseConfigToStorage(normalized);
         }
       }),
       catchError(() => of(this.paroisseConfig())),
@@ -169,6 +238,8 @@ export class ConfigurationService {
       const formData = new FormData();
       const nom = dto.nom_paroisse || dto.nom || '';
       if (nom) formData.append('nom_paroisse', nom);
+      if (dto.prefixe_matricule !== undefined) formData.append('prefixe_matricule', dto.prefixe_matricule);
+      if (dto.prefixe_recu !== undefined) formData.append('prefixe_recu', dto.prefixe_recu);
       if (dto.diocese) formData.append('diocese', dto.diocese);
       if (dto.doyenne) formData.append('doyenne', dto.doyenne);
       if (dto.ville) formData.append('ville', dto.ville);
@@ -202,6 +273,8 @@ export class ConfigurationService {
       const payload: any = {
         nom_paroisse: dto.nom_paroisse || dto.nom,
         nom: dto.nom_paroisse || dto.nom,
+        prefixe_matricule: dto.prefixe_matricule,
+        prefixe_recu: dto.prefixe_recu,
         diocese: dto.diocese,
         doyenne: dto.doyenne,
         ville: dto.ville,
@@ -226,8 +299,10 @@ export class ConfigurationService {
     return request$.pipe(
       tap(res => {
         const item = extractObjectData(res);
-        const logoP = (item && (item.logo_paroisse_url || item.logo_paroisse)) || (typeof dto.logo_paroisse === 'string' ? dto.logo_paroisse : this.paroisseConfig().logo_paroisse);
-        const logoC = (item && (item.logo_catechese_url || item.logo_catechese)) || (typeof dto.logo_catechese === 'string' ? dto.logo_catechese : this.paroisseConfig().logo_catechese);
+        const rawLogoP = (item && (item.logo_paroisse_url || item.logo_paroisse)) || (typeof dto.logo_paroisse === 'string' ? dto.logo_paroisse : this.paroisseConfig().logo_paroisse);
+        const rawLogoC = (item && (item.logo_catechese_url || item.logo_catechese)) || (typeof dto.logo_catechese === 'string' ? dto.logo_catechese : this.paroisseConfig().logo_catechese);
+        const logoP = this.resolveAssetUrl(rawLogoP);
+        const logoC = this.resolveAssetUrl(rawLogoC);
         const nomVal = (item && (item.nom_paroisse || item.nom)) || dto.nom_paroisse || dto.nom || this.paroisseConfig().nom;
 
         const updated: ParoisseConfiguration = {
@@ -235,6 +310,8 @@ export class ConfigurationService {
           ...(item || {}),
           nom: nomVal,
           nom_paroisse: nomVal,
+          prefixe_matricule: item?.prefixe_matricule ?? dto.prefixe_matricule ?? this.paroisseConfig().prefixe_matricule,
+          prefixe_recu: item?.prefixe_recu ?? dto.prefixe_recu ?? this.paroisseConfig().prefixe_recu,
           logo_paroisse: logoP,
           logo_paroisse_url: logoP,
           logo_catechese: logoC,
@@ -243,20 +320,25 @@ export class ConfigurationService {
           updated_at: new Date().toISOString().split('T')[0]
         };
         this.paroisseConfig.set(updated);
+        this.saveParoisseConfigToStorage(updated);
         this.toastService.success(
           'Configuration Enregistrée',
           'Les coordonnées et informations de la catéchèse ont été mises à jour avec succès.'
         );
       }),
       catchError((err: HttpErrorResponse) => {
-        const logoP = typeof dto.logo_paroisse === 'string' ? dto.logo_paroisse : this.paroisseConfig().logo_paroisse;
-        const logoC = typeof dto.logo_catechese === 'string' ? dto.logo_catechese : this.paroisseConfig().logo_catechese;
+        const rawLogoP = typeof dto.logo_paroisse === 'string' ? dto.logo_paroisse : this.paroisseConfig().logo_paroisse;
+        const rawLogoC = typeof dto.logo_catechese === 'string' ? dto.logo_catechese : this.paroisseConfig().logo_catechese;
+        const logoP = this.resolveAssetUrl(rawLogoP);
+        const logoC = this.resolveAssetUrl(rawLogoC);
         const nomVal = dto.nom_paroisse || dto.nom || this.paroisseConfig().nom;
 
         const updatedLocal: ParoisseConfiguration = {
           ...this.paroisseConfig(),
           nom: nomVal,
           nom_paroisse: nomVal,
+          prefixe_matricule: dto.prefixe_matricule ?? this.paroisseConfig().prefixe_matricule,
+          prefixe_recu: dto.prefixe_recu ?? this.paroisseConfig().prefixe_recu,
           diocese: dto.diocese ?? this.paroisseConfig().diocese,
           doyenne: dto.doyenne ?? this.paroisseConfig().doyenne,
           ville: dto.ville ?? this.paroisseConfig().ville,
@@ -275,6 +357,7 @@ export class ConfigurationService {
           updated_at: new Date().toISOString().split('T')[0]
         };
         this.paroisseConfig.set(updatedLocal);
+        this.saveParoisseConfigToStorage(updatedLocal);
         this.toastService.success(
           'Configuration Enregistrée',
           'Les coordonnées et informations de la catéchèse ont été mises à jour avec succès.'
@@ -602,5 +685,103 @@ export class ConfigurationService {
 
   private removeResponsableLocal(id: string): void {
     this.responsables.update(list => list.filter(r => r.id !== id));
+  }
+
+  /**
+   * Initialise le favicon depuis le stockage local (cache) pour un affichage immédiat
+   */
+  private initFaviconFromStorage(): void {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage && !this.isPublicBrandRoute()) {
+        const cached = localStorage.getItem(FAVICON_STORAGE_KEY);
+        if (cached) {
+          this.setFaviconInDom(cached);
+        }
+      }
+    } catch {
+      // Ignore les erreurs d'accès à localStorage
+    }
+  }
+
+  /**
+   * Met à jour le favicon du navigateur selon le logo de la paroisse
+   */
+  public updateFavicon(iconUrl: string): void {
+    if (!iconUrl || typeof document === 'undefined') return;
+
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.setItem(FAVICON_STORAGE_KEY, iconUrl);
+      }
+    } catch {
+      // Ignore les erreurs d'accès à localStorage
+    }
+
+    if (this.isPublicBrandRoute()) {
+      return;
+    }
+
+    this.setFaviconInDom(iconUrl);
+  }
+
+  /**
+   * Réinitialise le favicon au logo Cathéo CIM par défaut
+   * (utilisé quand la paroisse connectée n'a pas de logo)
+   */
+  public resetFaviconToDefault(): void {
+    this.clearFaviconCache();
+    if (!this.isPublicBrandRoute()) {
+      this.setFaviconInDom('logo/catheo.png');
+    }
+  }
+
+  /**
+   * Efface le favicon de la paroisse précédente du cache localStorage
+   */
+  public clearFaviconCache(): void {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.removeItem(FAVICON_STORAGE_KEY);
+      }
+    } catch {
+      // Ignore les erreurs d'accès à localStorage
+    }
+  }
+
+  private isPublicBrandRoute(): boolean {
+    if (typeof window === 'undefined' || !window.location) {
+      return false;
+    }
+
+    const path = window.location.pathname || '';
+    return (
+      path.startsWith('/auth') ||
+      path.startsWith('/login') ||
+      path.startsWith('/preinscription-publique') ||
+      path.startsWith('/preinscriptions/campagne')
+    );
+  }
+
+  private setFaviconInDom(iconUrl: string): void {
+    if (typeof document === 'undefined') return;
+
+    let link: HTMLLinkElement | null = document.querySelector("link[rel*='icon']");
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'icon';
+      document.head.appendChild(link);
+    }
+
+    if (iconUrl.endsWith('.svg') || iconUrl.startsWith('data:image/svg')) {
+      link.type = 'image/svg+xml';
+    } else if (iconUrl.endsWith('.png') || iconUrl.startsWith('data:image/png')) {
+      link.type = 'image/png';
+    } else if (iconUrl.endsWith('.jpg') || iconUrl.endsWith('.jpeg') || iconUrl.startsWith('data:image/jpeg')) {
+      link.type = 'image/jpeg';
+    } else if (iconUrl.endsWith('.webp') || iconUrl.startsWith('data:image/webp')) {
+      link.type = 'image/webp';
+    }
+
+    link.href = iconUrl;
   }
 }

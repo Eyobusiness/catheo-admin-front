@@ -5,6 +5,7 @@ import { filter } from 'rxjs';
 import { SidebarService } from '../../../../../core/services/sidebar.service';
 import { MenuItem } from '../../../../../core/constants/menu';
 import { AnneeCatecheseService } from '../../../../../features/Organisations/AnneesPastorales/services/annee-catechese.service';
+import { ConfigurationService } from '../../../../../features/Parametes/Configuration/services/configuration.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -16,11 +17,27 @@ import { AnneeCatecheseService } from '../../../../../features/Organisations/Ann
 export class AppSidebar implements OnInit {
   protected readonly sidebarService = inject(SidebarService);
   protected readonly anneeService = inject(AnneeCatecheseService);
+  protected readonly configService = inject(ConfigurationService);
   protected readonly router = inject(Router);
 
   protected readonly isCollapsed = this.sidebarService.isCollapsed;
   protected readonly isMobileOpen = this.sidebarService.isMobileOpen;
   protected readonly menuItems = this.sidebarService.menuItems;
+
+  public readonly catecheseLogo = computed(() => {
+    const p = this.configService.paroisseConfig();
+    return p.logo_catechese_url || p.logo_catechese || '';
+  });
+
+  public readonly prefixeMatricule = computed(() => {
+    const p = this.configService.paroisseConfig();
+    return p.prefixe_matricule || 'CATHÉO';
+  });
+
+  public readonly nomParoisse = computed(() => {
+    const p = this.configService.paroisseConfig();
+    return p.nom_paroisse || p.nom || 'Catéchèse Paroissiale';
+  });
 
   public readonly currentAnnee = computed(() => {
     const active = this.anneeService.activeAnnee();

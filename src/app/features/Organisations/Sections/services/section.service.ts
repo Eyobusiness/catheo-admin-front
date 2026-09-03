@@ -58,7 +58,7 @@ export class SectionService {
           nom: item.nom || item.libelle || '',
           code: item.code || '',
           description: item.description || '',
-          ordre: item.ordre ?? item.ordre_affichage ?? 1,
+          ordre_affichage: item.ordre_affichage ?? 1,
           statut: normalizeStatut(item.statut, item.est_actif, item.is_active),
           total_niveaux: item.total_niveaux || 0
         }));
@@ -93,7 +93,7 @@ export class SectionService {
           nom: created.nom || dto.nom,
           code: created.code || dto.code,
           description: created.description ?? dto.description ?? '',
-          ordre: created.ordre ?? dto.ordre ?? 1,
+          ordre_affichage: created.ordre_affichage ?? dto.ordre_affichage ?? 1,
           statut: normalizeStatut(created.statut ?? dto.statut, (created as any).est_actif, (created as any).is_active),
           total_niveaux: created.total_niveaux || 0
         };
@@ -107,7 +107,7 @@ export class SectionService {
           nom: dto.nom,
           code: dto.code,
           description: dto.description || '',
-          ordre: dto.ordre || 1,
+          ordre_affichage: dto.ordre_affichage || 1,
           statut: normalizeStatut(dto.statut),
           total_niveaux: 0
         };
@@ -130,7 +130,7 @@ export class SectionService {
           nom: updated.nom || dto.nom || current?.nom || '',
           code: updated.code || dto.code || current?.code || '',
           description: updated.description ?? dto.description ?? current?.description ?? '',
-          ordre: updated.ordre ?? dto.ordre ?? current?.ordre ?? 1,
+          ordre_affichage: updated.ordre_affichage ?? dto.ordre_affichage ?? current?.ordre_affichage ?? 1,
           statut: normalizeStatut(updated.statut ?? dto.statut ?? current?.statut, (updated as any).est_actif, (updated as any).is_active),
           total_niveaux: updated.total_niveaux ?? current?.total_niveaux ?? 0
         };
@@ -145,7 +145,7 @@ export class SectionService {
           nom: dto.nom || current?.nom || '',
           code: dto.code || current?.code || '',
           description: dto.description ?? current?.description ?? '',
-          ordre: dto.ordre ?? current?.ordre ?? 1,
+          ordre_affichage: dto.ordre_affichage ?? current?.ordre_affichage ?? 1,
           statut: normalizeStatut(dto.statut ?? current?.statut),
           total_niveaux: current?.total_niveaux || 0
         };
@@ -180,7 +180,7 @@ export class SectionService {
       nom: section.nom,
       code: section.code,
       description: section.description,
-      ordre: section.ordre,
+      ordre_affichage: section.ordre_affichage,
       statut: nextStatus
     };
     return this.update(section.id, updatedDto);
@@ -189,7 +189,7 @@ export class SectionService {
   private addOrUpdateLocal(item: Section): void {
     this.sections.update(list => {
       const updatedList = list.filter(s => s.id !== item.id);
-      return [...updatedList, item].sort((a, b) => a.ordre - b.ordre);
+      return [...updatedList, item].sort((a, b) => a.ordre_affichage - b.ordre_affichage);
     });
   }
 

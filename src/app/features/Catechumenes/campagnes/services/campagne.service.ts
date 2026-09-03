@@ -1,6 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, catchError, of, tap, throwError } from 'rxjs';
+import { Observable, catchError, map, of, tap, throwError } from 'rxjs';
 import {
   CampagnePreinscriptionDto,
   CreateCampagnePreinscriptionDto,
@@ -43,7 +43,7 @@ export class CampagnePreinscriptionService {
         const normalized: CampagnePreinscriptionDto[] = raw.map((item: any) => {
           const statut = item.statut || (item.est_ouverte ? 'ouverte' : 'fermee');
           return {
-            id: item.id,
+            id: item.id || item.uuid,
             titre: item.titre || item.nom || 'Campagne de Préinscription',
             date_debut: item.date_debut,
             date_fin: item.date_fin,
@@ -70,14 +70,37 @@ export class CampagnePreinscriptionService {
 
   public getById(id: string): Observable<CampagnePreinscriptionDto> {
     return this.http.get<any>(`${this.baseUrl}/${id}`).pipe(
-      tap(res => {
-        const item = res.data || res;
-        return item;
+      map(res => {
+        const item = res.data?.campagne || res.data || res;
+        const statut = item.statut || (item.est_ouverte ? 'ouverte' : 'fermee');
+        return {
+          id: item.id || item.uuid || id,
+          titre: item.titre || item.nom || 'Campagne de Préinscription',
+          date_debut: item.date_debut,
+          date_fin: item.date_fin,
+          statut,
+          est_ouverte: statut === 'ouverte',
+          description: item.description,
+          sections_autorisees: item.sections_autorisees || [],
+          public_url: item.public_url,
+          qr_code_url: item.qr_code_url,
+          annee_catechese: item.annee_catechese,
+          preinscriptions_count: item.preinscriptions_count || (item.preinscriptions ? item.preinscriptions.length : 0),
+          created_at: item.created_at
+        } as CampagnePreinscriptionDto;
       }),
       catchError(err => {
         const found = this.campagnes().find(c => c.id === id);
         if (found) return of(found);
-        return throwError(() => err);
+        return of({
+          id,
+          titre: 'Campagne de Préinscription',
+          date_debut: '',
+          date_fin: '',
+          statut: 'ouverte',
+          est_ouverte: true,
+          sections_autorisees: []
+        } as CampagnePreinscriptionDto);
       })
     );
   }

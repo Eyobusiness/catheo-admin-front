@@ -167,6 +167,10 @@
 
       <!-- Footer Actions -->
       <div class="modal-footer-actions">
+        <app-button variant="secondary" icon="printer" (clicked)="printRecepisse()">
+          Imprimer Récépissé (PDF)
+        </app-button>
+
         <app-button variant="ghost" (clicked)="onClose()">
           Fermer
         </app-button>

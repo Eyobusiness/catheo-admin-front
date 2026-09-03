@@ -9,6 +9,8 @@ import { CatechumeneService } from '../../../Catechumenes/liste-catechumene/serv
 import { InscriptionAnnuelleService } from '../../../Catechumenes/inscriptions-annuelles/services/inscription-annuelle.service';
 import { HeaderParoissePrintComponent } from '../../components/header-paroisse-print/header-paroisse-print.component';
 import { FooterParoissePrintComponent } from '../../components/footer-paroisse-print/footer-paroisse-print.component';
+import { PdfService } from '../../../../core/services/pdf.service';
+import { ToastService } from '../../../../core/services/toast.service';
 
 @Component({
   selector: 'app-fiche-notes-print',
@@ -24,6 +26,8 @@ export class FicheNotesPrintComponent implements OnInit {
   protected readonly classeService = inject(ClasseService);
   protected readonly catechumeneService = inject(CatechumeneService);
   protected readonly inscriptionService = inject(InscriptionAnnuelleService);
+  protected readonly pdfService = inject(PdfService);
+  private readonly toastService = inject(ToastService);
 
   // Filtres Dynamiques
   public readonly selectedSectionId = signal<string>('tous');
@@ -47,38 +51,47 @@ export class FicheNotesPrintComponent implements OnInit {
     let list = this.classeService.classes();
 
     if (nivId && nivId !== 'tous') {
-      list = list.filter(c => c.niveau_id === nivId || c.niveau?.id === nivId);
+      list = list.filter(c => String(c.niveau_id) === String(nivId) || String(c.niveau?.id) === String(nivId));
     } else if (secId && secId !== 'tous') {
       const validNiveauIds = new Set(
         this.niveauService.niveaux()
-          .filter(n => n.section_id === secId || n.section?.id === secId)
-          .map(n => n.id)
+          .filter(n => String(n.section_id) === String(secId) || String(n.section?.id) === String(secId))
+          .map(n => String(n.id))
       );
       list = list.filter(c => {
         const idToCheck = c.niveau_id || c.niveau?.id;
-        return idToCheck ? validNiveauIds.has(idToCheck) : false;
+        return idToCheck ? validNiveauIds.has(String(idToCheck)) : false;
       });
     }
     return list;
   });
 
-  // Nom dynamique de la classe ou niveau sélectionné
-  public readonly displayClasseTitle = computed(() => {
-    const clId = this.selectedClasseId();
-    if (clId && clId !== 'tous') {
-      const found = this.classeService.classes().find(c => c.id === clId);
-      if (found) return found.nom;
-    }
-    const nivId = this.selectedNiveauId();
-    if (nivId && nivId !== 'tous') {
-      const found = this.niveauService.niveaux().find(n => n.id === nivId);
-      if (found) return `Niveau : ${found.nom}`;
-    }
+  // Noms dynamiques des filtres sélectionnés
+  public readonly selectedSectionNom = computed(() => {
     const secId = this.selectedSectionId();
-    if (secId && secId !== 'tous') {
-      const found = this.sectionService.sections().find(s => s.id === secId);
-      if (found) return `Section : ${found.nom}`;
-    }
+    if (!secId || secId === 'tous') return 'Toutes les sections';
+    return this.sectionService.sections().find(s => String(s.id) === String(secId))?.nom || 'Section';
+  });
+
+  public readonly selectedNiveauNom = computed(() => {
+    const nivId = this.selectedNiveauId();
+    if (!nivId || nivId === 'tous') return 'Tous les niveaux';
+    return this.niveauService.niveaux().find(n => String(n.id) === String(nivId))?.nom || 'Niveau';
+  });
+
+  public readonly selectedClasseNom = computed(() => {
+    const clId = this.selectedClasseId();
+    if (!clId || clId === 'tous') return 'Toutes les classes';
+    return this.classeService.classes().find(c => String(c.id) === String(clId))?.nom || 'Classe';
+  });
+
+  public readonly displayClasseTitle = computed(() => {
+    const cl = this.selectedClasseNom();
+    if (cl !== 'Toutes les classes') return `Classe : ${cl}`;
+    const niv = this.selectedNiveauNom();
+    if (niv !== 'Tous les niveaux') return `Niveau : ${niv}`;
+    const sec = this.selectedSectionNom();
+    if (sec !== 'Toutes les sections') return `Section : ${sec}`;
     return 'Toutes les classes';
   });
 
@@ -94,40 +107,71 @@ export class FicheNotesPrintComponent implements OnInit {
       id: string;
       matricule: string;
       nomPrenoms: string;
+      sexe: string;
       telephone: string;
     }[] = [];
 
     if (inscriptions && inscriptions.length > 0) {
       let filteredInsc = inscriptions;
       if (clId && clId !== 'tous') {
-        filteredInsc = filteredInsc.filter(i => i.classe_id === clId || i.classe?.id === clId);
+        filteredInsc = filteredInsc.filter(i => String(i.classe_id) === String(clId) || String(i.classe?.id) === String(clId));
       } else if (nivId && nivId !== 'tous') {
-        filteredInsc = filteredInsc.filter(i => i.niveau_id === nivId || i.niveau?.id === nivId);
+        filteredInsc = filteredInsc.filter(i => String(i.niveau_id) === String(nivId) || String(i.niveau?.id) === String(nivId));
       } else if (secId && secId !== 'tous') {
-        filteredInsc = filteredInsc.filter(i => i.section_id === secId || i.section?.id === secId);
+        filteredInsc = filteredInsc.filter(i => String(i.section_id) === String(secId) || String(i.section?.id) === String(secId));
       }
 
       matchedCats = filteredInsc.map((insc, index) => {
-        const cat = insc.catechumene || allCats.find(c => c.id === insc.catechumene_id);
+        const cat = insc.catechumene || allCats.find(c => String(c.id) === String(insc.catechumene_id));
+        const nom = cat?.nom || (insc as any).nom || '';
+        const prenoms = cat?.prenoms || (insc as any).prenoms || '';
+        const nomComplet = cat?.nom_complet || `${nom} ${prenoms}`.trim() || `Catéchumène #${index + 1}`;
+        const mat = cat?.matricule || cat?.code_catechumene || (insc as any).matricule || insc.code_inscription || 'CAT-00';
         const rawPhone = cat?.telephone || cat?.telephone_pere || cat?.telephone_mere || cat?.telephone_tuteur || cat?.telephone_parrain || '';
         const phoneFormatted = rawPhone ? rawPhone.trim().replace(/\s+/g, '\u00A0') : '-';
 
         return {
-          id: insc.id || cat?.id || String(index),
-          matricule: cat?.matricule || cat?.code_catechumene || insc.code_inscription || 'CAT-00',
-          nomPrenoms: cat?.nom_complet || (cat ? `${cat.nom} ${cat.prenoms || ''}`.trim() : `Catéchumène #${index + 1}`),
+          id: String(insc.id || cat?.id || index),
+          matricule: mat,
+          nomPrenoms: nomComplet,
+          sexe: cat?.sexe || '-',
           telephone: phoneFormatted
         };
       });
-    } else if (clId === 'tous' && nivId === 'tous' && secId === 'tous' && allCats.length > 0) {
-      matchedCats = allCats.map((c, index) => {
+    }
+
+    if (matchedCats.length === 0 && allCats.length > 0) {
+      let filteredCats = allCats;
+      if (clId && clId !== 'tous') {
+        filteredCats = allCats.filter(c =>
+          c.inscriptions_annuelles?.some((i: any) => String(i.classe_id) === String(clId) || String(i.classe?.id) === String(clId)) ||
+          String((c as any).classe_id) === String(clId)
+        );
+      } else if (nivId && nivId !== 'tous') {
+        filteredCats = allCats.filter(c =>
+          c.inscriptions_annuelles?.some((i: any) => String(i.niveau_id) === String(nivId) || String(i.niveau?.id) === String(nivId)) ||
+          String((c as any).niveau_id) === String(nivId)
+        );
+      } else if (secId && secId !== 'tous') {
+        filteredCats = allCats.filter(c =>
+          c.inscriptions_annuelles?.some((i: any) => String(i.section_id) === String(secId) || String(i.section?.id) === String(secId)) ||
+          String((c as any).section_id) === String(secId)
+        );
+      }
+
+      matchedCats = filteredCats.map((c, index) => {
+        const nom = c.nom || '';
+        const prenoms = c.prenoms || '';
+        const nomComplet = c.nom_complet || `${nom} ${prenoms}`.trim() || `Catéchumène #${index + 1}`;
+        const mat = c.matricule || c.code_catechumene || 'CAT-00';
         const rawPhone = c.telephone || c.telephone_pere || c.telephone_mere || c.telephone_tuteur || c.telephone_parrain || '';
         const phoneFormatted = rawPhone ? rawPhone.trim().replace(/\s+/g, '\u00A0') : '-';
 
         return {
-          id: c.id,
-          matricule: c.matricule || c.code_catechumene || 'CAT-00',
-          nomPrenoms: c.nom_complet || `${c.nom} ${c.prenoms || ''}`.trim(),
+          id: String(c.id || index),
+          matricule: mat,
+          nomPrenoms: nomComplet,
+          sexe: c.sexe || '-',
           telephone: phoneFormatted
         };
       });
@@ -159,7 +203,37 @@ export class FicheNotesPrintComponent implements OnInit {
   }
 
   public triggerPrint(): void {
-    window.print();
+    const filters: any = {
+      orientation: this.orientation()
+    };
+    if (this.selectedSectionId() !== 'tous') filters.section_id = this.selectedSectionId();
+    if (this.selectedNiveauId() !== 'tous') filters.niveau_id = this.selectedNiveauId();
+    if (this.selectedClasseId() !== 'tous') filters.classe_id = this.selectedClasseId();
+
+    const secNom = this.selectedSectionNom();
+    const nivNom = this.selectedNiveauNom();
+    const clNom = this.selectedClasseNom();
+
+    this.pdfService.previewFicheNotesPdf(filters, {
+      title: 'Fiche de Notes & Évaluations',
+      subtitle: clNom !== 'Toutes les classes' ? `Classe : ${clNom}` : undefined,
+      fileName: clNom !== 'Toutes les classes' ? `fiche-notes-${clNom.toLowerCase().replace(/\s+/g, '-')}.pdf` : 'fiche-de-notes.pdf',
+      sectionNom: secNom,
+      niveauNom: nivNom,
+      classeNom: clNom,
+      students: this.studentsList().map(s => ({
+        numero: s.num,
+        matricule: s.matricule,
+        nom_complet: s.nomPrenoms,
+        sexe: s.sexe,
+        telephone: s.telephone,
+        note_1: '',
+        note_2: '',
+        note_3: '',
+        moyenne: '',
+        decision: ''
+      }))
+    });
   }
 
   public toggleOrientation(mode: 'portrait' | 'landscape'): void {

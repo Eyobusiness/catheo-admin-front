@@ -11,7 +11,7 @@ interface PreinscriptionIdentiteFields {
   nom: string;
   prenoms: string;
   sexe: 'M' | 'F';
-  date_naissance: string;
+  date_naissance?: string;
   lieu_naissance?: string;
   adresse?: string;
   domicile?: string;

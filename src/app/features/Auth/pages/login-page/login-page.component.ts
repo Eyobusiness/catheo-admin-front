@@ -15,16 +15,17 @@ export class LoginPageComponent {
   private readonly router = inject(Router);
 
   protected readonly isLoading = this.authService.isLoading;
+  protected readonly brandLogoUrl = 'logo/catheo.png';
   protected readonly showPassword = signal<boolean>(false);
   protected readonly serverErrors = signal<Record<string, string[]> | null>(null);
   protected readonly generalErrorMessage = signal<string | null>(null);
 
   protected readonly loginForm = new FormGroup({
-    email: new FormControl('admin.stpaul@catheo.ci', {
+    email: new FormControl('', {
       nonNullable: true,
       validators: [Validators.required, Validators.email]
     }),
-    password: new FormControl('Password123!', {
+    password: new FormControl('', {
       nonNullable: true,
       validators: [Validators.required, Validators.minLength(6)]
     }),
@@ -58,14 +59,6 @@ export class LoginPageComponent {
           this.generalErrorMessage.set(err.error.message);
         }
       }
-    });
-  }
-
-  protected fillDemoCredentials(): void {
-    this.loginForm.setValue({
-      email: 'admin.stpaul@catheo.ci',
-      password: 'Password123!',
-      rememberMe: true
     });
   }
 }

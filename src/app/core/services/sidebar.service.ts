@@ -1,13 +1,24 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import { APP_MENU, MenuItem } from '../constants/menu';
+import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SidebarService {
+  private readonly authService = inject(AuthService);
+
   public readonly isCollapsed = signal<boolean>(false);
   public readonly isMobileOpen = signal<boolean>(false);
-  public readonly menuItems = signal<MenuItem[]>(APP_MENU);
+
+  // Utiliser les menus dynamiques de l'utilisateur connecté (avec fallback sécurisé sur APP_MENU)
+  public readonly menuItems = computed<MenuItem[]>(() => {
+    const dynamicMenus = this.authService.accessibleMenus();
+    if (dynamicMenus && dynamicMenus.length > 0) {
+      return dynamicMenus;
+    }
+    return APP_MENU;
+  });
 
   // All submenus closed/hidden by default, auto-expanded on active routes
   public readonly expandedMenus = signal<Set<string>>(new Set<string>());

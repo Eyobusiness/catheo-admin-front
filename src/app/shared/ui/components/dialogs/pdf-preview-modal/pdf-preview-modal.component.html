@@ -1,0 +1,178 @@
+@if (isOpen()) {
+  <div
+    class="pdf-preview-backdrop animate-fade-in"
+    (click)="handleBackdropClick($event)"
+    role="dialog"
+    aria-modal="true"
+    [attr.aria-labelledby]="'doc-dialog-title'"
+  >
+    <div class="pdf-preview-container animate-scale-up" (click)="$event.stopPropagation()">
+      <!-- Barre d'outils du Lecteur de Document (Masquée à l'impression) -->
+      <header class="pdf-preview-header no-print">
+        <div class="header-left">
+          <div class="document-icon-badge">
+            <i class="bi bi-file-earmark-text-fill"></i>
+          </div>
+          <div class="header-titles">
+            <div class="title-line">
+              <h3 id="doc-dialog-title" class="document-title">{{ title() }}</h3>
+              <span class="doc-format-badge">{{ formatBadge() }}</span>
+            </div>
+            @if (subtitle()) {
+              <p class="document-subtitle">{{ subtitle() }}</p>
+            }
+          </div>
+        </div>
+
+        <!-- Contrôles de Zoom Centralisés -->
+        <div class="header-zoom-controls">
+          <button
+            type="button"
+            class="btn-zoom"
+            (click)="handleZoomOut()"
+            title="Zoom arrière (Moins)"
+            [disabled]="zoom() <= 50"
+          >
+            <i class="bi bi-zoom-out"></i>
+          </button>
+          <span class="zoom-value-label" (click)="handleResetZoom()" title="Réinitialiser à 100%">
+            {{ zoom() }}%
+          </span>
+          <button
+            type="button"
+            class="btn-zoom"
+            (click)="handleZoomIn()"
+            title="Zoom avant (Plus)"
+            [disabled]="zoom() >= 150"
+          >
+            <i class="bi bi-zoom-in"></i>
+          </button>
+        </div>
+
+        <!-- Actions Principales : Imprimer, Télécharger, Fermer -->
+        <div class="header-actions">
+          <button
+            type="button"
+            class="btn-header-action print-action"
+            (click)="handlePrint()"
+            title="Imprimer le document (Ctrl+P)"
+          >
+            <i class="bi bi-printer-fill"></i>
+            <span class="action-text">Imprimer</span>
+          </button>
+
+          <button
+            type="button"
+            class="btn-header-action download-action"
+            (click)="handleDownload()"
+            title="Télécharger / Enregistrer en PDF"
+          >
+            <i class="bi bi-download"></i>
+            <span class="action-text">Enregistrer PDF</span>
+          </button>
+
+          <button
+            type="button"
+            class="btn-header-close"
+            (click)="handleClose()"
+            aria-label="Fermer l'aperçu (Échap)"
+            title="Fermer (Échap)"
+          >
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- Corps du Modal : Espace de Rendu Haute Fidélité -->
+      <main class="pdf-preview-body">
+        <!-- État de Chargement -->
+        @if (isLoading()) {
+          <div class="pdf-state-view loading-state animate-fade-in no-print">
+            <div class="spinner-container">
+              <div class="catheo-spinner"></div>
+              <div class="spinner-pulse"></div>
+            </div>
+            <h4 class="state-title">{{ loadingMessage() }}</h4>
+            <p class="state-hint">Génération et mise en page du document officiel avec les données de la paroisse...</p>
+          </div>
+        }
+
+        <!-- État d'Erreur -->
+        @else if (hasError()) {
+          <div class="pdf-state-view error-state animate-fade-in no-print">
+            <div class="error-icon-box">
+              <i class="bi bi-exclamation-triangle-fill"></i>
+            </div>
+            <h4 class="state-title text-danger">Génération impossible</h4>
+            <p class="error-message-text">{{ errorMessage() || 'Une erreur est survenue lors du chargement des données.' }}</p>
+            <div class="error-actions">
+              <button type="button" class="btn-error-retry" (click)="handleRetry()">
+                <i class="bi bi-arrow-clockwise"></i>
+                <span>Réessayer</span>
+              </button>
+              <button type="button" class="btn-error-close" (click)="handleClose()">
+                <span>Fermer</span>
+              </button>
+            </div>
+          </div>
+        }
+
+        <!-- Rendu du Document Dédié Sélectionné -->
+        @else if (documentType(); as type) {
+          <div class="catheo-reader-viewport">
+            <div
+              class="catheo-paper-sheet catheo-printable-document animate-scale-up"
+              [style.transform]="'scale(' + zoom() / 100 + ')'"
+            >
+              @switch (type) {
+                @case ('recu') {
+                  <app-doc-recu [data]="documentData()" />
+                }
+                @case ('fiche-catechumene') {
+                  <app-doc-fiche-catechumene [data]="documentData()" />
+                }
+                @case ('liste-catechumenes') {
+                  <app-doc-liste-catechumenes [data]="documentData()" />
+                }
+                @case ('fiche-notes') {
+                  <app-doc-fiche-notes [data]="documentData()" />
+                }
+                @case ('liste-presence') {
+                  <app-doc-liste-presence [data]="documentData()" />
+                }
+                @case ('suivi-sacramental') {
+                  <app-doc-suivi-sacramental [data]="documentData()" />
+                }
+                @case ('bilan-annuel') {
+                  <app-doc-bilan-annuel [data]="documentData()" />
+                }
+                @case ('rapport-annuel') {
+                  <app-doc-rapport-annuel [data]="documentData()" />
+                }
+                @case ('renseignement-bapteme') {
+                  <app-doc-renseignement-bapteme [data]="documentData()" />
+                }
+                @case ('renseignement-premiere-communion') {
+                  <app-doc-renseignement-premiere-communion [data]="documentData()" />
+                }
+                @case ('renseignement-confirmation') {
+                  <app-doc-renseignement-confirmation [data]="documentData()" />
+                }
+                @case ('pdf-blob') {
+                  @if (pdfUrl()) {
+                    <iframe
+                      [src]="pdfUrl()"
+                      title="Aperçu PDF"
+                      class="native-pdf-frame"
+                      type="application/pdf"
+                    ></iframe>
+                  }
+                }
+              }
+            </div>
+          </div>
+        }
+      </main>
+    </div>
+  </div>
+}

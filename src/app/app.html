@@ -1,6 +1,4 @@
-@if (isAuthRoute()) {
-  <router-outlet />
-} @else {
+@if (showAppLayout()) {
   <div class="app-layout">
     <!-- Reusable Sidebar -->
     <app-sidebar />
@@ -16,7 +14,13 @@
       <app-footer />
     </div>
   </div>
+} @else {
+  <!-- Routes publiques : login, forgot-password, préinscription, etc. -->
+  <router-outlet />
 }
 
 <!-- Unified Global Toast Container -->
 <app-toast />
+
+<!-- Unified Global Native PDF Preview Modal -->
+<app-pdf-preview-modal />

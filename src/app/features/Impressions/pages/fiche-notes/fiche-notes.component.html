@@ -57,9 +57,15 @@
     <!-- En-tête commun Paroisse avec Logos Paroisse et Catéchèse -->
     <app-header-paroisse-print customTitle="FICHE DE NOTES & ÉVALUATIONS"></app-header-paroisse-print>
 
-    <!-- Sous-titre officiel -->
+    <!-- Sous-titre officiel avec Section, Niveau et Classe clairement affichés -->
     <div class="doc-title-block">
-      <h2 class="doc-subtitle">{{ displayClasseTitle() }}</h2>
+      <div class="doc-filter-pills">
+        <span class="pill-item">Section : <strong>{{ selectedSectionNom() }}</strong></span>
+        <span class="pill-sep">•</span>
+        <span class="pill-item">Niveau : <strong>{{ selectedNiveauNom() }}</strong></span>
+        <span class="pill-sep">•</span>
+        <span class="pill-item">Classe : <strong>{{ selectedClasseNom() }}</strong></span>
+      </div>
     </div>
 
     <!-- Tableau de Notes officiel -->
@@ -67,6 +73,7 @@
       <thead>
         <tr class="black-banner-row">
           <th class="th-num" rowspan="2">N°</th>
+          <th class="th-mat" rowspan="2">MATRICULE</th>
           <th class="th-name" rowspan="2">NOMS ET PRÉNOMS</th>
           <th class="th-phone" rowspan="2">CONTACTS</th>
           <th colspan="6" class="th-black-center">DATES DES ÉVALUATIONS</th>
@@ -84,7 +91,8 @@
         @for (st of studentsList(); track st.id) {
           <tr>
             <td class="td-num">{{ st.num }}</td>
-            <td class="td-name">{{ st.nomPrenoms }}</td>
+            <td class="td-mat">{{ st.matricule }}</td>
+            <td class="td-name font-bold">{{ st.nomPrenoms }}</td>
             <td class="td-phone">{{ st.telephone || '-' }}</td>
             <td class="td-blank"></td>
             <td class="td-blank"></td>

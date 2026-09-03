@@ -4,7 +4,7 @@
   size="md"
   (closed)="onClose()"
 >
-  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="versement-form-body">
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="versement-form-body" id="versementForm" dialog-body>
     <!-- Période Concernée -->
     <div class="form-group">
       <label class="form-label" for="vrs_periode">
@@ -49,9 +49,8 @@
         </label>
         <div class="select-wrapper">
           <select id="vrs_mode" formControlName="mode_remise" class="form-control">
-            <option value="especes">Espèces (Remise main propre)</option>
-            <option value="cheque">Chèque Paroissial</option>
-            <option value="virement">Virement Bancaire</option>
+            <option value="especes">Espèces</option>
+            <option value="mobile_money">Mobile money</option>
           </select>
           <i class="bi bi-chevron-down select-chevron"></i>
         </div>
@@ -63,7 +62,7 @@
       <!-- Destinataire -->
       <div class="form-group">
         <label class="form-label" for="vrs_destinataire">
-          Destinataire / Bénéficiaire <span class="required">*</span>
+          Destinataire <span class="required">*</span>
         </label>
         <input
           id="vrs_destinataire"
@@ -80,7 +79,7 @@
       <!-- Effectué par -->
       <div class="form-group">
         <label class="form-label" for="vrs_auteur">
-          Nom du Déposant / Trésorier
+          Nom du Déposant
         </label>
         <input
           id="vrs_auteur"
@@ -95,7 +94,7 @@
     <!-- Notes & Observations -->
     <div class="form-group">
       <label class="form-label" for="vrs_notes">
-        Observations / Remarques (Optionnel)
+        Observations
       </label>
       <textarea
         id="vrs_notes"
@@ -105,27 +104,28 @@
         placeholder="Précisions éventuelles sur la remise de fonds..."
       ></textarea>
     </div>
-
-    <!-- Actions -->
-    <div class="modal-footer-actions">
-      <app-button
-        type="button"
-        variant="ghost"
-        (clicked)="onClose()"
-        [disabled]="isLoading()"
-      >
-        Annuler
-      </app-button>
-
-      <app-button
-        type="submit"
-        variant="primary"
-        [loading]="isLoading()"
-        [disabled]="form.invalid || isLoading()"
-      >
-        <i class="bi bi-check-lg"></i>
-        <span>{{ isEditing() ? 'Enregistrer les modifications' : 'Enregistrer le versement' }}</span>
-      </app-button>
-    </div>
   </form>
+
+  <!-- Actions -->
+  <div class="modal-footer-actions" dialog-footer>
+    <app-button
+      type="button"
+      variant="ghost"
+      (clicked)="onClose()"
+      [disabled]="isLoading()"
+    >
+      Annuler
+    </app-button>
+
+    <app-button
+      type="submit"
+      variant="primary"
+      [loading]="isLoading()"
+      [disabled]="form.invalid || isLoading()"
+      (clicked)="onSubmit()"
+    >
+      <i class="bi bi-check-lg"></i>
+      <span>{{ isEditing() ? 'Enregistrer les modifications' : 'Enregistrer le versement' }}</span>
+    </app-button>
+  </div>
 </app-dialog>

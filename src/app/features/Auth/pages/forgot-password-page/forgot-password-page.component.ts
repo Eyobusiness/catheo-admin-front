@@ -15,6 +15,7 @@ export class ForgotPasswordPageComponent {
   private readonly router = inject(Router);
 
   protected readonly isLoading = this.authService.isLoading;
+  protected readonly brandLogoUrl = 'logo/catheo.png';
   protected readonly generalError = signal<string | null>(null);
 
   protected readonly forgotForm = new FormGroup({

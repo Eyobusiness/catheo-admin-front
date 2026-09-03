@@ -5,6 +5,7 @@ import { BilanAnnuelService } from '../../services/bilan-annuel.service';
 import { AnneeCatecheseService } from '../../../Organisations/AnneesPastorales/services/annee-catechese.service';
 import { AppCard } from '../../../../shared/ui/components/layout/app-card/app-card.component';
 import { AppButton } from '../../../../shared/ui/components/buttons/app-button/app-button.component';
+import { PdfService } from '../../../../core/services/pdf.service';
 
 @Component({
   selector: 'app-rapports-page',
@@ -23,6 +24,7 @@ import { AppButton } from '../../../../shared/ui/components/buttons/app-button/a
 export class RapportsPageComponent implements OnInit {
   protected readonly bilanService = inject(BilanAnnuelService);
   protected readonly anneeService = inject(AnneeCatecheseService);
+  private readonly pdfService = inject(PdfService);
 
   public readonly bilanData = this.bilanService.bilanData;
   public readonly isLoading = this.bilanService.isLoading;
@@ -53,6 +55,10 @@ export class RapportsPageComponent implements OnInit {
   }
 
   public printReport(): void {
-    window.print();
+    const b = this.bilanData();
+    this.pdfService.previewRapportAnnuelPdf({
+      annee_catechese_id: this.selectedAnneeId() || b?.annee?.id,
+      anneeLibelle: b?.annee?.libelle || this.activeAnneeLibelle()
+    });
   }
 }

@@ -9,6 +9,7 @@ import { CatechumeneService } from '../../../Catechumenes/liste-catechumene/serv
 import { InscriptionAnnuelleService } from '../../../Catechumenes/inscriptions-annuelles/services/inscription-annuelle.service';
 import { HeaderParoissePrintComponent } from '../../components/header-paroisse-print/header-paroisse-print.component';
 import { FooterParoissePrintComponent } from '../../components/footer-paroisse-print/footer-paroisse-print.component';
+import { PdfService } from '../../../../core/services/pdf.service';
 
 @Component({
   selector: 'app-fiche-communion-renseignement-print',
@@ -24,6 +25,7 @@ export class FicheCommunionRenseignementPrintComponent implements OnInit {
   protected readonly classeService = inject(ClasseService);
   protected readonly catechumeneService = inject(CatechumeneService);
   protected readonly inscriptionService = inject(InscriptionAnnuelleService);
+  protected readonly pdfService = inject(PdfService);
 
   public readonly modeImpression = signal<'classe' | 'prerempli' | 'vierge'>('prerempli');
 
@@ -154,6 +156,20 @@ export class FicheCommunionRenseignementPrintComponent implements OnInit {
   }
 
   public triggerPrint(): void {
-    window.print();
+    const cat = this.currentCatechumene();
+    const params: any = {};
+    if (this.modeImpression() === 'prerempli' && cat) {
+      params.catechumene_id = cat.id;
+    } else if (this.modeImpression() === 'classe' && this.selectedClasseId() !== 'tous') {
+      params.classe_id = this.selectedClasseId();
+    }
+
+    const subtitle = cat ? `${cat.nom} ${cat.prenoms || ''}`.trim() : undefined;
+
+    this.pdfService.previewFicheRenseignementPremiereCommunionPdf(params, {
+      title: 'Fiche de Renseignements — Première Communion',
+      subtitle,
+      fileName: 'fiche-communion-renseignements.pdf'
+    });
   }
 }

@@ -17,6 +17,7 @@ import { RecapNoteRow } from '../models/notes.model';
 import { EvaluationDto } from '../../evaluation/models/evaluation.model';
 import { ToastService } from '../../../../core/services/toast.service';
 import { EnteteCatecheseComponent } from '../../../../shared/ui/components/entete-catechese/entete-catechese.component';
+import { PdfService } from '../../../../core/services/pdf.service';
 
 interface NoteDraftItem {
   catechumeneId: string;
@@ -40,6 +41,7 @@ export class NotesPageComponent implements OnInit {
   public readonly niveauService = inject(NiveauService);
   public readonly catechumeneService = inject(CatechumeneService);
   private readonly toastService = inject(ToastService);
+  private readonly pdfService = inject(PdfService);
 
   // Services data signals
   public readonly sections = this.sectionService.sections;
@@ -364,6 +366,20 @@ export class NotesPageComponent implements OnInit {
   }
 
   public printDocument(): void {
-    window.print();
+    const ev = this.currentEvaluation();
+    const classeId = this.selectedClasseId();
+    const classeNom = this.selectedClasseName();
+
+    const filters: any = {
+      evaluation_id: ev?.id,
+      classe_id: classeId
+    };
+
+    this.pdfService.previewFicheNotesPdf(filters, {
+      title: 'Récapitulatif des Notes',
+      subtitle: `${ev?.titre || 'Évaluation'} — ${classeNom || 'Classe'}`,
+      fileName: `recap-notes-${ev?.titre || 'eval'}.pdf`
+    });
+    this.closePrintModal();
   }
 }

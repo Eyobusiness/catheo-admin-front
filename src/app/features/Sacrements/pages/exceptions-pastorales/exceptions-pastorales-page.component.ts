@@ -17,6 +17,7 @@ import {
   MotifException,
   TypeSacrement
 } from '../../models/sacrements.model';
+import { PdfService } from '../../../../core/services/pdf.service';
 
 @Component({
   selector: 'app-exceptions-pastorales-page',
@@ -30,6 +31,7 @@ export class ExceptionsPastoralesPageComponent {
   public readonly sectionService = inject(SectionService);
   public readonly niveauService = inject(NiveauService);
   public readonly classeService = inject(ClasseService);
+  private readonly pdfService = inject(PdfService);
 
   // Données BD
   public readonly sections = this.sectionService.sections;
@@ -211,7 +213,18 @@ export class ExceptionsPastoralesPageComponent {
   }
 
   public printSheet(): void {
-    window.print();
+    const filters: any = {
+      is_derogation: true
+    };
+    if (this.filterSection()) filters.section_id = this.filterSection();
+    if (this.filterNiveau()) filters.niveau_id = this.filterNiveau();
+    if (this.filterClasse()) filters.classe_id = this.filterClasse();
+
+    this.pdfService.previewSuiviSacramentalPdf(filters, {
+      title: 'Registre des Dérogations & Exceptions Pastorales',
+      subtitle: 'Sacrements & Parcours',
+      fileName: 'registre-exceptions-pastorales.pdf'
+    });
   }
 
   private triggerToast(msg: string, type: 'success' | 'danger' | 'warning' | 'info'): void {

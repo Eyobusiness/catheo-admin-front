@@ -78,7 +78,7 @@ export interface UpdateOperationDto {
 }
 
 export interface PayerOperationDto {
-  mode_paiement?: 'especes' | 'mobile_money' | 'cheque' | 'virement' | string;
+  mode_paiement?: 'especes' | 'mobile_money' | string;
   reference_paiement?: string;
   notes?: string;
 }
@@ -93,7 +93,7 @@ export interface PaiementDto {
   reference_transaction?: string;
   date_paiement: string;
   montant_total: number;
-  mode_paiement: 'especes' | 'mobile_money' | 'cheque' | 'virement' | string;
+  mode_paiement: 'especes' | 'mobile_money' | string;
   statut: 'valide' | 'annule' | 'rembourse';
   notes?: string;
   catechumene?: {
@@ -111,7 +111,7 @@ export interface CreatePaiementDto {
   catechumene_id?: string;
   annee_catechese_id?: string;
   inscription_annuelle_id?: string;
-  mode_paiement: 'especes' | 'mobile_money' | 'cheque' | 'virement' | string;
+  mode_paiement: 'especes' | 'mobile_money' | string;
   reference_transaction?: string;
   date_paiement?: string;
   notes?: string;

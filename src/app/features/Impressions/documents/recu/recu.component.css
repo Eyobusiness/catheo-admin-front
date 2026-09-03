@@ -1,0 +1,337 @@
+/* DOCUMENT OFFICIEL — REÇU DE PAIEMENT (DOUBLE VOLET) */
+@page {
+  size: A4 portrait;
+  margin: 8mm 10mm;
+}
+
+:host {
+  display: block;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  color: #1a1a1a;
+  background-color: transparent;
+}
+
+.recu-document-sheet {
+  width: 100%;
+  max-width: 190mm;
+  margin: 0 auto;
+  background: #ffffff;
+  padding: 4mm 6mm;
+  box-sizing: border-box;
+}
+
+/* =========================================================================
+   VOUCHER / VOLET
+   ========================================================================= */
+.recu-voucher {
+  border: 1.5px solid #222222;
+  border-radius: 4px;
+  padding: 12px 16px;
+  background: #ffffff;
+  margin-bottom: 8px;
+}
+
+.recu-voucher.volet-paroisse {
+  border-left: 6px solid #1e3a8a;
+}
+
+.recu-voucher.volet-client {
+  border-left: 6px solid #065f46;
+}
+
+/* Header */
+.voucher-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 1.5px solid #333333;
+  padding-bottom: 8px;
+  margin-bottom: 10px;
+}
+
+.church-identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.church-logo {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+.church-text {
+  line-height: 1.25;
+}
+
+.diocese-name {
+  font-size: 8.5pt;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #4b5563;
+}
+
+.parish-name {
+  font-size: 11pt;
+  font-weight: 800;
+  color: #111827;
+  margin: 2px 0 0 0;
+  letter-spacing: 0.3px;
+}
+
+.parish-contacts {
+  font-size: 7.5pt;
+  color: #6b7280;
+  margin: 2px 0 0 0;
+}
+
+/* Badge N° Reçu */
+.receipt-badge-box {
+  text-align: right;
+  min-width: 170px;
+}
+
+.voucher-tag {
+  display: inline-block;
+  font-size: 7pt;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 6px;
+  background: #e0e7ff;
+  color: #1e3a8a;
+  border-radius: 3px;
+  margin-bottom: 3px;
+}
+
+.voucher-tag.client-tag {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.receipt-number-title {
+  font-size: 9pt;
+  font-weight: 800;
+  color: #1f2937;
+  letter-spacing: 0.5px;
+}
+
+.receipt-number {
+  font-size: 11pt;
+  font-weight: 900;
+  font-family: 'Courier New', Courier, monospace;
+  color: #991b1b;
+  letter-spacing: 1px;
+}
+
+.receipt-year {
+  font-size: 7.5pt;
+  color: #4b5563;
+  font-weight: 600;
+}
+
+/* Body / Grille d'information */
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  row-gap: 5px;
+  column-gap: 16px;
+  margin-bottom: 10px;
+  font-size: 9pt;
+}
+
+.info-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.info-row.full-width {
+  grid-column: span 2;
+}
+
+.info-row .label {
+  font-size: 8pt;
+  font-weight: 600;
+  color: #4b5563;
+  white-space: nowrap;
+}
+
+.info-row .value {
+  font-size: 9pt;
+  font-weight: 500;
+  color: #111827;
+}
+
+.info-row .value.strong {
+  font-weight: 700;
+}
+
+.info-row .value.highlight-name {
+  font-size: 10pt;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.badge-mat {
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-family: monospace;
+  font-weight: 700 !important;
+}
+
+/* Table Financière */
+.receipt-finance-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 6px 0 8px 0;
+  font-size: 8.5pt;
+}
+
+.receipt-finance-table th {
+  background: #f1f5f9;
+  border: 1px solid #94a3b8;
+  padding: 5px 8px;
+  font-weight: 700;
+  color: #1e293b;
+  text-transform: uppercase;
+  font-size: 7.5pt;
+  letter-spacing: 0.3px;
+}
+
+.receipt-finance-table td {
+  border: 1px solid #cbd5e1;
+  padding: 6px 8px;
+  color: #1e293b;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.font-bold {
+  font-weight: 700;
+}
+
+.text-success {
+  color: #047857;
+}
+
+.text-danger {
+  color: #b91c1c;
+}
+
+/* Meta paiement */
+.payment-meta-row {
+  display: flex;
+  gap: 20px;
+  margin-top: 4px;
+  font-size: 8pt;
+}
+
+.meta-item {
+  display: flex;
+  gap: 4px;
+}
+
+.meta-label {
+  font-weight: 600;
+  color: #64748b;
+}
+
+.meta-val {
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.voucher-notice {
+  font-size: 7pt;
+  font-style: italic;
+  color: #64748b;
+  margin: 6px 0 0 0;
+}
+
+/* Footer / Signatures */
+.voucher-footer {
+  margin-top: 10px;
+  padding-top: 6px;
+  border-top: 1px dashed #cbd5e1;
+}
+
+.signatures-box {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.signature-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.sig-title {
+  font-size: 7.5pt;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.sig-line {
+  margin-top: 28px;
+  border-bottom: 1px solid #94a3b8;
+}
+
+.sig-stamp-space {
+  margin-top: 4px;
+  height: 32px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 3px;
+  background: #fafafa;
+}
+
+/* Ligne de découpe */
+.voucher-cut-line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 10px 0;
+  color: #94a3b8;
+  font-size: 7.5pt;
+  border-bottom: 1px dashed #94a3b8;
+  padding-bottom: 3px;
+}
+
+.cut-icon {
+  font-size: 10pt;
+}
+
+.cut-text {
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+}
+
+.recu-empty-state {
+  padding: 30px;
+  text-align: center;
+  color: #64748b;
+}
+
+/* Print CSS */
+@media print {
+  .recu-document-sheet {
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+
+  .recu-voucher {
+    page-break-inside: avoid;
+  }
+}

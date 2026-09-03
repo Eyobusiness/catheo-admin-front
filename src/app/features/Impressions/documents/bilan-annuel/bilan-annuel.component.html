@@ -1,0 +1,109 @@
+@if (data(); as d) {
+  <article class="bilan-doc-container">
+    <!-- EN-TÊTE PAYSAGE OFFICIEL -->
+    <header class="doc-header-landscape">
+      <div class="header-logo-col left">
+        @if (logoParoisse()) {
+          <img [src]="logoParoisse()" alt="Logo Paroisse" class="parish-logo" />
+        }
+      </div>
+
+      <div class="header-center-col">
+        @if (diocese()) {
+          <div class="doc-diocese">{{ diocese() | uppercase }}</div>
+        }
+        <h1 class="doc-parish-title">{{ nomParoisse() | uppercase }}</h1>
+        <div class="doc-doc-title">PROCÈS-VERBAL DE DÉLIBÉRATION & BILAN ANNUEL</div>
+        <div class="doc-sub-filter">
+          <span>Année Pastorale : <strong>{{ anneePastorale() }}</strong></span>
+          @if (d.section_nom) { <span> • Section : <strong>{{ d.section_nom }}</strong></span> }
+          @if (d.niveau_nom) { <span> • Niveau : <strong>{{ d.niveau_nom }}</strong></span> }
+          @if (d.classe_nom) { <span> • Classe : <strong>{{ d.classe_nom }}</strong></span> }
+        </div>
+      </div>
+
+      <div class="header-logo-col right">
+        @if (logoCatechese()) {
+          <img [src]="logoCatechese()" alt="Logo Catéchèse" class="catechese-logo" />
+        }
+      </div>
+    </header>
+
+    <!-- TABLEAU DE DÉLIBÉRATION ANNUELLE -->
+    <table class="official-bilan-table">
+      <thead>
+        <tr>
+          <th class="th-num">N°</th>
+          <th class="th-mat">MATRICULE</th>
+          <th class="th-name">NOMS ET PRÉNOMS DU CATÉCHUMÈNE</th>
+          <th class="th-gender">SEXE</th>
+          <th class="th-mark">NOTE COURS (/20)</th>
+          <th class="th-mark">NOTE MESSE (/20)</th>
+          <th class="th-moy">MOYENNE ANNUELLE</th>
+          <th class="th-rang">RANG</th>
+          <th class="th-decision">DÉCISION DU CONSEIL</th>
+          <th class="th-obs">OBSERVATIONS & MENTIONS</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (st of deliberationsList(); track st.id) {
+          <tr>
+            <td class="td-num">{{ st.num }}</td>
+            <td class="td-mat">{{ st.matricule }}</td>
+            <td class="td-name font-bold">{{ st.nom_complet || (st.nom + ' ' + (st.prenoms || '')) }}</td>
+            <td class="td-gender">{{ st.sexe }}</td>
+            <td class="td-mark">{{ st.note_cours !== null && st.note_cours !== undefined ? (st.note_cours | number:'1.1-1') : '-' }}</td>
+            <td class="td-mark">{{ st.note_messe !== null && st.note_messe !== undefined ? (st.note_messe | number:'1.1-1') : '-' }}</td>
+            <td class="td-moy font-bold">
+              {{ st.moyenne_annuelle !== null && st.moyenne_annuelle !== undefined ? (st.moyenne_annuelle | number:'1.2-2') : '-' }}
+            </td>
+            <td class="td-rang">{{ st.rang || '-' }}</td>
+            <td class="td-decision">
+              <span class="decision-tag" [class.pass]="st.decision_finale === 'admis'" [class.fail]="st.decision_finale === 'redoublant' || st.decision_finale === 'ajourne'">
+                {{ getDecisionLabel(st.decision_finale) }}
+              </span>
+            </td>
+            <td class="td-obs">{{ st.observation || '' }}</td>
+          </tr>
+        }
+        @if (deliberationsList().length === 0) {
+          <tr>
+            <td colspan="10" class="td-empty">Aucune délibération enregistrée pour cette classe.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <!-- STATISTIQUES GLOBALES DE RÉSULTATS -->
+    @if (d.statistiques) {
+      <div class="stats-summary-bar">
+        <div class="stat-pill">Effectif Délibéré : <strong>{{ d.statistiques.effectif_total }}</strong></div>
+        <div class="stat-pill success">Admis au niveau supérieur : <strong>{{ d.statistiques.admis }}</strong></div>
+        <div class="stat-pill danger">Ajournés / Redoublants : <strong>{{ d.statistiques.ajournes }}</strong></div>
+        @if (d.statistiques.taux_reussite !== undefined) {
+          <div class="stat-pill success">Taux de Passage : <strong>{{ d.statistiques.taux_reussite }}%</strong></div>
+        }
+      </div>
+    }
+
+    <!-- SIGNATURES DU CONSEIL -->
+    <footer class="bilan-footer">
+      <div class="sig-box">
+        <span class="sig-role">Le Conseil des Catéchistes</span>
+        <div class="sig-line"></div>
+      </div>
+      <div class="sig-box">
+        <span class="sig-role">Le Responsable Pédagogique</span>
+        <div class="sig-line"></div>
+      </div>
+      <div class="sig-box">
+        <span class="sig-role">Le Curé de la Paroisse (Approbation & Sceau)</span>
+        <div class="sig-stamp"></div>
+      </div>
+    </footer>
+  </article>
+} @else {
+  <div class="bilan-empty-state">
+    <p>Aucun bilan annuel disponible pour l'édition.</p>
+  </div>
+}

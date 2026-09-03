@@ -1,0 +1,267 @@
+/* BILAN ANNUEL PASTORAL — A4 PAYSAGE */
+@page {
+  size: A4 landscape;
+  margin: 8mm 10mm;
+}
+
+:host {
+  display: block;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  color: #111827;
+  background-color: transparent;
+}
+
+.bilan-doc-container {
+  width: 100%;
+  max-width: 280mm;
+  margin: 0 auto;
+  background: #ffffff;
+  padding: 4mm 6mm;
+  box-sizing: border-box;
+}
+
+/* Header */
+.doc-header-landscape {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #0f172a;
+  padding-bottom: 6px;
+  margin-bottom: 8px;
+}
+
+.header-logo-col {
+  width: 54px;
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.parish-logo,
+.catechese-logo {
+  max-width: 52px;
+  max-height: 52px;
+  object-fit: contain;
+}
+
+.header-center-col {
+  flex: 1;
+  text-align: center;
+  padding: 0 10px;
+}
+
+.doc-diocese {
+  font-size: 8pt;
+  font-weight: 700;
+  color: #475569;
+  letter-spacing: 0.5px;
+}
+
+.doc-parish-title {
+  font-size: 13pt;
+  font-weight: 900;
+  color: #0f172a;
+  margin: 2px 0;
+  letter-spacing: 0.5px;
+}
+
+.doc-doc-title {
+  font-size: 10pt;
+  font-weight: 800;
+  color: #047857;
+  letter-spacing: 0.3px;
+}
+
+.doc-sub-filter {
+  font-size: 8pt;
+  color: #334155;
+  margin-top: 2px;
+}
+
+/* Table */
+.official-bilan-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 8px;
+  font-size: 8pt;
+}
+
+.official-bilan-table thead {
+  display: table-header-group;
+}
+
+.official-bilan-table tr {
+  page-break-inside: avoid;
+}
+
+.official-bilan-table th {
+  background: #0f172a;
+  color: #ffffff;
+  border: 1px solid #334155;
+  padding: 5px 6px;
+  font-weight: 700;
+  font-size: 7pt;
+  text-align: center;
+}
+
+.th-name {
+  text-align: left !important;
+  min-width: 170px;
+}
+
+.official-bilan-table td {
+  border: 1px solid #cbd5e1;
+  padding: 4px 6px;
+  color: #0f172a;
+}
+
+.th-num, .td-num {
+  width: 24px;
+  text-align: center;
+}
+
+.th-mat, .td-mat {
+  width: 80px;
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: 700;
+  color: #991b1b;
+}
+
+.th-gender, .td-gender {
+  width: 36px;
+  text-align: center;
+}
+
+.th-mark, .td-mark {
+  width: 54px;
+  text-align: center;
+}
+
+.th-moy, .td-moy {
+  width: 58px;
+  text-align: center;
+}
+
+.th-rang, .td-rang {
+  width: 40px;
+  text-align: center;
+}
+
+.th-decision, .td-decision {
+  width: 120px;
+  text-align: center;
+}
+
+.decision-tag {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 7pt;
+  font-weight: 700;
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.decision-tag.pass { background: #d1fae5; color: #047857; }
+.decision-tag.fail { background: #fee2e2; color: #b91c1c; }
+
+.th-obs, .td-obs {
+  min-width: 110px;
+  font-size: 7.5pt;
+}
+
+.font-bold {
+  font-weight: 700;
+}
+
+.td-empty {
+  text-align: center;
+  padding: 20px;
+  color: #64748b;
+  font-style: italic;
+}
+
+/* Statistiques */
+.stats-summary-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 5px 8px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  font-size: 7.5pt;
+}
+
+.stat-pill {
+  padding: 2px 8px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 3px;
+  color: #334155;
+}
+
+.stat-pill.success {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+  color: #065f46;
+}
+
+.stat-pill.danger {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+/* Footer Signatures */
+.bilan-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 10px;
+}
+
+.sig-box {
+  flex: 1;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  padding: 4px 8px;
+  background: #fafafa;
+}
+
+.sig-role {
+  font-size: 7.5pt;
+  font-weight: 700;
+  color: #334155;
+  text-transform: uppercase;
+}
+
+.sig-line {
+  height: 30px;
+  border-bottom: 1px dashed #94a3b8;
+  margin-top: 2px;
+}
+
+.sig-stamp {
+  height: 30px;
+  border: 1px dashed #94a3b8;
+  border-radius: 3px;
+  margin-top: 2px;
+  background: #ffffff;
+}
+
+.bilan-empty-state {
+  padding: 30px;
+  text-align: center;
+  color: #64748b;
+}
+
+/* Print CSS */
+@media print {
+  .bilan-doc-container {
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+}

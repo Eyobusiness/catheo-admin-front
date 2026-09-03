@@ -1,0 +1,170 @@
+@if (data(); as c) {
+  <article class="confirmation-doc-container">
+    <!-- EN-TÊTE OFFICIEL -->
+    <header class="doc-header">
+      <div class="header-logo-col left">
+        @if (logoParoisse()) {
+          <img [src]="logoParoisse()" alt="Logo Paroisse" class="parish-logo" />
+        }
+      </div>
+
+      <div class="header-center-col">
+        @if (diocese()) {
+          <div class="doc-diocese">{{ diocese() | uppercase }}</div>
+        }
+        @if (doyenne()) {
+          <div class="doc-doyenne">{{ doyenne() | uppercase }}</div>
+        }
+        <h1 class="doc-parish-title">{{ nomParoisse() | uppercase }}</h1>
+        <div class="doc-service-title">COMMISSION PASTORALE DES SACREMENTS</div>
+      </div>
+
+      <div class="header-logo-col right">
+        @if (logoCatechese()) {
+          <img [src]="logoCatechese()" alt="Logo Catéchèse" class="catechese-logo" />
+        }
+      </div>
+    </header>
+
+    <!-- BANNIÈRE TITRE -->
+    <div class="doc-title-box">
+      <div class="title-badge">DOSSIER SACRAMENTAL OFFICIEL</div>
+      <h2 class="doc-main-title">FICHE DE RENSEIGNEMENT — CONFIRMATION</h2>
+      <div class="doc-sub-details">
+        <span>Année Pastorale : <strong>{{ anneePastorale() }}</strong></span>
+        @if (c.classe_nom) { <span> • Classe : <strong>{{ c.classe_nom }}</strong></span> }
+        @if (c.niveau_nom) { <span> • Niveau : <strong>{{ c.niveau_nom }}</strong></span> }
+        <span class="mat-badge">Matricule : <strong>{{ c.matricule }}</strong></span>
+      </div>
+    </div>
+
+    <!-- 1. IDENTITÉ DU CANDIDAT -->
+    <section class="doc-section">
+      <h3 class="section-title">
+        <span class="section-num">1</span>
+        <span>IDENTITÉ DU CONFIRMAND</span>
+      </h3>
+
+      <div class="form-grid">
+        <div class="grid-item span-2">
+          <span class="item-label">Nom et Prénoms :</span>
+          <span class="item-value strong uppercase">{{ c.nom_complet || (c.nom + ' ' + c.prenoms) }}</span>
+        </div>
+
+        <div class="grid-item">
+          <span class="item-label">Sexe :</span>
+          <span class="item-value">{{ c.sexe === 'M' ? 'Masculin' : 'Féminin' }}</span>
+        </div>
+
+        <div class="grid-item">
+          <span class="item-label">Date de naissance :</span>
+          <span class="item-value">{{ (c.date_naissance | date:'dd/MM/yyyy') || '-' }}</span>
+        </div>
+
+        <div class="grid-item">
+          <span class="item-label">Lieu de naissance :</span>
+          <span class="item-value">{{ c.lieu_naissance || '-' }}</span>
+        </div>
+
+        <div class="grid-item">
+          <span class="item-label">Domicile actuel :</span>
+          <span class="item-value">{{ c.domicile || '-' }}</span>
+        </div>
+
+        @if (c.parent) {
+          <div class="grid-item">
+            <span class="item-label">Parent / Tuteur :</span>
+            <span class="item-value strong">{{ c.parent.nom }}</span>
+          </div>
+          <div class="grid-item">
+            <span class="item-label">Contact Parent :</span>
+            <span class="item-value">{{ c.parent.telephone }}</span>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- 2. ANTÉCÉDENTS SACRAMENTELS -->
+    <section class="doc-section">
+      <h3 class="section-title">
+        <span class="section-num">2</span>
+        <span>SACREMENTS PRÉALABLES REÇUS (BAPTÊME & PREMIÈRE COMMUNION)</span>
+      </h3>
+
+      <div class="form-grid">
+        <div class="grid-item">
+          <span class="item-label">Date du Baptême :</span>
+          <span class="item-value strong">{{ (c.bapteme.date | date:'dd/MM/yyyy') || '-' }}</span>
+        </div>
+
+        <div class="grid-item">
+          <span class="item-label">N° Carnet / Registre :</span>
+          <span class="item-value font-mono strong">{{ c.bapteme.num_carnet || '-' }}</span>
+        </div>
+
+        <div class="grid-item span-2">
+          <span class="item-label">Paroisse du Baptême :</span>
+          <span class="item-value">{{ c.bapteme.paroisse || '-' }} ({{ c.bapteme.lieu || '' }})</span>
+        </div>
+
+        <div class="grid-item">
+          <span class="item-label">Date Première Communion :</span>
+          <span class="item-value strong">{{ (c.premiere_communion?.date | date:'dd/MM/yyyy') || '-' }}</span>
+        </div>
+
+        <div class="grid-item">
+          <span class="item-label">Paroisse Première Communion :</span>
+          <span class="item-value">{{ c.premiere_communion?.paroisse || '-' }}</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. PARRAIN / MARRAINE DE CONFIRMATION -->
+    <section class="doc-section">
+      <h3 class="section-title">
+        <span class="section-num">3</span>
+        <span>PARRAIN / MARRAINE DE CONFIRMATION</span>
+      </h3>
+
+      <div class="form-grid">
+        <div class="grid-item span-2">
+          <span class="item-label">Nom et Prénoms :</span>
+          <span class="item-value strong uppercase">{{ c.parrain_confirmation?.nom || '-' }}</span>
+        </div>
+
+        <div class="grid-item">
+          <span class="item-label">Téléphone :</span>
+          <span class="item-value">{{ c.parrain_confirmation?.telephone || '-' }}</span>
+        </div>
+
+        <div class="grid-item">
+          <span class="item-label">Paroisse d'appartenance :</span>
+          <span class="item-value">{{ c.parrain_confirmation?.paroisse || '-' }}</span>
+        </div>
+      </div>
+      <p class="canon-note">
+        « Le parrain / la marraine de confirmation doit être catholique confirmé(e), avoir reçu la Sainte Communion et mener une vie conforme à la foi chrétienne. »
+      </p>
+    </section>
+
+    <!-- SIGNATURES -->
+    <footer class="confirmation-signatures-footer">
+      <div class="sig-box">
+        <span class="sig-title">Signature du Confirmand</span>
+        <div class="sig-area"></div>
+      </div>
+      <div class="sig-box">
+        <span class="sig-title">Signature du Parrain / Marraine</span>
+        <div class="sig-area"></div>
+      </div>
+      <div class="sig-box">
+        <span class="sig-title">Le Curé (Admis à la Confirmation)</span>
+        <div class="sig-area-stamp"></div>
+      </div>
+    </footer>
+  </article>
+} @else {
+  <div class="confirmation-empty-state">
+    <p>Aucune donnée de renseignement confirmation disponible.</p>
+  </div>
+}

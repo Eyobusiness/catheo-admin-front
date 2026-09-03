@@ -1,37 +1,38 @@
 <app-dialog
   [isOpen]="isOpen()"
-  title="Reçu de Paiement & Inscription"
+  title="Aperçu du Ticket de Caisse"
   size="md"
   (closed)="onClose()"
 >
   @if (recuData(); as data) {
     <div dialog-body class="thermal-modal-container">
-      <!-- Format Switcher Bar (Screen only) -->
+
+      <!-- Format Switcher Bar -->
       <div class="format-switcher-bar no-print">
-        <span class="switcher-label"><i class="bi bi-printer"></i> Imprimante Thermique :</span>
+        <span class="switcher-label">
+          <i class="bi bi-printer"></i> Format d'impression :
+        </span>
         <div class="format-buttons-group">
-          <button
-            type="button"
-            class="format-btn"
-            [class.active]="selectedFormat() === '58mm'"
-            (click)="setFormat('58mm')"
-          >
-            <i class="bi bi-receipt"></i>
-            <span>58 mm (POS)</span>
-          </button>
           <button
             type="button"
             class="format-btn"
             [class.active]="selectedFormat() === '80mm'"
             (click)="setFormat('80mm')"
           >
-            <i class="bi bi-receipt-cutoff"></i>
-            <span>80 mm (POS)</span>
+            <i class="bi bi-receipt"></i> 80mm (Standard)
+          </button>
+          <button
+            type="button"
+            class="format-btn"
+            [class.active]="selectedFormat() === '58mm'"
+            (click)="setFormat('58mm')"
+          >
+            <i class="bi bi-receipt-cutoff"></i> 58mm (Compact)
           </button>
         </div>
       </div>
 
-      <!-- Thermal Receipt Preview Wrapper -->
+      <!-- Preview Viewport -->
       <div class="thermal-preview-viewport">
         <div
           class="thermal-receipt"
@@ -39,16 +40,16 @@
           [class.format-80mm]="selectedFormat() === '80mm'"
           id="thermal-printable-receipt"
         >
-          <!-- 1. Header Paroisse -->
+          <!-- 1. En-tête Paroisse -->
           <div class="t-header text-center">
             @if (logoParoisse()) {
               <div class="t-logo-wrap">
                 <img [src]="logoParoisse()" alt="Logo Paroisse" class="t-logo-img" />
               </div>
             }
-            <h1 class="t-church-name">{{ nomParoisse() }}</h1>
+            <h1 class="t-church-name">{{ nomParoisse() | uppercase }}</h1>
             @if (diocese()) {
-              <p class="t-diocese">{{ diocese() }}</p>
+              <p class="t-diocese">{{ diocese() | uppercase }}</p>
             }
             <p class="t-dept">COMMISSION DIOCÉSAINE DE CATÉCHÈSE</p>
             @if (localisation()) {
@@ -61,69 +62,52 @@
 
           <div class="t-divider">================================</div>
 
-          <!-- 2. Titre & Référence Reçu -->
+          <!-- 2. Titre & Métadonnées -->
           <div class="t-title-box text-center">
-            <h2 class="t-receipt-title">*** REÇU DE PAIEMENT ***</h2>
-            <div class="t-ref-row">
-              <span class="t-ref">RÉF : {{ data.reference }}</span>
-            </div>
-            <div class="t-date-row">
-              <span>Date : {{ (data.date || '') | date:'dd/MM/yyyy à HH:mm' }}</span>
-            </div>
+            <h2 class="t-receipt-title">REÇU D'ENCAISSEMENT</h2>
+            <p class="t-ref-row">N° {{ data.reference }}</p>
+            <p class="t-date-row">{{ data.date | date:'dd/MM/yyyy à HH:mm' }}</p>
           </div>
 
           <div class="t-divider">--------------------------------</div>
 
-          <!-- 3. Informations Catéchumène / Inscription -->
+          <!-- 3. Catéchumène & Contexte -->
           <div class="t-section">
             <div class="t-row">
-              <span class="t-label">CATÉCHUMÈNE :</span>
+              <span class="t-label">Catéchumène :</span>
+              <span class="t-val t-val-bold">{{ data.catechumene_nom }}</span>
             </div>
-            <div class="t-row t-val-bold">
-              <span>{{ data.catechumene_nom | uppercase }}</span>
-            </div>
-
             @if (data.catechumene_matricule) {
               <div class="t-row">
                 <span class="t-label">Matricule :</span>
                 <span class="t-val">{{ data.catechumene_matricule }}</span>
               </div>
             }
-
             @if (data.classe_nom) {
               <div class="t-row">
                 <span class="t-label">Classe :</span>
-                <span class="t-val t-val-bold">{{ data.classe_nom }}</span>
+                <span class="t-val">{{ data.classe_nom }}</span>
               </div>
             }
-
-            @if (data.niveau_nom) {
+            @if (data.annee_pastorale) {
               <div class="t-row">
-                <span class="t-label">Niveau :</span>
-                <span class="t-val">{{ data.niveau_nom }}</span>
+                <span class="t-label">Année :</span>
+                <span class="t-val">{{ data.annee_pastorale }}</span>
               </div>
             }
-
             <div class="t-row">
-              <span class="t-label">Année pastorale :</span>
-              <span class="t-val">{{ displayAnnee() }}</span>
+              <span class="t-label">Mode :</span>
+              <span class="t-val">{{ getModePaiementLabel(data.mode_paiement) }}</span>
             </div>
           </div>
 
           <div class="t-divider">--------------------------------</div>
 
-          <!-- 4. Détail Règlement -->
+          <!-- 4. Libellé / Prestation -->
           <div class="t-section">
             <div class="t-row">
-              <span class="t-label">MOTIF / OBJET :</span>
-            </div>
-            <div class="t-row">
-              <span class="t-val t-val-bold">{{ data.libelle }}</span>
-            </div>
-
-            <div class="t-row mt-1">
-              <span class="t-label">Mode règlement :</span>
-              <span class="t-val">{{ getModePaiementLabel(data.mode_paiement) }}</span>
+              <span class="t-label">{{ data.libelle || 'Frais de catéchèse' }}</span>
+              <span class="t-val">{{ data.montant_total | number:'1.0-0' }} F CFA</span>
             </div>
           </div>
 

@@ -23,6 +23,7 @@ import { CebService } from '../../../../Organisations/Ceb/services/ceb.service';
 import { MouvementService } from '../../../../Organisations/Mouvements/services/mouvement.service';
 import { CatechumeneService } from '../../../liste-catechumene/services/catechumene.service';
 import { ToastService } from '../../../../../core/services/toast.service';
+import { PdfService } from '../../../../../core/services/pdf.service';
 import { CampagnePreinscriptionDto } from '../../../campagnes/models/campagne.model';
 import { CatechumeneDto } from '../../../liste-catechumene/models/catechumene.model';
 import {
@@ -59,6 +60,7 @@ export class PublicPreinscriptionPageComponent implements OnInit {
   private readonly catechumeneService = inject(CatechumeneService);
   private readonly configService = inject(ConfigurationService);
   private readonly toastService = inject(ToastService);
+  private readonly pdfService = inject(PdfService);
 
   // Configuration réelle de la Paroisse (chargée depuis la BD)
   public readonly paroisseConfig = this.configService.paroisseConfig;
@@ -127,9 +129,9 @@ export class PublicPreinscriptionPageComponent implements OnInit {
     nom: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.minLength(2)] }),
     prenoms: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.minLength(2)] }),
     sexe: new FormControl<'M' | 'F'>('M', { nonNullable: true, validators: [Validators.required] }),
-    date_naissance: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    date_naissance: new FormControl('', { nonNullable: true }),
     lieu_naissance: new FormControl('', { nonNullable: true }),
-    telephone: new FormControl('', { nonNullable: true }),
+    telephone: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     domicile: new FormControl('', { nonNullable: true }),
     profession: new FormControl('', { nonNullable: true }),
     classe_scolaire: new FormControl('', { nonNullable: true }),
@@ -161,7 +163,7 @@ export class PublicPreinscriptionPageComponent implements OnInit {
     niveau_id: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     nom: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     prenoms: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-    telephone: new FormControl('', { nonNullable: true }),
+    telephone: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     domicile: new FormControl('', { nonNullable: true }),
     situation_matrimoniale: new FormControl('', { nonNullable: true }),
     profession: new FormControl('', { nonNullable: true }),
@@ -307,13 +309,25 @@ export class PublicPreinscriptionPageComponent implements OnInit {
     // 2. Charger les détails de la Campagne réelle depuis la BD
     const paramCampagneId = this.route.snapshot.paramMap.get('campagneId');
     if (paramCampagneId) {
+      this.currentCampagne.set({
+        id: paramCampagneId,
+        titre: 'Campagne de Préinscription',
+        date_debut: '',
+        date_fin: '',
+        statut: 'ouverte',
+        est_ouverte: true,
+        sections_autorisees: []
+      } as CampagnePreinscriptionDto);
+
       this.campagneService.getById(paramCampagneId).subscribe({
         next: camp => {
-          this.currentCampagne.set(camp);
+          if (camp && (camp.id || (camp as any).uuid)) {
+            this.currentCampagne.set(camp);
+          }
           this.isInitialLoading.set(false);
         },
         error: () => {
-          this.loadFallbackCampagne();
+          this.isInitialLoading.set(false);
         }
       });
     } else {
@@ -322,6 +336,14 @@ export class PublicPreinscriptionPageComponent implements OnInit {
   }
 
   private loadFallbackCampagne(): void {
+    const localList = this.campagneService.campagnes();
+    if (localList && localList.length > 0) {
+      const active = localList.find(c => c.statut === 'ouverte' || c.est_ouverte) || localList[0];
+      this.currentCampagne.set(active);
+      this.isInitialLoading.set(false);
+      return;
+    }
+
     this.campagneService.getAll().subscribe({
       next: list => {
         const active = list.find(c => c.statut === 'ouverte' || c.est_ouverte) || list[0] || null;
@@ -374,11 +396,10 @@ export class PublicPreinscriptionPageComponent implements OnInit {
         this.toastService.warning('Orientation requise', 'Veuillez choisir la section et le niveau.');
         return;
       }
-      if (step === 3 && (this.nouvelleForm.controls.nom.invalid || this.nouvelleForm.controls.prenoms.invalid || this.nouvelleForm.controls.date_naissance.invalid)) {
+      if (step === 3 && (this.nouvelleForm.controls.nom.invalid || this.nouvelleForm.controls.prenoms.invalid)) {
         this.nouvelleForm.controls.nom.markAsTouched();
         this.nouvelleForm.controls.prenoms.markAsTouched();
-        this.nouvelleForm.controls.date_naissance.markAsTouched();
-        this.toastService.warning('Identité requise', 'Veuillez renseigner le nom, prénoms et date de naissance.');
+        this.toastService.warning('Identité requise', 'Veuillez renseigner le nom et les prénoms.');
         return;
       }
     }
@@ -539,17 +560,26 @@ export class PublicPreinscriptionPageComponent implements OnInit {
     }
 
     const val = this.nouvelleForm.getRawValue();
-    const campagne = this.currentCampagne();
+    const paramCampagneId = this.route.snapshot.paramMap.get('campagneId');
+    const campagneId = this.currentCampagne()?.id || paramCampagneId || '';
+
+    if (!campagneId) {
+      this.toastService.error(
+        'Campagne introuvable',
+        'Aucune campagne de préinscription active n\'a été sélectionnée. Veuillez vérifier qu\'une campagne est bien ouverte.'
+      );
+      return;
+    }
 
     const dto: SubmitPreinscriptionDto = {
-      campagne_id: campagne?.id || '',
+      campagne_id: campagneId,
       type_demande: 'premiere_inscription',
       section_souhaite_id: val.section_id,
       niveau_souhaite_id: val.niveau_id,
       nom: val.nom.trim().toUpperCase(),
       prenoms: val.prenoms.trim(),
       sexe: val.sexe,
-      date_naissance: val.date_naissance,
+      date_naissance: val.date_naissance || undefined,
       lieu_naissance: val.lieu_naissance || undefined,
       telephone: val.telephone || undefined,
       domicile: val.domicile || undefined,
@@ -600,10 +630,19 @@ export class PublicPreinscriptionPageComponent implements OnInit {
     }
 
     const val = this.reinscriptionForm.getRawValue();
-    const campagne = this.currentCampagne();
+    const paramCampagneId = this.route.snapshot.paramMap.get('campagneId');
+    const campagneId = this.currentCampagne()?.id || paramCampagneId || '';
+
+    if (!campagneId) {
+      this.toastService.error(
+        'Campagne introuvable',
+        'Aucune campagne de préinscription active n\'a été sélectionnée. Veuillez vérifier qu\'une campagne est bien ouverte.'
+      );
+      return;
+    }
 
     const dto: SubmitPreinscriptionDto = {
-      campagne_id: campagne?.id || '',
+      campagne_id: campagneId,
       type_demande: 'reinscription',
       section_souhaite_id: val.section_id,
       niveau_souhaite_id: val.niveau_id,
@@ -648,7 +687,13 @@ export class PublicPreinscriptionPageComponent implements OnInit {
 
   // --- ACTIONS FINALES ---
   public printReceipt(): void {
-    window.print();
+    const dossier = this.submittedDossier();
+    if (!dossier) return;
+    this.pdfService.previewCatechumenePdf(dossier.id || (dossier as any).uuid || (dossier as any).catechumene_id, {
+      nom: dossier.nom,
+      prenoms: dossier.prenoms,
+      matricule: (dossier as any).code_preinscription || (dossier as any).numero_dossier
+    });
   }
 
   public resetForm(): void {

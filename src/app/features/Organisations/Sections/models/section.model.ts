@@ -3,7 +3,7 @@ export interface Section {
   nom: string;
   code: string;
   description?: string;
-  ordre: number;
+  ordre_affichage: number;
   statut: string;
   total_niveaux?: number;
 }
@@ -12,7 +12,7 @@ export interface CreateSectionDto {
   nom: string;
   code: string;
   description?: string;
-  ordre: number;
+  ordre_affichage: number;
   statut: string;
 }
 
@@ -20,7 +20,7 @@ export interface UpdateSectionDto {
   nom?: string;
   code?: string;
   description?: string;
-  ordre?: number;
+  ordre_affichage?: number;
   statut?: string;
 }
 

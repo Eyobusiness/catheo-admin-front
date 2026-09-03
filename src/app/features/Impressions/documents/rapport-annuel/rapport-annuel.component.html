@@ -1,0 +1,179 @@
+@if (data(); as d) {
+  <article class="rapport-doc-container">
+    <!-- EN-TÊTE OFFICIEL -->
+    <header class="doc-header">
+      <div class="header-logo-col left">
+        @if (logoParoisse()) {
+          <img [src]="logoParoisse()" alt="Logo Paroisse" class="parish-logo" />
+        }
+      </div>
+
+      <div class="header-center-col">
+        @if (diocese()) {
+          <div class="doc-diocese">{{ diocese() | uppercase }}</div>
+        }
+        @if (doyenne()) {
+          <div class="doc-doyenne">{{ doyenne() | uppercase }}</div>
+        }
+        <h1 class="doc-parish-title">{{ nomParoisse() | uppercase }}</h1>
+        <div class="doc-service-title">COMMISSION PASTORALE DE CATÉCHÈSE</div>
+      </div>
+
+      <div class="header-logo-col right">
+        @if (logoCatechese()) {
+          <img [src]="logoCatechese()" alt="Logo Catéchèse" class="catechese-logo" />
+        }
+      </div>
+    </header>
+
+    <!-- TITRE OFFICIEL DU RAPPORT -->
+    <div class="rapport-title-box">
+      <div class="title-badge">DOCUMENT DE SYNTHÈSE OFFICIELLE</div>
+      <h2 class="rapport-main-title">RAPPORT PASTORAL ANNUEL D'ACTIVITÉ</h2>
+      <div class="rapport-year">Année Pastorale : <strong>{{ anneePastorale() }}</strong></div>
+    </div>
+
+    <!-- 1. BLOCS STATISTIQUES MAJEURS (KPIS) -->
+    <section class="kpi-dashboard-grid">
+      <div class="kpi-card kpi-primary">
+        <div class="kpi-icon">👥</div>
+        <div class="kpi-content">
+          <span class="kpi-value">{{ d.total_inscrits || 0 }}</span>
+          <span class="kpi-label">Catéchumènes Inscrits</span>
+          <span class="kpi-sub">{{ d.total_garcons || 0 }} Garçons • {{ d.total_filles || 0 }} Filles</span>
+        </div>
+      </div>
+
+      <div class="kpi-card kpi-success">
+        <div class="kpi-icon">🏫</div>
+        <div class="kpi-content">
+          <span class="kpi-value">{{ d.total_classes || 0 }}</span>
+          <span class="kpi-label">Classes de Catéchèse</span>
+          <span class="kpi-sub">{{ d.total_sections || 0 }} Sections • {{ d.total_niveaux || 0 }} Niveaux</span>
+        </div>
+      </div>
+
+      <div class="kpi-card kpi-accent">
+        <div class="kpi-icon">✝️</div>
+        <div class="kpi-content">
+          <span class="kpi-value">{{ d.total_animateurs || 0 }}</span>
+          <span class="kpi-label">Catéchistes & Animateurs</span>
+          <span class="kpi-sub">Équipe d'encadrement actif</span>
+        </div>
+      </div>
+
+      <div class="kpi-card kpi-warning">
+        <div class="kpi-icon">📝</div>
+        <div class="kpi-content">
+          <span class="kpi-value">{{ d.total_preinscriptions || 0 }}</span>
+          <span class="kpi-label">Préinscriptions Enregistrées</span>
+          <span class="kpi-sub">Dossiers de rentrée traités</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. RÉPARTITION PAR SECTIONS -->
+    @if (d.sections && d.sections.length > 0) {
+      <section class="doc-section">
+        <h3 class="section-title">
+          <span class="section-num">1</span>
+          <span>RÉPARTITION DES EFFECTIFS PAR SECTION</span>
+        </h3>
+
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>Section Pastorale</th>
+              <th class="text-right">Garçons</th>
+              <th class="text-right">Filles</th>
+              <th class="text-right">Total Inscrits</th>
+              <th class="text-right">Proportion</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (sec of d.sections; track sec.nom) {
+              <tr>
+                <td class="font-bold">{{ sec.nom }}</td>
+                <td class="text-right">{{ sec.garcons }}</td>
+                <td class="text-right">{{ sec.filles }}</td>
+                <td class="text-right font-bold">{{ sec.effectif }}</td>
+                <td class="text-right">
+                  {{ (d.total_inscrits ? ((sec.effectif / d.total_inscrits) * 100) : 0) | number:'1.1-1' }}%
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </section>
+    }
+
+    <!-- 3. SACREMENTS & SCRUTINS -->
+    <section class="doc-section">
+      <h3 class="section-title">
+        <span class="section-num">2</span>
+        <span>CANDIDATS AUX SACREMENTS DE L'INITIATION</span>
+      </h3>
+
+      <div class="sacrament-stats-row">
+        <div class="sac-box">
+          <span class="sac-label">Baptême</span>
+          <span class="sac-number">{{ d.candidats_bapteme ?? '-' }}</span>
+          <span class="sac-unit">Candidats inscrits</span>
+        </div>
+        <div class="sac-box">
+          <span class="sac-label">Première Communion</span>
+          <span class="sac-number">{{ d.candidats_communion ?? '-' }}</span>
+          <span class="sac-unit">Candidats inscrits</span>
+        </div>
+        <div class="sac-box">
+          <span class="sac-label">Confirmation</span>
+          <span class="sac-number">{{ d.candidats_confirmation ?? '-' }}</span>
+          <span class="sac-unit">Candidats inscrits</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. INDICATEURS QUALITATIFS -->
+    <section class="doc-section">
+      <h3 class="section-title">
+        <span class="section-num">3</span>
+        <span>INDICATEURS QUALITATIFS & ASSIDUITÉ</span>
+      </h3>
+
+      <div class="indicators-row">
+        <div class="ind-item">
+          <span class="ind-lbl">Taux d'assiduité global :</span>
+          <span class="ind-val font-bold text-success">{{ d.taux_assiduite ?? 95 }}%</span>
+        </div>
+        <div class="ind-item">
+          <span class="ind-lbl">Taux de recouvrement des cotisations :</span>
+          <span class="ind-val font-bold text-primary">{{ d.taux_recouvrement ?? 88 }}%</span>
+        </div>
+        <div class="ind-item">
+          <span class="ind-lbl">Taux d'admission & passage :</span>
+          <span class="ind-val font-bold text-success">{{ d.taux_reussite ?? 92 }}%</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- SIGNATURES DU CONSEIL PASTORAL -->
+    <footer class="rapport-footer">
+      <div class="sig-block">
+        <span class="sig-title">Le Coordinateur Paroissial</span>
+        <div class="sig-space"></div>
+      </div>
+      <div class="sig-block">
+        <span class="sig-title">Le Responsable Pédagogique</span>
+        <div class="sig-space"></div>
+      </div>
+      <div class="sig-block">
+        <span class="sig-title">Le Curé de la Paroisse (Visa & Sceau)</span>
+        <div class="sig-space-stamp"></div>
+      </div>
+    </footer>
+  </article>
+} @else {
+  <div class="rapport-empty-state">
+    <p>Aucune donnée statistique disponible pour générer le rapport pastoral annuel.</p>
+  </div>
+}

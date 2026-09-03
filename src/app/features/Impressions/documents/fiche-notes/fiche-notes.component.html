@@ -1,0 +1,107 @@
+@if (data(); as d) {
+  <article class="notes-doc-container">
+    <!-- EN-TÊTE PAYSAGE OFFICIEL -->
+    <header class="doc-header-landscape">
+      <div class="header-logo-col left">
+        @if (logoParoisse()) {
+          <img [src]="logoParoisse()" alt="Logo Paroisse" class="parish-logo" />
+        }
+      </div>
+
+      <div class="header-center-col">
+        @if (diocese()) {
+          <div class="doc-diocese">{{ diocese() | uppercase }}</div>
+        }
+        <h1 class="doc-parish-title">{{ nomParoisse() | uppercase }}</h1>
+        <div class="doc-doc-title">FICHE DE NOTES & ÉVALUATIONS PÉDAGOGIQUES</div>
+        <div class="doc-sub-filter">
+          <span>Année Pastorale : <strong>{{ anneePastorale() }}</strong></span>
+          @if (sectionNom()) { <span> • Section : <strong>{{ sectionNom() }}</strong></span> }
+          @if (niveauNom()) { <span> • Niveau : <strong>{{ niveauNom() }}</strong></span> }
+          @if (classeNom()) { <span> • Classe : <strong>{{ classeNom() }}</strong></span> }
+        </div>
+      </div>
+
+      <div class="header-logo-col right">
+        @if (logoCatechese()) {
+          <img [src]="logoCatechese()" alt="Logo Catéchèse" class="catechese-logo" />
+        }
+      </div>
+    </header>
+
+    <!-- TABLEAU DE NOTES OFFICIEL -->
+    <table class="official-notes-table">
+      <thead>
+        <tr>
+          <th class="th-num" rowspan="2">N°</th>
+          <th class="th-mat" rowspan="2">MATRICULE</th>
+          <th class="th-name" rowspan="2">NOMS ET PRÉNOMS</th>
+          <th class="th-sexe" rowspan="2">SEXE</th>
+          <th class="th-phone" rowspan="2">CONTACTS</th>
+          <th [attr.colspan]="evalCols().length" class="th-evals-group">ÉVALUATIONS CONTINUES</th>
+          <th class="th-stat" rowspan="2">MOYENNE</th>
+          <th class="th-obs" rowspan="2">DÉCISION / OBSERVATIONS</th>
+        </tr>
+        <tr class="sub-headers-row">
+          @for (c of evalCols(); track c.id) {
+            <th class="th-eval-sub">{{ c.titre }}</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (st of studentsList(); track st.matricule || st.num) {
+          <tr>
+            <td class="td-num">{{ st.num }}</td>
+            <td class="td-mat">{{ st.matricule }}</td>
+            <td class="td-name font-bold">{{ st.nom_complet }}</td>
+            <td class="td-sexe text-center">{{ st.sexe }}</td>
+            <td class="td-phone">{{ st.telephone }}</td>
+            @for (c of evalCols(); track c.id) {
+              <td class="td-note">{{ getNote(st, c.id, $index) }}</td>
+            }
+            <td class="td-stat font-bold text-center">
+              {{ st.moyenne }}
+            </td>
+            <td class="td-obs">{{ st.decision }}</td>
+          </tr>
+        }
+        @if (studentsList().length === 0) {
+          @for (i of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]; track i) {
+            <tr class="empty-row">
+              <td class="td-num">{{ i }}</td>
+              <td class="td-mat"></td>
+              <td class="td-name"></td>
+              <td class="td-sexe"></td>
+              <td class="td-phone"></td>
+              @for (c of evalCols(); track c.id) {
+                <td class="td-note"></td>
+              }
+              <td class="td-stat"></td>
+              <td class="td-obs"></td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+
+    <!-- SIGNATURES & VALIDATIONS -->
+    <footer class="notes-footer">
+      <div class="sig-box">
+        <span class="sig-role">Le Catéchiste Titulaire</span>
+        <div class="sig-line"></div>
+      </div>
+      <div class="sig-box">
+        <span class="sig-role">Le Responsable Pédagogique</span>
+        <div class="sig-line"></div>
+      </div>
+      <div class="sig-box">
+        <span class="sig-role">Le Prêtre Aumônier / Curé (Visa)</span>
+        <div class="sig-stamp"></div>
+      </div>
+    </footer>
+  </article>
+} @else {
+  <div class="notes-empty-state">
+    <p>Aucune donnée de notes disponible pour l'édition.</p>
+  </div>
+}

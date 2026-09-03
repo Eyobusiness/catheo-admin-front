@@ -4,6 +4,7 @@ import { VersementDto } from '../../models/versement.model';
 import { AppDialog } from '../../../../../shared/ui/components/dialogs/app-dialog/app-dialog.component';
 import { AppButton } from '../../../../../shared/ui/components/buttons/app-button/app-button.component';
 import { ConfigurationService } from '../../../../Parametes/Configuration/services/configuration.service';
+import { PdfService } from '../../../../../core/services/pdf.service';
 
 @Component({
   selector: 'app-versement-recu-modal',
@@ -14,6 +15,7 @@ import { ConfigurationService } from '../../../../Parametes/Configuration/servic
 })
 export class VersementRecuModalComponent {
   private readonly configService = inject(ConfigurationService);
+  private readonly pdfService = inject(PdfService);
 
   public readonly isOpen = input<boolean>(false);
   public readonly versement = input<VersementDto | null>(null);
@@ -30,7 +32,7 @@ export class VersementRecuModalComponent {
 
   public readonly nomParoisse = computed(() => {
     const p = this.paroisseConfig();
-    return p?.nom_paroisse || p?.nom || 'ÉGLISE CATHOLIQUE';
+    return p?.nom_paroisse || p?.nom || '';
   });
 
   public readonly diocese = computed(() => {
@@ -49,7 +51,12 @@ export class VersementRecuModalComponent {
   }
 
   protected printReceipt(): void {
-    window.print();
+    const v = this.versement();
+    if (!v) return;
+    this.pdfService.previewPaiementPdf(v.id || (v as any).uuid || v.reference, {
+      reference: v.reference || String(v.id),
+      catechumene: (v as any).catechumene_nom
+    });
   }
 
   protected getModeLabel(mode?: string): string {
@@ -57,9 +64,9 @@ export class VersementRecuModalComponent {
       case 'cheque':
         return 'Chèque Paroissial';
       case 'virement':
-        return 'Virement Bancaire';
+        return 'Virement';
       default:
-        return 'Espèces (Remise en mains propres)';
+        return 'Espèces';
     }
   }
 }

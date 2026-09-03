@@ -33,6 +33,8 @@ export class TabParoisseConfigComponent {
       nonNullable: true,
       validators: [Validators.required, Validators.minLength(3)]
     }),
+    prefixe_matricule: new FormControl('', { nonNullable: true }),
+    prefixe_recu: new FormControl('', { nonNullable: true }),
     diocese: new FormControl('', { nonNullable: true }),
     doyenne: new FormControl('', { nonNullable: true }),
     ville: new FormControl('', { nonNullable: true }),
@@ -60,6 +62,8 @@ export class TabParoisseConfigComponent {
 
         this.form.patchValue({
           nom: p.nom_paroisse || p.nom || '',
+          prefixe_matricule: p.prefixe_matricule || '',
+          prefixe_recu: p.prefixe_recu || '',
           diocese: p.diocese || '',
           doyenne: p.doyenne || '',
           ville: p.ville || '',
@@ -152,6 +156,8 @@ export class TabParoisseConfigComponent {
       const dto: UpdateParoisseConfigurationDto = {
         nom: val.nom,
         nom_paroisse: val.nom,
+        prefixe_matricule: val.prefixe_matricule || undefined,
+        prefixe_recu: val.prefixe_recu || undefined,
         diocese: val.diocese || undefined,
         doyenne: val.doyenne || undefined,
         ville: val.ville || undefined,

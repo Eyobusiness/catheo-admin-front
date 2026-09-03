@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../../../core/services/auth.service';
@@ -84,14 +84,32 @@ export class MonProfilPageComponent implements OnInit {
   public profileForm!: FormGroup;
   public passwordForm!: FormGroup;
 
-  public ngOnInit(): void {
-    const currentUser = this.user();
+  constructor() {
+    // Remplir le formulaire dès que les données de l'utilisateur sont disponibles
+    // (fonctionne aussi quand le signal se met à jour après l'appel API getMe)
+    effect(() => {
+      const u = this.user();
+      if (u && this.profileForm) {
+        const nom = u.nom || (u.name ? u.name.split(' ')[0] : '');
+        const prenoms = u.prenoms || (u.name ? u.name.split(' ').slice(1).join(' ') : '');
+        this.profileForm.patchValue({
+          nom,
+          prenoms,
+          email: u.email || '',
+          telephone: u.telephone || ''
+        });
+      }
+    });
+  }
 
+  public ngOnInit(): void {
+    // Initialiser les formulaires (valeurs par défaut depuis le signal — seront écrasées par l'effect si user est déjà chargé)
+    const u = this.user();
     this.profileForm = this.fb.group({
-      nom: [currentUser?.nom || '', [Validators.required, Validators.minLength(2)]],
-      prenoms: [currentUser?.prenoms || '', [Validators.required, Validators.minLength(2)]],
-      email: [currentUser?.email || '', [Validators.required, Validators.email]],
-      telephone: [currentUser?.telephone || '', []]
+      nom: [u?.nom || (u?.name ? u.name.split(' ')[0] : ''), [Validators.required, Validators.minLength(2)]],
+      prenoms: [u?.prenoms || (u?.name ? u.name.split(' ').slice(1).join(' ') : ''), [Validators.required, Validators.minLength(2)]],
+      email: [u?.email || '', [Validators.required, Validators.email]],
+      telephone: [u?.telephone || '', []]
     });
 
     this.passwordForm = this.fb.group({
@@ -102,20 +120,8 @@ export class MonProfilPageComponent implements OnInit {
       validators: [this.passwordsMatchValidator]
     });
 
-    // Fetch real authenticated user profile from backend API / DB
-    this.authService.getMe().subscribe({
-      next: (res) => {
-        const u: User = res?.data || res?.user || res;
-        if (u && this.profileForm) {
-          this.profileForm.patchValue({
-            nom: u.nom || (u.name ? u.name.split(' ')[0] : ''),
-            prenoms: u.prenoms || (u.name ? u.name.split(' ').slice(1).join(' ') : ''),
-            email: u.email || '',
-            telephone: u.telephone || ''
-          });
-        }
-      }
-    });
+    // Rafraîchir depuis l'API pour avoir les données les plus récentes
+    this.authService.getMe().subscribe();
   }
 
   public setTab(tab: ProfileTab): void {

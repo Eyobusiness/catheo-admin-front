@@ -2,10 +2,11 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <title>Cathéo - Paroisse Cœur Immaculé de Marie</title>
+  <title>Cathéo CIM</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="icon" type="image/png" href="logo/catheo.png">
+  <link rel="apple-touch-icon" href="logo/catheo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Inter:wght@300;400;500;600;700;800&family=Nunito:ital,wght@0,300;0,400;0,600;0,700;0,800;1,400&family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
@@ -27,7 +28,16 @@
             document.documentElement.style.setProperty('--font-family-sans', f);
           }
         }
-      } catch(e) {}
+        var path = window.location && window.location.pathname ? window.location.pathname : '/';
+        var isBrandRoute = path.startsWith('/auth') || path.startsWith('/login') || path.startsWith('/preinscription-publique') || path.startsWith('/preinscriptions/campagne');
+        var cachedFavicon = localStorage.getItem('catheo_paroisse_favicon');
+        if (cachedFavicon && !isBrandRoute) {
+          var link = document.querySelector("link[rel*='icon']");
+          if (link) {
+            link.href = cachedFavicon;
+          }
+        }
+      } catch (e) {}
     })();
   </script>
 </head>

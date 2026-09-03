@@ -1,8 +1,9 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input, output } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { PreinscriptionDto } from '../../models/preinscription.model';
 import { AppDialog } from '../../../../../shared/ui/components/dialogs/app-dialog/app-dialog.component';
 import { AppButton } from '../../../../../shared/ui/components/buttons/app-button/app-button.component';
+import { PdfService } from '../../../../../core/services/pdf.service';
 
 @Component({
   selector: 'app-preinscription-detail-modal',
@@ -12,6 +13,8 @@ import { AppButton } from '../../../../../shared/ui/components/buttons/app-butto
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PreinscriptionDetailModalComponent {
+  private readonly pdfService = inject(PdfService);
+
   public readonly isOpen = input<boolean>(false);
   public readonly preinscription = input<PreinscriptionDto | null>(null);
 
@@ -37,5 +40,15 @@ export class PreinscriptionDetailModalComponent {
   protected onRejeter(): void {
     const item = this.preinscription();
     if (item) this.rejeterRequested.emit(item);
+  }
+
+  protected printRecepisse(): void {
+    const item = this.preinscription();
+    if (!item) return;
+    this.pdfService.previewCatechumenePdf(item.id || (item as any).uuid || (item as any).catechumene_id, {
+      nom: item.nom,
+      prenoms: item.prenoms,
+      matricule: (item as any).code_preinscription || (item as any).numero_dossier
+    });
   }
 }

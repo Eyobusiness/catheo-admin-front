@@ -1,9 +1,10 @@
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { CatechumeneDto, ParrainMarraineDto } from '../../models/catechumene.model';
 import { AppDialog } from '../../../../../shared/ui/components/dialogs/app-dialog/app-dialog.component';
 import { AppButton } from '../../../../../shared/ui/components/buttons/app-button/app-button.component';
 import { AppIconButton } from '../../../../../shared/ui/components/buttons/app-icon-button/app-icon-button.component';
+import { PdfService } from '../../../../../core/services/pdf.service';
 
 @Component({
   selector: 'app-catechumene-detail-modal',
@@ -13,6 +14,8 @@ import { AppIconButton } from '../../../../../shared/ui/components/buttons/app-i
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CatechumeneDetailModalComponent {
+  private readonly pdfService = inject(PdfService);
+
   public readonly isOpen = input<boolean>(false);
   public readonly catechumene = input<CatechumeneDto | null>(null);
   public readonly parrains = input<ParrainMarraineDto[]>([]);
@@ -38,5 +41,15 @@ export class CatechumeneDetailModalComponent {
 
   protected onDeleteParrain(id: string): void {
     this.deleteParrainRequested.emit(id);
+  }
+
+  protected printFiche(): void {
+    const c = this.catechumene();
+    if (!c) return;
+    this.pdfService.previewCatechumenePdf(c.id || (c as any).uuid, {
+      nom: c.nom,
+      prenoms: c.prenoms,
+      matricule: c.matricule
+    });
   }
 }

@@ -187,42 +187,72 @@ export class CatechumeneService {
 
   public create(dto: CreateCatechumeneDto, cebObj?: any): Observable<CatechumeneDto> {
     this.isLoading.set(true);
-    return this.http.post<any>(this.baseUrl, dto).pipe(
-      tap(res => {
+
+    // Nettoyer le payload pour ne pas envoyer des chaînes vides
+    const payload: Record<string, any> = {
+      nom: dto.nom.trim(),
+      prenoms: dto.prenoms.trim(),
+      sexe: dto.sexe,
+      date_naissance: dto.date_naissance,
+      statut: dto.statut || 'actif'
+    };
+
+    if (dto.lieu_naissance?.trim()) payload['lieu_naissance'] = dto.lieu_naissance.trim();
+    if (dto.telephone?.trim()) payload['telephone'] = dto.telephone.trim();
+    if (dto.domicile?.trim()) payload['domicile'] = dto.domicile.trim();
+    if (dto.adresse?.trim()) payload['adresse'] = dto.adresse.trim();
+    if (dto.profession?.trim()) payload['profession'] = dto.profession.trim();
+    if (dto.classe_scolaire?.trim()) payload['classe_scolaire'] = dto.classe_scolaire.trim();
+    if (dto.photo_url) payload['photo_url'] = dto.photo_url;
+    if (dto.nom_pere?.trim()) payload['nom_pere'] = dto.nom_pere.trim();
+    if (dto.telephone_pere?.trim()) payload['telephone_pere'] = dto.telephone_pere.trim();
+    if (dto.nom_mere?.trim()) payload['nom_mere'] = dto.nom_mere.trim();
+    if (dto.telephone_mere?.trim()) payload['telephone_mere'] = dto.telephone_mere.trim();
+    if (dto.nom_tuteur?.trim()) payload['nom_tuteur'] = dto.nom_tuteur.trim();
+    if (dto.telephone_tuteur?.trim()) payload['telephone_tuteur'] = dto.telephone_tuteur.trim();
+    if (dto.est_baptise !== undefined) payload['est_baptise'] = dto.est_baptise;
+    if (dto.date_bapteme) payload['date_bapteme'] = dto.date_bapteme;
+    if (dto.paroisse_bapteme?.trim()) payload['paroisse_bapteme'] = dto.paroisse_bapteme.trim();
+    if (dto.num_carnet_bapteme?.trim()) payload['num_carnet_bapteme'] = dto.num_carnet_bapteme.trim();
+    if (dto.nom_parrain?.trim()) payload['nom_parrain'] = dto.nom_parrain.trim();
+    if (dto.telephone_parrain?.trim()) payload['telephone_parrain'] = dto.telephone_parrain.trim();
+    if (dto.ceb_id) payload['ceb_id'] = dto.ceb_id;
+
+    return this.http.post<any>(this.baseUrl, payload).pipe(
+      map(res => {
         this.isLoading.set(false);
-        const item: any = res.data || res;
+        const item: any = res?.data?.catechumene || res?.data?.item || res?.data?.data || res?.data || res?.catechumene || res;
+        const realId = item?.id ?? item?.uuid ?? item?.id_catechumene ?? (typeof res?.id === 'string' || typeof res?.id === 'number' ? String(res.id) : null);
         const created: CatechumeneDto = {
           ...dto,
-          id: item.id || `cat-${Date.now()}`,
-          code_catechumene: item.code_catechumene || `CAT-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
-          matricule: item.matricule || item.code_catechumene,
+          ...item,
+          id: realId ? String(realId) : `cat-${Date.now()}`,
+          code_catechumene: item?.code_catechumene || `CAT-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
+          matricule: item?.matricule || item?.code_catechumene,
           nom_complet: `${dto.nom} ${dto.prenoms}`,
           est_baptise: dto.est_baptise ?? false,
           statut: dto.statut || 'actif',
           ceb: cebObj,
-          created_at: item.created_at || new Date().toISOString()
+          created_at: item?.created_at || new Date().toISOString()
         };
         this.addOrUpdateCatechumeneLocal(created);
         this.toastService.success('Catéchumène Enregistré', `${created.nom} ${created.prenoms} a été ajouté(e) au registre.`);
+        return created;
       }),
       catchError((err: HttpErrorResponse) => {
         this.isLoading.set(false);
-        const newLocal: CatechumeneDto = {
-          ...dto,
-          id: `cat-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-          code_catechumene: `CAT-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
-          nom_complet: `${dto.nom} ${dto.prenoms}`,
-          est_baptise: dto.est_baptise ?? false,
-          statut: dto.statut || 'actif',
-          ceb: cebObj,
-          created_at: new Date().toISOString()
-        };
-        this.addOrUpdateCatechumeneLocal(newLocal);
-        this.toastService.success('Catéchumène Enregistré', `${newLocal.nom} ${newLocal.prenoms} a été enregistré(e).`);
-        return of(newLocal);
+        const apiMessage = err.error?.message || (err.error?.errors
+          ? Object.values(err.error?.errors || {}).flat().join(' | ')
+          : null);
+        this.toastService.error(
+          'Erreur d\'enregistrement',
+          apiMessage || 'La création du catéchumène a échoué. Vérifiez les informations saisies.'
+        );
+        return throwError(() => err);
       })
     );
   }
+
 
   public update(id: string, dto: UpdateCatechumeneDto, cebObj?: any): Observable<CatechumeneDto> {
     this.isLoading.set(true);

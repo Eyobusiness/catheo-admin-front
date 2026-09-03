@@ -1,0 +1,247 @@
+@if (data(); as b) {
+  <article class="baptism-doc-container">
+    <!-- EN-TÊTE OFFICIEL -->
+    <header class="doc-header">
+      <div class="header-logo-col left">
+        @if (logoParoisse()) {
+          <img [src]="logoParoisse()" alt="Logo Paroisse" class="parish-logo" />
+        }
+      </div>
+
+      <div class="header-center-col">
+        @if (diocese()) {
+          <div class="doc-diocese">{{ diocese() | uppercase }}</div>
+        }
+        @if (doyenne()) {
+          <div class="doc-doyenne">{{ doyenne() | uppercase }}</div>
+        }
+        <h1 class="doc-parish-title">{{ nomParoisse() | uppercase }}</h1>
+        <div class="doc-service-title">COMMISSION PASTORALE DES SACREMENTS</div>
+      </div>
+
+      <div class="header-logo-col right">
+        @if (logoCatechese()) {
+          <img [src]="logoCatechese()" alt="Logo Catéchèse" class="catechese-logo" />
+        }
+      </div>
+    </header>
+
+    <!-- BANNIÈRE TITRE DU DOSSIER -->
+    <div class="doc-title-box">
+      <div class="title-badge">DOSSIER SACRAMENTAL OFFICIEL</div>
+      <h2 class="doc-main-title">FICHE DE RENSEIGNEMENT — BAPTÊME</h2>
+      <div class="doc-sub-details">
+        <span>Année Pastorale : <strong>{{ anneePastorale() }}</strong></span>
+        @if (b.classe_nom) { <span> • Classe : <strong>{{ b.classe_nom }}</strong></span> }
+        @if (b.niveau_nom) { <span> • Niveau : <strong>{{ b.niveau_nom }}</strong></span> }
+        <span class="mat-badge">Matricule : <strong>{{ b.matricule }}</strong></span>
+      </div>
+    </div>
+
+    <!-- 1. IDENTITÉ DU FUTUR BAPTISÉ -->
+    <section class="doc-section">
+      <h3 class="section-title">
+        <span class="section-num">1</span>
+        <span>IDENTITÉ DU FUTUR BAPTISÉ</span>
+      </h3>
+
+      <div class="form-grid">
+        <div class="grid-item span-2">
+          <span class="item-label">Nom et Prénoms :</span>
+          <span class="item-value strong uppercase">{{ b.nom_complet || (b.nom + ' ' + b.prenoms) }}</span>
+        </div>
+
+        <div class="grid-item">
+          <span class="item-label">Sexe :</span>
+          <span class="item-value">{{ b.sexe === 'M' ? 'Masculin' : 'Féminin' }}</span>
+        </div>
+
+        <div class="grid-item">
+          <span class="item-label">Date de naissance :</span>
+          <span class="item-value">{{ (b.date_naissance | date:'dd/MM/yyyy') || '-' }}</span>
+        </div>
+
+        <div class="grid-item">
+          <span class="item-label">Lieu de naissance :</span>
+          <span class="item-value">{{ b.lieu_naissance || '-' }}</span>
+        </div>
+
+        <div class="grid-item">
+          <span class="item-label">Profession / École :</span>
+          <span class="item-value">{{ b.profession || '-' }}</span>
+        </div>
+
+        <div class="grid-item span-2">
+          <span class="item-label">Domicile actuel :</span>
+          <span class="item-value">{{ b.domicile || '-' }}</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. PARENTS & FILIATION -->
+    <section class="doc-section">
+      <h3 class="section-title">
+        <span class="section-num">2</span>
+        <span>FILIATION & PARENTS</span>
+      </h3>
+
+      <div class="form-grid">
+        <div class="grid-item">
+          <span class="item-label">Nom du Père :</span>
+          <span class="item-value strong">{{ b.nom_pere || '-' }}</span>
+        </div>
+        <div class="grid-item">
+          <span class="item-label">Origine du Père :</span>
+          <span class="item-value">{{ b.origine_pere || '-' }}</span>
+        </div>
+        <div class="grid-item span-2">
+          <span class="item-label">Téléphone du Père :</span>
+          <span class="item-value">{{ b.telephone_pere || '-' }}</span>
+        </div>
+
+        <div class="grid-item">
+          <span class="item-label">Nom de la Mère :</span>
+          <span class="item-value strong">{{ b.nom_mere || '-' }}</span>
+        </div>
+        <div class="grid-item">
+          <span class="item-label">Origine de la Mère :</span>
+          <span class="item-value">{{ b.origine_mere || '-' }}</span>
+        </div>
+        <div class="grid-item span-2">
+          <span class="item-label">Téléphone de la Mère :</span>
+          <span class="item-value">{{ b.telephone_mere || '-' }}</span>
+        </div>
+
+        @if (b.nom_tuteur) {
+          <div class="grid-item">
+            <span class="item-label">Tuteur légal :</span>
+            <span class="item-value strong">{{ b.nom_tuteur }}</span>
+          </div>
+          <div class="grid-item">
+            <span class="item-label">Téléphone Tuteur :</span>
+            <span class="item-value">{{ b.telephone_tuteur || '-' }}</span>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- 3. PARRAIN & MARRAINE -->
+    <section class="doc-section">
+      <h3 class="section-title">
+        <span class="section-num">3</span>
+        <span>PARRAIN & MARRAINE</span>
+      </h3>
+
+      <div class="godparents-grid">
+        <!-- Parrain -->
+        <div class="godparent-card">
+          <span class="card-role">LE PARRAIN</span>
+          <div class="card-field">
+            <span class="lbl">Nom & Prénoms :</span>
+            <span class="val strong">{{ b.parrain?.nom || '-' }}</span>
+          </div>
+          <div class="card-field">
+            <span class="lbl">Domicile :</span>
+            <span class="val">{{ b.parrain?.domicile || '-' }}</span>
+          </div>
+          <div class="card-field">
+            <span class="lbl">Téléphone :</span>
+            <span class="val">{{ b.parrain?.telephone || '-' }}</span>
+          </div>
+          <div class="card-field">
+            <span class="lbl">Paroisse de baptême :</span>
+            <span class="val">{{ b.parrain?.paroisse_bapteme || '-' }}</span>
+          </div>
+          @if (b.parrain; as p) {
+            @if (p.representant_par) {
+              <div class="card-field sub">
+                <span class="lbl">Représenté par :</span>
+                <span class="val">{{ p.representant_par }} ({{ p.representant_contact || '-' }})</span>
+              </div>
+            }
+          }
+        </div>
+
+        <!-- Marraine -->
+        <div class="godparent-card">
+          <span class="card-role">LA MARRAINE</span>
+          <div class="card-field">
+            <span class="lbl">Nom & Prénoms :</span>
+            <span class="val strong">{{ b.marraine?.nom || '-' }}</span>
+          </div>
+          <div class="card-field">
+            <span class="lbl">Domicile :</span>
+            <span class="val">{{ b.marraine?.domicile || '-' }}</span>
+          </div>
+          <div class="card-field">
+            <span class="lbl">Téléphone :</span>
+            <span class="val">{{ b.marraine?.telephone || '-' }}</span>
+          </div>
+          <div class="card-field">
+            <span class="lbl">Paroisse de baptême :</span>
+            <span class="val">{{ b.marraine?.paroisse_bapteme || '-' }}</span>
+          </div>
+          @if (b.marraine; as m) {
+            @if (m.representant_par) {
+              <div class="card-field sub">
+                <span class="lbl">Représentée par :</span>
+                <span class="val">{{ m.representant_par }} ({{ m.representant_contact || '-' }})</span>
+              </div>
+            }
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. PIÈCES JOINTES AU DOSSIER -->
+    <section class="doc-section">
+      <h3 class="section-title">
+        <span class="section-num">4</span>
+        <span>PIÈCES FOURNIES AU SECRÉTARIAT</span>
+      </h3>
+
+      <div class="check-items-row">
+        <label class="check-item">
+          <span class="box" [class.checked]="b.pieces_jointes?.extrait_naissance">
+            {{ b.pieces_jointes?.extrait_naissance ? '✓' : '' }}
+          </span>
+          <span>Photocopie Extrait d'Acte de Naissance</span>
+        </label>
+
+        <label class="check-item">
+          <span class="box" [class.checked]="b.pieces_jointes?.photo_identite">
+            {{ b.pieces_jointes?.photo_identite ? '✓' : '' }}
+          </span>
+          <span>1 Photo d'identité récente</span>
+        </label>
+
+        <label class="check-item">
+          <span class="box" [class.checked]="b.pieces_jointes?.casuel">
+            {{ b.pieces_jointes?.casuel ? '✓' : '' }}
+          </span>
+          <span>Casuel / Frais de célébration réglés</span>
+        </label>
+      </div>
+    </section>
+
+    <!-- SIGNATURES -->
+    <footer class="baptism-signatures-footer">
+      <div class="sig-box">
+        <span class="sig-title">Signature des Parents / Tuteur</span>
+        <div class="sig-area"></div>
+      </div>
+      <div class="sig-box">
+        <span class="sig-title">Signature du Parrain / Marraine</span>
+        <div class="sig-area"></div>
+      </div>
+      <div class="sig-box">
+        <span class="sig-title">Le Curé de la Paroisse (Admis au Baptême)</span>
+        <div class="sig-area-stamp"></div>
+      </div>
+    </footer>
+  </article>
+} @else {
+  <div class="baptism-empty-state">
+    <p>Aucune donnée de renseignement baptême disponible.</p>
+  </div>
+}

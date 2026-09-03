@@ -7,10 +7,16 @@ export interface VersementDto {
   reference: string; // Ex: VRS-2026-0001
   periode_concernee: string;
   montant_verse: number;
+  montant?: number;
   mode_remise: ModeRemise;
+  mode_paiement?: string;
   effectue_par?: string;
   destinataire?: string; // Ex: "Curé de la Paroisse", "Économe Paroissial"
   notes?: string;
+  observations?: string;
+  banque?: string;
+  numero_piece?: string;
+  date_versement?: string;
   statut?: StatutVersement;
   annee_catechese_id?: string;
   annee_libelle?: string;
@@ -18,6 +24,13 @@ export interface VersementDto {
     id: number | string;
     name: string;
     email: string;
+    nom?: string;
+  };
+  cree_par?: {
+    id?: number | string;
+    name?: string;
+    nom?: string;
+    email?: string;
   };
   created_at?: string;
   updated_at?: string;

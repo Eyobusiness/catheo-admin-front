@@ -44,7 +44,13 @@ export class ProfilsPageComponent {
   protected readonly filteredProfils = computed(() => {
     const q = this.searchQuery().toLowerCase().trim();
     const status = this.selectedStatutFilter();
-    let list = this.profils();
+
+    // Exclure le profil super administrateur (réservé au dashboard super admin)
+    let list = this.profils().filter(p =>
+      p.code !== 'super_admin' &&
+      p.code !== 'SUPER_ADMIN' &&
+      p.code?.toLowerCase() !== 'super_admin'
+    );
 
     if (status) {
       list = list.filter(p => p.statut_code === status || p.statut?.toLowerCase() === status.toLowerCase());
@@ -59,12 +65,19 @@ export class ProfilsPageComponent {
     );
   });
 
-  // KPI Computeds
-  protected readonly totalCount = computed(() => this.profils().length);
-  protected readonly activeCount = computed(() =>
-    this.profils().filter(p => p.statut_code === 'actif' || p.statut?.toLowerCase() === 'actif').length
+  // KPI Computeds — super admin exclu
+  protected readonly totalCount = computed(() =>
+    this.profils().filter(p => p.code?.toLowerCase() !== 'super_admin').length
   );
-  protected readonly systemCount = computed(() => this.profils().filter(p => p.is_system).length);
+  protected readonly activeCount = computed(() =>
+    this.profils().filter(p =>
+      p.code?.toLowerCase() !== 'super_admin' &&
+      (p.statut_code === 'actif' || p.statut?.toLowerCase() === 'actif')
+    ).length
+  );
+  protected readonly systemCount = computed(() =>
+    this.profils().filter(p => p.is_system && p.code?.toLowerCase() !== 'super_admin').length
+  );
 
   protected onSearchChange(event: Event): void {
     const input = event.target as HTMLInputElement;

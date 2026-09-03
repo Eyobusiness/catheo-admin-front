@@ -11,6 +11,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { DocumentsService } from '../../services/documents.service';
 import { DocumentGenereDto } from '../../models/document-officiel.model';
 import { EnteteCatecheseComponent } from '../../../../shared/ui/components/entete-catechese/entete-catechese.component';
+import { PdfService } from '../../../../core/services/pdf.service';
 
 @Component({
   selector: 'app-apercu-document-page',
@@ -24,6 +25,7 @@ export class ApercuDocumentPageComponent implements OnInit {
   private readonly router = inject(Router);
   public readonly service = inject(DocumentsService);
   private readonly sanitizer = inject(DomSanitizer);
+  private readonly pdfService = inject(PdfService);
 
   public readonly documentGenere = signal<DocumentGenereDto | null>(null);
   public readonly safeContenuRendu = signal<SafeHtml>('');
@@ -54,7 +56,12 @@ export class ApercuDocumentPageComponent implements OnInit {
   }
 
   public imprimerDocument(): void {
-    window.print();
+    const doc = this.documentGenere();
+    if (!doc) return;
+    this.pdfService.previewDocumentGenerePdf(doc.id || (doc as any).uuid || doc.reference, {
+      titre: doc.titre || 'Document Officiel',
+      reference: doc.reference_document || doc.reference
+    });
   }
 
   public retourHistorique(): void {

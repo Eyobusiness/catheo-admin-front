@@ -23,10 +23,10 @@
               }
             </span>
           }
-          <h1 class="church-name">{{ nomParoisse() || 'Paroisse' }}</h1>
+          <h1 class="church-name">{{ nomParoisse() || '' }}</h1>
           <div class="portal-badge">
             <span class="pulse-dot"></span>
-            <span>Portail Officiel de Préinscription en Catéchèse</span>
+            <span>Portail Officiel de Préinscription </span>
           </div>
         </div>
       </div>
@@ -61,7 +61,7 @@
     @if (currentMode() === 'choice') {
       <div class="card-box choice-hero animate-fade-in">
         <div class="hero-text text-center">
-          <span class="badge-tag">Rentrée Pastorale</span>
+          <span class="badge-tag text-center">Rentrée Pastorale</span>
           <h2 class="hero-title">Préinscription en Ligne</h2>
           <p class="hero-subtitle">
             Effectuez la démarche en quelques étapes simples depuis votre smartphone ou ordinateur.
@@ -287,12 +287,9 @@
                 <!-- Date de naissance -->
                 <div class="form-group-modern">
                   <label class="form-label-modern" for="n_date_naiss">
-                    Date de Naissance <span class="required-star">*</span>
+                    Date de Naissance
                   </label>
                   <input id="n_date_naiss" type="date" formControlName="date_naissance" class="form-control-modern" />
-                  @if (nouvelleForm.controls.date_naissance.touched && nouvelleForm.controls.date_naissance.invalid) {
-                    <span class="form-error-msg">La date de naissance est obligatoire.</span>
-                  }
                 </div>
 
                 <!-- Lieu de naissance -->
@@ -303,8 +300,13 @@
 
                 <!-- Téléphone -->
                 <div class="form-group-modern">
-                  <label class="form-label-modern" for="n_tel">Téléphone / WhatsApp</label>
+                  <label class="form-label-modern" for="n_tel">
+                    Téléphone / WhatsApp <span class="required-star">*</span>
+                  </label>
                   <input id="n_tel" type="tel" formControlName="telephone" class="form-control-modern" placeholder="Ex: 0700000000" />
+                  @if (nouvelleForm.controls.telephone.touched && nouvelleForm.controls.telephone.invalid) {
+                    <span class="form-error-msg">Le numéro de téléphone est obligatoire.</span>
+                  }
                 </div>
 
                 <!-- Domicile -->
@@ -569,7 +571,7 @@
               id="search_mat"
               type="text"
               class="search-text-field"
-              placeholder="Ex: CAT-2025-0042..."
+              placeholder="Ex: CAT20-250042A..."
               [ngModel]="searchMatricule()"
               (ngModelChange)="searchMatricule.set($event)"
               (keyup.enter)="onSearchMatricule()"
@@ -668,8 +670,13 @@
 
               <div class="form-fields-grid">
                 <div class="form-group-modern">
-                  <label class="form-label-modern" for="r_tel">Téléphone / WhatsApp</label>
+                  <label class="form-label-modern" for="r_tel">
+                    Téléphone / WhatsApp <span class="required-star">*</span>
+                  </label>
                   <input id="r_tel" type="tel" formControlName="telephone" class="form-control-modern" placeholder="Ex: 0700000000" />
+                  @if (reinscriptionForm.controls.telephone.touched && reinscriptionForm.controls.telephone.invalid) {
+                    <span class="form-error-msg">Le numéro de téléphone est obligatoire.</span>
+                  }
                 </div>
 
                 <div class="form-group-modern">
@@ -820,13 +827,13 @@
     <div class="footer-container">
       <div class="footer-brand">
         @if (logoParoisse()) {
-          <img [src]="logoParoisse()" [alt]="nomParoisse() || 'Paroisse'" class="footer-logo-real-img" />
+          <img [src]="logoParoisse()" [alt]="nomParoisse() || ''" class="footer-logo-real-img" />
         } @else {
           <i class="bi bi-cross text-gold"></i>
         }
-        <span>{{ nomParoisse() || 'Paroisse' }}</span>
+        <span>{{ nomParoisse() || '' }}</span>
       </div>
-      <p class="footer-copy">© {{ (currentCampagne()?.annee_catechese?.libelle || '2026-2027') }} • Application Pastorale Cathéo</p>
+      <p class="footer-copy">© {{ (currentCampagne()?.annee_catechese?.libelle || '') }} • Application Pastorale Cathéo</p>
     </div>
   </footer>
 </div>

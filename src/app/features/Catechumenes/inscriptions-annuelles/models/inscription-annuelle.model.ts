@@ -6,7 +6,7 @@ import { ClasseDto } from '../../../Organisations/Classe/models/classe.model';
 import { Ceb } from '../../../Organisations/Ceb/models/ceb.model';
 import { Mouvement } from '../../../Organisations/Mouvements/models/mouvement.model';
 
-export type StatutInscriptionAnnuelle = 'inscrit' | 'valide' | 'en_attente' | 'abandon';
+export type StatutInscriptionAnnuelle = 'valide' | 'en_attente' | 'inscrit' | 'abandon';
 
 export interface InscriptionAnnuelleDto {
   id: string;

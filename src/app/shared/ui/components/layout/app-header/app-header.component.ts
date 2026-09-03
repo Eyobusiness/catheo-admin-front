@@ -28,6 +28,21 @@ export class AppHeader implements OnInit {
 
   public readonly notificationCount = this.notificationService.unreadCount;
   public readonly recentNotifications = this.notificationService.recentNotifications;
+  public readonly allNotifications = this.notificationService.notificationsList;
+
+  public readonly displayNotifications = computed(() => {
+    const recents = this.recentNotifications();
+    const all = this.allNotifications();
+    const mergedMap = new Map<string | number, SystemNotification>();
+    recents.forEach(n => mergedMap.set(n.id, n));
+    all.forEach(n => {
+      if (!mergedMap.has(n.id)) {
+        mergedMap.set(n.id, n);
+      }
+    });
+    return Array.from(mergedMap.values()).slice(0, 5);
+  });
+
   public readonly showNotifications = signal<boolean>(false);
   public readonly showUserMenu = signal<boolean>(false);
 
@@ -62,8 +77,9 @@ export class AppHeader implements OnInit {
   });
 
   public ngOnInit(): void {
-    // Charger le compteur de notifications
+    // Charger le compteur de notifications et la liste pour le dropdown
     this.notificationService.fetchUnreadCount().subscribe();
+    this.notificationService.fetchNotifications().subscribe();
 
     // Charger l'utilisateur connecté depuis l'API/BD
     if (this.authService.token()) {
@@ -98,6 +114,7 @@ export class AppHeader implements OnInit {
     this.showNotifications.set(nextState);
     if (nextState) {
       this.notificationService.fetchUnreadCount().subscribe();
+      this.notificationService.fetchNotifications().subscribe();
     }
     if (this.showUserMenu()) this.showUserMenu.set(false);
   }

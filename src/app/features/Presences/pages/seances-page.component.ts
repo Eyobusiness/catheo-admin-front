@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SeanceService } from '../services/seance.service';
+import { SectionService } from '../../Organisations/Sections/services/section.service';
+import { NiveauService } from '../../Organisations/Niveaux/services/niveau.service';
 import { ClasseService } from '../../Organisations/Classe/services/classe.service';
 import { InscriptionAnnuelleService } from '../../Catechumenes/inscriptions-annuelles/services/inscription-annuelle.service';
 import { AffectationAnimateurService } from '../../Organisations/affectation-animateurs/services/affectation-animateur.service';
@@ -30,18 +32,23 @@ import { SeanceDeleteModalComponent } from '../components/seance-delete-modal/se
 })
 export class SeancesPageComponent implements OnInit {
   protected readonly seanceService = inject(SeanceService);
+  protected readonly sectionService = inject(SectionService);
+  protected readonly niveauService = inject(NiveauService);
   protected readonly classeService = inject(ClasseService);
   protected readonly inscriptionService = inject(InscriptionAnnuelleService);
   protected readonly affectationService = inject(AffectationAnimateurService);
 
   // Signals
   protected readonly seances = this.seanceService.seances;
+  protected readonly sections = this.sectionService.sections;
+  protected readonly niveaux = this.niveauService.niveaux;
   protected readonly classes = this.classeService.classes;
   protected readonly inscriptions = this.inscriptionService.inscriptions;
   protected readonly isLoading = this.seanceService.isLoading;
 
   // Filters
   protected readonly searchQuery = signal<string>('');
+  protected readonly selectedSectionFilter = signal<string>('');
   protected readonly selectedClasseFilter = signal<string>('');
   protected readonly selectedDateFilter = signal<string>('');
 
@@ -51,6 +58,26 @@ export class SeancesPageComponent implements OnInit {
   protected readonly isDeleteModalOpen = signal<boolean>(false);
   protected readonly isEditing = signal<boolean>(false);
   protected readonly selectedSeance = signal<SeanceDto | null>(null);
+
+  // Cascading classes based on selected section
+  protected readonly classesFiltrees = computed(() => {
+    const secId = this.selectedSectionFilter();
+    const all = this.classes();
+    if (!secId) return all;
+
+    const validNiveauIds = new Set(
+      this.niveaux()
+        .filter(n => n.section_id === secId || n.section?.id === secId)
+        .map(n => n.id)
+    );
+
+    return all.filter(c => {
+      if (c.niveau_id && validNiveauIds.has(c.niveau_id)) return true;
+      if (c.niveau?.id && validNiveauIds.has(c.niveau.id)) return true;
+      if (c.niveau?.section_id === secId || c.niveau?.section?.id === secId) return true;
+      return false;
+    });
+  });
 
   // Computed KPI Stats
   protected readonly totalSeances = computed(() => this.seances().length);
@@ -70,9 +97,20 @@ export class SeancesPageComponent implements OnInit {
   // Filtered séances list
   protected readonly filteredSeances = computed(() => {
     const q = this.searchQuery().toLowerCase().trim();
+    const secId = this.selectedSectionFilter();
     const classeId = this.selectedClasseFilter();
     const date = this.selectedDateFilter();
     let list = this.seances();
+
+    if (secId) {
+      const validClasseIds = new Set(this.classesFiltrees().map(c => c.id));
+      list = list.filter(s => {
+        const cId = s.classe_id || s.classe?.id;
+        if (cId && validClasseIds.has(cId)) return true;
+        if (s.classe?.niveau?.section_id === secId || s.classe?.niveau?.section?.id === secId) return true;
+        return false;
+      });
+    }
 
     if (classeId) {
       list = list.filter(s => s.classe_id === classeId || s.classe?.id === classeId);
@@ -91,11 +129,13 @@ export class SeancesPageComponent implements OnInit {
   });
 
   protected readonly hasActiveFilters = computed(() => {
-    return !!this.searchQuery() || !!this.selectedClasseFilter() || !!this.selectedDateFilter();
+    return !!this.searchQuery() || !!this.selectedSectionFilter() || !!this.selectedClasseFilter() || !!this.selectedDateFilter();
   });
 
   public ngOnInit(): void {
     this.seanceService.getAll().subscribe();
+    this.sectionService.getAll().subscribe();
+    this.niveauService.getAll().subscribe();
     this.classeService.getAll().subscribe();
     this.inscriptionService.getAll().subscribe();
     this.affectationService.getAll().subscribe();
@@ -104,6 +144,19 @@ export class SeancesPageComponent implements OnInit {
   protected onSearchChange(event: Event): void {
     const input = event.target as HTMLInputElement;
     this.searchQuery.set(input.value);
+  }
+
+  protected onSectionFilterChange(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    const secId = select.value;
+    this.selectedSectionFilter.set(secId);
+
+    if (this.selectedClasseFilter()) {
+      const allowed = this.classesFiltrees().some(c => c.id === this.selectedClasseFilter());
+      if (!allowed) {
+        this.selectedClasseFilter.set('');
+      }
+    }
   }
 
   protected onClasseFilterChange(event: Event): void {
@@ -118,6 +171,7 @@ export class SeancesPageComponent implements OnInit {
 
   protected resetFilters(): void {
     this.searchQuery.set('');
+    this.selectedSectionFilter.set('');
     this.selectedClasseFilter.set('');
     this.selectedDateFilter.set('');
   }

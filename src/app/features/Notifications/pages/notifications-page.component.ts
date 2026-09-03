@@ -100,8 +100,13 @@ export class NotificationsPageComponent implements OnInit {
     this.notificationService.markAllAsRead().subscribe();
   }
 
-  public handleAction(notif: SystemNotification): void {
+  public handleAction(notif: SystemNotification, event?: Event): void {
+    if (event) event.stopPropagation();
     this.notificationService.handleNotificationClick(notif);
+  }
+
+  public getActionLabel(notif: SystemNotification): string {
+    return this.notificationService.getActionLabel(notif);
   }
 
   public getBadgeType(notif: SystemNotification): 'danger' | 'warning' | 'success' | 'info' {

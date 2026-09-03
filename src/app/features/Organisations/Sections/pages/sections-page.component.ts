@@ -78,7 +78,7 @@ export class SectionsPageComponent implements OnInit {
   protected handleView(section: Section): void {
     this.toastService.info(
       `Section : ${section.nom} (${section.code})`,
-      `Ordre : ${section.ordre} • Niveaux : ${section.total_niveaux || 0} • Statut : ${section.statut}`
+      `Ordre : ${section.ordre_affichage} • Niveaux : ${section.total_niveaux || 0} • Statut : ${section.statut}`
     );
   }
 

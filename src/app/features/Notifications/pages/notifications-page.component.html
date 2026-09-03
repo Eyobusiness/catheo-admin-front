@@ -186,19 +186,8 @@
               <p class="notif-text">{{ notif.message }}</p>
 
               <!-- Actions inside card -->
-              <div class="notif-card-footer">
-                @if (notif.route_url) {
-                  <button
-                    type="button"
-                    class="action-btn primary-action"
-                    (click)="handleAction(notif)"
-                  >
-                    <i class="bi bi-arrow-right-circle-fill"></i>
-                    Consulter le dossier
-                  </button>
-                }
-
-                @if (!notif.is_read) {
+              @if (!notif.is_read) {
+                <div class="notif-card-footer">
                   <button
                     type="button"
                     class="action-btn mark-read-action"
@@ -207,8 +196,8 @@
                     <i class="bi bi-check2"></i>
                     Marquer comme lu
                   </button>
-                }
-              </div>
+                </div>
+              }
             </div>
           </div>
         } @empty {

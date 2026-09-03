@@ -56,7 +56,13 @@ export class UsersPageComponent {
     const q = this.searchQuery().toLowerCase().trim();
     const profId = this.selectedProfilFilter();
     const status = this.selectedStatutFilter();
-    let list = this.users();
+
+    // Exclure les super administrateurs : ils gèrent les catéchèses depuis leur propre dashboard
+    let list = this.users().filter(u =>
+      u.user_type !== 'super_admin' &&
+      u.profil?.code !== 'super_admin' &&
+      u.profil?.code !== 'SUPER_ADMIN'
+    );
 
     if (profId) {
       list = list.filter(u => u.profil?.uuid === profId || u.profil?.id === profId);
@@ -86,10 +92,24 @@ export class UsersPageComponent {
     return list.slice(start, start + size);
   });
 
-  // KPI Computeds
-  protected readonly totalCount = computed(() => this.users().length);
-  protected readonly activeCount = computed(() => this.users().filter(u => u.statut === 'actif' || u.status === 'actif').length);
-  protected readonly inactiveCount = computed(() => this.users().filter(u => u.statut === 'inactif' || u.status === 'inactif').length);
+  // KPI Computeds — basés sur utilisateurs non-super-admin
+  protected readonly totalCount = computed(() =>
+    this.users().filter(u => u.user_type !== 'super_admin' && u.profil?.code !== 'super_admin').length
+  );
+  protected readonly activeCount = computed(() =>
+    this.users().filter(u =>
+      u.user_type !== 'super_admin' &&
+      u.profil?.code !== 'super_admin' &&
+      (u.statut === 'actif' || u.status === 'actif')
+    ).length
+  );
+  protected readonly inactiveCount = computed(() =>
+    this.users().filter(u =>
+      u.user_type !== 'super_admin' &&
+      u.profil?.code !== 'super_admin' &&
+      (u.statut === 'inactif' || u.status === 'inactif')
+    ).length
+  );
   protected readonly suspendedCount = computed(() => 0);
 
   protected onSearchChange(event: Event): void {

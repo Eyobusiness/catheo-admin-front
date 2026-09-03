@@ -1,0 +1,269 @@
+/* RENSEIGNEMENT PREMIÈRE COMMUNION — A4 PORTRAIT */
+@page {
+  size: A4 portrait;
+  margin: 8mm 12mm;
+}
+
+:host {
+  display: block;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  color: #111827;
+  background-color: transparent;
+}
+
+.communion-doc-container {
+  width: 100%;
+  max-width: 190mm;
+  margin: 0 auto;
+  background: #ffffff;
+  padding: 4mm 6mm;
+  box-sizing: border-box;
+}
+
+/* Header */
+.doc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #0f172a;
+  padding-bottom: 6px;
+  margin-bottom: 8px;
+}
+
+.header-logo-col {
+  width: 54px;
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.parish-logo,
+.catechese-logo {
+  max-width: 50px;
+  max-height: 50px;
+  object-fit: contain;
+}
+
+.header-center-col {
+  flex: 1;
+  text-align: center;
+  padding: 0 10px;
+}
+
+.doc-diocese {
+  font-size: 8pt;
+  font-weight: 700;
+  color: #475569;
+  letter-spacing: 0.5px;
+}
+
+.doc-doyenne {
+  font-size: 7.5pt;
+  color: #64748b;
+}
+
+.doc-parish-title {
+  font-size: 12.5pt;
+  font-weight: 900;
+  color: #0f172a;
+  margin: 2px 0;
+  letter-spacing: 0.5px;
+}
+
+.doc-service-title {
+  font-size: 8pt;
+  font-weight: 800;
+  color: #d97706;
+  letter-spacing: 0.5px;
+}
+
+/* Bannière */
+.doc-title-box {
+  text-align: center;
+  background: #fffbeb;
+  border: 1.5px solid #fde68a;
+  border-left: 5px solid #d97706;
+  border-radius: 4px;
+  padding: 6px 12px;
+  margin-bottom: 8px;
+}
+
+.title-badge {
+  display: inline-block;
+  font-size: 6.5pt;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 2px 6px;
+  background: #d97706;
+  color: #ffffff;
+  border-radius: 3px;
+  margin-bottom: 3px;
+}
+
+.doc-main-title {
+  font-size: 12pt;
+  font-weight: 900;
+  color: #92400e;
+  margin: 2px 0;
+  letter-spacing: 0.5px;
+}
+
+.doc-sub-details {
+  font-size: 8pt;
+  color: #b45309;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.mat-badge {
+  background: #ffffff;
+  border: 1px solid #fcd34d;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-family: monospace;
+}
+
+/* Sections */
+.doc-section {
+  margin-bottom: 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  padding: 6px 10px;
+  background: #ffffff;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 8pt;
+  font-weight: 800;
+  color: #b45309;
+  border-bottom: 1px solid #cbd5e1;
+  padding-bottom: 3px;
+  margin: 0 0 6px 0;
+}
+
+.section-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  background: #d97706;
+  color: #ffffff;
+  border-radius: 50%;
+  font-size: 7pt;
+  font-weight: 900;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  row-gap: 4px;
+  column-gap: 14px;
+  font-size: 8.5pt;
+}
+
+.grid-item {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+}
+
+.grid-item.span-2 {
+  grid-column: span 2;
+}
+
+.item-label {
+  font-size: 7.5pt;
+  font-weight: 600;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.item-value {
+  font-size: 8.5pt;
+  color: #0f172a;
+}
+
+.item-value.strong {
+  font-weight: 700;
+}
+
+.item-value.uppercase {
+  text-transform: uppercase;
+}
+
+.font-mono {
+  font-family: monospace;
+}
+
+.commitments-box {
+  padding: 6px 8px;
+  background: #f8fafc;
+  border-radius: 4px;
+}
+
+.commit-text {
+  font-size: 7.5pt;
+  color: #475569;
+  line-height: 1.35;
+  margin: 0;
+  font-style: italic;
+}
+
+/* Signatures */
+.communion-signatures-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 10px;
+}
+
+.sig-box {
+  flex: 1;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  padding: 6px 8px;
+  background: #fafafa;
+}
+
+.sig-title {
+  display: block;
+  font-size: 7pt;
+  font-weight: 700;
+  color: #334155;
+  text-transform: uppercase;
+}
+
+.sig-area {
+  height: 34px;
+  border-bottom: 1px dashed #94a3b8;
+  margin-top: 4px;
+}
+
+.sig-area-stamp {
+  height: 34px;
+  border: 1px dashed #94a3b8;
+  border-radius: 3px;
+  margin-top: 4px;
+  background: #ffffff;
+}
+
+.communion-empty-state {
+  padding: 30px;
+  text-align: center;
+  color: #64748b;
+}
+
+/* Print CSS */
+@media print {
+  .communion-doc-container {
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+}

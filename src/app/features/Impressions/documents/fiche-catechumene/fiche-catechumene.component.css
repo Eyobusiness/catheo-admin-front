@@ -1,0 +1,381 @@
+/* FICHE INDIVIDUELLE DU CATÉCHUMÈNE — A4 PORTRAIT */
+@page {
+  size: A4 portrait;
+  margin: 8mm 12mm;
+}
+
+:host {
+  display: block;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  color: #1a1a1a;
+  background-color: transparent;
+}
+
+.fiche-doc-container {
+  width: 100%;
+  max-width: 190mm;
+  margin: 0 auto;
+  background: #ffffff;
+  padding: 4mm 6mm;
+  box-sizing: border-box;
+}
+
+/* =========================================================================
+   HEADER PAROISSIAL
+   ========================================================================= */
+.doc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #111827;
+  padding-bottom: 8px;
+  margin-bottom: 10px;
+}
+
+.header-logo-col {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.parish-logo-img,
+.catechese-logo-img {
+  max-width: 58px;
+  max-height: 58px;
+  object-fit: contain;
+}
+
+.header-center-col {
+  flex: 1;
+  text-align: center;
+  padding: 0 10px;
+}
+
+.doc-diocese {
+  font-size: 8.5pt;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #374151;
+}
+
+.doc-doyenne {
+  font-size: 7.5pt;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.doc-parish-title {
+  font-size: 13pt;
+  font-weight: 900;
+  color: #111827;
+  margin: 2px 0;
+  letter-spacing: 0.5px;
+}
+
+.doc-service-title {
+  font-size: 8.5pt;
+  font-weight: 800;
+  color: #1e3a8a;
+  letter-spacing: 0.5px;
+}
+
+.doc-contacts {
+  font-size: 7.5pt;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+/* =========================================================================
+   BANNIÈRE TITRE & CARTOUCHE PHOTO
+   ========================================================================= */
+.doc-title-banner-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+  padding: 6px 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-left: 5px solid #1e3a8a;
+  border-radius: 4px;
+}
+
+.title-details {
+  flex: 1;
+}
+
+.doc-main-title {
+  font-size: 12pt;
+  font-weight: 900;
+  color: #0f172a;
+  margin: 0 0 4px 0;
+  letter-spacing: 0.5px;
+}
+
+.doc-meta-sub {
+  font-size: 8pt;
+  color: #475569;
+}
+
+.sub-separator {
+  margin: 0 6px;
+  color: #cbd5e1;
+}
+
+.badge-photo-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.matricule-cartouche {
+  text-align: right;
+}
+
+.mat-lbl {
+  display: block;
+  font-size: 7pt;
+  font-weight: 700;
+  color: #64748b;
+  letter-spacing: 0.5px;
+}
+
+.mat-val {
+  display: inline-block;
+  font-size: 11pt;
+  font-weight: 900;
+  font-family: 'Courier New', Courier, monospace;
+  color: #991b1b;
+  background: #fee2e2;
+  border: 1px solid #fca5a5;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.photo-frame {
+  width: 60px;
+  height: 75px;
+  border: 1.5px solid #94a3b8;
+  border-radius: 3px;
+  overflow: hidden;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.student-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photo-placeholder {
+  text-align: center;
+  color: #94a3b8;
+  padding: 4px;
+}
+
+.photo-icon {
+  font-size: 18pt;
+  display: block;
+}
+
+.photo-text {
+  font-size: 5pt;
+  font-weight: 700;
+  display: block;
+  line-height: 1;
+}
+
+/* =========================================================================
+   SECTIONS & GRILLES
+   ========================================================================= */
+.doc-section {
+  margin-bottom: 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  padding: 6px 10px;
+  background: #ffffff;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 8.5pt;
+  font-weight: 800;
+  color: #1e3a8a;
+  border-bottom: 1.5px solid #cbd5e1;
+  padding-bottom: 3px;
+  margin: 0 0 6px 0;
+  letter-spacing: 0.3px;
+}
+
+.section-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  background: #1e3a8a;
+  color: #ffffff;
+  border-radius: 50%;
+  font-size: 7.5pt;
+  font-weight: 900;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  row-gap: 4px;
+  column-gap: 14px;
+  font-size: 8.5pt;
+}
+
+.grid-item {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+}
+
+.grid-item.span-2 {
+  grid-column: span 2;
+}
+
+.item-label {
+  font-size: 7.5pt;
+  font-weight: 600;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.item-value {
+  font-size: 8.5pt;
+  color: #0f172a;
+}
+
+.item-value.strong {
+  font-weight: 700;
+}
+
+.item-value.uppercase {
+  text-transform: uppercase;
+}
+
+/* Table Sacrements */
+.sacraments-print-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 4px 0 6px 0;
+  font-size: 8pt;
+}
+
+.sacraments-print-table th {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  padding: 4px 6px;
+  font-weight: 700;
+  color: #334155;
+  text-align: left;
+  font-size: 7.5pt;
+}
+
+.sacraments-print-table td {
+  border: 1px solid #e2e8f0;
+  padding: 4px 6px;
+}
+
+.font-bold {
+  font-weight: 700;
+}
+
+.status-pill {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 7pt;
+  font-weight: 700;
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.status-pill.done {
+  background: #d1fae5;
+  color: #047857;
+}
+
+.parrain-line-box {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px dashed #e2e8f0;
+  font-size: 8pt;
+}
+
+/* =========================================================================
+   SIGNATURES
+   ========================================================================= */
+.doc-signatures-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 10px;
+  padding-top: 6px;
+}
+
+.sig-block {
+  flex: 1;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  padding: 6px 8px;
+  background: #fafafa;
+}
+
+.sig-header {
+  display: block;
+  font-size: 7.5pt;
+  font-weight: 800;
+  color: #1e293b;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.sig-sub {
+  display: block;
+  font-size: 6.5pt;
+  color: #64748b;
+  font-style: italic;
+}
+
+.sig-area {
+  height: 38px;
+  border-bottom: 1px dashed #94a3b8;
+  margin-top: 4px;
+}
+
+.sig-area-stamp {
+  height: 38px;
+  border: 1px dashed #94a3b8;
+  border-radius: 3px;
+  margin-top: 4px;
+  background: #ffffff;
+}
+
+.fiche-empty-state {
+  padding: 30px;
+  text-align: center;
+  color: #64748b;
+}
+
+/* Print CSS */
+@media print {
+  .fiche-doc-container {
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+}

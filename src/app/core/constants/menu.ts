@@ -1,23 +1,33 @@
+export interface MenuPermissions {
+  create?: boolean;
+  read?: boolean;
+  update?: boolean;
+  delete?: boolean;
+  [key: string]: boolean | undefined;
+}
+
 export interface SubMenuItem {
-  order: number | null;
-  id: string | number | null;
+  order?: number | null;
+  id?: string | number | null;
   libelle: string;
-  icon: string;
-  path: string;
-  code: string;
-  permission: string | null;
+  icon?: string;
+  path?: string;
+  code?: string;
+  permission?: string | null;
+  permissions?: MenuPermissions;
   reference: string;
 }
 
 export interface MenuItem {
-  order: number | null;
-  id: string | number | null;
+  order?: number | null;
+  id?: string | number | null;
   libelle: string;
-  icon: string;
-  path: string;
-  code: string;
-  permission: string | null;
-  sousMenus: SubMenuItem[];
+  icon?: string;
+  path?: string;
+  code?: string;
+  permission?: string | null;
+  permissions?: MenuPermissions;
+  sousMenus?: SubMenuItem[];
   reference: string;
 }
 

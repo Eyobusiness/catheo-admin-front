@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, effect, inject, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal } from '@angular/core';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import {
@@ -91,6 +91,10 @@ export class InscriptionFormModalComponent {
   public readonly isSearchingMatricule = signal<boolean>(false);
   public readonly searchMatriculeError = signal<string | null>(null);
 
+  // État de chargement / soumission local immédiat (0ms de latence)
+  public readonly isSubmitting = signal<boolean>(false);
+  protected readonly isBusy = computed(() => this.isSubmitting() || this.isLoading());
+
   // Photo de profil
   public readonly photoPreview = signal<string>('');
 
@@ -100,9 +104,9 @@ export class InscriptionFormModalComponent {
     nom: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.minLength(2)] }),
     prenoms: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.minLength(2)] }),
     sexe: new FormControl<'M' | 'F'>('M', { nonNullable: true, validators: [Validators.required] }),
-    date_naissance: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    date_naissance: new FormControl('', { nonNullable: true }),
     lieu_naissance: new FormControl('', { nonNullable: true }),
-    telephone: new FormControl('', { nonNullable: true }),
+    telephone: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     domicile: new FormControl('', { nonNullable: true }),
     profession: new FormControl('', { nonNullable: true }),
     classe_scolaire: new FormControl('', { nonNullable: true }),
@@ -130,7 +134,7 @@ export class InscriptionFormModalComponent {
     classe_id: new FormControl('', { nonNullable: true }),
     ceb_id: new FormControl('', { nonNullable: true }),
     mouvement_id: new FormControl('', { nonNullable: true }),
-    statut_inscription: new FormControl<StatutInscriptionAnnuelle>('inscrit', { nonNullable: true }),
+    statut_inscription: new FormControl<StatutInscriptionAnnuelle>('en_attente', { nonNullable: true }),
     frais_inscription_payes: new FormControl<boolean>(false, { nonNullable: true }),
     observation: new FormControl('', { nonNullable: true })
   });
@@ -150,7 +154,7 @@ export class InscriptionFormModalComponent {
     classe_id: new FormControl('', { nonNullable: true }),
     ceb_id: new FormControl('', { nonNullable: true }),
     mouvement_id: new FormControl('', { nonNullable: true }),
-    statut_inscription: new FormControl<StatutInscriptionAnnuelle>('inscrit', { nonNullable: true }),
+    statut_inscription: new FormControl<StatutInscriptionAnnuelle>('en_attente', { nonNullable: true }),
     frais_inscription_payes: new FormControl<boolean>(false, { nonNullable: true }),
     observation: new FormControl('', { nonNullable: true })
   });
@@ -162,7 +166,7 @@ export class InscriptionFormModalComponent {
     classe_id: new FormControl('', { nonNullable: true }),
     ceb_id: new FormControl('', { nonNullable: true }),
     mouvement_id: new FormControl('', { nonNullable: true }),
-    statut_inscription: new FormControl<StatutInscriptionAnnuelle>('inscrit', { nonNullable: true }),
+    statut_inscription: new FormControl<StatutInscriptionAnnuelle>('en_attente', { nonNullable: true }),
     frais_inscription_payes: new FormControl<boolean>(false, { nonNullable: true }),
     observation: new FormControl('', { nonNullable: true })
   });
@@ -193,14 +197,15 @@ export class InscriptionFormModalComponent {
         this.foundCatechumene.set(null);
         this.searchMatricule.set('');
         this.searchMatriculeError.set(null);
+        this.isSubmitting.set(false);
         this.nouvelleForm.reset({
           sexe: 'M',
           est_baptise: false,
-          statut_inscription: 'inscrit',
+          statut_inscription: 'en_attente',
           frais_inscription_payes: false
         });
         this.reinscriptionForm.reset({
-          statut_inscription: 'inscrit',
+          statut_inscription: 'en_attente',
           frais_inscription_payes: false
         });
       }
@@ -227,6 +232,7 @@ export class InscriptionFormModalComponent {
   }
 
   public backToChoice(): void {
+    this.isSubmitting.set(false);
     this.currentMode.set('choice');
     this.foundCatechumene.set(null);
     this.searchMatriculeError.set(null);
@@ -312,6 +318,9 @@ export class InscriptionFormModalComponent {
       return;
     }
 
+    // Déclencher le spinner immédiatement au clic
+    this.isSubmitting.set(true);
+
     const val = this.nouvelleForm.getRawValue();
     const currentAnnee = this.annees().find(a => a.est_active) || (this.annees().length > 0 ? this.annees()[0] : null);
 
@@ -319,7 +328,7 @@ export class InscriptionFormModalComponent {
       nom: val.nom.trim(),
       prenoms: val.prenoms.trim(),
       sexe: val.sexe,
-      date_naissance: val.date_naissance,
+      date_naissance: val.date_naissance ? val.date_naissance : undefined,
       lieu_naissance: val.lieu_naissance ? val.lieu_naissance.trim() : undefined,
       telephone: val.telephone ? val.telephone.trim() : undefined,
       domicile: val.domicile ? val.domicile.trim() : undefined,
@@ -383,6 +392,9 @@ export class InscriptionFormModalComponent {
       return;
     }
 
+    // Déclencher le spinner immédiatement au clic
+    this.isSubmitting.set(true);
+
     const val = this.reinscriptionForm.getRawValue();
     const currentAnnee = this.annees().find(a => a.est_active) || (this.annees().length > 0 ? this.annees()[0] : null);
 
@@ -437,6 +449,9 @@ export class InscriptionFormModalComponent {
       return;
     }
 
+    // Déclencher le spinner immédiatement au clic
+    this.isSubmitting.set(true);
+
     const val = this.editForm.getRawValue();
     const currentAnnee = this.annees().find(a => a.id === item.annee_catechese_id) || item.annee_catechese;
 
@@ -470,6 +485,7 @@ export class InscriptionFormModalComponent {
   }
 
   public onClose(): void {
+    this.isSubmitting.set(false);
     this.formClosed.emit();
   }
 }

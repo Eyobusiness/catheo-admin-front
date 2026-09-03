@@ -180,6 +180,35 @@
   margin: 4px 0 0 0;
 }
 
+.doc-filter-pills {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 4px;
+  font-size: 0.95rem;
+  color: #1e293b;
+}
+
+.pill-item strong {
+  color: #0f172a;
+}
+
+.pill-sep {
+  color: #94a3b8;
+  font-weight: 700;
+}
+
+.th-mat,
+.td-mat {
+  width: 90px;
+  min-width: 90px;
+  text-align: center;
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: 700;
+  color: #991b1b;
+}
+
 /* Official Print Table */
 .official-print-table {
   width: 100%;

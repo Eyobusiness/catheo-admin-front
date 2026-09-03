@@ -9,6 +9,7 @@ import { CatechumeneService } from '../../../Catechumenes/liste-catechumene/serv
 import { InscriptionAnnuelleService } from '../../../Catechumenes/inscriptions-annuelles/services/inscription-annuelle.service';
 import { HeaderParoissePrintComponent } from '../../components/header-paroisse-print/header-paroisse-print.component';
 import { FooterParoissePrintComponent } from '../../components/footer-paroisse-print/footer-paroisse-print.component';
+import { PdfService } from '../../../../core/services/pdf.service';
 
 @Component({
   selector: 'app-bilan-annuel-print',
@@ -24,6 +25,7 @@ export class BilanAnnuelPrintComponent implements OnInit {
   protected readonly classeService = inject(ClasseService);
   protected readonly catechumeneService = inject(CatechumeneService);
   protected readonly inscriptionService = inject(InscriptionAnnuelleService);
+  protected readonly pdfService = inject(PdfService);
 
   // Filtres Dynamiques
   public readonly selectedSectionId = signal<string>('tous');
@@ -158,7 +160,17 @@ export class BilanAnnuelPrintComponent implements OnInit {
   }
 
   public triggerPrint(): void {
-    window.print();
+    const filters: any = {
+      orientation: this.orientation()
+    };
+    if (this.selectedSectionId() !== 'tous') filters.section_id = this.selectedSectionId();
+    if (this.selectedNiveauId() !== 'tous') filters.niveau_id = this.selectedNiveauId();
+    if (this.selectedClasseId() !== 'tous') filters.classe_id = this.selectedClasseId();
+
+    this.pdfService.previewBilanAnnuelPdf(filters, {
+      title: 'Bilan Annuel Catéchétique',
+      fileName: 'bilan-annuel-catechese.pdf'
+    });
   }
 
   public toggleOrientation(mode: 'portrait' | 'landscape'): void {

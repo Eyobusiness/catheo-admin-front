@@ -1,6 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, catchError, of, tap, throwError } from 'rxjs';
+import { Observable, catchError, map, of, tap, throwError } from 'rxjs';
 import {
   InscriptionAnnuelleDto,
   CreateInscriptionAnnuelleDto,
@@ -40,29 +40,47 @@ export class InscriptionAnnuelleService {
     return this.http.get<any>(this.baseUrl).pipe(
       tap(res => {
         const raw = extractArrayData(res);
-        const normalized: InscriptionAnnuelleDto[] = raw.map((item: any) => ({
-          id: item.id,
-          code_inscription: item.code_inscription || `INS-${item.id?.substring(0, 6)}`,
-          date_inscription: item.date_inscription || new Date().toISOString(),
-          statut_inscription: item.statut_inscription || 'inscrit',
-          frais_inscription_payes: item.frais_inscription_payes ?? false,
-          observation: item.observation,
-          catechumene_id: item.catechumene_id || item.catechumene?.id,
-          catechumene: item.catechumene,
-          annee_catechese_id: item.annee_catechese_id || item.annee_catechese?.id,
-          annee_catechese: item.annee_catechese,
-          section_id: item.section_id || item.section?.id,
-          section: item.section,
-          niveau_id: item.niveau_id || item.niveau?.id,
-          niveau: item.niveau,
-          classe_id: item.classe_id || item.classe?.id,
-          classe: item.classe,
-          ceb_id: item.ceb_id || item.ceb?.id,
-          ceb: item.ceb,
-          mouvement_id: item.mouvement_id || item.mouvement?.id,
-          mouvement: item.mouvement,
-          created_at: item.created_at || new Date().toISOString()
-        }));
+        const normalized: InscriptionAnnuelleDto[] = raw.map((item: any) => {
+          const isFraisPayes = (
+            item.frais_inscription_payes === true ||
+            item.frais_inscription_payes === 1 ||
+            item.frais_inscription_payes === '1' ||
+            item.frais_inscription_payes === 'true' ||
+            item.frais_payes === true ||
+            item.frais_payes === 1 ||
+            item.frais_payes === '1' ||
+            item.statut_paiement === 'paye' ||
+            item.statut_paiement === 'solde' ||
+            item.est_solde === true ||
+            (Array.isArray(item.operations) && item.operations.some((o: any) => o.statut === 'paye' || o.statut_paiement === 'paye')) ||
+            (Array.isArray(item.operations_paiements) && item.operations_paiements.some((o: any) => o.statut === 'paye' || o.statut_paiement === 'paye')) ||
+            (Array.isArray(item.paiements) && item.paiements.length > 0)
+          );
+
+          return {
+            id: item.id,
+            code_inscription: item.code_inscription || `INS-${item.id?.substring(0, 6)}`,
+            date_inscription: item.date_inscription || new Date().toISOString(),
+            statut_inscription: item.statut_inscription || 'inscrit',
+            frais_inscription_payes: isFraisPayes,
+            observation: item.observation,
+            catechumene_id: item.catechumene_id || item.catechumene?.id,
+            catechumene: item.catechumene,
+            annee_catechese_id: item.annee_catechese_id || item.annee_catechese?.id,
+            annee_catechese: item.annee_catechese,
+            section_id: item.section_id || item.section?.id,
+            section: item.section,
+            niveau_id: item.niveau_id || item.niveau?.id,
+            niveau: item.niveau,
+            classe_id: item.classe_id || item.classe?.id,
+            classe: item.classe,
+            ceb_id: item.ceb_id || item.ceb?.id,
+            ceb: item.ceb,
+            mouvement_id: item.mouvement_id || item.mouvement?.id,
+            mouvement: item.mouvement,
+            created_at: item.created_at || new Date().toISOString()
+          };
+        });
         this.inscriptions.set(normalized);
         this.isLoading.set(false);
       }),
@@ -92,52 +110,60 @@ export class InscriptionAnnuelleService {
     context?: { catechumene?: any; annee?: any; section?: any; niveau?: any; classe?: any; ceb?: any; mouvement?: any }
   ): Observable<InscriptionAnnuelleDto> {
     this.isLoading.set(true);
-    return this.http.post<any>(this.baseUrl, dto).pipe(
-      tap(res => {
+
+    // Nettoyer le payload pour ne pas envoyer des chaînes vides sur les clés étrangères
+    const payload: Record<string, any> = {
+      catechumene_id: dto.catechumene_id,
+      annee_catechese_id: dto.annee_catechese_id,
+      niveau_id: dto.niveau_id,
+      statut_inscription: dto.statut_inscription || (dto.classe_id ? 'valide' : 'en_attente'),
+      frais_inscription_payes: dto.frais_inscription_payes ?? false,
+      date_inscription: dto.date_inscription || new Date().toISOString().substring(0, 10)
+    };
+
+    if (dto.section_id) payload['section_id'] = dto.section_id;
+    if (dto.classe_id) payload['classe_id'] = dto.classe_id;
+    if (dto.ceb_id) payload['ceb_id'] = dto.ceb_id;
+    if (dto.mouvement_id) payload['mouvement_id'] = dto.mouvement_id;
+    if (dto.observation && dto.observation.trim()) payload['observation'] = dto.observation.trim();
+
+    return this.http.post<any>(this.baseUrl, payload).pipe(
+      map(res => {
         this.isLoading.set(false);
-        const item: any = res.data || res;
+        const item: any = res?.data?.inscription || res?.data?.item || res?.data?.data || res?.data || res?.inscription || res;
+        const realId = item?.id ?? item?.uuid ?? item?.id_inscription ?? (typeof res?.id === 'string' || typeof res?.id === 'number' ? String(res.id) : null);
         const created: InscriptionAnnuelleDto = {
           ...dto,
-          id: item.id || `ins-${Date.now()}`,
-          code_inscription: item.code_inscription || `INS-${new Date().getFullYear()}-${Math.floor(100 + Math.random() * 900)}`,
-          date_inscription: dto.date_inscription || item.date_inscription || new Date().toISOString().substring(0, 10),
-          statut_inscription: item.statut_inscription || (dto.classe_id ? 'valide' : 'inscrit'),
-          frais_inscription_payes: item.frais_inscription_payes ?? dto.frais_inscription_payes ?? false,
-          observation: dto.observation || item.observation,
-          catechumene: item.catechumene || context?.catechumene,
-          annee_catechese: item.annee_catechese || context?.annee,
-          section: item.section || context?.section,
-          niveau: item.niveau || context?.niveau,
-          classe: item.classe || context?.classe,
-          ceb: item.ceb || context?.ceb,
-          mouvement: item.mouvement || context?.mouvement,
-          created_at: item.created_at || new Date().toISOString()
+          ...item,
+          id: realId ? String(realId) : `ins-${Date.now()}`,
+          code_inscription: item?.code_inscription || `INS-${new Date().getFullYear()}-${Math.floor(100 + Math.random() * 900)}`,
+          date_inscription: dto.date_inscription || item?.date_inscription || new Date().toISOString().substring(0, 10),
+          statut_inscription: item?.statut_inscription || (dto.classe_id ? 'valide' : 'en_attente'),
+          frais_inscription_payes: item?.frais_inscription_payes ?? dto.frais_inscription_payes ?? false,
+          observation: dto.observation || item?.observation,
+          catechumene: item?.catechumene || context?.catechumene,
+          annee_catechese: item?.annee_catechese || context?.annee,
+          section: item?.section || context?.section,
+          niveau: item?.niveau || context?.niveau,
+          classe: item?.classe || context?.classe,
+          ceb: item?.ceb || context?.ceb,
+          mouvement: item?.mouvement || context?.mouvement,
+          created_at: item?.created_at || new Date().toISOString()
         };
         this.addOrUpdateLocal(created);
         this.toastService.success('Inscription Enregistrée', `L'inscription annuelle a été validée.`);
+        return created;
       }),
       catchError((err: HttpErrorResponse) => {
         this.isLoading.set(false);
-        const newLocal: InscriptionAnnuelleDto = {
-          ...dto,
-          id: `ins-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-          code_inscription: `INS-${new Date().getFullYear()}-${Math.floor(100 + Math.random() * 900)}`,
-          date_inscription: dto.date_inscription || new Date().toISOString().substring(0, 10),
-          statut_inscription: dto.classe_id ? 'valide' : 'inscrit',
-          frais_inscription_payes: dto.frais_inscription_payes ?? false,
-          observation: dto.observation,
-          catechumene: context?.catechumene,
-          annee_catechese: context?.annee,
-          section: context?.section,
-          niveau: context?.niveau,
-          classe: context?.classe,
-          ceb: context?.ceb,
-          mouvement: context?.mouvement,
-          created_at: new Date().toISOString()
-        };
-        this.addOrUpdateLocal(newLocal);
-        this.toastService.success('Inscription Enregistrée', `L'inscription annuelle a été enregistrée.`);
-        return of(newLocal);
+        const apiMessage = err.error?.message || (err.error?.errors
+          ? Object.values(err.error?.errors || {}).flat().join(' | ')
+          : null);
+        this.toastService.error(
+          'Erreur d\'inscription',
+          apiMessage || 'L\'enregistrement de l\'inscription annuelle a échoué.'
+        );
+        return throwError(() => err);
       })
     );
   }

@@ -72,18 +72,18 @@
 
           <!-- Action Buttons -->
           <td class="text-end">
-            <div class="row-actions">
-              <app-icon-button
-                variant="ghost"
-                size="sm"
-                title="Modifier les droits du profil"
-                ariaLabel="Modifier"
-                (clicked)="onEdit(profil)"
-              >
-                <i class="bi bi-pencil"></i>
-              </app-icon-button>
-
+          <div class="row-actions">
               @if (!profil.is_system) {
+                <app-icon-button
+                  variant="ghost"
+                  size="sm"
+                  title="Modifier les droits du profil"
+                  ariaLabel="Modifier"
+                  (clicked)="onEdit(profil)"
+                >
+                  <i class="bi bi-pencil"></i>
+                </app-icon-button>
+
                 <app-icon-button
                   variant="ghost"
                   size="sm"

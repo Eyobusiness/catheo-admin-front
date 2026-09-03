@@ -122,7 +122,7 @@
         <!-- Nom officiel de la catéchèse -->
         <div class="form-group">
           <label class="form-label" for="nom">
-            Nom de la paroise <span class="required">*</span>
+            Nom de la paroisse <span class="required">*</span>
           </label>
           <input
             id="nom"
@@ -134,6 +134,41 @@
           @if (form.controls.nom.touched && form.controls.nom.invalid) {
             <span class="field-error">Le nom de la catéchèse est obligatoire (min. 3 caractères).</span>
           }
+        </div>
+
+        <!-- Préfixes (Matricule & Reçu) -->
+        <div class="form-row col-2">
+          <div class="form-group">
+            <label class="form-label" for="prefixe_matricule">
+              Préfixe Matricule
+            </label>
+            <div class="input-with-icon">
+              <i class="bi bi-person-vcard prefix-icon"></i>
+              <input
+                id="prefixe_matricule"
+                type="text"
+                formControlName="prefixe_matricule"
+                class="form-control with-icon"
+                placeholder="Ex: CAT- ou CIM-"
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="prefixe_recu">
+              Préfixe Reçu
+            </label>
+            <div class="input-with-icon">
+              <i class="bi bi-receipt-cutoff prefix-icon"></i>
+              <input
+                id="prefixe_recu"
+                type="text"
+                formControlName="prefixe_recu"
+                class="form-control with-icon"
+                placeholder="Ex: REC- ou CIM/REC/"
+              />
+            </div>
+          </div>
         </div>
 
         <!-- Diocèse & Doyenné -->
@@ -374,6 +409,14 @@
           <div class="summary-item">
             <span class="summary-label"><i class="bi bi-people"></i> Coordination</span>
             <span class="summary-value">{{ paroisse().coordination_nom || 'Non renseigné' }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label"><i class="bi bi-person-vcard"></i> Préfixe Matricule</span>
+            <span class="summary-value">{{ paroisse().prefixe_matricule || 'Non défini' }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label"><i class="bi bi-receipt-cutoff"></i> Préfixe Reçu</span>
+            <span class="summary-value">{{ paroisse().prefixe_recu || 'Non défini' }}</span>
           </div>
           <div class="summary-item">
             <span class="summary-label"><i class="bi bi-telephone-fill"></i> Contact</span>

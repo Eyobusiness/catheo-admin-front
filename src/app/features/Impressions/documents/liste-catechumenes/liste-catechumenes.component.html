@@ -1,0 +1,114 @@
+@if (data(); as d) {
+  <article class="liste-doc-container">
+    <!-- EN-TÊTE OFFICIEL PAROISSIAL PAYSAGE -->
+    <header class="doc-header-landscape">
+      <div class="header-logo-col left">
+        @if (logoParoisse()) {
+          <img [src]="logoParoisse()" alt="Logo Paroisse" class="parish-logo" />
+        }
+      </div>
+
+      <div class="header-center-col">
+        @if (diocese()) {
+          <div class="doc-diocese">{{ diocese() | uppercase }}</div>
+        }
+        <h1 class="doc-parish-title">{{ nomParoisse() | uppercase }}</h1>
+        <div class="doc-doc-title">REGISTRE & LISTE OFFICIELLE DES CATÉCHUMÈNES</div>
+        <div class="doc-sub-filter">
+          <span>Année Pastorale : <strong>{{ anneePastorale() }}</strong></span>
+          @if (d.section_nom) { <span> • Section : <strong>{{ d.section_nom }}</strong></span> }
+          @if (d.niveau_nom) { <span> • Niveau : <strong>{{ d.niveau_nom }}</strong></span> }
+          @if (d.classe_nom) { <span> • Classe : <strong>{{ d.classe_nom }}</strong></span> }
+        </div>
+      </div>
+
+      <div class="header-logo-col right">
+        @if (logoCatechese()) {
+          <img [src]="logoCatechese()" alt="Logo Catéchèse" class="catechese-logo" />
+        }
+      </div>
+    </header>
+
+    <!-- TABLEAU OFFICIEL DES CATÉCHUMÈNES -->
+    <table class="official-print-table">
+      <thead>
+        <tr>
+          <th class="th-num">N°</th>
+          <th class="th-mat">MATRICULE</th>
+          <th class="th-name">NOMS ET PRÉNOMS</th>
+          <th class="th-gender">SEXE</th>
+          <th class="th-birth">DATE NAISS.</th>
+          <th class="th-contact">CONTACTS (ÉLÈVE / PARENTS)</th>
+          <th class="th-ceb">CEB / DOMICILE</th>
+          <th class="th-bap">BAPTÊME</th>
+          <th class="th-fees">COTISATION</th>
+          <th class="th-sign">ÉMARGEMENT</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (c of catechumenesList(); track c.id) {
+          <tr>
+            <td class="td-num">{{ c.num }}</td>
+            <td class="td-mat">{{ c.matricule }}</td>
+            <td class="td-name font-bold">{{ c.nom_complet || (c.nom + ' ' + (c.prenoms || '')) }}</td>
+            <td class="td-gender">{{ c.sexe }}</td>
+            <td class="td-birth">{{ (c.date_naissance | date:'dd/MM/yyyy') || '-' }}</td>
+            <td class="td-contact">{{ c.telephone || c.telephone_pere || c.telephone_mere || c.telephone_tuteur || '-' }}</td>
+            <td class="td-ceb">{{ c.ceb_nom || c.domicile || '-' }}</td>
+            <td class="td-bap">
+              <span class="badge-mini" [class.badge-done]="c.est_baptise">
+                {{ c.est_baptise ? 'Oui' : 'Non' }}
+              </span>
+            </td>
+            <td class="td-fees">
+              <span class="badge-mini" [class.badge-done]="c.frais_payes">
+                {{ c.frais_payes ? 'À jour' : 'En attente' }}
+              </span>
+            </td>
+            <td class="td-sign"></td>
+          </tr>
+        }
+        @if (catechumenesList().length === 0) {
+          <tr>
+            <td colspan="10" class="td-empty">Aucun catéchumène enregistré pour ces critères.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <!-- BLOC STATISTIQUES RÉCAPITULATIVES -->
+    @if (d.statistiques) {
+      <div class="stats-summary-bar">
+        <div class="stat-pill">Total Inscrits : <strong>{{ d.statistiques.total }}</strong></div>
+        <div class="stat-pill">Garçons : <strong>{{ d.statistiques.garcons }}</strong></div>
+        <div class="stat-pill">Filles : <strong>{{ d.statistiques.filles }}</strong></div>
+        <div class="stat-pill">Baptisés : <strong>{{ d.statistiques.baptises }}</strong></div>
+        <div class="stat-pill">Non Baptisés : <strong>{{ d.statistiques.non_baptises }}</strong></div>
+        <div class="stat-pill success">Cotisation à jour : <strong>{{ d.statistiques.frais_a_jour }}</strong></div>
+        @if (d.statistiques.frais_en_retard) {
+          <div class="stat-pill warning">Retard : <strong>{{ d.statistiques.frais_en_retard }}</strong></div>
+        }
+      </div>
+    }
+
+    <!-- SIGNATURES OFFICIELLES EN BAS DE PAGE -->
+    <footer class="doc-landscape-footer">
+      <div class="sig-box">
+        <span class="sig-role">Le Responsable de Catéchèse</span>
+        <div class="sig-line"></div>
+      </div>
+      <div class="sig-box">
+        <span class="sig-role">Le Catéchiste Titulaire</span>
+        <div class="sig-line"></div>
+      </div>
+      <div class="sig-box">
+        <span class="sig-role">Le Curé de la Paroisse (Cachet & Visa)</span>
+        <div class="sig-stamp"></div>
+      </div>
+    </footer>
+  </article>
+} @else {
+  <div class="liste-empty-state">
+    <p>Aucune donnée de registre disponible pour l'impression.</p>
+  </div>
+}

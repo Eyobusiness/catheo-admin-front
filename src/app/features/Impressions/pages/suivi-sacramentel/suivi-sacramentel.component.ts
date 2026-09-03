@@ -10,6 +10,7 @@ import { CatechumeneService } from '../../../Catechumenes/liste-catechumene/serv
 import { InscriptionAnnuelleService } from '../../../Catechumenes/inscriptions-annuelles/services/inscription-annuelle.service';
 import { HeaderParoissePrintComponent } from '../../components/header-paroisse-print/header-paroisse-print.component';
 import { FooterParoissePrintComponent } from '../../components/footer-paroisse-print/footer-paroisse-print.component';
+import { PdfService } from '../../../../core/services/pdf.service';
 
 @Component({
   selector: 'app-suivi-sacramentel-print',
@@ -25,6 +26,7 @@ export class SuiviSacramentelPrintComponent implements OnInit {
   protected readonly classeService = inject(ClasseService);
   protected readonly catechumeneService = inject(CatechumeneService);
   protected readonly inscriptionService = inject(InscriptionAnnuelleService);
+  protected readonly pdfService = inject(PdfService);
 
   public readonly selectedSacrament = signal<SacramentType>('communion');
   public readonly selectedSectionId = signal<string>('tous');
@@ -172,7 +174,22 @@ export class SuiviSacramentelPrintComponent implements OnInit {
   }
 
   public triggerPrint(): void {
-    window.print();
+    const filters: any = {
+      orientation: this.orientation(),
+      sacrement: this.selectedSacrament()
+    };
+    if (this.selectedSectionId() !== 'tous') filters.section_id = this.selectedSectionId();
+    if (this.selectedNiveauId() !== 'tous') filters.niveau_id = this.selectedNiveauId();
+    if (this.selectedClasseId() !== 'tous') filters.classe_id = this.selectedClasseId();
+
+    const classeObj = this.classesFiltrees().find(c => c.id === this.selectedClasseId());
+    const classeNom = classeObj?.nom || 'Toutes les Classes';
+
+    this.pdfService.previewSuiviSacramentalPdf(filters, {
+      title: `Suivi Sacramentel — ${this.selectedSacrament().toUpperCase()}`,
+      subtitle: `Classe : ${classeNom}`,
+      fileName: `suivi-sacramentel-${this.selectedSacrament()}.pdf`
+    });
   }
 
   public toggleOrientation(mode: 'portrait' | 'landscape'): void {

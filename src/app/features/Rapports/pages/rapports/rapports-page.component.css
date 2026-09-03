@@ -242,10 +242,10 @@
   flex-shrink: 0;
 }
 
-.kpi-card.primary .kpi-icon { background: rgba(2, 132, 199, 0.12); color: var(--primary-600); }
-.kpi-card.success .kpi-icon { background: rgba(16, 185, 129, 0.12); color: var(--success-600); }
-.kpi-card.info .kpi-icon { background: rgba(99, 102, 241, 0.12); color: #6366f1; }
-.kpi-card.warning .kpi-icon { background: rgba(245, 158, 11, 0.12); color: var(--warning-600); }
+.kpi-card.primary .kpi-icon{background:rgba(2,132,199,.12);color:var(--primary-600)}
+.kpi-card.success .kpi-icon{background:rgba(16,185,129,.12);color:var(--success-600)}
+.kpi-card.info .kpi-icon{background:rgba(99,102,241,.12);color:#6366f1}
+.kpi-card.warning .kpi-icon{background:rgba(245,158,11,.12);color:var(--warning-600)}
 
 .kpi-body {
   display: flex;
@@ -315,8 +315,8 @@
   border-radius: var(--radius-full);
 }
 
-.evo-badge.positive { background: rgba(16, 185, 129, 0.15); color: var(--success-700); }
-.evo-badge.negative { background: rgba(239, 68, 68, 0.15); color: var(--danger-700); }
+.evo-badge.positive{background:rgba(16,185,129,.15);color:var(--success-700)}
+.evo-badge.negative{background:rgba(239,68,68,.15);color:var(--danger-700)}
 
 .evo-metrics-row {
   display: flex;
@@ -424,10 +424,10 @@
   min-width: 85px;
 }
 
-.seance-stat-pill .lbl { font-size: 0.6875rem; color: var(--neutral-500); }
-.seance-stat-pill .num { font-size: 1rem; font-weight: 700; color: var(--neutral-800); margin-top: 0.15rem; }
-.seance-stat-pill.success .num { color: var(--success-600); }
-.seance-stat-pill.danger .num { color: var(--danger-600); }
+.seance-stat-pill .lbl{font-size:.6875rem;color:var(--neutral-500)}
+.seance-stat-pill .num{font-size:1rem;font-weight:700;color:var(--neutral-800);margin-top:.15rem}
+.seance-stat-pill.success .num{color:var(--success-600)}
+.seance-stat-pill.danger .num{color:var(--danger-600)}
 
 .progress-bar-track {
   width: 100%;
@@ -469,13 +469,12 @@
   border-radius: var(--radius-lg);
 }
 
-.presence-count-item i { font-size: 1.35rem; }
-.presence-count-item.success i { color: var(--success-500); }
-.presence-count-item.danger i { color: var(--danger-500); }
-.presence-count-item.info i { color: var(--primary-500); }
-
-.count-num { font-size: 1.05rem; font-weight: 700; display: block; color: var(--neutral-800); }
-.count-lbl { font-size: 0.6875rem; color: var(--neutral-500); margin-top: 0.1rem; }
+.presence-count-item i{font-size:1.35rem}
+.presence-count-item.success i{color:var(--success-500)}
+.presence-count-item.danger i{color:var(--danger-500)}
+.presence-count-item.info i{color:var(--primary-500)}
+.count-num{font-size:1.05rem;font-weight:700;display:block;color:var(--neutral-800)}
+.count-lbl{font-size:.6875rem;color:var(--neutral-500);margin-top:.1rem}
 
 /* Sacrements Grid */
 .sacrements-summary-grid {
@@ -509,9 +508,9 @@
   font-size: 1rem;
 }
 
-.sacrament-report-card.bapteme .sac-icon { background: rgba(2, 132, 199, 0.15); color: var(--primary-600); }
-.sacrament-report-card.communion .sac-icon { background: rgba(245, 158, 11, 0.15); color: var(--warning-600); }
-.sacrament-report-card.confirmation .sac-icon { background: rgba(239, 68, 68, 0.15); color: var(--danger-600); }
+.sacrament-report-card.bapteme .sac-icon{background:rgba(2,132,199,.15);color:var(--primary-600)}
+.sacrament-report-card.communion .sac-icon{background:rgba(245,158,11,.15);color:var(--warning-600)}
+.sacrament-report-card.confirmation .sac-icon{background:rgba(239,68,68,.15);color:var(--danger-600)}
 
 .sac-name {
   font-size: 0.9375rem;
@@ -536,9 +535,9 @@
   border-radius: var(--radius-md);
 }
 
-.sac-stat .num { font-size: 1.1rem; font-weight: 700; color: var(--neutral-700); }
-.sac-stat .lbl { font-size: 0.6875rem; color: var(--neutral-500); margin-top: 0.15rem; }
-.sac-stat.highlight .num { color: var(--success-600); }
+.sac-stat .num{font-size:1.1rem;font-weight:700;color:var(--neutral-700)}
+.sac-stat .lbl{font-size:.6875rem;color:var(--neutral-500);margin-top:.15rem}
+.sac-stat.highlight .num{color:var(--success-600)}
 
 /* Table */
 .table-responsive {
@@ -609,8 +608,8 @@
   gap: 0.45rem;
 }
 
-.dist-title i { color: var(--primary-500); }
-.dist-val { font-weight: 700; color: var(--neutral-600); }
+.dist-title i{color:var(--primary-500)}
+.dist-val{font-weight:700;color:var(--neutral-600)}
 
 .class-report-item {
   display: flex;
@@ -622,11 +621,11 @@
   border-radius: var(--radius-md);
 }
 
-.cl-info { display: flex; flex-direction: column; }
-.cl-name { font-size: 0.875rem; font-weight: 700; color: var(--neutral-800); }
-.cl-sub { font-size: 0.75rem; color: var(--neutral-500); margin-top: 0.15rem; }
-.cl-metrics { display: flex; align-items: center; gap: 0.875rem; font-size: 0.875rem; }
-.cl-taux { background: var(--primary-50); color: var(--primary-700); padding: 0.2rem 0.5rem; border-radius: var(--radius-sm); font-size: 0.75rem; font-weight: 700; }
+.cl-info{display:flex;flex-direction:column}
+.cl-name{font-size:.875rem;font-weight:700;color:var(--neutral-800)}
+.cl-sub{font-size:.75rem;color:var(--neutral-500);margin-top:.15rem}
+.cl-metrics{display:flex;align-items:center;gap:.875rem;font-size:.875rem}
+.cl-taux{background:var(--primary-50);color:var(--primary-700);padding:.2rem .5rem;border-radius:var(--radius-sm);font-size:.75rem;font-weight:700}
 
 /* Alerts */
 .report-alerts-list {
@@ -653,9 +652,9 @@
   flex-shrink: 0;
 }
 
-.report-alert-item.danger { background: rgba(239, 68, 68, 0.08); border-color: rgba(239, 68, 68, 0.2); color: var(--danger-800); }
-.report-alert-item.warning { background: rgba(245, 158, 11, 0.08); border-color: rgba(245, 158, 11, 0.2); color: #b45309; }
-.report-alert-item.info { background: rgba(2, 132, 199, 0.08); border-color: rgba(2, 132, 199, 0.2); color: var(--primary-800); }
+.report-alert-item.danger{background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.2);color:var(--danger-800)}
+.report-alert-item.warning{background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.2);color:#b45309}
+.report-alert-item.info{background:rgba(2,132,199,.08);border-color:rgba(2,132,199,.2);color:var(--primary-800)}
 
 /* Empty state */
 .empty-bilan-card {
@@ -671,7 +670,7 @@
   color: var(--neutral-500);
 }
 
-.empty-icon { font-size: 3.5rem; color: var(--neutral-300); margin-bottom: 1.25rem; }
+.empty-icon{font-size:3.5rem;color:var(--neutral-300);margin-bottom:1.25rem}
 
 /* Print Utilities */
 .print-only {

@@ -78,7 +78,7 @@
           </div>
 
           <div class="dropdown-list">
-            @for (notif of recentNotifications(); track notif.id) {
+            @for (notif of displayNotifications(); track notif.id) {
               <div
                 class="notification-item"
                 [class.unread]="!notif.is_read"

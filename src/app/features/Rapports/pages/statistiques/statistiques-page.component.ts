@@ -9,6 +9,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RapportsService } from '../../services/rapports.service';
 import { SectionStat } from '../../models/rapports.model';
+import { PdfService } from '../../../../core/services/pdf.service';
 
 @Component({
   selector: 'app-statistiques-page',
@@ -19,6 +20,7 @@ import { SectionStat } from '../../models/rapports.model';
 })
 export class StatistiquesPageComponent {
   public readonly service = inject(RapportsService);
+  private readonly pdfService = inject(PdfService);
 
   // Filtres actifs
   public readonly filterAnnee = signal('2025-2026');
@@ -36,6 +38,8 @@ export class StatistiquesPageComponent {
   });
 
   public printDashboard(): void {
-    window.print();
+    this.pdfService.previewRapportAnnuelPdf({
+      anneeLibelle: this.filterAnnee()
+    });
   }
 }
