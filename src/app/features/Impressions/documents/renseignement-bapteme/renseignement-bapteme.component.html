@@ -1,247 +1,139 @@
-@if (data(); as b) {
-  <article class="baptism-doc-container">
-    <!-- EN-TÊTE OFFICIEL -->
-    <header class="doc-header">
-      <div class="header-logo-col left">
-        @if (logoParoisse()) {
-          <img [src]="logoParoisse()" alt="Logo Paroisse" class="parish-logo" />
-        }
-      </div>
+<article class="baptism-doc-container">
+  <!-- En-tête Paroissial Officiel avec Photo du Catéchumène -->
+  <app-header-paroisse-print
+    customTitle="FICHE DE RENSEIGNEMENTS SACREMENT DE BAPTÊME"
+    [isFicheIndividuelle]="true"
+    [photoProfil]="getPhotoUrl(data())"
+  ></app-header-paroisse-print>
 
-      <div class="header-center-col">
-        @if (diocese()) {
-          <div class="doc-diocese">{{ diocese() | uppercase }}</div>
-        }
-        @if (doyenne()) {
-          <div class="doc-doyenne">{{ doyenne() | uppercase }}</div>
-        }
-        <h1 class="doc-parish-title">{{ nomParoisse() | uppercase }}</h1>
-        <div class="doc-service-title">COMMISSION PASTORALE DES SACREMENTS</div>
-      </div>
-
-      <div class="header-logo-col right">
-        @if (logoCatechese()) {
-          <img [src]="logoCatechese()" alt="Logo Catéchèse" class="catechese-logo" />
-        }
-      </div>
-    </header>
-
-    <!-- BANNIÈRE TITRE DU DOSSIER -->
-    <div class="doc-title-box">
-      <div class="title-badge">DOSSIER SACRAMENTAL OFFICIEL</div>
-      <h2 class="doc-main-title">FICHE DE RENSEIGNEMENT — BAPTÊME</h2>
-      <div class="doc-sub-details">
-        <span>Année Pastorale : <strong>{{ anneePastorale() }}</strong></span>
-        @if (b.classe_nom) { <span> • Classe : <strong>{{ b.classe_nom }}</strong></span> }
-        @if (b.niveau_nom) { <span> • Niveau : <strong>{{ b.niveau_nom }}</strong></span> }
-        <span class="mat-badge">Matricule : <strong>{{ b.matricule }}</strong></span>
-      </div>
+  <div class="sheet-body">
+    <div class="form-dotted-line">
+      <span class="lbl">Année pastorale :</span>
+      <span class="val">{{ anneePastorale() }}</span>
     </div>
 
-    <!-- 1. IDENTITÉ DU FUTUR BAPTISÉ -->
-    <section class="doc-section">
-      <h3 class="section-title">
-        <span class="section-num">1</span>
-        <span>IDENTITÉ DU FUTUR BAPTISÉ</span>
-      </h3>
+    <div class="form-dotted-line">
+      <span class="lbl">Nom et prénoms :</span>
+      <span class="val bold uppercase">{{ getNomPrenoms(data()) }}</span>
+    </div>
 
-      <div class="form-grid">
-        <div class="grid-item span-2">
-          <span class="item-label">Nom et Prénoms :</span>
-          <span class="item-value strong uppercase">{{ b.nom_complet || (b.nom + ' ' + b.prenoms) }}</span>
-        </div>
+    <div class="form-dotted-line form-line-split">
+      <span class="lbl">Date de naissance :</span>
+      <span class="val val-split">{{ getDateNaissance(data()) }}</span>
+      <span class="lbl lbl-split">lieu de naissance :</span>
+      <span class="val val-split">{{ getLieuNaissance(data()) }}</span>
+    </div>
 
-        <div class="grid-item">
-          <span class="item-label">Sexe :</span>
-          <span class="item-value">{{ b.sexe === 'M' ? 'Masculin' : 'Féminin' }}</span>
-        </div>
+    <div class="form-dotted-line">
+      <span class="lbl">Profession :</span>
+      <span class="val">{{ getProfession(data()) }}</span>
+    </div>
 
-        <div class="grid-item">
-          <span class="item-label">Date de naissance :</span>
-          <span class="item-value">{{ (b.date_naissance | date:'dd/MM/yyyy') || '-' }}</span>
-        </div>
+    <div class="form-dotted-line">
+      <span class="lbl doc-text-red">Contact :</span>
+      <span class="val">{{ getContact(data()) }}</span>
+    </div>
 
-        <div class="grid-item">
-          <span class="item-label">Lieu de naissance :</span>
-          <span class="item-value">{{ b.lieu_naissance || '-' }}</span>
-        </div>
+    <div class="form-dotted-line">
+      <span class="lbl">Domicilié à :</span>
+      <span class="val">{{ getDomicile(data()) }}</span>
+    </div>
 
-        <div class="grid-item">
-          <span class="item-label">Profession / École :</span>
-          <span class="item-value">{{ b.profession || '-' }}</span>
-        </div>
+    <div class="form-dotted-line">
+      <span class="lbl">Nom du père :</span>
+      <span class="val">{{ getNomPere(data()) }}</span>
+    </div>
 
-        <div class="grid-item span-2">
-          <span class="item-label">Domicile actuel :</span>
-          <span class="item-value">{{ b.domicile || '-' }}</span>
-        </div>
-      </div>
-    </section>
+    <div class="form-dotted-line">
+      <span class="lbl doc-text-red">Origine du père (ville d'origine) :</span>
+      <span class="val">{{ getOriginePere(data()) }}</span>
+    </div>
 
-    <!-- 2. PARENTS & FILIATION -->
-    <section class="doc-section">
-      <h3 class="section-title">
-        <span class="section-num">2</span>
-        <span>FILIATION & PARENTS</span>
-      </h3>
+    <div class="form-dotted-line">
+      <span class="lbl">Nom de la mère :</span>
+      <span class="val">{{ getNomMere(data()) }}</span>
+    </div>
 
-      <div class="form-grid">
-        <div class="grid-item">
-          <span class="item-label">Nom du Père :</span>
-          <span class="item-value strong">{{ b.nom_pere || '-' }}</span>
-        </div>
-        <div class="grid-item">
-          <span class="item-label">Origine du Père :</span>
-          <span class="item-value">{{ b.origine_pere || '-' }}</span>
-        </div>
-        <div class="grid-item span-2">
-          <span class="item-label">Téléphone du Père :</span>
-          <span class="item-value">{{ b.telephone_pere || '-' }}</span>
-        </div>
+    <div class="form-dotted-line">
+      <span class="lbl doc-text-red">Origine de la mère (ville d'origine) :</span>
+      <span class="val">{{ getOrigineMere(data()) }}</span>
+    </div>
 
-        <div class="grid-item">
-          <span class="item-label">Nom de la Mère :</span>
-          <span class="item-value strong">{{ b.nom_mere || '-' }}</span>
-        </div>
-        <div class="grid-item">
-          <span class="item-label">Origine de la Mère :</span>
-          <span class="item-value">{{ b.origine_mere || '-' }}</span>
-        </div>
-        <div class="grid-item span-2">
-          <span class="item-label">Téléphone de la Mère :</span>
-          <span class="item-value">{{ b.telephone_mere || '-' }}</span>
-        </div>
+    <!-- BLOC PARRAIN -->
+    <div class="sacrament-subheading">PARRAIN</div>
 
-        @if (b.nom_tuteur) {
-          <div class="grid-item">
-            <span class="item-label">Tuteur légal :</span>
-            <span class="item-value strong">{{ b.nom_tuteur }}</span>
-          </div>
-          <div class="grid-item">
-            <span class="item-label">Téléphone Tuteur :</span>
-            <span class="item-value">{{ b.telephone_tuteur || '-' }}</span>
-          </div>
-        }
-      </div>
-    </section>
+    <div class="form-dotted-line">
+      <span class="lbl">Nom et prénoms du parrain :</span>
+      <span class="val bold uppercase">{{ getParrain(data())?.nom_prenoms || getParrain(data())?.nom || '' }}</span>
+    </div>
 
-    <!-- 3. PARRAIN & MARRAINE -->
-    <section class="doc-section">
-      <h3 class="section-title">
-        <span class="section-num">3</span>
-        <span>PARRAIN & MARRAINE</span>
-      </h3>
+    <div class="form-dotted-line">
+      <span class="lbl">Domicilié à :</span>
+      <span class="val">{{ getParrain(data())?.domicile || '' }}</span>
+    </div>
 
-      <div class="godparents-grid">
-        <!-- Parrain -->
-        <div class="godparent-card">
-          <span class="card-role">LE PARRAIN</span>
-          <div class="card-field">
-            <span class="lbl">Nom & Prénoms :</span>
-            <span class="val strong">{{ b.parrain?.nom || '-' }}</span>
-          </div>
-          <div class="card-field">
-            <span class="lbl">Domicile :</span>
-            <span class="val">{{ b.parrain?.domicile || '-' }}</span>
-          </div>
-          <div class="card-field">
-            <span class="lbl">Téléphone :</span>
-            <span class="val">{{ b.parrain?.telephone || '-' }}</span>
-          </div>
-          <div class="card-field">
-            <span class="lbl">Paroisse de baptême :</span>
-            <span class="val">{{ b.parrain?.paroisse_bapteme || '-' }}</span>
-          </div>
-          @if (b.parrain; as p) {
-            @if (p.representant_par) {
-              <div class="card-field sub">
-                <span class="lbl">Représenté par :</span>
-                <span class="val">{{ p.representant_par }} ({{ p.representant_contact || '-' }})</span>
-              </div>
-            }
-          }
-        </div>
+    <div class="form-dotted-line">
+      <span class="lbl">Contact :</span>
+      <span class="val">{{ getParrain(data())?.telephone || '' }}</span>
+    </div>
 
-        <!-- Marraine -->
-        <div class="godparent-card">
-          <span class="card-role">LA MARRAINE</span>
-          <div class="card-field">
-            <span class="lbl">Nom & Prénoms :</span>
-            <span class="val strong">{{ b.marraine?.nom || '-' }}</span>
-          </div>
-          <div class="card-field">
-            <span class="lbl">Domicile :</span>
-            <span class="val">{{ b.marraine?.domicile || '-' }}</span>
-          </div>
-          <div class="card-field">
-            <span class="lbl">Téléphone :</span>
-            <span class="val">{{ b.marraine?.telephone || '-' }}</span>
-          </div>
-          <div class="card-field">
-            <span class="lbl">Paroisse de baptême :</span>
-            <span class="val">{{ b.marraine?.paroisse_bapteme || '-' }}</span>
-          </div>
-          @if (b.marraine; as m) {
-            @if (m.representant_par) {
-              <div class="card-field sub">
-                <span class="lbl">Représentée par :</span>
-                <span class="val">{{ m.representant_par }} ({{ m.representant_contact || '-' }})</span>
-              </div>
-            }
-          }
-        </div>
-      </div>
-    </section>
+    <div class="form-dotted-line">
+      <span class="lbl">Représenté par (en cas d'absence) :</span>
+      <span class="val">{{ getParrain(data())?.representant_nom || getParrain(data())?.representant_par || getParrain(data())?.representantPar || '' }}</span>
+    </div>
 
-    <!-- 4. PIÈCES JOINTES AU DOSSIER -->
-    <section class="doc-section">
-      <h3 class="section-title">
-        <span class="section-num">4</span>
-        <span>PIÈCES FOURNIES AU SECRÉTARIAT</span>
-      </h3>
+    <div class="form-dotted-line">
+      <span class="lbl">Contact :</span>
+      <span class="val">{{ getParrain(data())?.representant_contact || getParrain(data())?.representantContact || '' }}</span>
+    </div>
 
-      <div class="check-items-row">
-        <label class="check-item">
-          <span class="box" [class.checked]="b.pieces_jointes?.extrait_naissance">
-            {{ b.pieces_jointes?.extrait_naissance ? '✓' : '' }}
-          </span>
-          <span>Photocopie Extrait d'Acte de Naissance</span>
-        </label>
+    <!-- BLOC MARRAINE -->
+    <div class="sacrament-subheading">MARRAINE</div>
 
-        <label class="check-item">
-          <span class="box" [class.checked]="b.pieces_jointes?.photo_identite">
-            {{ b.pieces_jointes?.photo_identite ? '✓' : '' }}
-          </span>
-          <span>1 Photo d'identité récente</span>
-        </label>
+    <div class="form-dotted-line">
+      <span class="lbl">Nom et prénoms de la marraine :</span>
+      <span class="val bold uppercase">{{ getMarraine(data())?.nom_prenoms || getMarraine(data())?.nom || '' }}</span>
+    </div>
 
-        <label class="check-item">
-          <span class="box" [class.checked]="b.pieces_jointes?.casuel">
-            {{ b.pieces_jointes?.casuel ? '✓' : '' }}
-          </span>
-          <span>Casuel / Frais de célébration réglés</span>
-        </label>
-      </div>
-    </section>
+    <div class="form-dotted-line form-line-split">
+      <span class="lbl">Domiciliée à :</span>
+      <span class="val val-split">{{ getMarraine(data())?.domicile || '' }}</span>
+      <span class="lbl lbl-split">Contact :</span>
+      <span class="val val-split">{{ getMarraine(data())?.telephone || '' }}</span>
+    </div>
 
-    <!-- SIGNATURES -->
-    <footer class="baptism-signatures-footer">
-      <div class="sig-box">
-        <span class="sig-title">Signature des Parents / Tuteur</span>
-        <div class="sig-area"></div>
-      </div>
-      <div class="sig-box">
-        <span class="sig-title">Signature du Parrain / Marraine</span>
-        <div class="sig-area"></div>
-      </div>
-      <div class="sig-box">
-        <span class="sig-title">Le Curé de la Paroisse (Admis au Baptême)</span>
-        <div class="sig-area-stamp"></div>
-      </div>
-    </footer>
-  </article>
-} @else {
-  <div class="baptism-empty-state">
-    <p>Aucune donnée de renseignement baptême disponible.</p>
+    <div class="form-dotted-line">
+      <span class="lbl">Représentée par (en cas d'absence) :</span>
+      <span class="val">{{ getMarraine(data())?.representant_nom || getMarraine(data())?.representant_par || getMarraine(data())?.representantPar || '' }}</span>
+    </div>
+
+    <div class="form-dotted-line">
+      <span class="lbl">Contact :</span>
+      <span class="val">{{ getMarraine(data())?.representant_contact || getMarraine(data())?.representantContact || '' }}</span>
+    </div>
+
+    <!-- DOSSIER A FOURNIR DANS UN CARD -->
+    <div class="dossier-card">
+      <div class="dossier-card-title">DOSSIER A FOURNIR</div>
+      <ol class="dossier-list">
+        <li>
+          Photocopie du carnet de baptême à jour du parrain ou de la marraine :
+          <ul class="dossier-sublist">
+            <li>Page de couverture</li>
+            <li>Page des sacrements</li>
+            <li>Page du dernier culte à jour</li>
+          </ul>
+        </li>
+        <li>Photocopie de l'extrait d'acte de naissance</li>
+        <li>Une (1) photo d'identité</li>
+      </ol>
+    </div>
+
+    <!-- Pied de page officiel épinglé -->
+    <app-footer-paroisse-print
+      class="doc-footer"
+      pageNumber="Page 1/1"
+      [anneePastorale]="anneePastorale()"
+    ></app-footer-paroisse-print>
   </div>
-}
+</article>

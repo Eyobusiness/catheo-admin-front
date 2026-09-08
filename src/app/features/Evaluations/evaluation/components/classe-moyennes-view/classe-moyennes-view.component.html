@@ -1,0 +1,191 @@
+<div class="moyennes-container">
+  @if (isLoading()) {
+    <div class="loading-state">
+      <div class="spinner-border text-primary" role="status"></div>
+      <p>Calcul et récupération des moyennes depuis le serveur...</p>
+    </div>
+  } @else if (!moyennesData()) {
+    <div class="empty-state">
+      <i class="bi bi-exclamation-circle empty-icon"></i>
+      <h4>Données non disponibles</h4>
+      <p>Impossible de charger les moyennes pour cette classe.</p>
+      <button class="btn btn-primary btn-sm" (click)="loadMoyennes()">
+        <i class="bi bi-arrow-clockwise me-1"></i> Réessayer
+      </button>
+    </div>
+  } @else {
+    <!-- KPI Summary Row -->
+    <div class="kpi-grid">
+      <div class="kpi-card highlight">
+        <div class="kpi-icon-wrap primary">
+          <i class="bi bi-calculator"></i>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-label">Moyenne générale de classe</span>
+          <div class="kpi-value-row">
+            @if (statistiques()?.moyenne_classe !== null && statistiques()?.moyenne_classe !== undefined) {
+              <span class="kpi-value text-primary">{{ statistiques()?.moyenne_classe }}</span>
+              <span class="kpi-unit">/ 20</span>
+            } @else {
+              <span class="kpi-value text-muted">—</span>
+              <span class="kpi-unit">Non évalué</span>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-icon-wrap success">
+          <i class="bi bi-trophy"></i>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-label">Meilleure moyenne</span>
+          <div class="kpi-value-row">
+            @if (statistiques()?.meilleure_moyenne !== null && statistiques()?.meilleure_moyenne !== undefined) {
+              <span class="kpi-value text-success">{{ statistiques()?.meilleure_moyenne }}</span>
+              <span class="kpi-unit">/ 20</span>
+            } @else {
+              <span class="kpi-value text-muted">—</span>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-icon-wrap danger">
+          <i class="bi bi-arrow-down-circle"></i>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-label">Plus faible moyenne</span>
+          <div class="kpi-value-row">
+            @if (statistiques()?.plus_faible_moyenne !== null && statistiques()?.plus_faible_moyenne !== undefined) {
+              <span class="kpi-value text-danger">{{ statistiques()?.plus_faible_moyenne }}</span>
+              <span class="kpi-unit">/ 20</span>
+            } @else {
+              <span class="kpi-value text-muted">—</span>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-icon-wrap info">
+          <i class="bi bi-people"></i>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-label">Élèves évalués</span>
+          <div class="kpi-value-row">
+            <span class="kpi-value">{{ statistiques()?.eleves_evalues || 0 }}</span>
+            <span class="kpi-unit">/ {{ statistiques()?.total_eleves || 0 }} élèves</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table Card -->
+    <div class="card-table">
+      <div class="table-header-info">
+        <div class="search-box">
+          <i class="bi bi-search search-icon"></i>
+          <input
+            type="text"
+            placeholder="Rechercher un élève par nom ou matricule..."
+            [ngModel]="searchQuery()"
+            (ngModelChange)="searchQuery.set($event)"
+          />
+        </div>
+
+        <div class="eval-info-badge">
+          <i class="bi bi-journal-check"></i>
+          <span>{{ statistiques()?.total_evaluations || 0 }} évaluation(s) comptabilisée(s)</span>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th class="text-center" style="width: 50px;">N°</th>
+              <th>Catéchumène</th>
+              <th class="text-center">Évaluations</th>
+              <th class="text-center">Notes saisies</th>
+              <th class="text-center">Moyenne</th>
+              <th>Appréciation générale</th>
+              <th>Détail des notes</th>
+              <th class="text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (el of filteredEleves(); track el.catechumene_id; let idx = $index) {
+              <tr class="data-row">
+                <td class="text-center">
+                  <span class="row-num">{{ idx + 1 }}</span>
+                </td>
+                <td>
+                  <strong class="eleve-nom">{{ el.nom_prenoms }}</strong>
+                  <span class="matricule-sub">{{ el.matricule }}</span>
+                </td>
+                <td class="text-center">
+                  <span class="badge-count">{{ el.nombre_evaluations }}</span>
+                </td>
+                <td class="text-center">
+                  <span class="badge-count" [class.success]="el.nombre_notes > 0">
+                    {{ el.nombre_notes }}/{{ el.nombre_evaluations }}
+                  </span>
+                </td>
+                <td class="text-center">
+                  @if (el.moyenne !== null && el.moyenne !== undefined) {
+                    <div class="moyenne-pill"
+                      [class.top]="el.moyenne >= 16"
+                      [class.good]="el.moyenne >= 14 && el.moyenne < 16"
+                      [class.pass]="el.moyenne >= 10 && el.moyenne < 14"
+                      [class.low]="el.moyenne < 10"
+                    >
+                      {{ el.moyenne }} / 20
+                    </div>
+                  } @else {
+                    <span class="non-evalue-badge">Non évalué</span>
+                  }
+                </td>
+                <td>
+                  <span class="appreciation-text">{{ el.appreciation || '—' }}</span>
+                </td>
+                <td>
+                  <div class="mini-notes-list">
+                    @for (note of el.details_notes; track note.evaluation_id) {
+                      <span
+                        class="mini-note-badge"
+                        [class.empty]="note.note_obtenue === null"
+                        [title]="note.titre + ' : ' + (note.note_obtenue !== null ? note.note_obtenue + '/' + note.note_max : 'Non noté')"
+                      >
+                        {{ note.note_obtenue !== null ? note.note_obtenue : '—' }}
+                      </span>
+                    }
+                  </div>
+                </td>
+                <td class="text-right">
+                  <button
+                    type="button"
+                    class="btn-synthese"
+                    (click)="onSelectEleve(el)"
+                    title="Consulter le parcours et la synthèse"
+                  >
+                    <i class="bi bi-person-lines-fill me-1"></i>
+                    <span>Synthèse</span>
+                  </button>
+                </td>
+              </tr>
+            }
+            @if (filteredEleves().length === 0) {
+              <tr>
+                <td colspan="8" class="empty-cell text-center p-4">
+                  <p class="text-muted">Aucun élève trouvé.</p>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+</div>

@@ -89,9 +89,81 @@
   transition: all var(--transition-fast);
 }
 
-.btn-print:hover {
+.btn-print:hover:not(:disabled) {
   background: var(--primary-700);
   transform: translateY(-1px);
+}
+
+.btn-print:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  background: var(--neutral-400);
+  box-shadow: none;
+}
+
+.filter-group select:disabled {
+  background-color: var(--neutral-100);
+  color: var(--neutral-400);
+  cursor: not-allowed;
+  border-color: var(--neutral-200);
+}
+
+/* Carte message de filtrage préalable */
+.empty-selection-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 3.5rem 2rem;
+  background: var(--neutral-0);
+  border: 1px dashed var(--neutral-300);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  max-width: 800px;
+  margin: 1rem auto;
+}
+
+.empty-icon-wrap {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: var(--primary-50, #eff6ff);
+  color: var(--primary-600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  margin-bottom: 1.25rem;
+}
+
+.empty-selection-card h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--neutral-900);
+  margin: 0 0 0.5rem 0;
+}
+
+.empty-selection-card p {
+  font-size: 0.875rem;
+  color: var(--neutral-600);
+  max-width: 520px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.empty-class-notice {
+  text-align: center !important;
+  padding: 1.75rem 1rem !important;
+  color: var(--neutral-500) !important;
+  font-style: italic;
+  font-size: 0.85rem !important;
+  background-color: #f8fafc;
+}
+
+.empty-class-notice i {
+  margin-right: 0.4rem;
+  color: var(--primary-600);
 }
 
 .toolbar-filters-row {
@@ -172,11 +244,23 @@
   box-sizing: border-box;
   font-family: 'Times New Roman', Times, serif, Arial, sans-serif;
   color: #000;
+  display: flex;
+  flex-direction: column;
 }
 
 .a4-document-container.portrait-mode {
   width: 210mm;
   min-height: 297mm;
+}
+
+.doc-body-wrapper {
+  flex: 1 0 auto;
+}
+
+.doc-footer,
+app-footer-paroisse-print {
+  margin-top: auto !important;
+  page-break-inside: avoid !important;
 }
 
 .doc-title-block {
@@ -190,6 +274,19 @@
   margin: 2px 0 0 0;
   text-transform: uppercase;
   letter-spacing: 0.02em;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.anim-sep {
+  margin: 0 4px;
+}
+
+.anim-text {
+  font-weight: 800;
 }
 
 /* Official Print Table */
@@ -198,31 +295,37 @@
   border-collapse: collapse;
   margin-top: 4px;
   font-size: 0.75rem;
+  table-layout: auto;
 }
 
 .official-print-table th,
 .official-print-table td {
-  border: 1px solid #000;
-  padding: 3px 4px;
-  color: #000;
+  border: 1px solid #334155;
+  padding: 4px 5px;
+  box-sizing: border-box;
+  white-space: nowrap !important;
 }
 
 .black-banner-row th {
-  background-color: #000;
-  color: #fff;
-  font-weight: 800;
+  background-color: #f1f5f9;
+  color: #1e293b;
+  font-weight: 700;
+  font-size: 0.75rem;
   text-transform: uppercase;
-  padding: 4px;
-  font-size: 0.72rem;
+  letter-spacing: 0.03em;
+  text-align: center;
+  border: 1px solid #334155;
 }
 
 .th-num {
-  width: 26px;
+  width: 32px;
+  min-width: 32px;
   text-align: center;
 }
 
 .th-name {
-  width: 210px;
+  width: 220px;
+  min-width: 180px;
   text-align: left;
 }
 
@@ -271,41 +374,17 @@
 }
 
 .td-cell-check {
-  height: 20px;
+  height: 24px;
   min-width: 32px;
-}
-
-/* Signatures en bas de part et d'autre */
-.print-signatures-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-top: 28px;
-  padding: 0 25px;
-  page-break-inside: avoid;
-}
-
-.sig-block {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 240px;
-}
-
-.sig-title {
-  font-size: 0.88rem;
-  font-weight: 800;
-  text-decoration: underline;
-  color: #000;
-  text-align: center;
-}
-
-.sig-space {
-  height: 55px;
 }
 
 /* PRINT MEDIA */
 @media print {
+  @page {
+    size: A4 landscape;
+    margin: 8mm 8mm;
+  }
+
   body {
     background: #fff !important;
     margin: 0 !important;
@@ -324,15 +403,14 @@
 
   .a4-document-container {
     width: 100% !important;
-    min-height: auto !important;
+    min-height: calc(210mm - 24mm) !important;
+    height: auto !important;
     margin: 0 !important;
     padding: 0 !important;
     border: none !important;
     box-shadow: none !important;
-  }
-
-  @page {
-    size: A4 landscape;
-    margin: 8mm 8mm;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
   }
 }

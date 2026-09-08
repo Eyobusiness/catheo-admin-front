@@ -119,6 +119,7 @@
   [isOpen]="isFormModalOpen()"
   [isEditing]="isEditing()"
   [versementToEdit]="selectedVersement()"
+  [soldeDisponible]="kpis().reste_a_reverser"
   [isLoading]="isLoading()"
   (formClosed)="closeModals()"
   (formSubmitted)="handleFormSubmit($event)"

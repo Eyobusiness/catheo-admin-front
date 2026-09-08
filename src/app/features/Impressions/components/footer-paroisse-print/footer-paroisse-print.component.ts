@@ -13,6 +13,7 @@ export class FooterParoissePrintComponent {
   private readonly anneeService = inject(AnneeCatecheseService);
 
   public readonly anneePastorale = input<string>('');
+  public readonly pageNumber = input<string>('');
 
   public readonly anneeDisplay = computed(() => {
     if (this.anneePastorale()) return this.anneePastorale();

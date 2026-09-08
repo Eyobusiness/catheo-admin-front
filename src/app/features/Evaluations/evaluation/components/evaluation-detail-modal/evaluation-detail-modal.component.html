@@ -1,0 +1,172 @@
+<div class="modal-backdrop" (click)="onCancel()">
+  <div class="modal-dialog modal-lg" (click)="$event.stopPropagation()">
+    <!-- Header -->
+    <div class="modal-header">
+      <div class="modal-title-wrap">
+        <div class="modal-icon-badge">
+          <i class="bi bi-info-circle-fill"></i>
+        </div>
+        <div>
+          <h3 class="modal-title">{{ currentEval().titre || currentEval().nom }}</h3>
+          <p class="modal-subtitle">
+            <span>{{ currentEval().type_eval || currentEval().type }}</span>
+            <span class="separator">•</span>
+            <span>{{ currentEval().classe?.nom || 'Classe' }}</span>
+            <span class="separator">•</span>
+            <span>{{ currentEval().date_evaluation || currentEval().date }}</span>
+          </p>
+        </div>
+      </div>
+      <button type="button" class="btn-close" (click)="onCancel()" aria-label="Fermer">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="modal-body">
+      @if (isLoading()) {
+        <div class="loading-state">
+          <div class="spinner-border text-primary" role="status"></div>
+          <p>Chargement des détails...</p>
+        </div>
+      } @else {
+        <!-- Fiche descriptive & KPIs -->
+        <div class="details-overview-grid">
+          <div class="detail-card">
+            <span class="detail-label">Session / Niveau</span>
+            <strong class="detail-value">
+              {{ currentEval().section || currentEval().session || currentEval().classe?.niveau?.section?.nom || '—' }}
+              › {{ currentEval().niveau || currentEval().classe?.niveau?.nom || '—' }}
+            </strong>
+          </div>
+
+          <div class="detail-card">
+            <span class="detail-label">Barème & Coeff.</span>
+            <strong class="detail-value">
+              Note sur {{ bareme() }} (Coeff. {{ currentEval().coefficient }})
+            </strong>
+          </div>
+
+          <div class="detail-card">
+            <span class="detail-label">Année pastorale</span>
+            <strong class="detail-value">{{ currentEval().anneePastorale || 'En cours' }}</strong>
+          </div>
+
+          <div class="detail-card">
+            <span class="detail-label">Statut de l'épreuve</span>
+            <span class="status-pill" [class.actif]="currentEval().statut === 'Actif' || currentEval().statut_code === 'actif'">
+              {{ currentEval().statut }}
+            </span>
+          </div>
+        </div>
+
+        @if (currentEval().description || currentEval().observation) {
+          <div class="description-box">
+            <h5 class="desc-title"><i class="bi bi-card-text me-1"></i> Consignes & Description</h5>
+            <p class="desc-text">{{ currentEval().description || currentEval().observation }}</p>
+          </div>
+        }
+
+        <!-- Statistiques retournées par Laravel -->
+        @if (currentEval().stats) {
+          <div class="stats-section">
+            <h5 class="section-heading"><i class="bi bi-bar-chart-line me-1"></i> Statistiques calculées</h5>
+            <div class="stats-cards-row">
+              <div class="stat-box">
+                <span class="stat-title">Moyenne classe</span>
+                <strong class="stat-number text-primary">
+                  {{ currentEval().stats?.moyenne_classe !== null && currentEval().stats?.moyenne_classe !== undefined ? currentEval().stats?.moyenne_classe : '—' }}
+                </strong>
+                <span class="stat-sub">/ {{ bareme() }}</span>
+              </div>
+              <div class="stat-box">
+                <span class="stat-title">Meilleure note</span>
+                <strong class="stat-number text-success">
+                  {{ currentEval().stats?.plus_forte_note !== null && currentEval().stats?.plus_forte_note !== undefined ? currentEval().stats?.plus_forte_note : '—' }}
+                </strong>
+                <span class="stat-sub">/ {{ bareme() }}</span>
+              </div>
+              <div class="stat-box">
+                <span class="stat-title">Plus faible note</span>
+                <strong class="stat-number text-danger">
+                  {{ currentEval().stats?.plus_faible_note !== null && currentEval().stats?.plus_faible_note !== undefined ? currentEval().stats?.plus_faible_note : '—' }}
+                </strong>
+                <span class="stat-sub">/ {{ bareme() }}</span>
+              </div>
+              <div class="stat-box">
+                <span class="stat-title">Taux de saisie</span>
+                <strong class="stat-number">
+                  {{ currentEval().stats?.saisies_ratio || ((currentEval().stats?.saisies_effectuees || 0) + '/' + (currentEval().stats?.total_eleves || 0)) }}
+                </strong>
+                <span class="stat-sub">élèves évalués</span>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Liste des notes -->
+        <div class="notes-preview-section">
+          <div class="notes-preview-header">
+            <h5 class="section-heading mb-0">
+              <i class="bi bi-list-ol me-1"></i>
+              Notes attribuées ({{ notesList().length }})
+            </h5>
+            <button type="button" class="btn btn-sm btn-outline-primary" (click)="onGoToNotes()">
+              <i class="bi bi-pencil me-1"></i>
+              Ouvrir la saisie
+            </button>
+          </div>
+
+          @if (notesList().length === 0) {
+            <div class="no-notes-alert">
+              <i class="bi bi-exclamation-circle text-muted"></i>
+              <span>Aucune note n'a encore été enregistrée pour cette évaluation.</span>
+            </div>
+          } @else {
+            <div class="table-responsive preview-table-wrap">
+              <table class="preview-table">
+                <thead>
+                  <tr>
+                    <th>Catéchumène</th>
+                    <th class="text-center">Note brute</th>
+                    <th class="text-center">Note /20</th>
+                    <th>Appréciation</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (n of notesList(); track $index) {
+                    <tr>
+                      <td><strong>{{ n.titre || 'Élève' }}</strong></td>
+                      <td class="text-center">
+                        <span class="note-badge-bold">
+                          {{ n.note_obtenue !== null ? n.note_obtenue + '/' + n.note_max : 'Non évalué' }}
+                        </span>
+                      </td>
+                      <td class="text-center">
+                        <span class="note-20">
+                          {{ n.note_sur_20 !== null ? n.note_sur_20 + '/20' : '—' }}
+                        </span>
+                      </td>
+                      <td>
+                        <span class="text-muted">{{ n.appreciation || '—' }}</span>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Footer -->
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" (click)="onCancel()">Fermer</button>
+      <button type="button" class="btn btn-primary" (click)="onGoToNotes()">
+        <i class="bi bi-pencil-square me-1"></i>
+        Saisir / Modifier les notes
+      </button>
+    </div>
+  </div>
+</div>

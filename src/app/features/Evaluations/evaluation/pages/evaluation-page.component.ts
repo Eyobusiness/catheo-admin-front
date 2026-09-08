@@ -3,115 +3,163 @@ import {
   Component,
   OnInit,
   computed,
+  effect,
   inject,
   signal
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {
-  FormControl,
-  FormGroup,
-  FormsModule,
-  ReactiveFormsModule,
-  Validators
-} from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 import { EvaluationService } from '../services/evaluation.service';
-import { ModuleTrimestrielService } from '../../../Organisations/Modules-treimestriels/services/module-trimestriel.service';
+import { SectionService } from '../../../Organisations/Sections/services/section.service';
+import { NiveauService } from '../../../Organisations/Niveaux/services/niveau.service';
 import { ClasseService } from '../../../Organisations/Classe/services/classe.service';
+import { ModuleTrimestrielService } from '../../../Organisations/Modules-treimestriels/services/module-trimestriel.service';
 import { AnneeCatecheseService } from '../../../../core/services/annee-catechese.service';
+import { AuthService } from '../../../../core/services/auth.service';
 import {
   EvaluationDto,
-  EvaluationItem,
-  EvaluationStatus,
-  EvaluationType,
-  CreateEvaluationDto,
-  UpdateEvaluationDto
+  EvaluationFilters,
+  EvaluationType
 } from '../models/evaluation.model';
+import { EvaluationFormModalComponent } from '../components/evaluation-form-modal/evaluation-form-modal.component';
+import { EvaluationNotesGridModalComponent } from '../components/evaluation-notes-grid-modal/evaluation-notes-grid-modal.component';
+import { EvaluationDetailModalComponent } from '../components/evaluation-detail-modal/evaluation-detail-modal.component';
+import { ClasseMoyennesViewComponent } from '../components/classe-moyennes-view/classe-moyennes-view.component';
+import { CatechumeneSyntheseModalComponent } from '../components/catechumene-synthese-modal/catechumene-synthese-modal.component';
 
 @Component({
   selector: 'app-evaluation-page',
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    EvaluationFormModalComponent,
+    EvaluationNotesGridModalComponent,
+    EvaluationDetailModalComponent,
+    ClasseMoyennesViewComponent,
+    CatechumeneSyntheseModalComponent
+  ],
   templateUrl: './evaluation-page.component.html',
   styleUrl: './evaluation-page.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EvaluationPageComponent implements OnInit {
   public readonly service = inject(EvaluationService);
-  public readonly moduleTrimestrielService = inject(ModuleTrimestrielService);
+  public readonly sectionService = inject(SectionService);
+  public readonly niveauService = inject(NiveauService);
   public readonly classeService = inject(ClasseService);
+  public readonly moduleTrimestrielService = inject(ModuleTrimestrielService);
   public readonly anneeService = inject(AnneeCatecheseService);
+  public readonly authService = inject(AuthService);
 
-  public readonly searchQuery = signal('');
+  // Vue active : 'evaluations' ou 'moyennes'
+  public readonly activeTab = signal<'evaluations' | 'moyennes'>('evaluations');
+
+  // Filtres principaux en cascade : Session -> Niveau -> Classe
+  public readonly selectedSectionId = signal<string>(''); // Représente la Session (Enfants, Jeunes, Adultes)
+  public readonly selectedNiveauId = signal<string>('');
+  public readonly selectedClasseId = signal<string>('');
+
+  // Filtres secondaires
+  public readonly searchQuery = signal<string>('');
   public readonly filterType = signal<string>('tous');
   public readonly filterStatut = signal<string>('tous');
-  public readonly filterClasse = signal<string>('toutes');
   public readonly filterPeriode = signal<string>('toutes');
 
+  // Données des référentiels
+  public readonly sections = this.sectionService.sections;
+  public readonly niveaux = this.niveauService.niveaux;
+  public readonly classes = this.classeService.classes;
+  public readonly modules = this.moduleTrimestrielService.modules;
+  public readonly activeAnnee = this.anneeService.activeAnnee;
+  public readonly currentUser = this.authService.currentUser;
+  public readonly isLoading = this.service.isLoading;
+
+  // Modals
+  public readonly isFormModalOpen = signal<boolean>(false);
+  public readonly selectedForEdit = signal<EvaluationDto | null>(null);
+
+  public readonly isNotesGridOpen = signal<boolean>(false);
+  public readonly selectedForNotes = signal<EvaluationDto | null>(null);
+
+  public readonly isDetailModalOpen = signal<boolean>(false);
+  public readonly selectedForDetail = signal<EvaluationDto | null>(null);
+
+  public readonly isSyntheseModalOpen = signal<boolean>(false);
+  public readonly selectedCatechumeneId = signal<string>('');
+
+  public readonly isDeleteModalOpen = signal<boolean>(false);
+  public readonly selectedForDelete = signal<EvaluationDto | null>(null);
+
   public readonly typesList: EvaluationType[] = [
-    'Interrogation',
     'Devoir',
+    'Interrogation',
     'Composition',
     'Examen',
     'Oral'
   ];
 
-  // Dynamic modules trimestriels & classes from backend
-  public readonly modules = this.moduleTrimestrielService.modules;
-  public readonly classes = this.classeService.classes;
-  public readonly activeAnnee = this.anneeService.activeAnnee;
-  public readonly isLoading = this.service.isLoading;
-
-  // Modals
-  public readonly isModalOpen = signal(false);
-  public readonly isEditMode = signal(false);
-  public readonly selectedEval = signal<EvaluationItem | null>(null);
-  public readonly isDeleteModalOpen = signal(false);
-
-  public readonly evalForm = new FormGroup({
-    nom: new FormControl('', [Validators.required, Validators.minLength(3)]),
-    type: new FormControl<EvaluationType>('Devoir', [Validators.required]),
-    module_trimestriel_id: new FormControl('', [Validators.required]),
-    periode: new FormControl('', [Validators.required]),
-    date: new FormControl(new Date().toISOString().split('T')[0], [Validators.required]),
-    classe_id: new FormControl('', [Validators.required]),
-    coefficient: new FormControl(1, [Validators.required, Validators.min(1), Validators.max(10)]),
-    bareme: new FormControl(20, [Validators.required, Validators.min(1), Validators.max(100)]),
-    anneePastorale: new FormControl('2025-2026', [Validators.required]),
-    statut: new FormControl<EvaluationStatus>('Actif', [Validators.required]),
-    observation: new FormControl('')
+  // Est-ce un animateur ?
+  public readonly isAnimateur = computed(() => {
+    const u = this.currentUser();
+    if (!u) return false;
+    const roleStr = String(u.role || u.role_nom || u.profil?.nom || u.profil?.code || '').toLowerCase();
+    return roleStr.includes('animateur') || roleStr.includes('enseignant');
   });
 
-  public ngOnInit(): void {
-    this.service.getAll().subscribe();
-    this.moduleTrimestrielService.getAll().subscribe();
-    this.classeService.getAll().subscribe();
-  }
+  // Niveaux filtrés par la Session sélectionnée
+  public readonly availableNiveaux = computed(() => {
+    const secId = this.selectedSectionId();
+    const all = this.niveaux();
+    if (!secId) return all;
+    return all.filter(n => n.section_id === secId || n.section?.id === secId);
+  });
 
+  // Classes filtrées par la Session et le Niveau sélectionnés
+  public readonly availableClasses = computed(() => {
+    const secId = this.selectedSectionId();
+    const nivId = this.selectedNiveauId();
+    let list = this.classes();
+
+    if (secId) {
+      list = list.filter(c => c.niveau?.section_id === secId || c.niveau?.section?.id === secId);
+    }
+    if (nivId) {
+      list = list.filter(c => c.niveau_id === nivId || c.niveau?.id === nivId);
+    }
+    return list;
+  });
+
+  // Nom de la classe actuellement sélectionnée
+  public readonly selectedClasseName = computed(() => {
+    const cid = this.selectedClasseId();
+    if (!cid) return 'Toutes les classes';
+    const found = this.classes().find(c => c.id === cid);
+    return found ? found.nom : 'Classe sélectionnée';
+  });
+
+  // Liste filtrée localement selon recherche et filtres de tableau
   public readonly filteredEvaluations = computed(() => {
     let list = this.service.evaluations();
     const q = this.searchQuery().toLowerCase().trim();
     const t = this.filterType();
     const s = this.filterStatut();
-    const c = this.filterClasse();
     const p = this.filterPeriode();
 
     if (q) {
       list = list.filter(e =>
         (e.nom || '').toLowerCase().includes(q) ||
+        (e.titre || '').toLowerCase().includes(q) ||
         (e.classe?.nom && e.classe.nom.toLowerCase().includes(q)) ||
-        (e.observation && e.observation.toLowerCase().includes(q))
+        (e.description && e.description.toLowerCase().includes(q))
       );
     }
 
     if (t !== 'tous') {
-      list = list.filter(e => String(e.type || '').toLowerCase() === t.toLowerCase());
+      list = list.filter(e => String(e.type_eval || e.type || '').toLowerCase() === t.toLowerCase());
     }
 
     if (s !== 'tous') {
-      list = list.filter(e => String(e.statut || '').toLowerCase() === s.toLowerCase());
-    }
-
-    if (c !== 'toutes') {
-      list = list.filter(e => e.classe_id === c || e.classe?.id === c);
+      list = list.filter(e => String(e.statut || e.statut_code || '').toLowerCase() === s.toLowerCase());
     }
 
     if (p !== 'toutes') {
@@ -124,11 +172,177 @@ export class EvaluationPageComponent implements OnInit {
     return list;
   });
 
-  public getClasseName(classeId?: string, classeObj?: any): string {
-    if (classeObj?.nom) return classeObj.nom;
-    if (!classeId) return 'Toutes classes';
-    const found = this.classes().find(c => c.id === classeId);
-    return found ? found.nom : 'Classe';
+  constructor() {
+    // Si l'animateur n'a qu'une seule classe, la pré-sélectionner
+    effect(() => {
+      const cls = this.classes();
+      if (this.isAnimateur() && cls.length === 1 && !this.selectedClasseId()) {
+        const single = cls[0];
+        this.selectedClasseId.set(single.id);
+        if (single.niveau_id) this.selectedNiveauId.set(single.niveau_id);
+        if (single.niveau?.section_id) this.selectedSectionId.set(single.niveau.section_id);
+      }
+    });
+  }
+
+  public ngOnInit(): void {
+    // 1. Charger les référentiels
+    this.sectionService.getAll().subscribe();
+    this.niveauService.getAll().subscribe();
+    this.classeService.getAll().subscribe();
+    this.moduleTrimestrielService.getAll().subscribe();
+
+    // 2. Charger les évaluations
+    this.loadEvaluations();
+  }
+
+  /**
+   * Charge les évaluations avec les paramètres stricts attendus par Laravel :
+   * section_id, niveau_id, classe_id, annee_catechese_id
+   */
+  public loadEvaluations(): void {
+    const filters: EvaluationFilters = {};
+
+    const secId = this.selectedSectionId();
+    const nivId = this.selectedNiveauId();
+    const clsId = this.selectedClasseId();
+    const active = this.activeAnnee();
+
+    if (secId) filters.section_id = secId;
+    if (nivId) filters.niveau_id = nivId;
+    if (clsId) filters.classe_id = clsId;
+    if (active?.id) filters.annee_catechese_id = active.id;
+
+    this.service.getAll(filters).subscribe();
+  }
+
+  // --- Gestion du workflow de filtres en cascade ---
+
+  public onSectionChange(sectionId: string): void {
+    this.selectedSectionId.set(sectionId);
+    // Réinitialise les niveaux et classes inférieurs
+    this.selectedNiveauId.set('');
+    this.selectedClasseId.set('');
+    this.loadEvaluations();
+  }
+
+  public onNiveauChange(niveauId: string): void {
+    this.selectedNiveauId.set(niveauId);
+    // Réinitialise la classe
+    this.selectedClasseId.set('');
+    this.loadEvaluations();
+  }
+
+  public onClasseChange(classeId: string): void {
+    this.selectedClasseId.set(classeId);
+    this.loadEvaluations();
+  }
+
+  public resetAllFilters(): void {
+    this.selectedSectionId.set('');
+    this.selectedNiveauId.set('');
+    this.selectedClasseId.set('');
+    this.searchQuery.set('');
+    this.filterType.set('tous');
+    this.filterStatut.set('tous');
+    this.filterPeriode.set('toutes');
+    this.loadEvaluations();
+  }
+
+  // --- Gestion des Modals ---
+
+  public openCreateModal(): void {
+    this.selectedForEdit.set(null);
+    this.isFormModalOpen.set(true);
+  }
+
+  public openEditModal(ev: EvaluationDto): void {
+    this.selectedForEdit.set(ev);
+    this.isFormModalOpen.set(true);
+  }
+
+  public closeFormModal(): void {
+    this.isFormModalOpen.set(false);
+    this.selectedForEdit.set(null);
+  }
+
+  /**
+   * Après création / modification réussie :
+   * Si c'est une création, ouvrir IMMÉDIATEMENT la grille de saisie des notes !
+   */
+  public onEvaluationSaved(ev: EvaluationDto): void {
+    const wasEdit = !!this.selectedForEdit()?.id;
+    this.closeFormModal();
+    this.loadEvaluations();
+
+    if (!wasEdit && ev?.id) {
+      // Règle 9 : Saisie immédiate des notes
+      this.openNotesGrid(ev);
+    }
+  }
+
+  public openNotesGrid(ev: EvaluationDto): void {
+    this.selectedForNotes.set(ev);
+    this.isNotesGridOpen.set(true);
+  }
+
+  public closeNotesGrid(): void {
+    this.isNotesGridOpen.set(false);
+    this.selectedForNotes.set(null);
+  }
+
+  public onNotesSaved(): void {
+    this.loadEvaluations();
+  }
+
+  public openDetailModal(ev: EvaluationDto): void {
+    this.selectedForDetail.set(ev);
+    this.isDetailModalOpen.set(true);
+  }
+
+  public closeDetailModal(): void {
+    this.isDetailModalOpen.set(false);
+    this.selectedForDetail.set(null);
+  }
+
+  public onDetailGoToNotes(ev: EvaluationDto): void {
+    this.closeDetailModal();
+    this.openNotesGrid(ev);
+  }
+
+  public openSynthese(catechumeneId: string): void {
+    this.selectedCatechumeneId.set(catechumeneId);
+    this.isSyntheseModalOpen.set(true);
+  }
+
+  public closeSynthese(): void {
+    this.isSyntheseModalOpen.set(false);
+    this.selectedCatechumeneId.set('');
+  }
+
+  public toggleStatut(ev: EvaluationDto): void {
+    this.service.toggleEvaluationStatut(ev.id).subscribe();
+  }
+
+  public openDeleteModal(ev: EvaluationDto): void {
+    this.selectedForDelete.set(ev);
+    this.isDeleteModalOpen.set(true);
+  }
+
+  public closeDeleteModal(): void {
+    this.isDeleteModalOpen.set(false);
+    this.selectedForDelete.set(null);
+  }
+
+  public confirmDelete(): void {
+    const target = this.selectedForDelete();
+    if (target) {
+      this.service.deleteEvaluation(target.id).subscribe({
+        next: () => {
+          this.closeDeleteModal();
+        }
+      });
+    }
   }
 
   public getTrimestreLibelle(ev: EvaluationDto): string {
@@ -139,150 +353,6 @@ export class EvaluationPageComponent implements OnInit {
       const match = this.modules().find(m => m.id === ev.module_trimestriel_id);
       if (match) return match.libelle;
     }
-    return 'Trimestre';
-  }
-
-  public onTrimestreSelectChange(event: Event): void {
-    const select = event.target as HTMLSelectElement;
-    const moduleId = select.value;
-    const found = this.modules().find(m => m.id === moduleId);
-    if (found) {
-      this.evalForm.controls.periode.setValue(found.libelle);
-      this.evalForm.controls.module_trimestriel_id.setValue(found.id);
-    }
-  }
-
-  public openCreateModal(): void {
-    this.isEditMode.set(false);
-    this.selectedEval.set(null);
-    const active = this.activeAnnee();
-    const defaultAnnee = active ? active.libelle : '2025-2026';
-    const defaultClasse = this.classes().length > 0 ? this.classes()[0].id : '';
-    const defaultModule = this.modules().length > 0 ? this.modules()[0] : null;
-
-    this.evalForm.reset({
-      nom: '',
-      type: 'Devoir',
-      module_trimestriel_id: defaultModule?.id || '',
-      periode: defaultModule?.libelle || '',
-      date: new Date().toISOString().split('T')[0],
-      classe_id: defaultClasse,
-      coefficient: 1,
-      bareme: 20,
-      anneePastorale: defaultAnnee,
-      statut: 'Actif',
-      observation: ''
-    });
-    this.isModalOpen.set(true);
-  }
-
-  public openEditModal(ev: EvaluationItem): void {
-    this.isEditMode.set(true);
-    this.selectedEval.set(ev);
-
-    let moduleId = ev.module_trimestriel_id || ev.module_trimestriel?.id || '';
-    const periodeLibelle = typeof ev.periode === 'string' ? ev.periode : ev.periode?.libelle || '';
-
-    if (!moduleId && periodeLibelle) {
-      const match = this.modules().find(m => m.libelle === periodeLibelle);
-      if (match) moduleId = match.id;
-    }
-
-    const active = this.activeAnnee();
-    const defaultAnnee = active ? active.libelle : (ev.anneePastorale || '2025-2026');
-
-    this.evalForm.patchValue({
-      nom: ev.nom,
-      type: (ev.type as EvaluationType) || 'Devoir',
-      module_trimestriel_id: moduleId,
-      periode: periodeLibelle,
-      date: ev.date ? ev.date.substring(0, 10) : new Date().toISOString().split('T')[0],
-      classe_id: ev.classe_id || ev.classe?.id || '',
-      coefficient: ev.coefficient || 1,
-      bareme: ev.bareme || 20,
-      anneePastorale: defaultAnnee,
-      statut: (ev.statut as EvaluationStatus) || 'Actif',
-      observation: ev.observation || ''
-    });
-    this.isModalOpen.set(true);
-  }
-
-  public closeModal(): void {
-    this.isModalOpen.set(false);
-  }
-
-  public submitForm(): void {
-    if (this.evalForm.invalid) {
-      this.evalForm.markAllAsTouched();
-      return;
-    }
-
-    const val = this.evalForm.getRawValue();
-    const activeAnneeObj = this.activeAnnee();
-    const anneePastoraleStr = activeAnneeObj ? activeAnneeObj.libelle : (val.anneePastorale || '2025-2026');
-
-    let periodeName = val.periode;
-    if (val.module_trimestriel_id) {
-      const found = this.modules().find(m => m.id === val.module_trimestriel_id);
-      if (found) periodeName = found.libelle;
-    }
-
-    if (this.isEditMode() && this.selectedEval()) {
-      const dto: UpdateEvaluationDto = {
-        nom: val.nom!,
-        type: val.type!,
-        module_trimestriel_id: val.module_trimestriel_id || undefined,
-        periode: periodeName!,
-        date: val.date!,
-        date_evaluation: val.date!,
-        classe_id: val.classe_id || undefined,
-        coefficient: Number(val.coefficient),
-        bareme: Number(val.bareme),
-        anneePastorale: anneePastoraleStr,
-        annee_catechese_id: activeAnneeObj?.id || undefined,
-        statut: val.statut!,
-        observation: val.observation || undefined
-      };
-      this.service.update(this.selectedEval()!.id, dto).subscribe(() => {
-        this.closeModal();
-      });
-    } else {
-      const dto: CreateEvaluationDto = {
-        nom: val.nom!,
-        type: val.type!,
-        module_trimestriel_id: val.module_trimestriel_id || undefined,
-        periode: periodeName!,
-        date: val.date!,
-        date_evaluation: val.date!,
-        classe_id: val.classe_id || undefined,
-        coefficient: Number(val.coefficient),
-        bareme: Number(val.bareme),
-        anneePastorale: anneePastoraleStr,
-        annee_catechese_id: activeAnneeObj?.id || undefined,
-        statut: val.statut!,
-        observation: val.observation || undefined
-      };
-      this.service.create(dto).subscribe(() => {
-        this.closeModal();
-      });
-    }
-  }
-
-  public toggleStatut(ev: EvaluationItem): void {
-    this.service.toggleEvaluationStatut(ev.id).subscribe();
-  }
-
-  public openDeleteModal(ev: EvaluationItem): void {
-    this.selectedEval.set(ev);
-    this.isDeleteModalOpen.set(true);
-  }
-
-  public confirmDelete(): void {
-    const target = this.selectedEval();
-    if (target) {
-      this.service.deleteEvaluation(target.id).subscribe(() => {
-        this.isDeleteModalOpen.set(false);
-      });
-    }
+    return 'Période';
   }
 }

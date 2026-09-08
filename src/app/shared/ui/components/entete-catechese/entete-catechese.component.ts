@@ -33,31 +33,31 @@ export class EnteteCatecheseComponent implements OnInit {
   // Logo Paroisse (Haut à gauche)
   public readonly logoParoisse = computed(() => {
     const p = this.paroisseConfig();
-    return p?.logo_paroisse_url || p?.logo_paroisse || p?.logo_url || '';
+    return p?.logo_paroisse_url || p?.logo_paroisse || p?.logo_url || '-';
   });
 
   // Logo Catéchèse (Haut à droite)
   public readonly logoCatechese = computed(() => {
     const p = this.paroisseConfig();
-    return p?.logo_catechese_url || p?.logo_catechese || '';
+    return p?.logo_catechese_url || p?.logo_catechese || '-';
   });
 
   // Nom de la Paroisse
   public readonly nomParoisse = computed(() => {
     const p = this.paroisseConfig();
-    return p?.nom_paroisse || p?.nom || 'PAROISSE COEUR IMMACULÉ DE MARIE';
+    return p?.nom_paroisse || p?.nom || '-';
   });
 
   // Diocèse
   public readonly diocese = computed(() => {
     const p = this.paroisseConfig();
-    return p?.diocese || 'ARCHIDIOCÈSE D\'ABIDJAN';
+    return p?.diocese || '';
   });
 
   // Doyenné
   public readonly doyenne = computed(() => {
     const p = this.paroisseConfig();
-    return p?.doyenne || 'VICARIAT ÉPISCOPAL';
+    return p?.doyenne || '';
   });
 
   // Localisation : Commune ou Quartier - Adresse
@@ -65,8 +65,8 @@ export class EnteteCatecheseComponent implements OnInit {
     const p = this.paroisseConfig();
     const parts: string[] = [];
 
-    const zone = p?.commune || p?.ville || '';
-    const adresse = p?.adresse || '';
+    const zone = p?.commune || p?.ville || '-';
+    const adresse = p?.adresse || '-';
 
     if (zone && adresse) {
       parts.push(`${zone} - ${adresse}`);
@@ -84,13 +84,13 @@ export class EnteteCatecheseComponent implements OnInit {
   // Téléphone / Contact
   public readonly telephone = computed(() => {
     const p = this.paroisseConfig();
-    return p?.telephone || '';
+    return p?.telephone || '-';
   });
 
   // Année pastorale active par défaut
   public readonly displayAnnee = computed(() => {
     if (this.anneePastorale()) return this.anneePastorale();
     const active = this.anneeService.activeAnnee();
-    return active?.libelle || '2026-2027';
+    return active?.libelle || '-';
   });
 }

@@ -2,16 +2,40 @@
   <!-- En-tête de page -->
   <div class="page-header">
     <div class="header-titles">
-      <h2 class="page-title">
-        <i class="bi bi-clipboard2-check"></i>
-        <span>Évaluations</span>
-      </h2>
-      <p class="page-subtitle">
-        Planifiez, configurez et gérez les évaluations de la catéchèse.
-      </p>
+      <div class="header-icon-wrap">
+        <i class="bi bi-clipboard2-check-fill"></i>
+      </div>
+      <div>
+        <h2 class="page-title">Évaluations</h2>
+        <p class="page-subtitle">
+          Gestion pédagogique des épreuves, barèmes, coefficients et saisie des notes.
+        </p>
+      </div>
     </div>
 
     <div class="header-actions">
+      <!-- Sélecteur d'onglets Vue Évaluations / Vue Moyennes -->
+      <div class="nav-tabs-pill">
+        <button
+          type="button"
+          class="tab-btn"
+          [class.active]="activeTab() === 'evaluations'"
+          (click)="activeTab.set('evaluations')"
+        >
+          <i class="bi bi-list-task me-1"></i>
+          <span>Épreuves & Devoirs</span>
+        </button>
+        <button
+          type="button"
+          class="tab-btn"
+          [class.active]="activeTab() === 'moyennes'"
+          (click)="activeTab.set('moyennes')"
+        >
+          <i class="bi bi-bar-chart-line-fill me-1"></i>
+          <span>Résultats & Moyennes</span>
+        </button>
+      </div>
+
       <button type="button" class="btn btn-primary" (click)="openCreateModal()">
         <i class="bi bi-plus-lg"></i>
         <span>Nouvelle évaluation</span>
@@ -19,307 +43,372 @@
     </div>
   </div>
 
-  <!-- Barre de Filtres & Recherche -->
-  <div class="toolbar-card">
-    <div class="filter-group">
-      <label class="filter-label">Classe :</label>
-      <select class="filter-select" [ngModel]="filterClasse()" (ngModelChange)="filterClasse.set($event)">
-        <option value="toutes">Toutes les classes</option>
-        @for (c of classes(); track c.id) {
-          <option [value]="c.id">{{ c.nom }}</option>
-        }
-      </select>
-    </div>
-
-    <div class="filter-group">
-      <label class="filter-label">Trimestre :</label>
-      <select class="filter-select" [ngModel]="filterPeriode()" (ngModelChange)="filterPeriode.set($event)">
-        <option value="toutes">Tous les trimestres</option>
-        @for (m of modules(); track m.id) {
-          <option [value]="m.libelle">{{ m.libelle }}</option>
-        }
-      </select>
-    </div>
-
-    <div class="filter-group">
-      <label class="filter-label">Type :</label>
-      <select class="filter-select" [ngModel]="filterType()" (ngModelChange)="filterType.set($event)">
-        <option value="tous">Tous les types</option>
-        @for (t of typesList; track t) {
-          <option [value]="t">{{ t }}</option>
-        }
-      </select>
-    </div>
-
-    <div class="filter-group">
-      <label class="filter-label">Statut :</label>
-      <select class="filter-select" [ngModel]="filterStatut()" (ngModelChange)="filterStatut.set($event)">
-        <option value="tous">Tous les statuts</option>
-        <option value="Actif">Actif</option>
-        <option value="Inactif">Inactif</option>
-      </select>
-    </div>
-  </div>
-
-  <!-- Tableau des Évaluations -->
-  <div class="card-table">
-    <div class="table-header-info">
-      <div class="search-box table-search">
-        <i class="bi bi-search search-icon"></i>
-        <input
-          type="text"
-          placeholder="Rechercher une évaluation..."
-          [ngModel]="searchQuery()"
-          (ngModelChange)="searchQuery.set($event)"
-        />
-      </div>
-
-      <div class="info-title">
-        <i class="bi bi-list-check"></i>
-        <span>Liste des épreuves ({{ filteredEvaluations().length }})</span>
+  <!-- CONTEXTE PÉDAGOGIQUE EN CASCADE : SESSION -> NIVEAU -> CLASSE -->
+  <div class="cascade-filter-card">
+    <div class="cascade-filter-header">
+      <span class="cascade-title">
+        <i class="bi bi-funnel-fill text-primary me-1"></i>
+        Contexte Pédagogique
+      </span>
+      <div class="cascade-active-annee">
+        <i class="bi bi-calendar3 me-1"></i>
+        <span>Année : <strong>{{ activeAnnee()?.libelle || 'En cours' }}</strong></span>
       </div>
     </div>
 
-    <div class="table-responsive">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Nom de l'épreuve</th>
-            <th>Classe</th>
-            <th>Type</th>
-            <th>Trimestre</th>
-            <th>Date</th>
-            <th class="text-center">Coeff.</th>
-            <th class="text-center">Barème</th>
-            <th>Statut</th>
-            <th class="text-right">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (ev of filteredEvaluations(); track ev.id) {
-            <tr class="data-row">
-              <td>
-                <strong class="item-nom">{{ ev.nom }}</strong>
-                @if (ev.observation) {
-                  <span class="item-sub-desc">{{ ev.observation }}</span>
-                }
-              </td>
-              <td>
-                <span class="classe-pill">
-                  <i class="bi bi-door-open-fill"></i>
-                  {{ getClasseName(ev.classe_id, ev.classe) }}
-                </span>
-              </td>
-              <td>
-                <span class="type-pill" [class.interrogation]="ev.type === 'Interrogation'"
-                                      [class.devoir]="ev.type === 'Devoir'"
-                                      [class.composition]="ev.type === 'Composition'"
-                                      [class.examen]="ev.type === 'Examen'"
-                                      [class.oral]="ev.type === 'Oral'">
-                  {{ ev.type }}
-                </span>
-              </td>
-              <td>
-                <span class="periode-badge">
-                  <i class="bi bi-calendar3-range me-1"></i>
-                  {{ getTrimestreLibelle(ev) }}
-                </span>
-              </td>
-              <td>
-                <span class="item-date">{{ ev.date }}</span>
-              </td>
-              <td class="text-center">
-                <span class="badge-coeff">Coeff. {{ ev.coefficient }}</span>
-              </td>
-              <td class="text-center">
-                <span class="badge-bareme">/ {{ ev.bareme }}</span>
-              </td>
-              <td>
-                <span
-                  class="status-badge"
-                  [class.actif]="ev.statut === 'Actif'"
-                  [class.inactif]="ev.statut === 'Inactif'"
-                  (click)="toggleStatut(ev)"
-                  title="Cliquer pour basculer le statut"
-                >
-                  <i class="bi" [class.bi-check-circle-fill]="ev.statut === 'Actif'" [class.bi-x-circle-fill]="ev.statut === 'Inactif'"></i>
-                  {{ ev.statut }}
-                </span>
-              </td>
-              <td class="text-right">
-                <div class="action-group">
-                  <button type="button" class="action-btn toggle-btn" (click)="toggleStatut(ev)" [title]="ev.statut === 'Actif' ? 'Désactiver' : 'Activer'">
-                    <i class="bi" [class.bi-toggle-on]="ev.statut === 'Actif'" [class.bi-toggle-off]="ev.statut === 'Inactif'"></i>
-                  </button>
-                  <button type="button" class="action-btn edit-btn" (click)="openEditModal(ev)" title="Modifier">
-                    <i class="bi bi-pencil"></i>
-                  </button>
-                  <button type="button" class="action-btn delete-btn" (click)="openDeleteModal(ev)" title="Supprimer">
-                    <i class="bi bi-trash"></i>
-                  </button>
-                </div>
-              </td>
-            </tr>
+    <div class="cascade-grid">
+      <!-- Filtre 1 — Session (Section backend) -->
+      <div class="cascade-item">
+        <label class="cascade-label">
+          <span class="step-num">1</span>
+          Session
+        </label>
+        <select
+          class="cascade-select"
+          [ngModel]="selectedSectionId()"
+          (ngModelChange)="onSectionChange($event)"
+        >
+          <option value="">Toutes les sessions</option>
+          @for (s of sections(); track s.id) {
+            <option [value]="s.id">{{ s.nom }}</option>
           }
-          @if (filteredEvaluations().length === 0) {
-            <tr>
-              <td colspan="9" class="empty-cell">
-                <i class="bi bi-clipboard-x empty-icon"></i>
-                <p>Aucune évaluation trouvée.</p>
-              </td>
-            </tr>
+        </select>
+      </div>
+
+      <!-- Filtre 2 — Niveau -->
+      <div class="cascade-item">
+        <label class="cascade-label">
+          <span class="step-num">2</span>
+          Niveau
+        </label>
+        <select
+          class="cascade-select"
+          [ngModel]="selectedNiveauId()"
+          (ngModelChange)="onNiveauChange($event)"
+          [disabled]="selectedSectionId() !== '' && availableNiveaux().length === 0"
+        >
+          <option value="">Tous les niveaux</option>
+          @for (n of availableNiveaux(); track n.id) {
+            <option [value]="n.id">{{ n.nom }}</option>
           }
-        </tbody>
-      </table>
-    </div>
+        </select>
+      </div>
 
-    <div class="table-footer">
-      <span class="footer-count">Total : {{ filteredEvaluations().length }} évaluation(s)</span>
-    </div>
-  </div>
-</div>
+      <!-- Filtre 3 — Classe -->
+      <div class="cascade-item">
+        <label class="cascade-label">
+          <span class="step-num">3</span>
+          Classe
+        </label>
+        <select
+          class="cascade-select"
+          [ngModel]="selectedClasseId()"
+          (ngModelChange)="onClasseChange($event)"
+        >
+          <option value="">Toutes les classes</option>
+          @for (c of availableClasses(); track c.id) {
+            <option [value]="c.id">{{ c.nom }} ({{ c.niveau?.nom || 'Niveau' }})</option>
+          }
+        </select>
+      </div>
 
-<!-- MODAL : CRÉER / ÉDITER ÉVALUATION -->
-@if (isModalOpen()) {
-  <div class="modal-overlay" (click)="closeModal()">
-    <div class="modal-card modal-md" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <div class="modal-title-group">
-          <i class="bi bi-clipboard2-plus"></i>
-          <h3>{{ isEditMode() ? 'Modifier l\'évaluation' : 'Nouvelle évaluation' }}</h3>
-        </div>
-        <button type="button" class="btn-close" (click)="closeModal()">
-          <i class="bi bi-x-lg"></i>
+      <!-- Reset -->
+      <div class="cascade-actions">
+        <button
+          type="button"
+          class="btn-reset-filters"
+          (click)="resetAllFilters()"
+          title="Réinitialiser les filtres"
+        >
+          <i class="bi bi-arrow-counterclockwise"></i>
+          <span>Réinitialiser</span>
         </button>
       </div>
+    </div>
+  </div>
 
-      <form [formGroup]="evalForm" (ngSubmit)="submitForm()" class="modal-body form-grid">
-        <div class="form-group">
-          <label class="form-label">Nom de l'épreuve / Évaluation *</label>
+  <!-- CONTENU SELON ONGLET ACTIF -->
+  @if (activeTab() === 'evaluations') {
+    <!-- Barre de Filtres Secondaires & Recherche -->
+    <div class="toolbar-card">
+      <div class="filter-group">
+        <label class="filter-label">Période :</label>
+        <select class="filter-select" [ngModel]="filterPeriode()" (ngModelChange)="filterPeriode.set($event)">
+          <option value="toutes">Toutes les périodes</option>
+          @for (m of modules(); track m.id) {
+            <option [value]="m.libelle">{{ m.libelle }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Type :</label>
+        <select class="filter-select" [ngModel]="filterType()" (ngModelChange)="filterType.set($event)">
+          <option value="tous">Tous les types</option>
+          @for (t of typesList; track t) {
+            <option [value]="t">{{ t }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Statut :</label>
+        <select class="filter-select" [ngModel]="filterStatut()" (ngModelChange)="filterStatut.set($event)">
+          <option value="tous">Tous les statuts</option>
+          <option value="Actif">Actif</option>
+          <option value="Inactif">Inactif</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Tableau des Évaluations -->
+    <div class="card-table">
+      <div class="table-header-info">
+        <div class="search-box table-search">
+          <i class="bi bi-search search-icon"></i>
           <input
             type="text"
-            formControlName="nom"
-            class="form-control"
-            placeholder="Ex : Devoir N°1 Catéchisme, Composition..."
+            placeholder="Rechercher une évaluation..."
+            [ngModel]="searchQuery()"
+            (ngModelChange)="searchQuery.set($event)"
           />
-          @if (evalForm.get('nom')?.invalid && evalForm.get('nom')?.touched) {
-            <span class="field-error">Le nom est requis (3 caractères minimum).</span>
-          }
         </div>
 
-        <div class="form-row">
-          <div class="form-group flex-1">
-            <label class="form-label">Classe concernée *</label>
-            <select formControlName="classe_id" class="form-control">
-              <option value="">Sélectionner une classe</option>
-              @for (c of classes(); track c.id) {
-                <option [value]="c.id">
-                  {{ c.nom }}
-                  @if (c.niveau; as niv) {
-                    ({{ niv.nom }})
+        <div class="info-title">
+          <i class="bi bi-list-check"></i>
+          <span>Évaluations trouvées ({{ filteredEvaluations().length }})</span>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Évaluation</th>
+              <th>Classe</th>
+              <th>Date</th>
+              <th class="text-center">Coeff.</th>
+              <th class="text-center">Barème</th>
+              <th class="text-center">Notes saisies</th>
+              <th class="text-center">Moyenne</th>
+              <th class="text-center">Statut</th>
+              <th class="text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (ev of filteredEvaluations(); track ev.id) {
+              <tr class="data-row">
+                <td>
+                  <strong class="item-nom">{{ ev.titre || ev.nom }}</strong>
+                  <div class="item-meta-row">
+                    <span class="type-badge-mini">{{ ev.type_eval || ev.type }}</span>
+                    @if (ev.periode) {
+                      <span class="periode-text">{{ getTrimestreLibelle(ev) }}</span>
+                    }
+                  </div>
+                  @if (ev.description || ev.observation) {
+                    <span class="item-sub-desc">{{ ev.description || ev.observation }}</span>
                   }
-                </option>
-              }
-            </select>
-            @if (evalForm.get('classe_id')?.invalid && evalForm.get('classe_id')?.touched) {
-              <span class="field-error">La classe est requise.</span>
+                </td>
+                <td>
+                  <span class="classe-pill">
+                    <i class="bi bi-door-open-fill me-1"></i>
+                    {{ ev.classe?.nom || 'Classe' }}
+                  </span>
+                </td>
+                <td>
+                  <span class="item-date">
+                    <i class="bi bi-calendar3 me-1 text-muted"></i>
+                    {{ ev.date_evaluation || ev.date }}
+                  </span>
+                </td>
+                <td class="text-center">
+                  <span class="badge-coeff">×{{ ev.coefficient }}</span>
+                </td>
+                <td class="text-center">
+                  <span class="badge-bareme">/ {{ ev.note_max || ev.bareme || 20 }}</span>
+                </td>
+                <td class="text-center">
+                  @if (ev.stats; as stats) {
+                    <span class="badge-saisies" [class.complete]="stats.saisies_effectuees === stats.total_eleves">
+                      {{ stats.saisies_effectuees }}/{{ stats.total_eleves }}
+                    </span>
+                  } @else {
+                    <span class="text-muted text-xs">—</span>
+                  }
+                </td>
+                <td class="text-center">
+                  @if (ev.stats; as stats) {
+                    @if (stats.moyenne_classe !== null && stats.moyenne_classe !== undefined) {
+                      <span class="moyenne-tag">
+                        {{ stats.moyenne_classe }}
+                      </span>
+                    } @else {
+                      <span class="text-muted text-xs">Non évalué</span>
+                    }
+                  } @else {
+                    <span class="text-muted text-xs">Non évalué</span>
+                  }
+                </td>
+                <td class="text-center">
+                  <span
+                    class="status-badge"
+                    [class.actif]="ev.statut === 'Actif' || ev.statut_code === 'actif'"
+                    [class.inactif]="ev.statut === 'Inactif' || ev.statut_code === 'inactif'"
+                    (click)="toggleStatut(ev)"
+                    title="Cliquer pour basculer le statut"
+                  >
+                    <i class="bi"
+                      [class.bi-check-circle-fill]="ev.statut === 'Actif' || ev.statut_code === 'actif'"
+                      [class.bi-x-circle-fill]="ev.statut === 'Inactif' || ev.statut_code === 'inactif'"
+                    ></i>
+                    {{ ev.statut }}
+                  </span>
+                </td>
+                <td class="text-right">
+                  <div class="action-group">
+                    <!-- Saisie des notes -->
+                    <button
+                      type="button"
+                      class="action-btn notes-btn"
+                      (click)="openNotesGrid(ev)"
+                      title="Saisir / Consulter les notes"
+                    >
+                      <i class="bi bi-pencil-square"></i>
+                    </button>
+
+                    <!-- Détail -->
+                    <button
+                      type="button"
+                      class="action-btn view-btn"
+                      (click)="openDetailModal(ev)"
+                      title="Détails de l'évaluation"
+                    >
+                      <i class="bi bi-eye"></i>
+                    </button>
+
+                    <!-- Modifier -->
+                    <button
+                      type="button"
+                      class="action-btn edit-btn"
+                      (click)="openEditModal(ev)"
+                      title="Modifier l'évaluation"
+                    >
+                      <i class="bi bi-pencil"></i>
+                    </button>
+
+                    <!-- Supprimer -->
+                    <button
+                      type="button"
+                      class="action-btn delete-btn"
+                      (click)="openDeleteModal(ev)"
+                      title="Supprimer l'évaluation"
+                    >
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
             }
-          </div>
-
-          <div class="form-group flex-1">
-            <label class="form-label">Type d'épreuve *</label>
-            <select formControlName="type" class="form-control">
-              @for (t of typesList; track t) {
-                <option [value]="t">{{ t }}</option>
-              }
-            </select>
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group flex-1">
-            <label class="form-label">Trimestre *</label>
-            <select
-              formControlName="module_trimestriel_id"
-              class="form-control"
-              (change)="onTrimestreSelectChange($event)"
-            >
-              <option value="">Sélectionner un trimestre</option>
-              @for (m of modules(); track m.id) {
-                <option [value]="m.id">{{ m.libelle }}</option>
-              }
-            </select>
-            @if (evalForm.get('module_trimestriel_id')?.invalid && evalForm.get('module_trimestriel_id')?.touched) {
-              <span class="field-error">Le trimestre est obligatoire.</span>
+            @if (filteredEvaluations().length === 0 && !isLoading()) {
+              <tr>
+                <td colspan="9" class="empty-cell">
+                  <i class="bi bi-clipboard-x empty-icon"></i>
+                  <p class="empty-title">Aucune évaluation trouvée</p>
+                  <p class="empty-desc">Aucune évaluation ne correspond aux critères sélectionnés.</p>
+                  <button type="button" class="btn btn-primary btn-sm mt-2" (click)="openCreateModal()">
+                    <i class="bi bi-plus-lg me-1"></i> Créer une évaluation
+                  </button>
+                </td>
+              </tr>
             }
-          </div>
+          </tbody>
+        </table>
+      </div>
 
-          <div class="form-group flex-1">
-            <label class="form-label">Date de l'épreuve *</label>
-            <input type="date" formControlName="date" class="form-control" />
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group flex-1">
-            <label class="form-label">Coefficient *</label>
-            <input type="number" formControlName="coefficient" class="form-control" min="1" max="10" />
-          </div>
-
-          <div class="form-group flex-1">
-            <label class="form-label">Barème *</label>
-            <input type="number" formControlName="bareme" class="form-control" min="1" max="100" />
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Observation / Consignes (optionnel)</label>
-          <textarea
-            formControlName="observation"
-            class="form-control form-textarea"
-            rows="2"
-            placeholder="Ex : Devoir surveillé sur les sacrements..."
-          ></textarea>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Statut *</label>
-          <select formControlName="statut" class="form-control">
-            <option value="Actif">Actif</option>
-            <option value="Inactif">Inactif</option>
-          </select>
-        </div>
-
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" (click)="closeModal()">Annuler</button>
-          <button type="submit" class="btn btn-primary" [disabled]="evalForm.invalid || isLoading()">
-            {{ isEditMode() ? 'Modifier' : 'Enregistrer l\'évaluation' }}
-          </button>
-        </div>
-      </form>
+      <div class="table-footer">
+        <span class="footer-count">Total : {{ filteredEvaluations().length }} évaluation(s)</span>
+      </div>
     </div>
-  </div>
+  } @else {
+    <!-- VUE RÉSULTATS & MOYENNES DE LA CLASSE -->
+    @if (!selectedClasseId()) {
+      <div class="select-classe-prompt">
+        <div class="prompt-icon">
+          <i class="bi bi-door-open"></i>
+        </div>
+        <h3>Veuillez sélectionner une classe</h3>
+        <p>Pour afficher les moyennes et le relevé de notes, choisissez une classe dans le sélecteur ci-dessus.</p>
+      </div>
+    } @else {
+      <app-classe-moyennes-view
+        [classeId]="selectedClasseId()"
+        [classeName]="selectedClasseName()"
+        [anneeCatecheseId]="activeAnnee()?.id || ''"
+        (viewCatechumeneSynthese)="openSynthese($event)"
+      />
+    }
+  }
+</div>
+
+<!-- MODAL 1 : CRÉATION / MODIFICATION D'ÉVALUATION -->
+@if (isFormModalOpen()) {
+  <app-evaluation-form-modal
+    [evaluation]="selectedForEdit()"
+    (close)="closeFormModal()"
+    (saved)="onEvaluationSaved($event)"
+  />
 }
 
-<!-- CONFIRMATION SUPPRESSION -->
-@if (isDeleteModalOpen()) {
-  <div class="modal-overlay" (click)="isDeleteModalOpen.set(false)">
-    <div class="modal-card modal-sm" (click)="$event.stopPropagation()">
-      <div class="modal-header header-danger">
-        <div class="modal-title-group">
-          <i class="bi bi-exclamation-triangle-fill"></i>
-          <h3>Supprimer l'évaluation ?</h3>
-        </div>
-        <button type="button" class="btn-close" (click)="isDeleteModalOpen.set(false)">
-          <i class="bi bi-x-lg"></i>
+<!-- MODAL 2 : GRILLE DE SAISIE DES NOTES -->
+@if (isNotesGridOpen() && selectedForNotes()) {
+  <app-evaluation-notes-grid-modal
+    [evaluation]="selectedForNotes()!"
+    (close)="closeNotesGrid()"
+    (notesSaved)="onNotesSaved()"
+  />
+}
+
+<!-- MODAL 3 : DÉTAIL DE L'ÉVALUATION -->
+@if (isDetailModalOpen() && selectedForDetail()) {
+  <app-evaluation-detail-modal
+    [evaluation]="selectedForDetail()!"
+    (close)="closeDetailModal()"
+    (openNotesGrid)="onDetailGoToNotes($event)"
+  />
+}
+
+<!-- MODAL 4 : SYNTHÈSE INDIVIDUELLE DU CATÉCHUMÈNE -->
+@if (isSyntheseModalOpen() && selectedCatechumeneId()) {
+  <app-catechumene-synthese-modal
+    [catechumeneId]="selectedCatechumeneId()"
+    [anneeCatecheseId]="activeAnnee()?.id || ''"
+    (close)="closeSynthese()"
+  />
+}
+
+<!-- MODAL 5 : CONFIRMATION DE SUPPRESSION -->
+@if (isDeleteModalOpen() && selectedForDelete()) {
+  <div class="modal-backdrop" (click)="closeDeleteModal()">
+    <div class="modal-dialog-confirm" (click)="$event.stopPropagation()">
+      <div class="confirm-icon-badge">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+      </div>
+      <h3 class="confirm-title">Supprimer l'évaluation ?</h3>
+      <p class="confirm-desc">
+        Êtes-vous sûr de vouloir supprimer l'évaluation
+        <strong>« {{ selectedForDelete()?.titre || selectedForDelete()?.nom }} »</strong> ?
+        <br />
+        <span class="text-danger fw-semibold">Attention : Toutes les notes associées à cette épreuve seront également définitivement supprimées.</span>
+      </p>
+      <div class="confirm-actions">
+        <button type="button" class="btn btn-secondary" (click)="closeDeleteModal()">
+          Annuler
         </button>
-      </div>
-      <div class="modal-body">
-        <p>Êtes-vous sûr de vouloir supprimer l'épreuve <strong>« {{ selectedEval()?.nom }} »</strong> ? Les notes associées seront également retirées.</p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" (click)="isDeleteModalOpen.set(false)">Annuler</button>
-        <button type="button" class="btn btn-danger" (click)="confirmDelete()">Supprimer</button>
+        <button type="button" class="btn btn-danger" (click)="confirmDelete()">
+          <i class="bi bi-trash me-1"></i>
+          Supprimer définitivement
+        </button>
       </div>
     </div>
   </div>

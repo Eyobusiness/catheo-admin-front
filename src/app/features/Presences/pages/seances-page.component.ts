@@ -49,6 +49,7 @@ export class SeancesPageComponent implements OnInit {
   // Filters
   protected readonly searchQuery = signal<string>('');
   protected readonly selectedSectionFilter = signal<string>('');
+  protected readonly selectedNiveauFilter = signal<string>('');
   protected readonly selectedClasseFilter = signal<string>('');
   protected readonly selectedDateFilter = signal<string>('');
 
@@ -59,62 +60,53 @@ export class SeancesPageComponent implements OnInit {
   protected readonly isEditing = signal<boolean>(false);
   protected readonly selectedSeance = signal<SeanceDto | null>(null);
 
-  // Cascading classes based on selected section
+  // Cascading niveaux based on selected section
+  protected readonly niveauxFiltres = computed(() => {
+    const secId = this.selectedSectionFilter();
+    const all = this.niveaux();
+    if (!secId) return all;
+    return all.filter(n => n.section_id === secId || n.section?.id === secId);
+  });
+
+  // Cascading classes based on selected section & niveau
   protected readonly classesFiltrees = computed(() => {
     const secId = this.selectedSectionFilter();
-    const all = this.classes();
-    if (!secId) return all;
+    const nivId = this.selectedNiveauFilter();
+    let all = this.classes();
 
-    const validNiveauIds = new Set(
-      this.niveaux()
-        .filter(n => n.section_id === secId || n.section?.id === secId)
-        .map(n => n.id)
-    );
-
-    return all.filter(c => {
-      if (c.niveau_id && validNiveauIds.has(c.niveau_id)) return true;
-      if (c.niveau?.id && validNiveauIds.has(c.niveau.id)) return true;
-      if (c.niveau?.section_id === secId || c.niveau?.section?.id === secId) return true;
-      return false;
-    });
+    if (secId) {
+      all = all.filter(c => c.niveau?.section_id === secId || c.niveau?.section?.id === secId);
+    }
+    if (nivId) {
+      all = all.filter(c => c.niveau_id === nivId || c.niveau?.id === nivId);
+    }
+    return all;
   });
 
-  // Computed KPI Stats
-  protected readonly totalSeances = computed(() => this.seances().length);
+  // Computed KPI Stats (basés sur la classe sélectionnée)
+  protected readonly totalSeances = computed(() => this.filteredSeances().length);
   protected readonly classesCouvertes = computed(() => {
-    const list = this.seances();
-    const set = new Set(list.map(s => s.classe_id || s.classe?.id).filter(Boolean));
-    return set.size;
+    return this.selectedClasseFilter() ? 1 : 0;
   });
   protected readonly totalPresencesCount = computed(() => {
-    return this.seances().reduce((acc, s) => acc + (s.total_presences || 0), 0);
+    return this.filteredSeances().reduce((acc, s) => acc + (s.total_presences || 0), 0);
   });
   protected readonly seancesRecentes = computed(() => {
     const today = new Date().toISOString().substring(0, 7); // Current month YYYY-MM
-    return this.seances().filter(s => s.date_seance && s.date_seance.startsWith(today)).length;
+    return this.filteredSeances().filter(s => s.date_seance && s.date_seance.startsWith(today)).length;
   });
 
-  // Filtered séances list
+  // Filtered séances list : UNIQUEMENT après avoir sélectionné une classe via les filtres
   protected readonly filteredSeances = computed(() => {
-    const q = this.searchQuery().toLowerCase().trim();
-    const secId = this.selectedSectionFilter();
     const classeId = this.selectedClasseFilter();
+    // Sans les filtres effectués, la liste des séances ne doit pas s'afficher
+    if (!classeId) {
+      return [];
+    }
+
+    const q = this.searchQuery().toLowerCase().trim();
     const date = this.selectedDateFilter();
-    let list = this.seances();
-
-    if (secId) {
-      const validClasseIds = new Set(this.classesFiltrees().map(c => c.id));
-      list = list.filter(s => {
-        const cId = s.classe_id || s.classe?.id;
-        if (cId && validClasseIds.has(cId)) return true;
-        if (s.classe?.niveau?.section_id === secId || s.classe?.niveau?.section?.id === secId) return true;
-        return false;
-      });
-    }
-
-    if (classeId) {
-      list = list.filter(s => s.classe_id === classeId || s.classe?.id === classeId);
-    }
+    let list = this.seances().filter(s => s.classe_id === classeId || s.classe?.id === classeId);
 
     if (date) {
       list = list.filter(s => s.date_seance && s.date_seance.startsWith(date));
@@ -129,7 +121,7 @@ export class SeancesPageComponent implements OnInit {
   });
 
   protected readonly hasActiveFilters = computed(() => {
-    return !!this.searchQuery() || !!this.selectedSectionFilter() || !!this.selectedClasseFilter() || !!this.selectedDateFilter();
+    return !!this.searchQuery() || !!this.selectedSectionFilter() || !!this.selectedNiveauFilter() || !!this.selectedClasseFilter() || !!this.selectedDateFilter();
   });
 
   public ngOnInit(): void {
@@ -150,13 +142,15 @@ export class SeancesPageComponent implements OnInit {
     const select = event.target as HTMLSelectElement;
     const secId = select.value;
     this.selectedSectionFilter.set(secId);
+    this.selectedNiveauFilter.set('');
+    this.selectedClasseFilter.set('');
+  }
 
-    if (this.selectedClasseFilter()) {
-      const allowed = this.classesFiltrees().some(c => c.id === this.selectedClasseFilter());
-      if (!allowed) {
-        this.selectedClasseFilter.set('');
-      }
-    }
+  protected onNiveauFilterChange(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    const nivId = select.value;
+    this.selectedNiveauFilter.set(nivId);
+    this.selectedClasseFilter.set('');
   }
 
   protected onClasseFilterChange(event: Event): void {
@@ -172,6 +166,7 @@ export class SeancesPageComponent implements OnInit {
   protected resetFilters(): void {
     this.searchQuery.set('');
     this.selectedSectionFilter.set('');
+    this.selectedNiveauFilter.set('');
     this.selectedClasseFilter.set('');
     this.selectedDateFilter.set('');
   }

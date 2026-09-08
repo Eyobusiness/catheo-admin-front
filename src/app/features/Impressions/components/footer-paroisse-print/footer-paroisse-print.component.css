@@ -1,7 +1,7 @@
 :host {
   display: block;
   width: 100%;
-  margin-top: 14px;
+  margin-top: 4px;
 }
 
 .print-footer-container {
@@ -16,7 +16,7 @@
   width: 100%;
   height: 1px;
   background-color: #000;
-  margin-bottom: 5px;
+  margin-bottom: 3px;
 }
 
 .footer-content-row {
@@ -32,14 +32,22 @@
   text-transform: uppercase;
   letter-spacing: 0.03em;
   font-weight: 800;
+  font-size: 0.78rem;
 }
 
 .footer-annee {
   font-style: normal;
   font-weight: 700;
+  font-size: 0.78rem;
 }
 
 .footer-annee em {
   font-style: italic;
   font-weight: 800;
+}
+
+.footer-page-number {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #374151;
 }

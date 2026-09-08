@@ -81,6 +81,13 @@
   font-weight: 500;
 }
 
+.code-input {
+  text-transform: uppercase;
+  font-family: monospace;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
 /* Permissions Header */
 .permissions-header {
   display: flex;

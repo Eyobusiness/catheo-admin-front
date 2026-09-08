@@ -1,4 +1,4 @@
-﻿import { Routes } from '@angular/router';
+import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { guestGuard } from './core/guards/guest.guard';
 
@@ -129,20 +129,18 @@ export const routes: Routes = [
     data: { title: 'Gestion des Séances & Présences' }
   },
 
-  // Évaluations
+  // Évaluations & Notes unifiées
   {
     path: 'evaluations',
-    canActivate: [authGuard],
-    loadChildren: () =>
-      import('./features/Evaluations/evaluation/routes/evaluation.routes').then(m => m.EVALUATION_ROUTES),
-    data: { title: 'Évaluations' }
+    redirectTo: 'notes',
+    pathMatch: 'full'
   },
   {
     path: 'notes',
     canActivate: [authGuard],
     loadChildren: () =>
       import('./features/Evaluations/notes/routes/notes.routes').then(m => m.NOTES_ROUTES),
-    data: { title: 'Saisie des Notes' }
+    data: { title: 'Notes & Évaluations' }
   },
   {
     path: 'bilans-annuels',
@@ -168,32 +166,9 @@ export const routes: Routes = [
     data: { title: 'Sacrements' }
   },
   {
-    path: 'sacrements/bapteme',
-    canActivate: [authGuard],
-    loadComponent: () =>
-      import('./features/Sacrements/pages/bapteme/bapteme-page.component').then(m => m.BaptemePageComponent),
-    data: { title: 'Sacrement du Baptême' }
-  },
-  {
-    path: 'sacrements/premiere-communion',
-    canActivate: [authGuard],
-    loadComponent: () =>
-      import('./features/Sacrements/pages/premiere-communion/premiere-communion-page.component').then(m => m.PremiereCommunionPageComponent),
-    data: { title: 'Première Communion' }
-  },
-  {
-    path: 'sacrements/confirmation',
-    canActivate: [authGuard],
-    loadComponent: () =>
-      import('./features/Sacrements/pages/confirmation/confirmation-page.component').then(m => m.ConfirmationPageComponent),
-    data: { title: 'Sacrement de Confirmation' }
-  },
-  {
     path: 'exceptions-pastorales',
-    canActivate: [authGuard],
-    loadComponent: () =>
-      import('./features/Sacrements/pages/exceptions-pastorales/exceptions-pastorales-page.component').then(m => m.ExceptionsPastoralesPageComponent),
-    data: { title: 'Exceptions Pastorales' }
+    redirectTo: 'sacrements/exceptions-pastorales',
+    pathMatch: 'full'
   },
 
   // Finances

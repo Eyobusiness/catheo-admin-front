@@ -19,6 +19,7 @@ export class VersementFormModalComponent {
   public readonly isOpen = input<boolean>(false);
   public readonly isEditing = input<boolean>(false);
   public readonly versementToEdit = input<VersementCureDto | null>(null);
+  public readonly soldeDisponible = input<number>(0);
   public readonly isLoading = input<boolean>(false);
 
   public readonly formClosed = output<void>();
@@ -31,7 +32,7 @@ export class VersementFormModalComponent {
       nonNullable: true,
       validators: [Validators.required, Validators.minLength(3)]
     }),
-    montant_verse: new FormControl<number>(50000, {
+    montant_verse: new FormControl<number>(0, {
       nonNullable: true,
       validators: [Validators.required, Validators.min(1)]
     }),
@@ -68,10 +69,11 @@ export class VersementFormModalComponent {
           'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
         ];
         const defaultPeriode = `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
+        const defaultMontant = this.soldeDisponible() > 0 ? this.soldeDisponible() : 0;
 
         this.form.reset({
           periode_concernee: defaultPeriode,
-          montant_verse: 50000,
+          montant_verse: defaultMontant,
           mode_remise: 'especes',
           destinataire: 'Curé de la Paroisse',
           effectue_par: null,

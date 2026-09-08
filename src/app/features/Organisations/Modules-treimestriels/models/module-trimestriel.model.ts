@@ -7,6 +7,7 @@ export interface ModuleTrimestriel {
   annee_catechese_id?: string;
   annee_catechese?: AnneeCatecheseDto;
   libelle: string;
+  nom?: string;
   date_debut: string;
   date_fin: string;
   statut?: string;

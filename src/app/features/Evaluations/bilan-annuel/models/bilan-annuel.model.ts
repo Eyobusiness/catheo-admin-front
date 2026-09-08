@@ -8,7 +8,9 @@ export interface BilanAnnuelItem {
   niveau: string;
   classe: string;
   anneePastorale: string;
-  moyenneGenerale: number;
+  moyenneGenerale: number | null;
+  presenceCoursNb?: number;
+  totalSeances?: number;
   presenceCoursPct: number;
   presenceMesse: number;
   presenceCEB: number;

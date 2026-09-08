@@ -1,0 +1,262 @@
+/* =========================================================================
+   DOCUMENT OFFICIEL : BORDEREAU DE VERSEMENT PAROISSIAL (A4 PORTRAIT)
+   Conçu pour le Lecteur PDF Catheo Universel & Impression Propre
+   ========================================================================= */
+
+@page {
+  size: A4 portrait;
+  margin: 8mm 10mm;
+}
+
+:host {
+  display: block;
+  font-family: 'Times New Roman', Times, serif, system-ui, -apple-system, sans-serif;
+  color: #000000;
+  background-color: transparent;
+  width: 100%;
+}
+
+.bordereau-doc-container {
+  width: 210mm;
+  min-height: 297mm;
+  max-width: 210mm;
+  margin: 0 auto;
+  background: #ffffff;
+  padding: 6mm 10mm;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.doc-body-wrapper {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Bandeau récapitulatif */
+.meta-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 0.5rem 0.85rem;
+  margin-top: 0.65rem;
+  margin-bottom: 0.65rem;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.meta-lbl {
+  color: #64748b;
+  margin-right: 0.35rem;
+}
+
+.meta-val.highlight {
+  color: #0284c7;
+  font-family: monospace;
+  font-size: 0.92rem;
+}
+
+/* Tableau d'informations */
+.bordereau-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  border: 1px solid #cbd5e1;
+  margin-top: 0.65rem;
+  margin-bottom: 0.75rem;
+}
+
+.bordereau-table td {
+  padding: 0.45rem 0.75rem;
+  border: 1px solid #cbd5e1;
+  vertical-align: middle;
+}
+
+.col-lbl {
+  width: 35%;
+  background-color: #f8fafc;
+  color: #475569;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+}
+
+.col-val {
+  color: #0f172a;
+  font-size: 0.9rem;
+}
+
+/* Encadré Grand Montant */
+.amount-card {
+  border: 2px solid #0f172a;
+  border-radius: 8px;
+  background: #f8fafc;
+  padding: 0.75rem 1.25rem;
+  margin-top: 0.65rem;
+  margin-bottom: 0.85rem;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.amount-title {
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #475569;
+  margin-bottom: 0.25rem;
+}
+
+.amount-figure {
+  font-size: 1.65rem;
+  font-weight: 900;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+.amount-figure .currency {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #64748b;
+  margin-left: 0.35rem;
+}
+
+/* Signatures : Déposant & Économat */
+.signatures-wrapper {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.75rem;
+  padding: 0 0.5rem;
+  margin-top: 0.85rem;
+  margin-bottom: 0.75rem;
+}
+
+.signature-box {
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #ffffff;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 105px;
+}
+
+.sig-header {
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px dashed #cbd5e1;
+  padding-bottom: 0.35rem;
+  margin-bottom: 0.45rem;
+}
+
+.sig-title {
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #0f172a;
+  letter-spacing: 0.02em;
+}
+
+.sig-sub {
+  font-size: 0.68rem;
+  color: #64748b;
+  font-style: italic;
+  margin: 0.1rem 0 0 0;
+}
+
+.sig-space {
+  flex: 1;
+  min-height: 45px;
+}
+
+.sig-footer {
+  border-top: 1px solid #e2e8f0;
+  padding-top: 0.35rem;
+  text-align: center;
+}
+
+.sig-name {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+/* Pied de page */
+.doc-footer,
+app-footer-paroisse-print {
+  margin-top: auto;
+  display: block;
+  width: 100%;
+  padding-top: 10px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #64748b;
+}
+
+/* Print CSS */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 8mm 10mm;
+  }
+
+  :host,
+  .bordereau-doc-container,
+  .bordereau-doc-container * {
+    visibility: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .bordereau-doc-container {
+    width: 100% !important;
+    max-width: none !important;
+    min-height: calc(297mm - 24mm) !important;
+    height: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    box-sizing: border-box !important;
+  }
+
+  .doc-body-wrapper {
+    flex: 1 0 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .amount-card {
+    border: 2px solid #0f172a !important;
+    background: #f8fafc !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .signatures-wrapper {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .doc-footer,
+  app-footer-paroisse-print {
+    margin-top: auto !important;
+    display: block !important;
+    width: 100% !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+}

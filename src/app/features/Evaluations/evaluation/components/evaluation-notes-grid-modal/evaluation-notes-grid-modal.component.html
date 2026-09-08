@@ -1,0 +1,215 @@
+<div class="modal-backdrop" (click)="onCancel()">
+  <div class="modal-dialog modal-xl" (click)="$event.stopPropagation()">
+    <!-- Header -->
+    <div class="modal-header">
+      <div class="header-left">
+        <div class="modal-icon-badge">
+          <i class="bi bi-pencil-fill"></i>
+        </div>
+        <div>
+          <div class="header-badge-row">
+            <span class="badge-type">{{ evaluation().type_eval || evaluation().type || 'Épreuve' }}</span>
+            <span class="badge-classe">
+              <i class="bi bi-door-open-fill me-1"></i>
+              {{ evaluation().classe?.nom || 'Classe' }}
+            </span>
+            <span class="badge-date">
+              <i class="bi bi-calendar3 me-1"></i>
+              {{ evaluation().date_evaluation || evaluation().date }}
+            </span>
+          </div>
+          <h3 class="modal-title">{{ evaluation().titre || evaluation().nom }}</h3>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <div class="kpi-mini-group">
+          <div class="kpi-mini-card">
+            <span class="kpi-mini-label">Barème</span>
+            <strong class="kpi-mini-value text-primary">/ {{ bareme() }}</strong>
+          </div>
+          <div class="kpi-mini-card">
+            <span class="kpi-mini-label">Coeff.</span>
+            <strong class="kpi-mini-value">× {{ coefficient() }}</strong>
+          </div>
+          <div class="kpi-mini-card">
+            <span class="kpi-mini-label">Saisies</span>
+            <strong class="kpi-mini-value text-success">{{ saisiesCount() }}/{{ totalEleves() }}</strong>
+          </div>
+        </div>
+
+        <button type="button" class="btn-close" (click)="onCancel()" aria-label="Fermer">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Toolbar / Search & Info -->
+    <div class="grid-toolbar">
+      <div class="search-wrap">
+        <i class="bi bi-search search-icon"></i>
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Filtrer un catéchumène par nom ou matricule..."
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)"
+        />
+        @if (searchQuery()) {
+          <button class="btn-clear-search" (click)="searchQuery.set('')">
+            <i class="bi bi-x"></i>
+          </button>
+        }
+      </div>
+
+      <div class="toolbar-stats">
+        <span class="stat-pill success">
+          <i class="bi bi-check-circle-fill"></i>
+          {{ saisiesCount() }} évalué(s)
+        </span>
+        <span class="stat-pill warning">
+          <i class="bi bi-dash-circle-fill"></i>
+          {{ nonEvaluesCount() }} non évalué(s)
+        </span>
+        <span class="shortcut-tip">
+          <i class="bi bi-keyboard"></i>
+          Appuyez sur <strong>Entrée</strong> ou <strong>↓</strong> pour passer à l'élève suivant
+        </span>
+      </div>
+    </div>
+
+    <!-- Body / Table -->
+    <div class="modal-body p-0">
+      @if (isLoading()) {
+        <div class="loading-state">
+          <div class="spinner-border text-primary" role="status"></div>
+          <p>Chargement de la liste des élèves de la classe...</p>
+        </div>
+      } @else if (rows().length === 0) {
+        <div class="empty-state">
+          <i class="bi bi-people empty-icon"></i>
+          <h4>Aucun élève inscrit</h4>
+          <p>Aucun catéchumène n'est actuellement inscrit dans cette classe pour l'année sélectionnée.</p>
+        </div>
+      } @else {
+        <div class="table-responsive grid-scrollable">
+          <table class="notes-grid-table">
+            <thead>
+              <tr>
+                <th class="col-num text-center">N°</th>
+                <th class="col-mat">Matricule</th>
+                <th class="col-name">Nom & Prénoms</th>
+                <th class="col-note text-center">Note (/{{ bareme() }})</th>
+                <th class="col-statut text-center">Statut élève</th>
+                <th class="col-app">Observation / Appréciation</th>
+                <th class="col-action text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of filteredRows(); track row.catechumene_id; let idx = $index) {
+                <tr class="grid-row" [class.row-invalid]="row.isInvalid" [class.row-evaluated]="row.note_obtenue !== null">
+                  <td class="col-num text-center">
+                    <span class="row-index">{{ idx + 1 }}</span>
+                  </td>
+                  <td class="col-mat">
+                    <span class="matricule-badge">{{ row.matricule }}</span>
+                  </td>
+                  <td class="col-name">
+                    <strong class="eleve-nom">{{ row.nom_prenoms }}</strong>
+                  </td>
+                  <td class="col-note text-center">
+                    <div class="note-input-container">
+                      <input
+                        #noteInput
+                        type="text"
+                        inputmode="decimal"
+                        class="note-field"
+                        [class.is-invalid]="row.isInvalid"
+                        [class.has-value]="row.note_obtenue !== null"
+                        [value]="row.rawInput"
+                        (input)="onNoteChange(row, $any($event.target).value)"
+                        (keydown)="onNoteKeyDown($event, idx)"
+                        placeholder="—"
+                      />
+                      <span class="note-denom">/{{ bareme() }}</span>
+                    </div>
+                    @if (row.isInvalid && row.errorMessage) {
+                      <span class="input-error-msg">{{ row.errorMessage }}</span>
+                    }
+                  </td>
+                  <td class="col-statut text-center">
+                    @if (row.note_obtenue !== null) {
+                      <span class="status-chip chip-evaluated">
+                        <i class="bi bi-check2"></i>
+                        Noté
+                      </span>
+                    } @else {
+                      <span class="status-chip chip-none">
+                        Non évalué
+                      </span>
+                    }
+                  </td>
+                  <td class="col-app">
+                    <input
+                      type="text"
+                      class="appreciation-field"
+                      [(ngModel)]="row.appreciation"
+                      placeholder="Observation facultative..."
+                    />
+                  </td>
+                  <td class="col-action text-center">
+                    @if (row.note_obtenue !== null || row.rawInput !== '') {
+                      <button
+                        type="button"
+                        class="btn-clear-note"
+                        (click)="clearNote(row)"
+                        title="Effacer la note (marquer Non Évalué)"
+                      >
+                        <i class="bi bi-eraser"></i>
+                      </button>
+                    }
+                  </td>
+                </tr>
+              }
+              @if (filteredRows().length === 0 && rows().length > 0) {
+                <tr>
+                  <td colspan="7" class="text-center p-4 text-muted">
+                    Aucun élève ne correspond à la recherche "{{ searchQuery() }}".
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+
+    <!-- Footer -->
+    <div class="modal-footer">
+      <div class="footer-hint">
+        <i class="bi bi-info-circle text-primary"></i>
+        <span>Une note vide reste <strong>Non évaluée</strong> et n'est pas pénalisée comme un zéro dans la moyenne de l'élève.</span>
+      </div>
+
+      <div class="footer-buttons">
+        <button type="button" class="btn btn-secondary" (click)="onCancel()" [disabled]="isSubmitting()">
+          Fermer sans enregistrer
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="submitNotes()"
+          [disabled]="isSubmitting() || hasValidationErrors() || rows().length === 0"
+        >
+          @if (isSubmitting()) {
+            <span class="spinner-border spinner-border-sm me-2"></span>
+            <span>Enregistrement en cours...</span>
+          } @else {
+            <i class="bi bi-cloud-arrow-up-fill me-1"></i>
+            <span>Enregistrer les notes</span>
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

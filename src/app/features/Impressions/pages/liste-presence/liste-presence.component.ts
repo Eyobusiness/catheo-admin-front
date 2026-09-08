@@ -10,6 +10,7 @@ import { InscriptionAnnuelleService } from '../../../Catechumenes/inscriptions-a
 import { HeaderParoissePrintComponent } from '../../components/header-paroisse-print/header-paroisse-print.component';
 import { FooterParoissePrintComponent } from '../../components/footer-paroisse-print/footer-paroisse-print.component';
 import { PdfService } from '../../../../core/services/pdf.service';
+import { AffectationAnimateurService } from '../../../Organisations/affectation-animateurs/services/affectation-animateur.service';
 
 @Component({
   selector: 'app-liste-presence-print',
@@ -26,11 +27,12 @@ export class ListePresencePrintComponent implements OnInit {
   protected readonly catechumeneService = inject(CatechumeneService);
   protected readonly inscriptionService = inject(InscriptionAnnuelleService);
   protected readonly pdfService = inject(PdfService);
+  protected readonly affectationService = inject(AffectationAnimateurService);
 
-  // Filtres Dynamiques
-  public readonly selectedSectionId = signal<string>('tous');
-  public readonly selectedNiveauId = signal<string>('tous');
-  public readonly selectedClasseId = signal<string>('tous');
+  // Filtres Dynamiques (Sélection obligatoire Section -> Niveau -> Classe)
+  public readonly selectedSectionId = signal<string>('');
+  public readonly selectedNiveauId = signal<string>('');
+  public readonly selectedClasseId = signal<string>('');
 
   // Paramètres d'émargement
   public readonly startDate = signal<string>('2025-10-04');
@@ -45,101 +47,52 @@ export class ListePresencePrintComponent implements OnInit {
 
   public readonly niveauxFiltres = computed(() => {
     const secId = this.selectedSectionId();
-    const list = this.niveauService.niveaux();
-    if (!secId || secId === 'tous') return list;
-    return list.filter(n => n.section_id === secId || n.section?.id === secId);
+    if (!secId) return [];
+    return this.niveauService.niveaux().filter(n => n.section_id === secId || n.section?.id === secId);
   });
 
   public readonly classesFiltrees = computed(() => {
     const nivId = this.selectedNiveauId();
-    const secId = this.selectedSectionId();
-    let list = this.classeService.classes();
-
-    if (nivId && nivId !== 'tous') {
-      list = list.filter(c => c.niveau_id === nivId || c.niveau?.id === nivId);
-    } else if (secId && secId !== 'tous') {
-      const validNiveauIds = new Set(
-        this.niveauService.niveaux()
-          .filter(n => n.section_id === secId || n.section?.id === secId)
-          .map(n => n.id)
-      );
-      list = list.filter(c => {
-        const idToCheck = c.niveau_id || c.niveau?.id;
-        return idToCheck ? validNiveauIds.has(idToCheck) : false;
-      });
-    }
-    return list;
+    if (!nivId) return [];
+    return this.classeService.classes().filter(c => c.niveau_id === nivId || c.niveau?.id === nivId);
   });
 
   public readonly displayClasseTitle = computed(() => {
     const clId = this.selectedClasseId();
-    if (clId && clId !== 'tous') {
+    if (clId) {
       const found = this.classeService.classes().find(c => c.id === clId);
       if (found) return found.nom;
     }
-    const nivId = this.selectedNiveauId();
-    if (nivId && nivId !== 'tous') {
-      const found = this.niveauService.niveaux().find(n => n.id === nivId);
-      if (found) return `Niveau : ${found.nom}`;
-    }
-    const secId = this.selectedSectionId();
-    if (secId && secId !== 'tous') {
-      const found = this.sectionService.sections().find(s => s.id === secId);
-      if (found) return `Section : ${found.nom}`;
-    }
-    return 'Toutes les classes';
+    return '';
   });
 
-  // Liste des élèves filtrés par classe / niveau / section depuis la base de données
+  // Liste des élèves : uniquement chargée lorsqu'une classe précise est sélectionnée
   public readonly studentsList = computed(() => {
+    const clId = this.selectedClasseId();
+    if (!clId) {
+      return [];
+    }
+
     const inscriptions = this.inscriptionService.inscriptions();
     const allCats = this.catechumeneService.catechumenes();
-    const clId = this.selectedClasseId();
-    const nivId = this.selectedNiveauId();
-    const secId = this.selectedSectionId();
 
-    let matchedCats: {
-      id: string;
-      matricule: string;
-      nomPrenoms: string;
-      telephone: string;
-    }[] = [];
+    const filteredInsc = inscriptions.filter(i => i.classe_id === clId || i.classe?.id === clId);
 
-    if (inscriptions && inscriptions.length > 0) {
-      let filteredInsc = inscriptions;
-      if (clId && clId !== 'tous') {
-        filteredInsc = filteredInsc.filter(i => i.classe_id === clId || i.classe?.id === clId);
-      } else if (nivId && nivId !== 'tous') {
-        filteredInsc = filteredInsc.filter(i => i.niveau_id === nivId || i.niveau?.id === nivId);
-      } else if (secId && secId !== 'tous') {
-        filteredInsc = filteredInsc.filter(i => i.section_id === secId || i.section?.id === secId);
-      }
+    const matchedCats = filteredInsc.map((insc, index) => {
+      const cat = insc.catechumene || allCats.find(c => c.id === insc.catechumene_id);
+      const rawPhone = cat?.telephone || cat?.telephone_pere || cat?.telephone_mere || cat?.telephone_tuteur || cat?.telephone_parrain || '';
+      const phoneFormatted = rawPhone ? rawPhone.trim().replace(/\s+/g, '\u00A0') : '-';
 
-      matchedCats = filteredInsc.map((insc, index) => {
-        const cat = insc.catechumene || allCats.find(c => c.id === insc.catechumene_id);
-        const rawPhone = cat?.telephone || cat?.telephone_pere || cat?.telephone_mere || cat?.telephone_tuteur || cat?.telephone_parrain || '';
-        const phoneFormatted = rawPhone ? rawPhone.trim().replace(/\s+/g, '\u00A0') : '-';
+      return {
+        id: insc.id || cat?.id || String(index),
+        matricule: cat?.matricule || cat?.code_catechumene || insc.code_inscription || 'CAT-00',
+        nomPrenoms: cat?.nom_complet || (cat ? `${cat.nom} ${cat.prenoms || ''}`.trim() : `Catéchumène #${index + 1}`),
+        telephone: phoneFormatted
+      };
+    });
 
-        return {
-          id: insc.id || cat?.id || String(index),
-          matricule: cat?.matricule || cat?.code_catechumene || insc.code_inscription || 'CAT-00',
-          nomPrenoms: cat?.nom_complet || (cat ? `${cat.nom} ${cat.prenoms || ''}`.trim() : `Catéchumène #${index + 1}`),
-          telephone: phoneFormatted
-        };
-      });
-    } else if (clId === 'tous' && nivId === 'tous' && secId === 'tous' && allCats.length > 0) {
-      matchedCats = allCats.map((c, index) => {
-        const rawPhone = c.telephone || c.telephone_pere || c.telephone_mere || c.telephone_tuteur || c.telephone_parrain || '';
-        const phoneFormatted = rawPhone ? rawPhone.trim().replace(/\s+/g, '\u00A0') : '-';
-
-        return {
-          id: c.id,
-          matricule: c.matricule || c.code_catechumene || 'CAT-00',
-          nomPrenoms: c.nom_complet || `${c.nom} ${c.prenoms || ''}`.trim(),
-          telephone: phoneFormatted
-        };
-      });
-    }
+    // Tri alphabétique strict
+    matchedCats.sort((a, b) => a.nomPrenoms.trim().localeCompare(b.nomPrenoms.trim(), 'fr', { sensitivity: 'base' }));
 
     return matchedCats.map((st, idx) => ({
       ...st,
@@ -173,18 +126,43 @@ export class ListePresencePrintComponent implements OnInit {
     return dates;
   });
 
+  public readonly animateursClasse = computed(() => {
+    const clId = this.selectedClasseId();
+    if (!clId || clId === 'tous') return '';
+
+    const cl = this.classesFiltrees().find(c => c.id === clId) as any;
+    if (cl?.animateur) {
+      const nom = `${cl.animateur.nom || ''} ${cl.animateur.prenoms || ''}`.trim();
+      if (nom) return nom;
+    }
+    if (cl?.animateur_nom) {
+      return cl.animateur_nom.trim();
+    }
+    if (Array.isArray(cl?.animateurs) && cl.animateurs.length > 0) {
+      return cl.animateurs.map((a: any) => `${a.nom || ''} ${a.prenoms || ''}`.trim()).filter(Boolean).join(', ');
+    }
+
+    const matches = this.affectationService.affectations().filter(a => a.classe_id === clId || a.classe?.id === clId);
+    if (matches.length > 0) {
+      return matches.map(m => `${m.animateur?.nom || ''} ${m.animateur?.prenoms || ''}`.trim()).filter(Boolean).join(', ');
+    }
+
+    return '';
+  });
+
   public ngOnInit(): void {
     this.sectionService.getAll().subscribe();
     this.niveauService.getAll().subscribe();
     this.classeService.getAll().subscribe();
     this.catechumeneService.getAll().subscribe();
     this.inscriptionService.getAll().subscribe();
+    this.affectationService.getAll().subscribe();
   }
 
   public onSectionChange(secId: string): void {
     this.selectedSectionId.set(secId);
-    this.selectedNiveauId.set('tous');
-    this.selectedClasseId.set('tous');
+    this.selectedNiveauId.set('');
+    this.selectedClasseId.set('');
 
     const found = this.sectionService.sections().find(s => s.id === secId);
     if (found?.nom?.toLowerCase().includes('adulte')) {
@@ -198,27 +176,49 @@ export class ListePresencePrintComponent implements OnInit {
 
   public onNiveauChange(nivId: string): void {
     this.selectedNiveauId.set(nivId);
-    this.selectedClasseId.set('tous');
+    this.selectedClasseId.set('');
+  }
+
+  public onClasseChange(clId: string): void {
+    this.selectedClasseId.set(clId);
   }
 
   public triggerPrint(): void {
+    if (!this.selectedClasseId()) {
+      return;
+    }
+
     const filters: any = {
       orientation: this.orientation(),
       date_debut: this.startDate(),
       jour_cours: this.jourCours(),
-      nb_seances: this.nbSeances()
+      nb_seances: this.nbSeances(),
+      section_id: this.selectedSectionId(),
+      niveau_id: this.selectedNiveauId(),
+      classe_id: this.selectedClasseId()
     };
-    if (this.selectedSectionId() !== 'tous') filters.section_id = this.selectedSectionId();
-    if (this.selectedNiveauId() !== 'tous') filters.niveau_id = this.selectedNiveauId();
-    if (this.selectedClasseId() !== 'tous') filters.classe_id = this.selectedClasseId();
 
-    const classeObj = this.classesFiltrees().find(c => c.id === this.selectedClasseId());
-    const subtitle = classeObj?.nom ? `Classe : ${classeObj.nom}` : undefined;
+    const subtitle = this.displayClasseTitle();
 
     this.pdfService.previewListePresencePdf(filters, {
       title: 'Liste de Présence & Émargement',
       subtitle,
-      fileName: 'liste-presence.pdf'
+      formatBadge: 'A4 Paysage',
+      fileName: 'liste-presence.pdf',
+      classeNom: this.displayClasseTitle(),
+      jourCours: this.jourCours(),
+      animateursNom: this.animateursClasse(),
+      seancesDates: this.generatedDates(),
+      students: this.studentsList().map(s => ({
+        id: s.id,
+        num: s.num,
+        numero: s.num,
+        matricule: s.matricule,
+        nom_complet: s.nomPrenoms,
+        nomPrenoms: s.nomPrenoms,
+        telephone: s.telephone,
+        contact: s.telephone
+      }))
     });
   }
 

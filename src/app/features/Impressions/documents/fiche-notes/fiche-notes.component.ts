@@ -4,9 +4,12 @@ import { ConfigurationService } from '../../../Parametes/Configuration/services/
 import { AnneeCatecheseService } from '../../../../core/services/annee-catechese.service';
 import { FicheNotesResponseDto } from '../../models/impressions.model';
 
+import { HeaderParoissePrintComponent } from '../../components/header-paroisse-print/header-paroisse-print.component';
+import { FooterParoissePrintComponent } from '../../components/footer-paroisse-print/footer-paroisse-print.component';
+
 @Component({
   selector: 'app-doc-fiche-notes',
-  imports: [CommonModule, UpperCasePipe],
+  imports: [CommonModule, HeaderParoissePrintComponent, FooterParoissePrintComponent],
   templateUrl: './fiche-notes.component.html',
   styleUrl: './fiche-notes.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -74,13 +77,23 @@ export class FicheNotesComponent {
   public readonly studentsList = computed(() => {
     const d = this.data() as any;
     const raw: any[] = d?.lignes || d?.catechumenes || [];
-    return raw.map((st: any, idx: number) => {
+
+    // Tri alphabétique strict pour la fiche de notes
+    const sorted = [...raw].sort((a: any, b: any) => {
+      const nomA = (a.nom_complet || a.nomPrenoms || `${a.nom || ''} ${a.prenom || a.prenoms || ''}`).trim();
+      const nomB = (b.nom_complet || b.nomPrenoms || `${b.nom || ''} ${b.prenom || b.prenoms || ''}`).trim();
+      return nomA.localeCompare(nomB, 'fr', { sensitivity: 'base' });
+    });
+
+    return sorted.map((st: any, idx: number) => {
       const nom = st.nom || '';
       const prenom = st.prenom || st.prenoms || '';
       const nomComplet = st.nom_complet || st.nomPrenoms || `${nom} ${prenom}`.trim() || `Catéchumène #${idx + 1}`;
       const mat = st.matricule || st.code_catechumene || `CAT-${String(idx + 1).padStart(3, '0')}`;
       const sexe = st.sexe || '-';
-      const phone = st.telephone || st.contact || '-';
+      const rawPhone = st.telephone || st.contact || st.tel || st.telephone_pere || st.telephone_mere || st.telephone_tuteur || '';
+      const phone = rawPhone && rawPhone !== '-' ? String(rawPhone).trim().replace(/\s+/g, '\u00A0') : '-';
+      const numFormatted = String(idx + 1).padStart(2, '0');
 
       const n1 = st.note_1 !== undefined && st.note_1 !== null && st.note_1 !== '' ? String(st.note_1) : '';
       const n2 = st.note_2 !== undefined && st.note_2 !== null && st.note_2 !== '' ? String(st.note_2) : '';
@@ -90,7 +103,8 @@ export class FicheNotesComponent {
 
       return {
         ...st,
-        num: st.numero || String(idx + 1).padStart(2, '0'),
+        num: numFormatted,
+        numero: numFormatted,
         matricule: mat,
         nom_complet: nomComplet,
         sexe,

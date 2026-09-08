@@ -1,0 +1,101 @@
+@if (data(); as d) {
+  <article class="registre-doc-container">
+    <div class="doc-body-wrapper">
+      <!-- EN-TÊTE OFFICIEL PAROISSIAL AVEC LOGOS ET TITRE -->
+      <app-header-paroisse-print
+        [customTitle]="customTitle()"
+        [anneePastorale]="anneePastorale()"
+      ></app-header-paroisse-print>
+
+      <!-- BLOC MÉTA : TOTAL & DATE D'ÉDITION -->
+      <div class="sheet-meta-box">
+        <span>
+          <strong>{{ d.sacrement === 'derogation' ? 'Total dérogations :' : 'Total candidats :' }}</strong>
+          {{ d.sacrement === 'derogation' ? exceptionsList().length : candidatsList().length }}
+        </span>
+        <span><strong>Date d'édition :</strong> {{ currentDate | date:'dd/MM/yyyy' }}</span>
+      </div>
+
+      @if (d.sacrement === 'derogation') {
+        <!-- TABLEAU DES DÉROGATIONS & EXCEPTIONS PASTORALES -->
+        <table class="photo-style-table">
+          <thead>
+            <tr>
+              <th class="text-center">N°</th>
+              <th>Date d'accord</th>
+              <th>Catéchumène</th>
+              <th>Section & Classe</th>
+              <th>Sacrement accordé</th>
+              <th>Motif de dérogation</th>
+              <th>Autorisé par</th>
+              <th>Observations</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (exc of exceptionsList(); track exc.id || exc.num) {
+              <tr>
+                <td class="text-center">{{ exc.num }}</td>
+                <td>{{ exc.dateAjout }}</td>
+                <td><strong>{{ exc.catechumeneNomComplet }}</strong></td>
+                <td>{{ exc.section }} • {{ exc.classe }}</td>
+                <td>{{ exc.sacrementType }}</td>
+                <td>{{ exc.motif }}</td>
+                <td>{{ exc.autorisePar }}</td>
+                <td>{{ exc.observation }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      } @else {
+        <!-- TABLEAU CONFORME DES CANDIDATS AU SACREMENT -->
+        <table class="photo-style-table">
+          <thead>
+            <tr>
+              <th class="text-center">N°</th>
+              <th>Matricule</th>
+              <th>Nom & Prénoms</th>
+              <th>Contact</th>
+              <th>Section</th>
+              <th>Classe</th>
+              <th>{{ extraColumnHeader() }}</th>
+              <th class="text-center">Statut</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (c of candidatsList(); track c.id || c.num) {
+              <tr>
+                <td class="text-center">{{ c.num }}</td>
+                <td>{{ c.matricule }}</td>
+                <td><strong>{{ c.nomPrenoms }}</strong></td>
+                <td>{{ c.telephone }}</td>
+                <td>{{ c.section }}</td>
+                <td>{{ c.classe }}</td>
+                <td>{{ c.extraField }}</td>
+                <td class="text-center">{{ c.statutLabel }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+
+      <!-- SIGNATURE : LE RESPONSABLE DU CATÉCHUMÉNAT EXCLUSIVEMENT -->
+      <div class="sheet-signatures-grid single-sig">
+        <div class="sig-col">
+          <span>Le Responsable du Catéchuménat</span>
+          <div class="sig-line-space"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PIED DE PAGE OFFICIEL PAROISSIAL -->
+    <app-footer-paroisse-print
+      class="doc-footer"
+      pageNumber="Page 1/1"
+      [anneePastorale]="anneePastorale()"
+    ></app-footer-paroisse-print>
+  </article>
+} @else {
+  <div class="registre-empty-state">
+    <p>Aucune donnée disponible pour le registre de sacrement.</p>
+  </div>
+}

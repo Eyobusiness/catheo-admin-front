@@ -1,0 +1,403 @@
+/* =========================================================================
+   DOCUMENT OFFICIEL : BULLETIN DE CATÉCHÈSE (A4 PORTRAIT)
+   Intégré au Lecteur PDF Catheo Universel
+   ========================================================================= */
+
+@page {
+  size: A4 portrait;
+  margin: 8mm 10mm;
+}
+
+:host {
+  display: block;
+  font-family: 'Times New Roman', Times, serif, system-ui, -apple-system, sans-serif;
+  color: #000000;
+  background-color: transparent;
+  width: 100%;
+}
+
+.bulletin-doc-container {
+  width: 210mm;
+  min-height: 297mm;
+  max-width: 210mm;
+  margin: 0 auto;
+  background: #ffffff;
+  padding: 6mm 10mm;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.doc-body-wrapper {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Carte Identité Catéchumène */
+.student-meta-card {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0.65rem 0.9rem;
+  margin-top: 0.75rem;
+  font-size: 0.8rem;
+}
+
+.meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.meta-field {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.meta-label {
+  color: #475569;
+  font-size: 0.76rem;
+}
+
+.meta-value {
+  color: #0f172a;
+}
+
+.student-fullname {
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.matricule-val {
+  font-family: monospace;
+  background: #e2e8f0;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+}
+
+.w-100 {
+  width: 100%;
+}
+
+.animateur-names {
+  color: #0369a1;
+  font-weight: 700;
+  font-size: 0.84rem;
+}
+
+.rank-val {
+  color: #0284c7;
+  font-weight: 800;
+}
+
+.trimestre-pill {
+  color: #0369a1;
+  font-weight: 800;
+  background: #e0f2fe;
+  padding: 0.12rem 0.45rem;
+  border-radius: 4px;
+  border: 1px solid #bae6fd;
+}
+
+.eval-raw-note {
+  font-size: 0.68rem;
+  color: #64748b;
+  font-weight: normal;
+}
+
+.points-val {
+  color: #0f172a;
+  font-size: 0.82rem;
+}
+
+/* Tableau des Évaluations & Notes */
+.table-wrap {
+  width: 100%;
+  margin-top: 0.75rem;
+}
+
+.bulletin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+  border: 1px solid #cbd5e1;
+}
+
+.bulletin-table th {
+  background-color: #f1f5f9;
+  color: #1e293b;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  padding: 0.4rem 0.55rem;
+  border: 1px solid #cbd5e1;
+  vertical-align: middle;
+}
+
+.bulletin-table td {
+  padding: 0.4rem 0.55rem;
+  border: 1px solid #e2e8f0;
+  vertical-align: middle;
+}
+
+.eval-name {
+  color: #0f172a;
+  font-size: 0.8rem;
+}
+
+.eval-type {
+  font-size: 0.72rem;
+}
+
+.eval-appreciation {
+  font-size: 0.75rem;
+  font-style: italic;
+  color: #475569;
+}
+
+.tfoot-summary td {
+  background: #f8fafc;
+  border-top: 2px solid #cbd5e1;
+  font-size: 0.75rem;
+  padding: 0.45rem 0.55rem;
+}
+
+.coeff-badge,
+.points-badge {
+  background: #e2e8f0;
+  color: #0f172a;
+  font-size: 0.82rem;
+}
+
+.tfoot-moyenne td {
+  background: #f1f5f9;
+  border-top: 2px solid #0284c7;
+  border-bottom: 1px solid #cbd5e1;
+  padding: 0.6rem 0.75rem;
+}
+
+.tfoot-moyenne-classe td {
+  background: #f8fafc;
+  border-bottom: 2px solid #cbd5e1;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.75rem;
+}
+
+.moyenne-display-box {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.moyenne-val {
+  font-size: 1.15rem;
+  letter-spacing: 0.02em;
+}
+
+.mention-pill {
+  font-size: 0.74rem;
+  font-weight: 700;
+  background: #e0f2fe;
+  color: #0369a1;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  border: 1px solid #bae6fd;
+}
+
+/* Grille Assiduité & Vie Pastorale */
+.bulletin-pastorale-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr 1fr;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.pastorale-card {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+}
+
+.pastorale-header {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #64748b;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 0.3rem;
+  margin-bottom: 0.4rem;
+}
+
+.pastorale-header i {
+  color: #0284c7;
+}
+
+.assiduite-pct {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+}
+
+.pct-num {
+  font-size: 1.25rem;
+}
+
+.pct-sub {
+  font-size: 0.7rem;
+  color: #64748b;
+}
+
+.communaute-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.stat-pill {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.74rem;
+}
+
+.stat-pill .lbl {
+  color: #64748b;
+}
+
+.decision-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 45px;
+}
+
+.decision-stamp {
+  display: inline-block;
+  font-size: 0.95rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  padding: 0.35rem 0.9rem;
+  border-radius: 4px;
+  border: 2px solid currentColor;
+  text-align: center;
+}
+
+.stamp-admis {
+  color: #16a34a;
+  background: #dcfce7;
+  border-color: #16a34a;
+}
+
+.stamp-non-admis {
+  color: #dc2626;
+  background: #fee2e2;
+  border-color: #dc2626;
+}
+
+.stamp-ajourne {
+  color: #d97706;
+  background: #fef3c7;
+  border-color: #d97706;
+}
+
+/* Signatures */
+.bulletin-signatures-block {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
+.sig-col {
+  text-align: center;
+}
+
+.sig-role {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #334155;
+  text-transform: uppercase;
+  margin-bottom: 0.35rem;
+}
+
+.sig-box {
+  height: 55px;
+  border: 1px dashed #94a3b8;
+  border-radius: 4px;
+  background: #ffffff;
+}
+
+.text-success { color: #16a34a !important; }
+.text-danger { color: #dc2626 !important; }
+.text-warning { color: #d97706 !important; }
+.text-primary { color: #0284c7 !important; }
+.text-right { text-align: right; }
+.text-center { text-align: center; }
+.font-bold { font-weight: 700; }
+.uppercase { text-transform: uppercase; }
+
+.bulletin-doc-container:not(:last-child) {
+  margin-bottom: 2rem;
+  border-bottom: 2px dashed #cbd5e1;
+  padding-bottom: 2rem;
+}
+
+/* Styles d'impression */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 8mm 10mm;
+  }
+
+  :host,
+  .bulletin-doc-container,
+  .bulletin-doc-container * {
+    visibility: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .bulletin-doc-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border-bottom: none !important;
+  }
+
+  .bulletin-doc-container:not(:last-child) {
+    page-break-after: always !important;
+    break-after: page !important;
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  .bulletin-table th {
+    background-color: #f1f5f9 !important;
+  }
+
+  .tfoot-summary td {
+    background: #f8fafc !important;
+  }
+
+  .tfoot-moyenne td {
+    background: #f1f5f9 !important;
+  }
+
+  .bulletin-signatures-block {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+}
+

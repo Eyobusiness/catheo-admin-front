@@ -46,12 +46,17 @@ export class ProfilFormModalComponent {
   // Selected action map: key is `${uuid || reference}:${action}`
   protected readonly selectedActions = signal<Set<string>>(new Set());
 
+  private codeManuallyEdited = false;
+
   protected readonly form = new FormGroup({
     nom: new FormControl('', {
       nonNullable: true,
       validators: [Validators.required, Validators.minLength(2)]
     }),
-    code: new FormControl('', { nonNullable: true }),
+    code: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.minLength(2), Validators.maxLength(50)]
+    }),
     description: new FormControl('', { nonNullable: true }),
     statut: new FormControl<'actif' | 'inactif'>('actif', { nonNullable: true })
   });
@@ -84,6 +89,7 @@ export class ProfilFormModalComponent {
 
       if (open) {
         if (isEdit && p) {
+          this.codeManuallyEdited = true;
           this.form.setValue({
             nom: p.nom || p.name || '',
             code: p.code || '',
@@ -94,6 +100,7 @@ export class ProfilFormModalComponent {
           // Initialize permissions from profile
           this.loadPermissionsFromProfil(p);
         } else {
+          this.codeManuallyEdited = false;
           this.form.reset({
             nom: '',
             code: '',
@@ -104,6 +111,24 @@ export class ProfilFormModalComponent {
         }
       }
     });
+  }
+
+  protected onNomInput(): void {
+    if (!this.isEditing() && !this.codeManuallyEdited) {
+      const nom = this.form.controls.nom.value || '';
+      const slug = nom
+        .trim()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toUpperCase()
+        .replace(/[^A-Z0-9]+/g, '_')
+        .replace(/^_+|_+$/g, '');
+      this.form.controls.code.setValue(slug);
+    }
+  }
+
+  protected onCodeInput(): void {
+    this.codeManuallyEdited = true;
   }
 
   private loadPermissionsFromProfil(p: ProfilItem): void {
@@ -309,7 +334,7 @@ export class ProfilFormModalComponent {
 
     const payload: CreateProfilDto | UpdateProfilDto = {
       nom: val.nom.trim(),
-      code: val.code ? val.code.trim() : undefined,
+      code: val.code ? val.code.trim().toUpperCase() : '',
       description: val.description ? val.description.trim() : undefined,
       statut: val.statut,
       permissions: permissionsArray,

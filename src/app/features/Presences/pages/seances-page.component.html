@@ -85,10 +85,29 @@
             [value]="selectedSectionFilter()"
             (change)="onSectionFilterChange($event)"
           >
-            <option value="">Toutes les sections</option>
+            <option value="">Sélectionner une section...</option>
             @for (sec of sections(); track sec.id) {
               <option [value]="sec.id">
                 {{ sec.nom }}
+              </option>
+            }
+          </select>
+          <i class="bi bi-chevron-down select-chevron-icon"></i>
+        </div>
+
+        <!-- Niveau Filter -->
+        <div class="select-wrapper">
+          <i class="bi bi-layers select-prefix-icon"></i>
+          <select
+            class="filter-select-control"
+            [value]="selectedNiveauFilter()"
+            (change)="onNiveauFilterChange($event)"
+            [disabled]="!selectedSectionFilter()"
+          >
+            <option value="">Sélectionner un niveau...</option>
+            @for (niv of niveauxFiltres(); track niv.id) {
+              <option [value]="niv.id">
+                {{ niv.nom }}
               </option>
             }
           </select>
@@ -102,14 +121,12 @@
             class="filter-select-control"
             [value]="selectedClasseFilter()"
             (change)="onClasseFilterChange($event)"
+            [disabled]="!selectedNiveauFilter()"
           >
-            <option value="">Toutes les classes</option>
+            <option value="">Sélectionner une classe...</option>
             @for (c of classesFiltrees(); track c.id) {
               <option [value]="c.id">
                 {{ c.nom }}
-                @if (c.niveau; as niv) {
-                  ({{ niv.nom }})
-                }
               </option>
             }
           </select>
@@ -141,15 +158,29 @@
       </div>
     </div>
 
-    <!-- Table Component -->
-    <app-seance-table
-      [seances]="filteredSeances()"
-      [isLoading]="isLoading()"
-      (createRequested)="openCreateModal()"
-      (editRequested)="openEditModal($event)"
-      (deleteRequested)="openDeleteModal($event)"
-      (presencesRequested)="openPresencesModal($event)"
-    />
+    <!-- Message d'attente de sélection -->
+    @if (!selectedClasseFilter()) {
+      <div class="empty-filter-prompt">
+        <div class="empty-filter-icon">
+          <i class="bi bi-funnel"></i>
+        </div>
+        <h3>Sélectionnez une section, un niveau et une classe</h3>
+        <p>
+          Pour afficher le registre des séances et enregistrer les présences,
+          veuillez d'abord filtrer par <strong>Section</strong>, <strong>Niveau</strong> et <strong>Classe</strong> ci-dessus.
+        </p>
+      </div>
+    } @else {
+      <!-- Table Component -->
+      <app-seance-table
+        [seances]="filteredSeances()"
+        [isLoading]="isLoading()"
+        (createRequested)="openCreateModal()"
+        (editRequested)="openEditModal($event)"
+        (deleteRequested)="openDeleteModal($event)"
+        (presencesRequested)="openPresencesModal($event)"
+      />
+    }
   </app-card>
 </div>
 

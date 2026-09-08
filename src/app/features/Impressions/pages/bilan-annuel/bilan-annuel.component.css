@@ -148,11 +148,23 @@
   box-sizing: border-box;
   font-family: 'Times New Roman', Times, serif, Arial, sans-serif;
   color: #000;
+  display: flex;
+  flex-direction: column;
 }
 
 .a4-document-container.portrait-mode {
   width: 210mm;
   min-height: 297mm;
+}
+
+.doc-body-wrapper {
+  flex: 1 0 auto;
+}
+
+.doc-footer,
+app-footer-paroisse-print {
+  margin-top: auto !important;
+  page-break-inside: avoid !important;
 }
 
 .doc-title-block {
@@ -174,77 +186,91 @@
   border-collapse: collapse;
   margin-top: 4px;
   font-size: 0.75rem;
+  table-layout: auto;
 }
 
 .official-print-table th,
 .official-print-table td {
-  border: 1px solid #000;
-  padding: 3px 4px;
+  border: 1px solid #334155;
+  padding: 4px 5px;
   color: #000;
+  white-space: nowrap !important;
 }
 
 .black-banner-row th {
-  background-color: #000;
-  color: #fff;
-  font-weight: 800;
+  background-color: #f1f5f9;
+  color: #1e293b;
+  font-weight: 700;
   text-transform: uppercase;
   padding: 4px;
   font-size: 0.72rem;
+  border: 1px solid #334155;
 }
 
 .th-num {
-  width: 26px;
+  width: 32px;
+  min-width: 32px;
   text-align: center;
 }
 
 .th-name {
-  width: 190px;
+  min-width: 220px;
   text-align: left;
+  padding-left: 8px !important;
 }
 
 .th-phone {
-  width: 110px;
-  min-width: 110px;
+  width: 120px;
+  min-width: 120px;
   text-align: center;
-  white-space: nowrap;
+  white-space: nowrap !important;
 }
 
-.th-moyenne {
-  width: 70px;
-  text-align: center;
-}
-
-.th-black-center {
+.th-moy {
+  width: 75px;
+  min-width: 75px;
   text-align: center;
 }
 
-.th-pres {
+.th-presences-group {
+  text-align: center;
+  letter-spacing: 0.03em;
+}
+
+.th-sub-col {
   width: 55px;
+  min-width: 55px;
   text-align: center;
   font-size: 0.7rem;
 }
 
 .th-decision {
-  width: 120px;
+  width: 130px;
+  min-width: 130px;
   text-align: center;
 }
 
 .sub-cols-row th {
-  background-color: #f3f4f6;
+  background-color: #f8fafc;
+  color: #334155;
   font-size: 0.68rem;
   font-weight: 700;
   text-align: center;
-  padding: 2px 1px;
+  padding: 3px 2px;
+  border: 1px solid #334155;
 }
 
 .td-num {
   text-align: center;
   font-weight: 700;
+  height: 24px;
 }
 
 .td-name {
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
+  padding-left: 8px !important;
+  height: 24px;
 }
 
 .td-phone {
@@ -253,64 +279,36 @@
   font-family: Arial, sans-serif;
   letter-spacing: 0.02em;
   white-space: nowrap;
+  height: 24px;
 }
 
-.td-moyenne {
+.td-moy {
   text-align: center;
   font-weight: 800;
-  height: 20px;
+  height: 24px;
 }
 
 .td-pres {
   text-align: center;
-  height: 20px;
+  height: 24px;
 }
 
 .td-decision {
   text-align: center;
+  height: 24px;
 }
 
-.decision-pill {
-  font-size: 0.7rem;
-  font-weight: 700;
-  padding: 1px 6px;
-  border-radius: 3px;
-  background-color: #e5e7eb;
-  color: #111827;
-  text-transform: uppercase;
-}
-
-/* Signatures de part et d'autre */
-.print-signatures-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-top: 28px;
-  padding: 0 25px;
-  page-break-inside: avoid;
-}
-
-.sig-block {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 260px;
-}
-
-.sig-title {
-  font-size: 0.88rem;
-  font-weight: 800;
-  text-decoration: underline;
-  color: #000;
-  text-align: center;
-}
-
-.sig-space {
-  height: 55px;
+.empty-row td {
+  height: 24px;
 }
 
 /* PRINT MEDIA */
 @media print {
+  @page {
+    size: A4 landscape;
+    margin: 8mm 8mm;
+  }
+
   body {
     background: #fff !important;
     margin: 0 !important;
@@ -329,15 +327,14 @@
 
   .a4-document-container {
     width: 100% !important;
-    min-height: auto !important;
+    min-height: calc(210mm - 24mm) !important;
+    height: auto !important;
     margin: 0 !important;
     padding: 0 !important;
     border: none !important;
     box-shadow: none !important;
-  }
-
-  @page {
-    size: A4 landscape;
-    margin: 8mm 8mm;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
   }
 }

@@ -1,0 +1,247 @@
+/* =========================================================================
+   DOCUMENT OFFICIEL : RELEVÉ GÉNÉRAL DES NOTES & MOYENNES (A4)
+   Conçu spécifiquement pour le Lecteur PDF Catheo
+   ========================================================================= */
+@page {
+  size: A4 portrait;
+  margin: 8mm 10mm;
+}
+
+:host {
+  display: block;
+  font-family: 'Times New Roman', Times, serif, system-ui, -apple-system, sans-serif;
+  color: #000000;
+  background-color: transparent;
+  width: 100%;
+}
+
+.releve-notes-doc-container {
+  width: 210mm;
+  min-height: 297mm;
+  max-width: 210mm;
+  margin: 0 auto;
+  background: #ffffff;
+  padding: 6mm 10mm;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.doc-body-wrapper {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.doc-footer,
+app-footer-paroisse-print {
+  margin-top: auto;
+  display: block;
+  width: 100%;
+  padding-top: 8px;
+}
+
+.print-meta-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.35rem 0.65rem;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  margin-top: 0.4rem;
+}
+
+.meta-lbl {
+  color: #64748b;
+  margin-right: 0.35rem;
+}
+
+.print-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.76rem;
+  border: 1px solid #cbd5e1;
+  margin-top: 0.45rem;
+}
+
+.print-table th {
+  background-color: #f1f5f9;
+  color: #1e293b;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  padding: 0.3rem 0.45rem;
+  border: 1px solid #cbd5e1;
+  vertical-align: middle;
+}
+
+.print-table td {
+  padding: 0.28rem 0.45rem;
+  border: 1px solid #e2e8f0;
+  vertical-align: middle;
+}
+
+.text-center {
+  text-align: center !important;
+}
+
+.col-numero {
+  text-align: center !important;
+  width: 45px;
+}
+
+.eval-col-th {
+  min-width: 75px;
+  text-align: center !important;
+}
+
+.th-eval-title {
+  font-weight: 700;
+  color: #0f172a;
+  text-align: center;
+}
+
+.th-eval-sub {
+  font-size: 0.62rem;
+  color: #64748b;
+  font-weight: normal;
+  text-transform: none;
+  text-align: center;
+}
+
+.eval-col-td {
+  font-weight: 600;
+  text-align: center !important;
+}
+
+.col-moyenne {
+  text-align: center !important;
+  background: #f8fafc;
+  font-weight: 800;
+  font-size: 0.82rem;
+  border-left: 2px solid #cbd5e1 !important;
+  border-right: 2px solid #cbd5e1 !important;
+}
+
+.badge-matricule {
+  font-size: 0.7rem;
+  font-family: monospace;
+  background: #f1f5f9;
+  color: #475569;
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+}
+
+.student-name {
+  font-size: 0.78rem;
+  color: #1e293b;
+}
+
+.print-stats-box {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+  padding: 0.4rem 0.65rem;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  margin-top: 0.5rem;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.stat-lbl {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.stat-val {
+  font-size: 0.95rem;
+  margin-top: 0.1rem;
+}
+
+.text-primary { color: #0284c7 !important; }
+.text-success { color: #16a34a !important; }
+.text-danger  { color: #dc2626 !important; }
+
+.notes-empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #64748b;
+}
+
+/* Print CSS */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 8mm 10mm;
+  }
+
+  :host,
+  .releve-notes-doc-container,
+  .releve-notes-doc-container * {
+    visibility: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .releve-notes-doc-container {
+    width: 100% !important;
+    max-width: none !important;
+    min-height: calc(297mm - 24mm) !important;
+    height: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    box-sizing: border-box !important;
+  }
+
+  .doc-body-wrapper {
+    flex: 1 0 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .print-table th {
+    background-color: #f1f5f9 !important;
+    border: 1px solid #cbd5e1 !important;
+  }
+
+  .print-table tr {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .print-stats-box {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    margin-top: 0.4rem !important;
+    padding: 0.35rem 0.6rem !important;
+  }
+
+  .doc-footer,
+  app-footer-paroisse-print {
+    margin-top: auto !important;
+    display: block !important;
+    width: 100% !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+}

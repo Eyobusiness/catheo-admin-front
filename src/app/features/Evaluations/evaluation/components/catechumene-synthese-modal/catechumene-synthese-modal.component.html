@@ -1,0 +1,129 @@
+<div class="modal-backdrop" (click)="onCancel()">
+  <div class="modal-dialog modal-lg" (click)="$event.stopPropagation()">
+    <!-- Header -->
+    <div class="modal-header">
+      <div class="modal-title-wrap">
+        <div class="modal-icon-badge">
+          <i class="bi bi-mortarboard-fill"></i>
+        </div>
+        <div>
+          <h3 class="modal-title">{{ synthese()?.catechumene?.nom_complet || 'Synthèse de l\'élève' }}</h3>
+          <p class="modal-subtitle">
+            <span>Matricule : <strong>{{ synthese()?.catechumene?.matricule || '—' }}</strong></span>
+            @if (synthese()?.classe) {
+              <span class="separator">•</span>
+              <span>Classe : <strong>{{ synthese()?.classe?.nom }}</strong></span>
+            }
+          </p>
+        </div>
+      </div>
+      <button type="button" class="btn-close" (click)="onCancel()" aria-label="Fermer">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="modal-body">
+      @if (isLoading()) {
+        <div class="loading-state">
+          <div class="spinner-border text-primary" role="status"></div>
+          <p>Chargement du parcours pédagogique...</p>
+        </div>
+      } @else if (!synthese()) {
+        <div class="empty-state">
+          <i class="bi bi-exclamation-circle empty-icon"></i>
+          <p>Données non disponibles pour cet élève.</p>
+        </div>
+      } @else {
+        <!-- Global Score Card -->
+        <div class="score-card-banner">
+          <div class="score-main">
+            <span class="score-label">Moyenne Générale</span>
+            <div class="score-number-wrap">
+              @if (synthese()?.moyenne !== null && synthese()?.moyenne !== undefined) {
+                <span class="score-value">{{ synthese()?.moyenne }}</span>
+                <span class="score-max">/ 20</span>
+              } @else {
+                <span class="score-value text-muted">—</span>
+                <span class="score-max">Non évalué</span>
+              }
+            </div>
+          </div>
+          <div class="score-appreciation">
+            <span class="appreciation-label">Mention / Appréciation</span>
+            <strong class="appreciation-val">{{ synthese()?.appreciation || '—' }}</strong>
+          </div>
+        </div>
+
+        <!-- Notes Table -->
+        <div class="table-section">
+          <h5 class="section-title">
+            <i class="bi bi-list-check me-1"></i>
+            Détail des évaluations ({{ synthese()?.notes?.length || 0 }})
+          </h5>
+
+          @if ((synthese()?.notes?.length || 0) === 0) {
+            <div class="no-eval-alert">
+              <span>Aucune note enregistrée pour cet élève pour l'année en cours.</span>
+            </div>
+          } @else {
+            <div class="table-responsive">
+              <table class="synthese-table">
+                <thead>
+                  <tr>
+                    <th>Évaluation</th>
+                    <th class="text-center">Coeff.</th>
+                    <th class="text-center">Note brute</th>
+                    <th class="text-center">Note /20</th>
+                    <th>Appréciation</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (n of synthese()?.notes; track $index) {
+                    <tr>
+                      <td>
+                        <strong>{{ n.titre }}</strong>
+                      </td>
+                      <td class="text-center">
+                        <span class="badge-coeff">×{{ n.coefficient }}</span>
+                      </td>
+                      <td class="text-center">
+                        @if (n.note_obtenue !== null) {
+                          <span class="note-brute">{{ n.note_obtenue }} / {{ n.note_max }}</span>
+                        } @else {
+                          <span class="text-muted">Non évalué</span>
+                        }
+                      </td>
+                      <td class="text-center">
+                        @if (n.note_sur_20 !== null) {
+                          <span class="note-normalisee"
+                            [class.top]="n.note_sur_20 >= 16"
+                            [class.good]="n.note_sur_20 >= 14 && n.note_sur_20 < 16"
+                            [class.pass]="n.note_sur_20 >= 10 && n.note_sur_20 < 14"
+                            [class.low]="n.note_sur_20 < 10"
+                          >
+                            {{ n.note_sur_20 }}
+                          </span>
+                        } @else {
+                          <span class="text-muted">—</span>
+                        }
+                      </td>
+                      <td>
+                        <span class="note-app">{{ n.appreciation || '—' }}</span>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Footer -->
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" (click)="onCancel()">Fermer</button>
+    </div>
+  </div>
+</div>

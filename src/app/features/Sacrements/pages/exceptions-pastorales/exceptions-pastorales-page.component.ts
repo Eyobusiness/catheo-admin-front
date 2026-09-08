@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  OnInit,
   computed,
   inject,
   signal
@@ -18,20 +19,39 @@ import {
   TypeSacrement
 } from '../../models/sacrements.model';
 import { PdfService } from '../../../../core/services/pdf.service';
+import { AnneeCatecheseService } from '../../../../core/services/annee-catechese.service';
+import { ToastService } from '../../../../core/services/toast.service';
+import { HeaderParoissePrintComponent } from '../../../Impressions/components/header-paroisse-print/header-paroisse-print.component';
+import { FooterParoissePrintComponent } from '../../../Impressions/components/footer-paroisse-print/footer-paroisse-print.component';
 
 @Component({
   selector: 'app-exceptions-pastorales-page',
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    HeaderParoissePrintComponent,
+    FooterParoissePrintComponent
+  ],
   templateUrl: './exceptions-pastorales-page.component.html',
   styleUrl: './exceptions-pastorales-page.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ExceptionsPastoralesPageComponent {
+export class ExceptionsPastoralesPageComponent implements OnInit {
   public readonly service = inject(SacrementsService);
   public readonly sectionService = inject(SectionService);
   public readonly niveauService = inject(NiveauService);
   public readonly classeService = inject(ClasseService);
   private readonly pdfService = inject(PdfService);
+  private readonly anneeService = inject(AnneeCatecheseService);
+  private readonly toastService = inject(ToastService);
+
+  public ngOnInit(): void {
+    this.service.fetchExceptions().subscribe();
+    this.service.loadCatechumenesFromApi();
+    this.sectionService.getAll().subscribe();
+    this.niveauService.getAll().subscribe();
+    this.classeService.getAll().subscribe();
+  }
 
   // Données BD
   public readonly sections = this.sectionService.sections;
@@ -46,24 +66,18 @@ export class ExceptionsPastoralesPageComponent {
   public readonly filterSacrement = signal<string>('tous');
   public readonly filterMotif = signal<string>('tous');
 
-  // Listes dynamiques en cascade selon la BD
+  // Listes dynamiques en cascade selon la BD (verrouillées tant que la section n'est pas choisie)
   public readonly filteredNiveauxList = computed(() => {
     const secId = this.filterSection();
-    if (!secId) return this.niveaux();
-    return this.niveaux().filter(n => n.section_id === secId || n.section?.id === secId || n.section?.nom === secId);
+    if (!secId) return [];
+    return this.niveaux().filter(n => String(n.section_id) === String(secId) || String(n.section?.id) === String(secId) || n.section?.nom === secId);
   });
 
   public readonly filteredClassesList = computed(() => {
     const nivId = this.filterNiveau();
     const secId = this.filterSection();
-    let res = this.classes();
-    if (nivId) {
-      res = res.filter(c => c.niveau_id === nivId || c.niveau?.id === nivId || c.niveau?.nom === nivId);
-    } else if (secId) {
-      const nivIdsInSec = new Set(this.filteredNiveauxList().map(n => n.id));
-      res = res.filter(c => (!!c.niveau_id && nivIdsInSec.has(c.niveau_id)) || (!!c.niveau?.id && nivIdsInSec.has(c.niveau.id)));
-    }
-    return res;
+    if (!secId || !nivId) return [];
+    return this.classes().filter(c => String(c.niveau_id) === String(nivId) || String(c.niveau?.id) === String(nivId) || c.niveau?.nom === nivId);
   });
 
   public onSectionChange(val: string): void {
@@ -79,16 +93,31 @@ export class ExceptionsPastoralesPageComponent {
 
   // Modals
   public readonly isAddModalOpen = signal(false);
+  public readonly isEditModalOpen = signal(false);
   public readonly isDeleteModalOpen = signal(false);
+  public readonly isPrintModalOpen = signal(false);
   public readonly selectedException = signal<ExceptionSacrement | null>(null);
+  public readonly currentDate = new Date();
+  public readonly activeAnneeLibelle = computed(() => this.anneeService.activeAnnee()?.libelle || '');
 
   // Formulaire d'ajout
   public readonly catSearchQuery = signal('');
   public readonly selectedCatechumene = signal<CatechumeneSacrement | null>(null);
+  public readonly selectedSacrementForAdd = signal<TypeSacrement>('Baptême');
   public readonly newExceptionForm = signal({
     sacrementType: 'Baptême' as TypeSacrement,
     motif: 'Décision du Curé' as MotifException,
-    autorisePar: 'Père Curé',
+    autorisePar: '',
+    observation: ''
+  });
+
+  // Formulaire d'édition
+  public readonly editExceptionForm = signal({
+    id: '',
+    catechumeneNomComplet: '',
+    sacrementType: 'Baptême' as TypeSacrement,
+    motif: 'Décision du Curé' as MotifException,
+    autorisePar: '',
     observation: ''
   });
 
@@ -101,10 +130,7 @@ export class ExceptionsPastoralesPageComponent {
     'Autre'
   ];
 
-  // Toast
-  public readonly toastMessage = signal('');
-  public readonly toastType = signal<'success' | 'danger' | 'warning' | 'info'>('success');
-  public readonly showToast = signal(false);
+
 
   // Liste filtrée des exceptions
   public readonly filteredExceptions = computed(() => {
@@ -159,26 +185,37 @@ export class ExceptionsPastoralesPageComponent {
     };
   });
 
-  // Catéchumènes trouvés pour l'ajout
+  // Catéchumènes de l'année active qui ne remplissent PAS les conditions normales pour le sacrement choisi
   public readonly searchedCatechumenes = computed(() => {
+    const sacType = this.selectedSacrementForAdd();
+    const eligibleList = this.service.getCatechumenesEligiblesPourDerogation(sacType);
     const q = this.catSearchQuery().toLowerCase().trim();
-    const all = this.service.catechumenes();
-    if (!q) return all.slice(0, 5);
-    return all.filter(c =>
+
+    if (!q) return eligibleList.slice(0, 10);
+
+    return eligibleList.filter(c =>
       c.nom.toLowerCase().includes(q) ||
       c.prenoms.toLowerCase().includes(q) ||
       c.matricule.toLowerCase().includes(q) ||
-      c.classe.toLowerCase().includes(q)
+      c.classe.toLowerCase().includes(q) ||
+      c.niveau.toLowerCase().includes(q)
     );
   });
+
+  public onSacrementSelectChange(type: TypeSacrement): void {
+    this.selectedSacrementForAdd.set(type);
+    this.newExceptionForm.update(f => ({ ...f, sacrementType: type }));
+    this.selectedCatechumene.set(null);
+  }
 
   public openAddModal(): void {
     this.catSearchQuery.set('');
     this.selectedCatechumene.set(null);
+    this.selectedSacrementForAdd.set('Baptême');
     this.newExceptionForm.set({
       sacrementType: 'Baptême',
       motif: 'Décision du Curé',
-      autorisePar: 'Père Curé',
+      autorisePar: '',
       observation: ''
     });
     this.isAddModalOpen.set(true);
@@ -193,9 +230,62 @@ export class ExceptionsPastoralesPageComponent {
     if (!cat) return;
 
     const f = this.newExceptionForm();
-    this.service.addException(cat.id, f.sacrementType, f.motif, f.autorisePar, f.observation);
-    this.isAddModalOpen.set(false);
-    this.triggerToast(`Dérogation enregistrée pour ${cat.nom} ${cat.prenoms} (${f.sacrementType})`, 'success');
+    this.service.addException(cat.id, f.sacrementType, f.motif, f.autorisePar, f.observation).subscribe({
+      next: () => {
+        this.isAddModalOpen.set(false);
+        this.toastService.success(
+          'Dérogation enregistrée',
+          `Dérogation accordée pour ${cat.nom} ${cat.prenoms} (${f.sacrementType})`
+        );
+      },
+      error: () => {
+        this.toastService.error('Erreur', "Impossible d'enregistrer la dérogation.");
+      }
+    });
+  }
+
+  public updateNewForm(patch: Partial<{ sacrementType: TypeSacrement; motif: MotifException; autorisePar: string; observation: string }>): void {
+    this.newExceptionForm.update(f => ({ ...f, ...patch }));
+  }
+
+  public updateEditForm(patch: Partial<{ sacrementType: TypeSacrement; motif: MotifException; autorisePar: string; observation: string }>): void {
+    this.editExceptionForm.update(f => ({ ...f, ...patch }));
+  }
+
+  public openEditModal(exc: ExceptionSacrement): void {
+    this.selectedException.set(exc);
+    this.editExceptionForm.set({
+      id: exc.id,
+      catechumeneNomComplet: exc.catechumeneNomComplet || '',
+      sacrementType: exc.sacrementType,
+      motif: exc.motif,
+      autorisePar: exc.autorisePar || '',
+      observation: exc.observation || ''
+    });
+    this.isEditModalOpen.set(true);
+  }
+
+  public saveEditException(): void {
+    const f = this.editExceptionForm();
+    if (!f.id) return;
+
+    this.service.updateException(f.id, {
+      motif: f.motif,
+      autorisePar: f.autorisePar,
+      observation: f.observation,
+      sacrementType: f.sacrementType
+    }).subscribe({
+      next: () => {
+        this.isEditModalOpen.set(false);
+        this.toastService.success(
+          'Dérogation modifiée',
+          `La dérogation pour ${f.catechumeneNomComplet} (${f.sacrementType}) a été mise à jour.`
+        );
+      },
+      error: () => {
+        this.toastService.error('Erreur', 'Impossible de mettre à jour la dérogation.');
+      }
+    });
   }
 
   public openDeleteModal(exc: ExceptionSacrement): void {
@@ -206,31 +296,36 @@ export class ExceptionsPastoralesPageComponent {
   public confirmDelete(): void {
     const exc = this.selectedException();
     if (exc) {
-      this.service.deleteException(exc.id);
-      this.triggerToast(`Dérogation supprimée avec succès.`, 'info');
+      this.service.deleteException(exc.id).subscribe({
+        next: () => {
+          this.toastService.info(
+            'Dérogation supprimée',
+            `La dérogation pour ${exc.catechumeneNomComplet} (${exc.sacrementType}) a été révoquée.`
+          );
+        },
+        error: () => {
+          this.toastService.error('Erreur', 'Impossible de révoquer la dérogation.');
+        }
+      });
     }
     this.isDeleteModalOpen.set(false);
   }
 
   public printSheet(): void {
-    const filters: any = {
-      is_derogation: true
-    };
-    if (this.filterSection()) filters.section_id = this.filterSection();
-    if (this.filterNiveau()) filters.niveau_id = this.filterNiveau();
-    if (this.filterClasse()) filters.classe_id = this.filterClasse();
-
-    this.pdfService.previewSuiviSacramentalPdf(filters, {
-      title: 'Registre des Dérogations & Exceptions Pastorales',
-      subtitle: 'Sacrements & Parcours',
-      fileName: 'registre-exceptions-pastorales.pdf'
-    });
+    this.isPrintModalOpen.set(true);
   }
 
-  private triggerToast(msg: string, type: 'success' | 'danger' | 'warning' | 'info'): void {
-    this.toastMessage.set(msg);
-    this.toastType.set(type);
-    this.showToast.set(true);
-    setTimeout(() => this.showToast.set(false), 3500);
+  public printList(): void {
+    window.print();
+  }
+
+  public openPdfReader(): void {
+    this.pdfService.previewRegistreExceptionsPdf({
+      title: 'Registre des Exceptions & Dérogations Pastorales',
+      customTitle: 'REGISTRE PASTORAL DES EXCEPTIONS & DÉROGATIONS',
+      exceptions: this.filteredExceptions(),
+      anneePastorale: this.activeAnneeLibelle(),
+      fileName: 'registre-exceptions-pastorales.pdf'
+    });
   }
 }

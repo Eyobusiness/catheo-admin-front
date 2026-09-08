@@ -208,8 +208,8 @@ export class VersementCureService {
       const reste = Math.max(0, enCaisse - totalVerse);
       return {
         total_en_caisse: enCaisse,
-        total_deja_verse: current.total_deja_verse || totalVerse,
-        reste_a_reverser: current.reste_a_reverser || reste
+        total_deja_verse: totalVerse,
+        reste_a_reverser: reste
       };
     });
   }

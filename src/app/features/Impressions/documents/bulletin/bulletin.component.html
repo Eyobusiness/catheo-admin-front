@@ -1,0 +1,243 @@
+@for (d of bulletinsList(); track d.catechumene_id) {
+  <article class="bulletin-doc-container">
+    <div class="doc-body-wrapper">
+      <!-- 1. En-tête officiel diocésain & paroissial -->
+      <app-entete-catechese
+        [titreDocument]="'BULLETIN D\'ÉVALUATION' + (d.trimestre ? ' — ' + (d.trimestre | uppercase) : '')"
+        
+        [sousTitre]="'NIVEAU : ' + ((d.niveau || ''))"
+        [classeNom]="d.classe || ''"
+        [anneePastorale]="d.annee_pastorale || activeAnnee()?.libelle || 'En cours'"
+        [showBorder]="true"
+      ></app-entete-catechese>
+
+      <!-- 2. Carte d'identité du Catéchumène -->
+      <div class="student-meta-card">
+        <div class="meta-row">
+          <div class="meta-field">
+            <span class="meta-label">Nom & Prénoms :</span>
+            <strong class="meta-value student-fullname">{{ d.nom_prenoms }}</strong>
+          </div>
+          <div class="meta-field">
+            <span class="meta-label">Matricule :</span>
+            <strong class="meta-value matricule-val">{{ d.matricule || 'N/A' }}</strong>
+          </div>
+        </div>
+
+        <div class="meta-row mt-2">
+          <div class="meta-field">
+            <span class="meta-label">Section :</span>
+            <strong class="meta-value">{{ d.section || '—' }}</strong>
+          </div>
+          <!-- 
+          <div class="meta-field">
+            <span class="meta-label">Niveau :</span>
+            <strong class="meta-value">{{ d.niveau || '—' }}</strong>
+          </div>
+          <div class="meta-field">
+            <span class="meta-label">Classe :</span>
+            <strong class="meta-value">{{ d.classe || '—' }}</strong>
+          </div>
+          <div class="meta-field">
+            <span class="meta-label">Période / Trimestre :</span>
+            <strong class="meta-value trimestre-pill">{{ d.trimestre || d.periode || 'Trimestre 1' }}</strong>
+          </div> -->
+          <!-- <div class="meta-field">
+            <span class="meta-label">Année :</span>
+            <strong class="meta-value">{{ d.annee_pastorale || activeAnnee()?.libelle || 'En cours' }}</strong>
+          </div> -->
+          @if (d.rang) {
+            <div class="meta-field">
+              <span class="meta-label">Rang :</span>
+              <strong class="meta-value rank-val">{{ d.rang }} @if (d.total_eleves) { / {{ d.total_eleves }} }</strong>
+            </div>
+          }
+          @if (d.moyenne_classe !== null && d.moyenne_classe !== undefined) {
+            <div class="meta-field">
+              <span class="meta-label">Moyenne Classe :</span>
+              <strong class="meta-value font-bold text-primary">{{ d.moyenne_classe | number:'1.2-2' }} / 20</strong>
+            </div>
+          }
+        </div>
+
+        <div class="meta-row mt-2">
+          <div class="meta-field w-100">
+            <span class="meta-label">Animateur(s) :</span>
+            <strong class="meta-value animateur-names">{{ d.animateurs || 'Non assigné' }}</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Tableau des Évaluations & Notes -->
+      <div class="table-wrap mt-3">
+        <table class="bulletin-table">
+          <thead>
+            <tr>
+              <th class="col-num" style="width: 32px;">N°</th>
+              <th>Évaluation</th>
+              <th class="text-center" style="width: 80px;">Type</th>
+              <th class="text-center" style="width: 55px;">Coeff.</th>
+              <th class="text-center" style="width: 95px;">Note / 20</th>
+              <th class="text-center" style="width: 90px;">Points</th>
+              <th>Appréciation</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (ev of d.evaluations; track ev.titre; let i = $index) {
+              <tr>
+                <td class="text-center col-num">{{ i + 1 }}</td>
+                <td>
+                  <strong class="eval-name">{{ ev.titre }}</strong>
+                </td>
+                <td class="text-center text-muted eval-type">{{ ev.type }}</td>
+                <td class="text-center font-bold">×{{ ev.coefficient }}</td>
+                <td
+                  class="text-center font-bold"
+                  [class.text-danger]="ev.note_sur_20 !== null && ev.note_sur_20 < 10"
+                  [class.text-success]="ev.note_sur_20 !== null && ev.note_sur_20 >= 10"
+                >
+                  @if (ev.note_sur_20 !== null && ev.note_sur_20 !== undefined) {
+                    {{ ev.note_sur_20 }} / 20
+                    @if (ev.bareme && ev.bareme !== 20 && ev.note_obtenue !== null && ev.note_obtenue !== undefined) {
+                      <div class="eval-raw-note">({{ ev.note_obtenue }}/{{ ev.bareme }})</div>
+                    }
+                  } @else {
+                    <span class="text-muted">—</span>
+                  }
+                </td>
+                <td class="text-center font-bold points-val">
+                  @if (ev.total_pondere !== null && ev.total_pondere !== undefined) {
+                    {{ ev.total_pondere }}
+                  } @else {
+                    <span class="text-muted">—</span>
+                  }
+                </td>
+                <td class="eval-appreciation">{{ ev.appreciation || '—' }}</td>
+              </tr>
+            }
+            @if (d.evaluations.length === 0) {
+              <tr>
+                <td colspan="7" class="text-center py-4 text-muted">
+                  Aucune évaluation enregistrée pour cet élève.
+                </td>
+              </tr>
+            }
+          </tbody>
+          <tfoot>
+            <tr class="tfoot-summary">
+              <td colspan="3" class="text-right uppercase font-bold">Total Coefficients :</td>
+              <td class="text-center font-bold coeff-badge">{{ d.total_coefficients }}</td>
+              <td class="text-right uppercase font-bold">Total :</td>
+              <td class="text-center font-bold points-badge">{{ d.total_points }}</td>
+              <td></td>
+            </tr>
+            <tr class="tfoot-moyenne">
+              <td colspan="4" class="text-right uppercase font-bold text-primary">
+                MOYENNE GÉNÉRALE DU CATÉCHUMÈNE:
+              </td>
+              <td colspan="3" class="text-left">
+                @let studentMoy = d.moyenne_generale ?? (d.total_coefficients > 0 && d.total_points > 0 ? (d.total_points / d.total_coefficients) : null);
+                <div class="moyenne-display-box">
+                  @if (studentMoy !== null && studentMoy !== undefined) {
+                    <span
+                      class="moyenne-val font-bold"
+                      [class.text-success]="studentMoy >= 10"
+                      [class.text-danger]="studentMoy < 10"
+                    >
+                      {{ studentMoy | number:'1.2-2' }} / 20
+                    </span>
+                  } @else {
+                    <span class="moyenne-val text-muted">Non évalué</span>
+                  }
+                  <span class="mention-pill">{{ getMentionAppreciation(studentMoy) }}</span>
+                </div>
+              </td>
+            </tr>
+            @if (d.moyenne_classe !== null && d.moyenne_classe !== undefined) {
+              <tr class="tfoot-moyenne-classe">
+                <td colspan="4" class="text-right uppercase font-bold text-muted">
+                  MOYENNE GÉNÉRALE DE LA CLASSE :
+                </td>
+                <td colspan="3" class="text-left font-bold text-muted">
+                  {{ d.moyenne_classe | number:'1.2-2' }} / 20
+                </td>
+              </tr>
+            }
+          </tfoot>
+        </table>
+      </div>
+
+      <!-- 4. Assiduité & Vie Pastorale -->
+      <div class="bulletin-pastorale-grid mt-3">
+        <div class="pastorale-card">
+          <div class="pastorale-header">
+            <i class="bi bi-clock-history"></i>
+            <span>Assiduité aux Cours</span>
+          </div>
+          <div class="pastorale-content">
+            <div class="assiduite-pct">
+              <span class="pct-num font-bold" [class.text-success]="(d.presence_cours_pct ?? 0) >= 80" [class.text-warning]="(d.presence_cours_pct ?? 0) < 80">
+                {{ d.presence_cours_pct ?? 0 }}%
+              </span>
+              <span class="pct-sub">Taux de présence</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="pastorale-card">
+          <div class="pastorale-header">
+            <i class="bi bi-heart-fill"></i>
+            <span>Vie Communautaire & Paroissiale</span>
+          </div>
+          <div class="pastorale-content communaute-stats">
+            <div class="stat-pill">
+              <span class="lbl">Messes :</span>
+              <strong>{{ d.presence_messe ?? 0 }} fois</strong>
+            </div>
+            <div class="stat-pill">
+              <span class="lbl">CEB :</span>
+              <strong>{{ d.presence_ceb ?? 0 }} fois</strong>
+            </div>
+            <div class="stat-pill">
+              <span class="lbl">Mouvement :</span>
+              <strong>{{ d.presence_mouvement ?? 0 }} fois</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="pastorale-card decision-card">
+          <div class="pastorale-header text-center">
+            <i class="bi bi-check-circle"></i>
+            <span>Décision</span>
+          </div>
+          <div class="pastorale-content decision-center">
+            <span
+              class="decision-stamp"
+              [class.stamp-admis]="d.decision === 'Admis'"
+              [class.stamp-non-admis]="d.decision === 'Non admis'"
+              [class.stamp-ajourne]="d.decision === 'Ajourné'"
+            >
+              {{ (d.decision || 'ADMIS') | uppercase }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Bloc de Signatures Officielles -->
+      <div class="bulletin-signatures-block mt-4">
+        <div class="sig-col">
+          <p class="sig-role">L'Animateur</p>
+          <div class="sig-box"></div>
+        </div>
+        <div class="sig-col">
+          <p class="sig-role">Le Responsable Paroissial / Curé</p>
+          <div class="sig-box"></div>
+        </div>
+        <div class="sig-col">
+          <p class="sig-role">Le Parent / Tuteur</p>
+          <div class="sig-box"></div>
+        </div>
+      </div>
+    </div>
+  </article>
+}

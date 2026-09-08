@@ -1,0 +1,127 @@
+/* REGISTRE DE SACREMENT — A4 PAYSAGE HAUTE FIDÉLITÉ */
+@page {
+  size: A4 landscape;
+  margin: 8mm 8mm;
+}
+
+:host {
+  display: block;
+  font-family: 'Times New Roman', Times, serif, Arial, sans-serif;
+  color: #000;
+  background-color: transparent;
+}
+
+.registre-doc-container {
+  width: 100%;
+  max-width: 297mm;
+  min-height: 210mm;
+  margin: 0 auto;
+  background: #ffffff;
+  padding: 8mm 12mm;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.doc-body-wrapper {
+  flex: 1 0 auto;
+}
+
+.doc-footer,
+app-footer-paroisse-print {
+  margin-top: auto !important;
+  page-break-inside: avoid !important;
+}
+
+.sheet-meta-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 6px 0 12px 0;
+  padding: 4px 8px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  font-size: 0.82rem;
+  color: #334155;
+}
+
+.photo-style-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  margin-bottom: 1.5rem;
+}
+
+.photo-style-table th,
+.photo-style-table td {
+  border: 1px solid #000;
+  padding: 5px 8px;
+  vertical-align: middle;
+}
+
+.photo-style-table th {
+  background-color: #f3f4f6;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+}
+
+.sheet-signatures-grid.single-sig {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1.8rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.sheet-signatures-grid.single-sig .sig-col {
+  min-width: 260px;
+}
+
+.sig-line-space {
+  height: 55px;
+  border-bottom: 1px dotted #000;
+  margin-top: 0.5rem;
+}
+
+.registre-empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #64748b;
+  font-style: italic;
+}
+
+@media print {
+  body {
+    background: #fff !important;
+    margin: 0 !important;
+  }
+  .registre-doc-container {
+    width: 100% !important;
+    max-width: none !important;
+    min-height: calc(210mm - 24mm) !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    box-sizing: border-box !important;
+  }
+
+  .doc-body-wrapper {
+    flex: 1 0 auto !important;
+  }
+
+  .doc-footer,
+  app-footer-paroisse-print {
+    margin-top: auto !important;
+    page-break-inside: avoid !important;
+  }
+}

@@ -70,18 +70,56 @@ export class RecuThermiqueModalComponent {
   }
 
   protected printReceipt(): void {
+    window.print();
+  }
+
+  protected exportPdf(): void {
     const data = this.recuData();
     if (!data) return;
     const paymentId = (data as any).id || (data as any).uuid || (data as any).paiement_id || data.reference;
-    const ref = data.reference || (data as any).numero_recu || 'recu';
+    const ref = data.numero_recu || data.reference || 'recu';
     const catName = data.catechumene_nom ? `Catéchumène : ${data.catechumene_nom}` : undefined;
-    const format = this.selectedFormat() === '80mm' || this.selectedFormat() === '58mm' ? 'thermique' : 'a4';
 
-    this.pdfService.previewPaiementPdf(paymentId, {
+    this.pdfService.previewPaiementPdf(data, {
       reference: ref,
       catechumene: catName,
-      format
+      format: 'thermique',
+      data
     });
+  }
+
+  protected getLibellePrestation(data?: RecuPaiementData | null): string {
+    if (!data) return "Droit d'inscription";
+    if (data.type_operation && data.type_operation.toLowerCase().includes('inscription')) {
+      return "Droit d'inscription";
+    }
+    if (data.libelle) {
+      const lower = data.libelle.toLowerCase();
+      if (lower.includes('droit') && lower.includes('inscription')) {
+        return "Droit d'inscription";
+      }
+      if (lower.includes('frais') && lower.includes('inscription')) {
+        return "Droit d'inscription";
+      }
+      const parts = data.libelle.split(' - ');
+      if (parts.length > 0 && parts[0].trim()) {
+        return parts[0].trim();
+      }
+      return data.libelle;
+    }
+    return "Droit d'inscription";
+  }
+
+  protected getPrestationLigne(data?: RecuPaiementData | null): string {
+    if (!data) return "Droit d'inscription";
+    const libelle = this.getLibellePrestation(data);
+    const catNom = data.catechumene_nom || '';
+    const niv = data.niveau_nom ? ` (${data.niveau_nom})` : '';
+
+    if (catNom) {
+      return `${libelle} - ${catNom}${niv}`;
+    }
+    return libelle;
   }
 
   protected getModePaiementLabel(mode?: string): string {
@@ -89,7 +127,7 @@ export class RecuThermiqueModalComponent {
     switch (mode.toLowerCase()) {
       case 'especes':
       case 'espece':
-        return 'Espèces (Cash)';
+        return 'Espèces';
       case 'wave':
         return 'Wave Money';
       case 'orange_money':
@@ -101,10 +139,6 @@ export class RecuThermiqueModalComponent {
       case 'moov_money':
       case 'moov':
         return 'Moov Money';
-      case 'cheque':
-        return 'Chèque bancaire';
-      case 'virement':
-        return 'Virement bancaire';
       default:
         return mode;
     }

@@ -1,0 +1,194 @@
+<div class="modal-backdrop" (click)="onCancel()">
+  <div class="modal-dialog modal-md" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title-wrap">
+        <div class="modal-icon-badge">
+          <i class="bi" [class.bi-plus-circle-fill]="!isEditMode()" [class.bi-pencil-square]="isEditMode()"></i>
+        </div>
+        <div>
+          <h3 class="modal-title">{{ isEditMode() ? 'Modifier l\'évaluation' : 'Nouvelle évaluation' }}</h3>
+          <p class="modal-subtitle">
+            @if (getContextLabel()) {
+              <span>Contexte : <strong>{{ getContextLabel() }}</strong></span>
+            } @else {
+              <span>Renseignez les détails de l'évaluation pédagogique</span>
+            }
+          </p>
+        </div>
+      </div>
+      <button type="button" class="btn-close" (click)="onCancel()" aria-label="Fermer">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <form [formGroup]="evalForm" (ngSubmit)="onSubmit()" class="modal-body form-grid">
+      <!-- Titre -->
+      <div class="form-group col-12">
+        <label class="form-label">Titre de l'évaluation <span class="required">*</span></label>
+        <input
+          type="text"
+          class="form-control"
+          formControlName="titre"
+          placeholder="Ex: Évaluation Catéchisme — Les Sacrements"
+          [class.is-invalid]="evalForm.controls.titre.invalid && evalForm.controls.titre.touched"
+        />
+        @if (evalForm.controls.titre.invalid && evalForm.controls.titre.touched) {
+          <span class="field-error">Le titre est requis (min 3 caractères).</span>
+        }
+      </div>
+
+      <!-- Session (Section), Niveau & Classe en cascade non présélectionnés -->
+      <div class="form-group col-4">
+        <label class="form-label">Session / Section</label>
+        <select
+          class="form-select"
+          [ngModel]="modalSectionId()"
+          (ngModelChange)="onModalSectionChange($event)"
+          [ngModelOptions]="{ standalone: true }"
+        >
+          <option value="">Sélectionner une session</option>
+          @for (s of sections(); track s.id) {
+            <option [value]="s.id">{{ s.nom }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="form-group col-4">
+        <label class="form-label">Niveau</label>
+        <select
+          class="form-select"
+          [ngModel]="modalNiveauId()"
+          (ngModelChange)="onModalNiveauChange($event)"
+          [ngModelOptions]="{ standalone: true }"
+        >
+          <option value="">Sélectionner un niveau</option>
+          @for (n of modalAvailableNiveaux(); track n.id) {
+            <option [value]="n.id">{{ n.nom }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="form-group col-4">
+        <label class="form-label">Classe <span class="required">*</span></label>
+        <select
+          class="form-select"
+          formControlName="classe_id"
+          [class.is-invalid]="evalForm.controls.classe_id.invalid && evalForm.controls.classe_id.touched"
+        >
+          <option value="">Sélectionner une classe</option>
+          @for (c of modalAvailableClasses(); track c.id) {
+            <option [value]="c.id">{{ c.nom }} ({{ c.niveau?.nom || 'Niveau' }})</option>
+          }
+        </select>
+        @if (evalForm.controls.classe_id.invalid && evalForm.controls.classe_id.touched) {
+          <span class="field-error">La classe est obligatoire.</span>
+        }
+      </div>
+
+      <div class="form-group col-6">
+        <label class="form-label">Type d'épreuve <span class="required">*</span></label>
+        <select class="form-select" formControlName="type_eval">
+          @for (t of typesList; track t) {
+            <option [value]="t">{{ t }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Date & Période / Module -->
+      <div class="form-group col-6">
+        <label class="form-label">Date de l'épreuve <span class="required">*</span></label>
+        <input
+          type="date"
+          class="form-control"
+          formControlName="date_evaluation"
+          [class.is-invalid]="evalForm.controls.date_evaluation.invalid && evalForm.controls.date_evaluation.touched"
+        />
+      </div>
+
+      <div class="form-group col-6">
+        <label class="form-label">Module / Période</label>
+        <select class="form-select" formControlName="module_trimestriel_id">
+          <option value="">Sélectionner un module (optionnel)</option>
+          @for (m of modules(); track m.id) {
+            <option [value]="m.id">{{ m.libelle }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Coefficient & Barème / Note Max -->
+      <div class="form-group col-6">
+        <label class="form-label">Coefficient <span class="required">*</span></label>
+        <input
+          type="number"
+          min="1"
+          max="20"
+          class="form-control text-center"
+          formControlName="coefficient"
+          placeholder="1"
+          [class.is-invalid]="evalForm.controls.coefficient.invalid && evalForm.controls.coefficient.touched"
+        />
+        <span class="form-hint">Poids dans le calcul de la moyenne</span>
+      </div>
+
+      <div class="form-group col-6">
+        <label class="form-label">Note maximale (Barème) <span class="required">*</span></label>
+        <div class="input-with-suffix">
+          <input
+            type="number"
+            min="1"
+            max="100"
+            class="form-control text-center"
+            formControlName="note_max"
+            placeholder="20"
+            [class.is-invalid]="evalForm.controls.note_max.invalid && evalForm.controls.note_max.touched"
+          />
+          <span class="input-suffix">pts</span>
+        </div>
+        <span class="form-hint">Le backend normalise automatiquement sur 20</span>
+      </div>
+
+      <!-- Statut -->
+      <div class="form-group col-12">
+        <label class="form-label">Statut</label>
+        <div class="radio-status-group">
+          <label class="status-option" [class.active]="evalForm.controls.statut.value === 'actif'">
+            <input type="radio" value="actif" formControlName="statut" />
+            <i class="bi bi-check-circle-fill text-success"></i>
+            <span>Actif (disponible pour la saisie et les calculs)</span>
+          </label>
+          <label class="status-option" [class.active]="evalForm.controls.statut.value === 'inactif'">
+            <input type="radio" value="inactif" formControlName="statut" />
+            <i class="bi bi-pause-circle-fill text-muted"></i>
+            <span>Inactif (brouillon ou archivé)</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Description / Consignes -->
+      <div class="form-group col-12">
+        <label class="form-label">Description / Consignes</label>
+        <textarea
+          class="form-control"
+          rows="2"
+          formControlName="description"
+          placeholder="Thèmes abordés, consignes spécifiques..."
+        ></textarea>
+      </div>
+
+      <div class="modal-footer col-12">
+        <button type="button" class="btn btn-secondary" (click)="onCancel()" [disabled]="isSubmitting()">
+          Annuler
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="evalForm.invalid || isSubmitting()">
+          @if (isSubmitting()) {
+            <span class="spinner-border spinner-border-sm me-1"></span>
+            <span>Enregistrement...</span>
+          } @else {
+            <i class="bi" [class.bi-check-lg]="isEditMode()" [class.bi-arrow-right-short]="!isEditMode()"></i>
+            <span>{{ isEditMode() ? 'Mettre à jour' : 'Créer et saisir les notes' }}</span>
+          }
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

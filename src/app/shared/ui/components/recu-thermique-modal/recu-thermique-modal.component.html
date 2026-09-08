@@ -19,7 +19,7 @@
             [class.active]="selectedFormat() === '80mm'"
             (click)="setFormat('80mm')"
           >
-            <i class="bi bi-receipt"></i> 80mm (Standard)
+            <i class="bi bi-receipt"></i> 80mm 
           </button>
           <button
             type="button"
@@ -27,7 +27,7 @@
             [class.active]="selectedFormat() === '58mm'"
             (click)="setFormat('58mm')"
           >
-            <i class="bi bi-receipt-cutoff"></i> 58mm (Compact)
+            <i class="bi bi-receipt-cutoff"></i> 58mm 
           </button>
         </div>
       </div>
@@ -74,27 +74,33 @@
           <!-- 3. Catéchumène & Contexte -->
           <div class="t-section">
             <div class="t-row">
+              <span class="t-label">Libellé :</span>
+              <span class="t-val t-val-bold">{{ getLibellePrestation(data) }}</span>
+            </div>
+            <div class="t-row">
               <span class="t-label">Catéchumène :</span>
               <span class="t-val t-val-bold">{{ data.catechumene_nom }}</span>
             </div>
-            @if (data.catechumene_matricule) {
+            @if (data.catechumene_matricule || data.matricule) {
               <div class="t-row">
                 <span class="t-label">Matricule :</span>
-                <span class="t-val">{{ data.catechumene_matricule }}</span>
+                <span class="t-val">{{ data.catechumene_matricule || data.matricule }}</span>
               </div>
             }
-            @if (data.classe_nom) {
-              <div class="t-row">
-                <span class="t-label">Classe :</span>
-                <span class="t-val">{{ data.classe_nom }}</span>
-              </div>
-            }
-            @if (data.annee_pastorale) {
+            @if (data.annee_pastorale || displayAnnee()) {
               <div class="t-row">
                 <span class="t-label">Année :</span>
-                <span class="t-val">{{ data.annee_pastorale }}</span>
+                <span class="t-val">{{ data.annee_pastorale || displayAnnee() }}</span>
               </div>
             }
+            <div class="t-row">
+              <span class="t-label">Section :</span>
+              <span class="t-val">{{ data.section_nom || '-' }}</span>
+            </div>
+            <div class="t-row">
+              <span class="t-label">Niveau :</span>
+              <span class="t-val">{{ data.niveau_nom || '-' }}</span>
+            </div>
             <div class="t-row">
               <span class="t-label">Mode :</span>
               <span class="t-val">{{ getModePaiementLabel(data.mode_paiement) }}</span>
@@ -103,49 +109,39 @@
 
           <div class="t-divider">--------------------------------</div>
 
-          <!-- 4. Libellé / Prestation -->
-          <div class="t-section">
-            <div class="t-row">
-              <span class="t-label">{{ data.libelle || 'Frais de catéchèse' }}</span>
-              <span class="t-val">{{ data.montant_total | number:'1.0-0' }} F CFA</span>
-            </div>
-          </div>
-
-          <div class="t-divider">--------------------------------</div>
-
-          <!-- 5. Montants & Statut -->
+          <!-- 4. Montants & Statut -->
           <div class="t-amounts-box">
             <div class="t-row t-total-row">
               <span class="t-label">TOTAL DÛ :</span>
-              <span class="t-val">{{ data.montant_total | number:'1.0-0' }} F CFA</span>
+              <span class="t-val">{{ (data.montant_total || data.montant || 0) | number:'1.0-0' }} F CFA</span>
             </div>
 
             <div class="t-row t-paid-row">
               <span class="t-label">MONTANT REÇU :</span>
-              <span class="t-val t-val-bold">{{ (data.montant_recu || data.montant_paye) | number:'1.0-0' }} F CFA</span>
+              <span class="t-val t-val-bold">{{ (data.montant_recu || data.montant_paye || data.montant || 0) | number:'1.0-0' }} F CFA</span>
             </div>
 
-            @if ((data.montant_rendu && data.montant_rendu > 0) || ((data.montant_recu || 0) > data.montant_total)) {
+            @if ((data.montant_rendu && data.montant_rendu > 0) || ((data.montant_recu || 0) > (data.montant_total || data.montant || 0))) {
               <div class="t-row t-rendu-row">
                 <span class="t-label">MONTANT RENDU :</span>
-                <span class="t-val t-val-bold">{{ (data.montant_rendu || ((data.montant_recu || 0) - data.montant_total)) | number:'1.0-0' }} F CFA</span>
+                <span class="t-val t-val-bold">{{ (data.montant_rendu || ((data.montant_recu || 0) - (data.montant_total || data.montant || 0))) | number:'1.0-0' }} F CFA</span>
               </div>
             }
 
             <div class="t-row t-rest-row">
               <span class="t-label">RESTE À PAYER :</span>
-              <span class="t-val">{{ data.montant_restant | number:'1.0-0' }} F CFA</span>
+              <span class="t-val">{{ (data.montant_restant || data.reste_a_payer || 0) | number:'1.0-0' }} F CFA</span>
             </div>
 
             <div class="t-row t-status-row">
               <span class="t-label">STATUT :</span>
               <span class="t-val t-val-bold">
-                @if (data.montant_restant <= 0 && data.montant_paye > 0) {
-                  [ ENTIÈREMENT SOLDÉ ]
-                } @else if (data.montant_paye > 0) {
-                  [ PAIEMENT PARTIEL ]
+                @if ((data.montant_restant || data.reste_a_payer || 0) <= 0 && (data.montant_paye || data.montant || 0) > 0) {
+                  Payé
+                } @else if ((data.montant_paye || data.montant || 0) > 0) {
+                  Paiement Partiel
                 } @else {
-                  [ EN ATTENTE ]
+                  En Attente
                 }
               </span>
             </div>
@@ -163,9 +159,8 @@
 
           <!-- 6. Pied de page du ticket -->
           <div class="t-footer text-center">
-            <p class="t-sign">Émis par : {{ data.caissier_nom || 'Secrétariat Catéchèse' }}</p>
-            <p class="t-mention">« Conservez précieusement ce ticket comme reçu de paiement officiel »</p>
-            <p class="t-blessing">✝ Que le Seigneur vous bénisse ✝</p>
+            <p class="t-sign">Émis par : {{ data.caissier_nom || 'Administrateur Sainte Monique' }}</p>
+            <p class="t-blessing">† Que le Seigneur vous bénisse †</p>
             <div class="t-cut-line">----------------- COUPER ICI -----------------</div>
           </div>
         </div>
@@ -185,11 +180,20 @@
 
     <app-button
       type="button"
+      variant="secondary"
+      (clicked)="exportPdf()"
+    >
+      <i class="bi bi-file-earmark-pdf"></i>
+      <span>Aperçu & PDF</span>
+    </app-button>
+
+    <app-button
+      type="button"
       variant="primary"
       (clicked)="printReceipt()"
     >
       <i class="bi bi-printer-fill"></i>
-      <span>Imprimer Ticket ({{ selectedFormat() }})</span>
+      <span>Imprimer</span>
     </app-button>
   </div>
 </app-dialog>

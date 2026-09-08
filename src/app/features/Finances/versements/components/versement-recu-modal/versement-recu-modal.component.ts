@@ -4,7 +4,7 @@ import { VersementDto } from '../../models/versement.model';
 import { AppDialog } from '../../../../../shared/ui/components/dialogs/app-dialog/app-dialog.component';
 import { AppButton } from '../../../../../shared/ui/components/buttons/app-button/app-button.component';
 import { ConfigurationService } from '../../../../Parametes/Configuration/services/configuration.service';
-import { PdfService } from '../../../../../core/services/pdf.service';
+import { PdfPreviewService } from '../../../../../core/services/pdf-preview.service';
 
 @Component({
   selector: 'app-versement-recu-modal',
@@ -15,7 +15,7 @@ import { PdfService } from '../../../../../core/services/pdf.service';
 })
 export class VersementRecuModalComponent {
   private readonly configService = inject(ConfigurationService);
-  private readonly pdfService = inject(PdfService);
+  private readonly pdfPreviewService = inject(PdfPreviewService);
 
   public readonly isOpen = input<boolean>(false);
   public readonly versement = input<VersementDto | null>(null);
@@ -53,9 +53,12 @@ export class VersementRecuModalComponent {
   protected printReceipt(): void {
     const v = this.versement();
     if (!v) return;
-    this.pdfService.previewPaiementPdf(v.id || (v as any).uuid || v.reference, {
-      reference: v.reference || String(v.id),
-      catechumene: (v as any).catechumene_nom
+    this.modalClosed.emit();
+    this.pdfPreviewService.openDocument('bordereau-versement', v, {
+      title: 'Bordereau de Versement',
+      subtitle: `N° ${v.reference} • ${v.periode_concernee}`,
+      formatBadge: 'A4 Portrait',
+      fileName: `bordereau-versement-${v.reference}.pdf`
     });
   }
 

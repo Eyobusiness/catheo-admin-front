@@ -221,10 +221,10 @@ export class CaisseService {
     const solde = totalEncaisse - totalRembourse;
 
     this.kpis.update(current => ({
-      solde_en_caisse: current.solde_en_caisse || solde,
-      total_encaisse: current.total_encaisse || totalEncaisse,
-      total_rembourse: current.total_rembourse || totalRembourse,
-      paiements_valides_count: current.paiements_valides_count || list.filter(m => m.type_mouvement === 'entree').length
+      solde_en_caisse: typeof current.solde_en_caisse === 'number' ? current.solde_en_caisse : solde,
+      total_encaisse: typeof current.total_encaisse === 'number' ? current.total_encaisse : totalEncaisse,
+      total_rembourse: typeof current.total_rembourse === 'number' ? current.total_rembourse : totalRembourse,
+      paiements_valides_count: typeof current.paiements_valides_count === 'number' ? current.paiements_valides_count : list.filter(m => m.type_mouvement === 'entree').length
     }));
   }
 

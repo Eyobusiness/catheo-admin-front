@@ -24,12 +24,32 @@
             formControlName="nom"
             class="form-control"
             placeholder="Ex: Secrétaire Paroissial, Catéchiste, Trésorier..."
+            (input)="onNomInput()"
           />
           @if (form.controls.nom.touched && form.controls.nom.invalid) {
             <span class="field-error">L'intitulé du profil est obligatoire (min 2 caractères).</span>
           }
         </div>
 
+        <div class="form-group">
+          <label class="form-label" for="code">
+            Code Unique du Profil <span class="required">*</span>
+          </label>
+          <input
+            id="code"
+            type="text"
+            formControlName="code"
+            class="form-control code-input"
+            placeholder="Ex: SECRETAIRE, CATECHISTE, TRESORIER..."
+            (input)="onCodeInput()"
+          />
+          @if (form.controls.code.touched && form.controls.code.invalid) {
+            <span class="field-error">Le code du profil est obligatoire (min 2 caractères).</span>
+          }
+        </div>
+      </div>
+
+      <div class="form-row col-2">
         <div class="form-group">
           <label class="form-label" for="description">
             Description des responsabilités
@@ -41,6 +61,16 @@
             class="form-control"
             placeholder="Ex: Gestion des inscriptions, catéchumènes et attestations."
           />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="statut">
+            Statut du profil
+          </label>
+          <select id="statut" formControlName="statut" class="form-control">
+            <option value="actif">Actif</option>
+            <option value="inactif">Inactif</option>
+          </select>
         </div>
       </div>
     </div>

@@ -5,9 +5,12 @@ import { ToastService } from './toast.service';
 
 export type PrintDocumentType =
   | 'recu'
+  | 'recu-preinscription'
   | 'fiche-catechumene'
   | 'liste-catechumenes'
   | 'fiche-notes'
+  | 'releve-notes'
+  | 'bulletin'
   | 'liste-presence'
   | 'suivi-sacramental'
   | 'bilan-annuel'
@@ -15,6 +18,8 @@ export type PrintDocumentType =
   | 'renseignement-bapteme'
   | 'renseignement-premiere-communion'
   | 'renseignement-confirmation'
+  | 'bordereau-versement'
+  | 'registre-sacrement'
   | 'pdf-blob'
   | null;
 
@@ -77,6 +82,9 @@ export class PdfPreviewService {
     this.isLoading.set(false);
     this.pdfUrl.set(null);
     this.isOpen.set(true);
+    if (typeof document !== 'undefined') {
+      document.body.classList.add('pdf-modal-open');
+    }
   }
 
   /**
@@ -95,6 +103,9 @@ export class PdfPreviewService {
     this.hasError.set(false);
     this.errorMessage.set(null);
     this.isOpen.set(true);
+    if (typeof document !== 'undefined') {
+      document.body.classList.add('pdf-modal-open');
+    }
   }
 
   /**
@@ -120,6 +131,9 @@ export class PdfPreviewService {
    * Déclenche l'impression physique propre
    */
   public print(): void {
+    if (typeof document !== 'undefined') {
+      document.body.classList.add('pdf-modal-open');
+    }
     window.print();
   }
 
@@ -146,6 +160,9 @@ export class PdfPreviewService {
    * Fermeture du modal d'aperçu
    */
   public close(): void {
+    if (typeof document !== 'undefined') {
+      document.body.classList.remove('pdf-modal-open');
+    }
     this.isOpen.set(false);
     this.documentType.set(null);
     this.documentData.set(null);
@@ -218,9 +235,12 @@ export class PdfPreviewService {
   private getDefaultTitle(type: PrintDocumentType): string {
     switch (type) {
       case 'recu': return 'Reçu de Paiement Officiel';
+      case 'recu-preinscription': return 'Récépissé de Préinscription';
       case 'fiche-catechumene': return 'Fiche Individuelle du Catéchumène';
       case 'liste-catechumenes': return 'Registre & Liste des Catéchumènes';
       case 'fiche-notes': return 'Fiche de Notes & Évaluations';
+      case 'releve-notes': return 'Relevé Général des Notes & Moyennes';
+      case 'bulletin': return 'Bulletin d\'Évaluation de Catéchèse';
       case 'liste-presence': return 'Feuille de Présence & Émargement';
       case 'suivi-sacramental': return 'Fiche de Suivi Sacramental';
       case 'bilan-annuel': return 'Bilan Annuel & Délibérations';
@@ -228,16 +248,21 @@ export class PdfPreviewService {
       case 'renseignement-bapteme': return 'Fiche de Renseignement — Baptême';
       case 'renseignement-premiere-communion': return 'Fiche de Renseignement — 1ère Communion';
       case 'renseignement-confirmation': return 'Fiche de Renseignement — Confirmation';
+      case 'bordereau-versement': return 'Bordereau de Versement Paroissial';
+      case 'registre-sacrement': return 'Registre Pastoral des Candidats au Sacrement';
       default: return 'Document Officiel';
     }
   }
 
   private getDefaultFormatBadge(type: PrintDocumentType): string {
     switch (type) {
-      case 'recu': return 'A4 Portrait (Double Volet)';
+      case 'recu': return 'Ticket Thermique (80mm)';
+      case 'recu-preinscription': return 'Ticket Thermique (80mm)';
       case 'fiche-catechumene': return 'A4 Portrait';
       case 'liste-catechumenes': return 'A4 Paysage';
-      case 'fiche-notes': return 'A4 Paysage';
+      case 'fiche-notes': return 'A4 Portrait';
+      case 'releve-notes': return 'A4 Portrait';
+      case 'bulletin': return 'A4 Portrait';
       case 'liste-presence': return 'A4 Paysage';
       case 'suivi-sacramental': return 'A4 Paysage';
       case 'bilan-annuel': return 'A4 Paysage';
@@ -245,6 +270,8 @@ export class PdfPreviewService {
       case 'renseignement-bapteme': return 'A4 Portrait';
       case 'renseignement-premiere-communion': return 'A4 Portrait';
       case 'renseignement-confirmation': return 'A4 Portrait';
+      case 'bordereau-versement': return 'A4 Portrait';
+      case 'registre-sacrement': return 'A4 Paysage';
       default: return 'A4 Portrait';
     }
   }

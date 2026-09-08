@@ -1,156 +1,120 @@
-@if (data(); as c) {
-  <article class="communion-doc-container">
-    <!-- EN-TÊTE OFFICIEL -->
-    <header class="doc-header">
-      <div class="header-logo-col left">
-        @if (logoParoisse()) {
-          <img [src]="logoParoisse()" alt="Logo Paroisse" class="parish-logo" />
-        }
-      </div>
+<article class="communion-doc-container">
+  <!-- En-tête Paroissial Officiel avec Photo du Catéchumène -->
+  <app-header-paroisse-print
+    customTitle="FICHE DE RENSEIGNEMENTS PREMIÈRE COMMUNION"
+    [isFicheIndividuelle]="true"
+    [photoProfil]="getPhotoUrl(data())"
+  ></app-header-paroisse-print>
 
-      <div class="header-center-col">
-        @if (diocese()) {
-          <div class="doc-diocese">{{ diocese() | uppercase }}</div>
-        }
-        @if (doyenne()) {
-          <div class="doc-doyenne">{{ doyenne() | uppercase }}</div>
-        }
-        <h1 class="doc-parish-title">{{ nomParoisse() | uppercase }}</h1>
-        <div class="doc-service-title">COMMISSION PASTORALE DES SACREMENTS</div>
-      </div>
+  <div class="sheet-body">
+    <div class="form-dotted-line">
+      <span class="lbl">Année pastorale :</span>
+      <span class="val">{{ anneePastorale() }}</span>
+    </div>
 
-      <div class="header-logo-col right">
-        @if (logoCatechese()) {
-          <img [src]="logoCatechese()" alt="Logo Catéchèse" class="catechese-logo" />
-        }
-      </div>
-    </header>
+    <div class="form-dotted-line">
+      <span class="lbl">Nom :</span>
+      <span class="val bold uppercase">{{ getNom(data()) }}</span>
+    </div>
 
-    <!-- BANNIÈRE TITRE -->
-    <div class="doc-title-box">
-      <div class="title-badge">DOSSIER SACRAMENTAL OFFICIEL</div>
-      <h2 class="doc-main-title">FICHE DE RENSEIGNEMENT — PREMIÈRE COMMUNION</h2>
-      <div class="doc-sub-details">
-        <span>Année Pastorale : <strong>{{ anneePastorale() }}</strong></span>
-        @if (c.classe_nom) { <span> • Classe : <strong>{{ c.classe_nom }}</strong></span> }
-        @if (c.niveau_nom) { <span> • Niveau : <strong>{{ c.niveau_nom }}</strong></span> }
-        <span class="mat-badge">Matricule : <strong>{{ c.matricule }}</strong></span>
+    <div class="form-dotted-line">
+      <span class="lbl">Prénoms :</span>
+      <span class="val bold">{{ getPrenoms(data()) }}</span>
+    </div>
+
+    <div class="form-dotted-line">
+      <span class="lbl">Date de naissance :</span>
+      <span class="val">{{ getDateNaissance(data()) }}</span>
+    </div>
+
+    <div class="form-dotted-line">
+      <span class="lbl">Lieu de naissance :</span>
+      <span class="val">{{ getLieuNaissance(data()) }}</span>
+    </div>
+
+    <div class="form-dotted-line">
+      <span class="lbl">Profession :</span>
+      <span class="val">{{ getProfession(data()) }}</span>
+    </div>
+
+    <div class="form-dotted-line">
+      <span class="lbl doc-text-red">Numéro de téléphone :</span>
+      <span class="val">{{ getTelephone(data()) }}</span>
+    </div>
+
+    <div class="form-dotted-line">
+      <span class="lbl">Domicile :</span>
+      <span class="val">{{ getDomicile(data()) }}</span>
+    </div>
+
+    <!-- SECTION SACREMENTS -->
+    <div class="sacrament-heading">SACREMENTS</div>
+    <div class="sacrament-subheading">Baptême</div>
+
+    <div class="form-dotted-line">
+      <span class="lbl">Numéro du carnet de baptême :</span>
+      <span class="val">{{ getNumeroCarnetBapteme(data()) }}</span>
+    </div>
+
+    <div class="form-dotted-line">
+      <span class="lbl">Date :</span>
+      <span class="val">{{ getDateBapteme(data()) }}</span>
+    </div>
+
+    <div class="form-dotted-line">
+      <span class="lbl">Diocèse :</span>
+      <span class="val">{{ getDioceseBapteme(data()) }}</span>
+    </div>
+
+    <div class="form-dotted-line">
+      <span class="lbl">Ville :</span>
+      <span class="val">{{ getVilleBapteme(data()) }}</span>
+    </div>
+
+    <div class="form-dotted-line">
+      <span class="lbl">Paroisse :</span>
+      <span class="val">{{ getParoisseBapteme(data()) }}</span>
+    </div>
+
+    <div class="form-dotted-line">
+      <span class="lbl">Parrain ou marraine d’origine :</span>
+      <span class="val bold uppercase">{{ getParrainMarraineOrigine(data()) }}</span>
+    </div>
+
+    <div class="form-dotted-line">
+      <span class="lbl">Représenté par (en cas d'absence) :</span>
+      <span class="val">{{ getRepresentant(data()) }}</span>
+    </div>
+
+    <div class="form-dotted-line">
+      <span class="lbl">Contact :</span>
+      <span class="val">{{ getContactParrainMarraine(data()) }}</span>
+    </div>
+
+    <!-- DOCUMENT A FOURNIR DANS UN CARD -->
+    <div class="dossier-card">
+      <div class="dossier-card-title">DOCUMENT À FOURNIR</div>
+      <div class="dossier-card-list">
+        <div class="dossier-card-item">
+          <span class="doc-star">*</span>
+          <span>Carnet de baptême à jour</span>
+        </div>
+        <div class="dossier-card-item">
+          <span class="doc-star">*</span>
+          <span>Une photo d’identité</span>
+        </div>
+        <div class="dossier-card-item">
+          <span class="doc-star">*</span>
+          <span>Photocopie du carnet de baptême du parrain : <span class="doc-text-red">(1 : page de couverture – 2 : page des sacrements – 3 : page du dernier culte à jour)</span></span>
+        </div>
       </div>
     </div>
 
-    <!-- 1. IDENTITÉ DU CANDIDAT -->
-    <section class="doc-section">
-      <h3 class="section-title">
-        <span class="section-num">1</span>
-        <span>IDENTITÉ DU CANDIDAT À L'EUCHARISTIE</span>
-      </h3>
-
-      <div class="form-grid">
-        <div class="grid-item span-2">
-          <span class="item-label">Nom et Prénoms :</span>
-          <span class="item-value strong uppercase">{{ c.nom_complet || (c.nom + ' ' + c.prenoms) }}</span>
-        </div>
-
-        <div class="grid-item">
-          <span class="item-label">Sexe :</span>
-          <span class="item-value">{{ c.sexe === 'M' ? 'Masculin' : 'Féminin' }}</span>
-        </div>
-
-        <div class="grid-item">
-          <span class="item-label">Date de naissance :</span>
-          <span class="item-value">{{ (c.date_naissance | date:'dd/MM/yyyy') || '-' }}</span>
-        </div>
-
-        <div class="grid-item">
-          <span class="item-label">Lieu de naissance :</span>
-          <span class="item-value">{{ c.lieu_naissance || '-' }}</span>
-        </div>
-
-        <div class="grid-item">
-          <span class="item-label">Domicile actuel :</span>
-          <span class="item-value">{{ c.domicile || '-' }}</span>
-        </div>
-
-        @if (c.parent) {
-          <div class="grid-item">
-            <span class="item-label">Parent / Tuteur :</span>
-            <span class="item-value strong">{{ c.parent.nom }}</span>
-          </div>
-          <div class="grid-item">
-            <span class="item-label">Contact Parent :</span>
-            <span class="item-value">{{ c.parent.telephone }}</span>
-          </div>
-        }
-      </div>
-    </section>
-
-    <!-- 2. VÉRIFICATION DU SACREMENT DE BAPTÊME (INDISPENSABLE) -->
-    <section class="doc-section">
-      <h3 class="section-title">
-        <span class="section-num">2</span>
-        <span>RÉFÉRENCES DU BAPTÊME REÇU (CONTRÔLE CANONIQUE)</span>
-      </h3>
-
-      <div class="form-grid">
-        <div class="grid-item">
-          <span class="item-label">Date du Baptême :</span>
-          <span class="item-value strong">{{ (c.bapteme.date | date:'dd/MM/yyyy') || '-' }}</span>
-        </div>
-
-        <div class="grid-item">
-          <span class="item-label">N° Carnet / Registre :</span>
-          <span class="item-value font-mono strong">{{ c.bapteme.num_carnet || '-' }}</span>
-        </div>
-
-        <div class="grid-item span-2">
-          <span class="item-label">Paroisse du Baptême :</span>
-          <span class="item-value strong">{{ c.bapteme.paroisse || '-' }}</span>
-        </div>
-
-        <div class="grid-item">
-          <span class="item-label">Lieu / Ville :</span>
-          <span class="item-value">{{ c.bapteme.lieu || '-' }}</span>
-        </div>
-
-        <div class="grid-item">
-          <span class="item-label">Diocèse d'origine :</span>
-          <span class="item-value">{{ c.bapteme.diocese || '-' }}</span>
-        </div>
-      </div>
-    </section>
-
-    <!-- 3. ÉTAT DE PRÉPARATION & ENGAGEMENT -->
-    <section class="doc-section">
-      <h3 class="section-title">
-        <span class="section-num">3</span>
-        <span>VALIDATION DU PARCOURS CATÉCHÉTIQUE</span>
-      </h3>
-
-      <div class="commitments-box">
-        <p class="commit-text">
-          Le candidat a suivi avec assiduité le cycle de formation eucharistique prescrit, a participé aux retraites spirituelles et s'est préparé au sacrement de la Réconciliation (Confession).
-        </p>
-      </div>
-    </section>
-
-    <!-- SIGNATURES -->
-    <footer class="communion-signatures-footer">
-      <div class="sig-box">
-        <span class="sig-title">Signature des Parents</span>
-        <div class="sig-area"></div>
-      </div>
-      <div class="sig-box">
-        <span class="sig-title">Le Catéchiste de la Classe</span>
-        <div class="sig-area"></div>
-      </div>
-      <div class="sig-box">
-        <span class="sig-title">Le Curé (Admis à la Table Sainte)</span>
-        <div class="sig-area-stamp"></div>
-      </div>
-    </footer>
-  </article>
-} @else {
-  <div class="communion-empty-state">
-    <p>Aucune donnée de renseignement première communion disponible.</p>
+    <!-- Pied de page officiel épinglé -->
+    <app-footer-paroisse-print
+      class="doc-footer"
+      pageNumber="Page 1/1"
+      [anneePastorale]="anneePastorale()"
+    ></app-footer-paroisse-print>
   </div>
-}
+</article>

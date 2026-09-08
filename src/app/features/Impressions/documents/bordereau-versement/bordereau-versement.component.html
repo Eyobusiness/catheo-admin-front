@@ -1,0 +1,108 @@
+@if (data(); as vrs) {
+  <article class="bordereau-doc-container">
+    <div class="doc-body-wrapper">
+      <!-- En-tête officiel Paroisse & Catéchèse -->
+      <app-entete-catechese
+        [titreDocument]="'BORDEREAU DE VERSEMENT'"
+        [sousTitre]="'RÉFÉRENCE : ' + vrs.reference"
+        [anneePastorale]="anneeLibelle()"
+      ></app-entete-catechese>
+
+      <!-- Bandeau Récapitulatif -->
+      <div class="meta-banner">
+        <div class="meta-item">
+          <span class="meta-lbl">N° Bordereau :</span>
+          <strong class="meta-val highlight">{{ vrs.reference }}</strong>
+        </div>
+        <div class="meta-item">
+          <span class="meta-lbl">Date d'édition :</span>
+          <strong class="meta-val">{{ (vrs.created_at || vrs.date_versement || '') | date:'dd/MM/yyyy à HH:mm' }}</strong>
+        </div>
+        <div class="meta-item">
+          <span class="meta-lbl">Période concernée :</span>
+          <strong class="meta-val">{{ vrs.periode_concernee }}</strong>
+        </div>
+      </div>
+
+      <!-- Tableau des détails de l'opération -->
+      <table class="bordereau-table">
+        <tbody>
+          <tr>
+            <td class="col-lbl">Déposant (Effectué par)</td>
+            <td class="col-val font-bold">{{ vrs.effectue_par || 'Coordination de la Catéchèse' }}</td>
+          </tr>
+          <tr>
+            <td class="col-lbl">Destinataire</td>
+            <td class="col-val font-bold">{{ vrs.destinataire || 'Économat Paroissial / Curé' }}</td>
+          </tr>
+          <tr>
+            <td class="col-lbl">Période concernée</td>
+            <td class="col-val">{{ vrs.periode_concernee }}</td>
+          </tr>
+          <tr>
+            <td class="col-lbl">Mode de versement</td>
+            <td class="col-val">{{ getModeLabel(vrs.mode_remise || vrs.mode_paiement) }}</td>
+          </tr>
+          @if (vrs.banque || vrs.numero_piece) {
+            <tr>
+              <td class="col-lbl">Banque / N° Chèque ou Pièce</td>
+              <td class="col-val">{{ vrs.banque || '' }} {{ vrs.numero_piece ? '— N° ' + vrs.numero_piece : '' }}</td>
+            </tr>
+          }
+          @if (vrs.notes || vrs.observations) {
+            <tr>
+              <td class="col-lbl">Motif / Observations</td>
+              <td class="col-val">{{ vrs.notes || vrs.observations }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      <!-- Encadré Grand Montant -->
+      <div class="amount-card">
+        <div class="amount-title">MONTANT TOTAL VERSÉ</div>
+        <div class="amount-figure">
+          {{ (vrs.montant_verse || vrs.montant || 0) | number:'1.0-0' }} <span class="currency">FCFA</span>
+        </div>
+      </div>
+
+      <!-- Bloc de Signatures : Déposant & Économat -->
+      <div class="signatures-wrapper">
+        <!-- Déposant -->
+        <div class="signature-box">
+          <div class="sig-header">
+            <span class="sig-title">Le Déposant</span>
+            <span class="sig-sub">(Signature)</span>
+          </div>
+          <div class="sig-space"></div>
+          <div class="sig-footer">
+            <span class="sig-name">{{ vrs.effectue_par || '-' }}</span>
+          </div>
+        </div>
+
+        <!-- Économat -->
+        <div class="signature-box">
+          <div class="sig-header">
+            <span class="sig-title">L'Économat</span>
+            <span class="sig-sub">(Visa & Cachet de réception)</span>
+          </div>
+          <div class="sig-space"></div>
+          <div class="sig-footer">
+            <span class="sig-name">{{ vrs.destinataire || '-' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pied de page officiel Paroisse -->
+    <app-footer-paroisse-print
+      class="doc-footer"
+      pageNumber="Page 1/1"
+      [anneePastorale]="anneeLibelle()"
+    ></app-footer-paroisse-print>
+  </article>
+} @else {
+  <div class="empty-state">
+    <p>Aucune donnée disponible pour l'édition du bordereau de versement.</p>
+  </div>
+}

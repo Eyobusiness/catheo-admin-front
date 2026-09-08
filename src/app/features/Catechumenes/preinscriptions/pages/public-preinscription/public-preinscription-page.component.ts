@@ -90,6 +90,17 @@ export class PublicPreinscriptionPageComponent implements OnInit {
     return p?.logo_catechese_url || p?.logo_catechese || '';
   });
 
+  public readonly telephoneParoisse = computed(() => {
+    const p = this.paroisseConfig();
+    return p?.telephone || '';
+  });
+
+  public readonly adresseParoisse = computed(() => {
+    const p = this.paroisseConfig();
+    const parts = [p?.commune || p?.ville, p?.adresse].filter(Boolean);
+    return parts.length > 0 ? parts.join(' - ') : (p?.adresse || '');
+  });
+
   // Données dynamiques chargées depuis la BD
   public readonly sections = this.sectionService.sections;
   public readonly niveaux = this.niveauService.niveaux;
@@ -100,6 +111,19 @@ export class PublicPreinscriptionPageComponent implements OnInit {
 
   // Campagne active récupérée de la BD
   public readonly currentCampagne = signal<CampagnePreinscriptionDto | null>(null);
+
+  // Indicateur réactif : la campagne en cours est-elle réellement ouverte ?
+  public readonly isCampagneOuverte = computed(() => {
+    const c = this.currentCampagne();
+    if (!c) return false;
+    const st = String(c.statut || '').trim().toLowerCase();
+    return st === 'ouverte' || c.est_ouverte === true;
+  });
+
+  public readonly anneePastoraleLibelle = computed(() => {
+    const c = this.currentCampagne();
+    return c?.annee_catechese?.libelle || '';
+  });
 
   // Mode en cours ('choice' | 'nouvelle' | 'reinscription' | 'success')
   public readonly currentMode = signal<PublicPreinscriptionMode>('choice');
@@ -307,18 +331,9 @@ export class PublicPreinscriptionPageComponent implements OnInit {
     this.catechumeneService.getAll().subscribe();
 
     // 2. Charger les détails de la Campagne réelle depuis la BD
+    this.isInitialLoading.set(true);
     const paramCampagneId = this.route.snapshot.paramMap.get('campagneId');
     if (paramCampagneId) {
-      this.currentCampagne.set({
-        id: paramCampagneId,
-        titre: 'Campagne de Préinscription',
-        date_debut: '',
-        date_fin: '',
-        statut: 'ouverte',
-        est_ouverte: true,
-        sections_autorisees: []
-      } as CampagnePreinscriptionDto);
-
       this.campagneService.getById(paramCampagneId).subscribe({
         next: camp => {
           if (camp && (camp.id || (camp as any).uuid)) {
@@ -336,6 +351,7 @@ export class PublicPreinscriptionPageComponent implements OnInit {
   }
 
   private loadFallbackCampagne(): void {
+    this.isInitialLoading.set(true);
     const localList = this.campagneService.campagnes();
     if (localList && localList.length > 0) {
       const active = localList.find(c => c.statut === 'ouverte' || c.est_ouverte) || localList[0];
@@ -420,6 +436,13 @@ export class PublicPreinscriptionPageComponent implements OnInit {
 
   // --- GESTION DU CHOIX INITIAL ---
   public selectChoice(mode: 'nouvelle' | 'reinscription'): void {
+    if (!this.isCampagneOuverte()) {
+      this.toastService.warning(
+        'Campagne clôturée',
+        'La campagne de préinscription est actuellement clôturée. Veuillez vous rendre au secrétariat de la paroisse.'
+      );
+      return;
+    }
     this.currentMode.set(mode);
     this.activeStep.set(1);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -608,6 +631,7 @@ export class PublicPreinscriptionPageComponent implements OnInit {
         this.submittedDossier.set(created);
         this.currentMode.set('success');
         window.scrollTo({ top: 0, behavior: 'smooth' });
+        this.openRecuThermal(created);
       },
       error: () => {
         this.isLoading.set(false);
@@ -678,6 +702,7 @@ export class PublicPreinscriptionPageComponent implements OnInit {
         this.submittedDossier.set(created);
         this.currentMode.set('success');
         window.scrollTo({ top: 0, behavior: 'smooth' });
+        this.openRecuThermal(created);
       },
       error: () => {
         this.isLoading.set(false);
@@ -686,14 +711,67 @@ export class PublicPreinscriptionPageComponent implements OnInit {
   }
 
   // --- ACTIONS FINALES ---
+  public openRecuThermal(dossier: PreinscriptionDto): void {
+    const sId = dossier.section_souhaite_id;
+    const nId = dossier.niveau_souhaite_id;
+
+    const sectionNom = dossier.section_souhaite?.nom || this.sections().find(s => String(s.id) === String(sId))?.nom || '';
+    const niveauNom = dossier.niveau_souhaite?.nom || this.niveaux().find(n => String(n.id) === String(nId))?.nom || '';
+    const anneeLibelle = dossier.campagne?.annee_catechese?.libelle || this.anneePastoraleLibelle() || this.currentCampagne()?.annee_catechese?.libelle || '';
+    const campagneTitre = dossier.campagne?.titre || this.currentCampagne()?.titre || '';
+
+    const recuData = {
+      id: dossier.id,
+      code_dossier: dossier.code_dossier,
+      type_demande: dossier.type_demande,
+      nom: dossier.nom,
+      prenoms: dossier.prenoms,
+      sexe: dossier.sexe,
+      date_naissance: dossier.date_naissance,
+      lieu_naissance: dossier.lieu_naissance,
+      telephone: dossier.telephone,
+      domicile: dossier.domicile || (dossier as any).adresse,
+      classe_scolaire: dossier.classe_scolaire,
+      profession: dossier.profession,
+      situation_matrimoniale: dossier.situation_matrimoniale,
+      // Orientation
+      section_nom: sectionNom,
+      niveau_nom: niveauNom,
+      annee_pastorale: anneeLibelle,
+      nom_campagne: campagneTitre,
+      // Paroisse
+      nom_paroisse: this.nomParoisse(),
+      diocese: this.diocese(),
+      doyenne: this.doyenne(),
+      telephone_paroisse: this.telephoneParoisse(),
+      adresse_paroisse: this.adresseParoisse(),
+      logo_url: this.logoParoisse() || this.logoCatechese(),
+      // Filiation & Tuteur
+      nom_pere: dossier.nom_pere,
+      telephone_pere: dossier.telephone_pere,
+      nom_mere: dossier.nom_mere,
+      telephone_mere: dossier.telephone_mere,
+      nom_tuteur: dossier.nom_tuteur,
+      telephone_tuteur: dossier.telephone_tuteur,
+      // Sacrements
+      est_baptise: dossier.est_baptise,
+      date_bapteme: dossier.date_bapteme,
+      paroisse_bapteme: dossier.paroisse_bapteme,
+      num_carnet_bapteme: dossier.num_carnet_bapteme,
+      nom_parrain: dossier.nom_parrain,
+      telephone_parrain: dossier.telephone_parrain,
+      // Dates & suivi
+      created_at: dossier.created_at || new Date().toISOString(),
+      matricule: (dossier as any).matricule || (dossier as any).catechumene_matricule || this.foundCatechumene()?.matricule
+    };
+
+    this.pdfService.previewRecuPreinscriptionPdf(recuData);
+  }
+
   public printReceipt(): void {
     const dossier = this.submittedDossier();
     if (!dossier) return;
-    this.pdfService.previewCatechumenePdf(dossier.id || (dossier as any).uuid || (dossier as any).catechumene_id, {
-      nom: dossier.nom,
-      prenoms: dossier.prenoms,
-      matricule: (dossier as any).code_preinscription || (dossier as any).numero_dossier
-    });
+    this.openRecuThermal(dossier);
   }
 
   public resetForm(): void {

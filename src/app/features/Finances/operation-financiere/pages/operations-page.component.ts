@@ -6,6 +6,8 @@ import { InscriptionAnnuelleService } from '../../../Catechumenes/inscriptions-a
 import { TarifService } from '../../tarification/services/tarif.service';
 import { AnneeCatecheseService } from '../../../../core/services/annee-catechese.service';
 import { AuthService } from '../../../../core/services/auth.service';
+import { SectionService } from '../../../Organisations/Sections/services/section.service';
+import { NiveauService } from '../../../Organisations/Niveaux/services/niveau.service';
 import {
   OperationPaiementDto,
   StorePaiementDto
@@ -35,6 +37,8 @@ export class OperationsPageComponent implements OnInit {
   protected readonly operationService = inject(OperationFinanciereService);
   protected readonly catechumeneService = inject(CatechumeneService);
   protected readonly inscriptionService = inject(InscriptionAnnuelleService);
+  protected readonly sectionService = inject(SectionService);
+  protected readonly niveauService = inject(NiveauService);
   protected readonly tarifService = inject(TarifService);
   protected readonly anneeService = inject(AnneeCatecheseService);
 
@@ -86,6 +90,9 @@ export class OperationsPageComponent implements OnInit {
     this.catechumeneService.getAll().subscribe();
     this.tarifService.getAll().subscribe();
     this.anneeService.getAll().subscribe();
+    this.inscriptionService.getAll().subscribe();
+    this.sectionService.getAll().subscribe();
+    this.niveauService.getAll().subscribe();
   }
 
   protected onSearchChange(event: Event): void {
@@ -118,11 +125,36 @@ export class OperationsPageComponent implements OnInit {
   protected openRecuModal(item: OperationPaiementDto, extra?: { montantRecu?: number; montantRendu?: number }): void {
     const raw = item as any;
     const cat = item.catechumene as any;
+    const catId = cat?.id || item.catechumene_id;
     const catNom = cat?.nom_complet || (cat ? `${cat.nom || ''} ${cat.prenoms || ''}`.trim() : (raw.catechumene_nom || ''));
     const matricule = cat?.matricule || cat?.code_catechumene || raw.matricule || '';
-    const classeNom = cat?.classe_nom || cat?.classe?.nom || raw.classe_nom || '';
-    const niveauNom = cat?.niveau_nom || cat?.niveau?.nom || raw.niveau_nom || '';
-    const sectionNom = cat?.section_nom || cat?.section?.nom || raw.section_nom || '';
+
+    // Trouver l'inscription liée pour garantir la section et le niveau
+    const ins = this.inscriptionService.inscriptions().find(i =>
+      (item.inscription_annuelle_id && i.id === item.inscription_annuelle_id) ||
+      (catId && (i.catechumene_id === catId || i.catechumene?.id === catId))
+    );
+
+    let sectionNom = cat?.section_nom || cat?.section?.nom || raw.section_nom || ins?.section?.nom || '';
+    let niveauNom = cat?.niveau_nom || cat?.niveau?.nom || raw.niveau_nom || ins?.niveau?.nom || '';
+    let classeNom = cat?.classe_nom || cat?.classe?.nom || raw.classe_nom || ins?.classe?.nom || '';
+
+    if (!sectionNom && ins?.section_id) {
+      const s = this.sectionService.sections().find(sec => sec.id === ins.section_id);
+      if (s) sectionNom = s.nom;
+    }
+
+    if (!niveauNom && ins?.niveau_id) {
+      const n = this.niveauService.niveaux().find(niv => niv.id === ins.niveau_id);
+      if (n) niveauNom = n.nom;
+    }
+
+    if (!niveauNom && item.libelle) {
+      const matchNiv = item.libelle.match(/\(([^)]+)\)/);
+      if (matchNiv && matchNiv[1]) {
+        niveauNom = matchNiv[1].trim();
+      }
+    }
 
     const montantTotal = item.montant_total ?? item.montant ?? 0;
     const montantPaye = item.montant_paye ?? (item.statut === 'paye' ? montantTotal : (raw.montant_regle ?? 0));

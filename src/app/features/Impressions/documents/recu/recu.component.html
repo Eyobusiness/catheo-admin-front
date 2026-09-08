@@ -1,236 +1,129 @@
 @if (data(); as d) {
-  <div class="recu-document-sheet">
-    <!-- VOLET 1 : EXEMPLAIRE PAROISSE / CAISSE -->
-    <section class="recu-voucher volet-paroisse">
-      <header class="voucher-header">
-        <div class="church-identity">
-          @if (logoParoisse()) {
-            <img [src]="logoParoisse()" alt="Logo Paroisse" class="church-logo" />
-          }
-          <div class="church-text">
-            @if (diocese()) {
-              <div class="diocese-name">{{ diocese() | uppercase }}</div>
-            }
-            <h1 class="parish-name">{{ nomParoisse() | uppercase }}</h1>
-            @if (contactsParoisse()) {
-              <p class="parish-contacts">{{ contactsParoisse() }}</p>
-            }
+  <div class="thermal-receipt-sheet">
+    <div class="thermal-receipt" id="recu-document-printable">
+      <!-- 1. En-tête Paroisse -->
+      <div class="t-header text-center">
+        @if (logoParoisse()) {
+          <div class="t-logo-wrap">
+            <img [src]="logoParoisse()" alt="Logo Paroisse" class="t-logo-img" />
           </div>
+        }
+        <h1 class="t-church-name">{{ nomParoisse() | uppercase }}</h1>
+        @if (diocese()) {
+          <p class="t-diocese">{{ diocese() | uppercase }}</p>
+        }
+        <p class="t-dept">COMMISSION DIOCÉSAINE DE CATÉCHÈSE</p>
+        @if (localisation()) {
+          <p class="t-contact">{{ localisation() }}</p>
+        }
+        @if (telephone()) {
+          <p class="t-contact">Tél : {{ telephone() }}</p>
+        }
+      </div>
+
+      <div class="t-divider">================================</div>
+
+      <!-- 2. Titre & Métadonnées -->
+      <div class="t-title-box text-center">
+        <h2 class="t-receipt-title">REÇU D'ENCAISSEMENT</h2>
+        <p class="t-ref-row">N° {{ d.numero_recu || d.reference }}</p>
+        <p class="t-date-row">{{ (d.date_paiement || d.date || d.created_at) | date:'dd/MM/yyyy à HH:mm' }}</p>
+      </div>
+
+      <div class="t-divider">--------------------------------</div>
+
+      <!-- 3. Catéchumène & Contexte -->
+      <div class="t-section">
+        <div class="t-row">
+          <span class="t-label">Libellé :</span>
+          <span class="t-val t-val-bold">{{ getLibellePrestation(d) }}</span>
         </div>
-
-        <div class="receipt-badge-box">
-          <span class="voucher-tag">SOUCHE PAROISSE / CAISSE</span>
-          <div class="receipt-number-title">REÇU DE PAIEMENT</div>
-          <div class="receipt-number">N° {{ d.numero_recu || d.reference }}</div>
-          @if (anneePastorale()) {
-            <div class="receipt-year">Année : {{ anneePastorale() }}</div>
-          }
+        <div class="t-row">
+          <span class="t-label">Catéchumène :</span>
+          <span class="t-val t-val-bold">{{ d.catechumene_nom }}</span>
         </div>
-      </header>
-
-      <div class="voucher-body">
-        <div class="info-grid">
-          <div class="info-row">
-            <span class="label">Date d'encaissement :</span>
-            <span class="value strong">{{ (d.date_paiement || d.date || d.created_at) | date:'dd/MM/yyyy HH:mm' }}</span>
+        @if (d.catechumene_matricule || d.matricule) {
+          <div class="t-row">
+            <span class="t-label">Matricule :</span>
+            <span class="t-val">{{ d.catechumene_matricule || d.matricule }}</span>
           </div>
-
-          <div class="info-row">
-            <span class="label">Reçu de (Catéchumène / Fidèle) :</span>
-            <span class="value highlight-name">{{ d.catechumene_nom | uppercase }}</span>
+        }
+        @if (d.annee_pastorale || displayAnnee()) {
+          <div class="t-row">
+            <span class="t-label">Année :</span>
+            <span class="t-val">{{ d.annee_pastorale || displayAnnee() }}</span>
           </div>
-
-          @if (d.catechumene_matricule || d.matricule) {
-            <div class="info-row">
-              <span class="label">Matricule :</span>
-              <span class="value badge-mat">{{ d.catechumene_matricule || d.matricule }}</span>
-            </div>
-          }
-
-          @if (d.classe_nom || d.niveau_nom || d.section_nom) {
-            <div class="info-row">
-              <span class="label">Affectation catéchèse :</span>
-              <span class="value">{{ getAffectation(d) }}</span>
-            </div>
-          }
-
-          <div class="info-row full-width">
-            <span class="label">Motif / Désignation :</span>
-            <span class="value">{{ d.libelle || d.type_operation || 'Cotisation / Inscription pastorale' }}</span>
-          </div>
+        }
+        <div class="t-row">
+          <span class="t-label">Section :</span>
+          <span class="t-val">{{ d.section_nom || '-' }}</span>
         </div>
-
-        <!-- Détail financier -->
-        <table class="receipt-finance-table">
-          <thead>
-            <tr>
-              <th>Désignation</th>
-              <th class="text-right">Montant Total</th>
-              <th class="text-right">Montant Versé</th>
-              <th class="text-right">Reste à Payer</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>{{ d.libelle || 'Paiement officiel' }}</td>
-              <td class="text-right">{{ (d.montant_total || d.montant || 0) | number:'1.0-0' }} FCFA</td>
-              <td class="text-right font-bold text-success">{{ (d.montant_paye || 0) | number:'1.0-0' }} FCFA</td>
-              <td class="text-right font-bold" [class.text-danger]="(d.montant_restant || d.reste_a_payer || 0) > 0">
-                {{ (d.montant_restant || d.reste_a_payer || 0) | number:'1.0-0' }} FCFA
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-        <div class="payment-meta-row">
-          <div class="meta-item">
-            <span class="meta-label">Mode de règlement :</span>
-            <span class="meta-val">{{ getModePaiementLabel(d.mode_paiement) }}</span>
-          </div>
-          @if (d.caissier_nom) {
-            <div class="meta-item">
-              <span class="meta-label">Caissier :</span>
-              <span class="meta-val">{{ d.caissier_nom }}</span>
-            </div>
-          }
+        <div class="t-row">
+          <span class="t-label">Niveau :</span>
+          <span class="t-val">{{ d.niveau_nom || '-' }}</span>
+        </div>
+        <div class="t-row">
+          <span class="t-label">Mode :</span>
+          <span class="t-val">{{ getModePaiementLabel(d.mode_paiement) }}</span>
         </div>
       </div>
 
-      <footer class="voucher-footer">
-        <div class="signatures-box">
-          <div class="signature-col">
-            <span class="sig-title">Signature du Bénéficiaire</span>
-            <div class="sig-line"></div>
-          </div>
-          <div class="signature-col">
-            <span class="sig-title">Pour la Caisse Paroissiale (Cachet & Signature)</span>
-            <div class="sig-stamp-space"></div>
-          </div>
-        </div>
-      </footer>
-    </section>
+      <div class="t-divider">--------------------------------</div>
 
-    <!-- LIGNE DE DÉCOUPE POINTILLÉE -->
-    <div class="voucher-cut-line">
-      <span class="cut-icon">✂</span>
-      <span class="cut-text">Ligne de découpe officielle</span>
+      <!-- 4. Montants & Statut -->
+      <div class="t-amounts-box">
+        <div class="t-row t-total-row">
+          <span class="t-label">TOTAL DÛ :</span>
+          <span class="t-val">{{ (d.montant_total || d.montant || 0) | number:'1.0-0' }} F CFA</span>
+        </div>
+
+        <div class="t-row t-paid-row">
+          <span class="t-label">MONTANT REÇU :</span>
+          <span class="t-val t-val-bold">{{ (d.montant_recu || d.montant_paye || d.montant || 0) | number:'1.0-0' }} F CFA</span>
+        </div>
+
+        @if ((d.montant_rendu && d.montant_rendu > 0) || ((d.montant_recu || 0) > (d.montant_total || d.montant || 0))) {
+          <div class="t-row t-rendu-row">
+            <span class="t-label">MONTANT RENDU :</span>
+            <span class="t-val t-val-bold">{{ (d.montant_rendu || ((d.montant_recu || 0) - (d.montant_total || d.montant || 0))) | number:'1.0-0' }} F CFA</span>
+          </div>
+        }
+
+        <div class="t-row t-rest-row">
+          <span class="t-label">RESTE À PAYER :</span>
+          <span class="t-val">{{ (d.montant_restant || d.reste_a_payer || 0) | number:'1.0-0' }} F CFA</span>
+        </div>
+
+        <div class="t-row t-status-row">
+          <span class="t-label">STATUT :</span>
+          <span class="t-val t-val-bold">
+            @if ((d.montant_restant || d.reste_a_payer || 0) <= 0 && (d.montant_paye || d.montant || 0) > 0) {
+              ENTIÈREMENT SOLDÉ
+            } @else if ((d.montant_paye || 0) > 0) {
+              PAIEMENT PARTIEL
+            } @else {
+              EN ATTENTE
+            }
+          </span>
+        </div>
+      </div>
+
+      @if (d.notes) {
+        <div class="t-divider">--------------------------------</div>
+        <div class="t-notes">
+          <span class="t-label">Notes :</span>
+          <span class="t-val">{{ d.notes }}</span>
+        </div>
+      }
+
+      <div class="t-divider">================================</div>
+
+      <!-- 6. Pied de page du ticket -->
+      <div class="t-footer text-center">
+        <p class="t-sign">Émis par : {{ d.caissier_nom || 'Administrateur Sainte Monique' }}</p>
+        <p class="t-blessing">† Que le Seigneur vous bénisse †</p>
+        <div class="t-cut-line">----------------- COUPER ICI -----------------</div>
+      </div>
     </div>
-
-    <!-- VOLET 2 : EXEMPLAIRE FIDÈLE / CATÉCHUMÈNE -->
-    <section class="recu-voucher volet-client">
-      <header class="voucher-header">
-        <div class="church-identity">
-          @if (logoParoisse()) {
-            <img [src]="logoParoisse()" alt="Logo Paroisse" class="church-logo" />
-          }
-          <div class="church-text">
-            @if (diocese()) {
-              <div class="diocese-name">{{ diocese() | uppercase }}</div>
-            }
-            <h1 class="parish-name">{{ nomParoisse() | uppercase }}</h1>
-            @if (contactsParoisse()) {
-              <p class="parish-contacts">{{ contactsParoisse() }}</p>
-            }
-          </div>
-        </div>
-
-        <div class="receipt-badge-box">
-          <span class="voucher-tag client-tag">EXEMPLAIRE FIDÈLE / REÇU OFFICIEL</span>
-          <div class="receipt-number-title">REÇU DE PAIEMENT</div>
-          <div class="receipt-number">N° {{ d.numero_recu || d.reference }}</div>
-          @if (anneePastorale()) {
-            <div class="receipt-year">Année : {{ anneePastorale() }}</div>
-          }
-        </div>
-      </header>
-
-      <div class="voucher-body">
-        <div class="info-grid">
-          <div class="info-row">
-            <span class="label">Date d'encaissement :</span>
-            <span class="value strong">{{ (d.date_paiement || d.date || d.created_at) | date:'dd/MM/yyyy HH:mm' }}</span>
-          </div>
-
-          <div class="info-row">
-            <span class="label">Reçu de :</span>
-            <span class="value highlight-name">{{ d.catechumene_nom | uppercase }}</span>
-          </div>
-
-          @if (d.catechumene_matricule || d.matricule) {
-            <div class="info-row">
-              <span class="label">Matricule :</span>
-              <span class="value badge-mat">{{ d.catechumene_matricule || d.matricule }}</span>
-            </div>
-          }
-
-          @if (d.classe_nom || d.niveau_nom || d.section_nom) {
-            <div class="info-row">
-              <span class="label">Affectation catéchèse :</span>
-              <span class="value">{{ getAffectation(d) }}</span>
-            </div>
-          }
-
-          <div class="info-row full-width">
-            <span class="label">Motif / Désignation :</span>
-            <span class="value">{{ d.libelle || d.type_operation || 'Cotisation / Inscription pastorale' }}</span>
-          </div>
-        </div>
-
-        <table class="receipt-finance-table">
-          <thead>
-            <tr>
-              <th>Désignation</th>
-              <th class="text-right">Montant Total</th>
-              <th class="text-right">Montant Versé</th>
-              <th class="text-right">Reste à Payer</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>{{ d.libelle || 'Paiement officiel' }}</td>
-              <td class="text-right">{{ (d.montant_total || d.montant || 0) | number:'1.0-0' }} FCFA</td>
-              <td class="text-right font-bold text-success">{{ (d.montant_paye || 0) | number:'1.0-0' }} FCFA</td>
-              <td class="text-right font-bold" [class.text-danger]="(d.montant_restant || d.reste_a_payer || 0) > 0">
-                {{ (d.montant_restant || d.reste_a_payer || 0) | number:'1.0-0' }} FCFA
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-        <div class="payment-meta-row">
-          <div class="meta-item">
-            <span class="meta-label">Mode de règlement :</span>
-            <span class="meta-val">{{ getModePaiementLabel(d.mode_paiement) }}</span>
-          </div>
-          @if (d.caissier_nom) {
-            <div class="meta-item">
-              <span class="meta-label">Caissier :</span>
-              <span class="meta-val">{{ d.caissier_nom }}</span>
-            </div>
-          }
-        </div>
-
-        <p class="voucher-notice">
-          « Conservez soigneusement ce reçu officiel. Il constitue la preuve de votre paiement auprès de la paroisse. »
-        </p>
-      </div>
-
-      <footer class="voucher-footer">
-        <div class="signatures-box">
-          <div class="signature-col">
-            <span class="sig-title">Signature du Bénéficiaire</span>
-            <div class="sig-line"></div>
-          </div>
-          <div class="signature-col">
-            <span class="sig-title">Pour la Caisse Paroissiale (Cachet & Signature)</span>
-            <div class="sig-stamp-space"></div>
-          </div>
-        </div>
-      </footer>
-    </section>
-  </div>
-} @else {
-  <div class="recu-empty-state">
-    <p>Aucune donnée de paiement disponible pour l'édition du reçu.</p>
   </div>
 }

@@ -167,9 +167,25 @@
 
 /* PRINT MEDIA */
 @media print {
+  :host,
+  .entete-catechese-root,
+  .entete-catechese-root * {
+    visibility: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .logo-img {
+    visibility: visible !important;
+    display: block !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
   .entete-catechese-root {
     color: #000 !important;
   }
+
   .line-nom-paroisse,
   .line-diocese,
   .line-doyenne,
@@ -178,6 +194,7 @@
   .catechese-badge {
     color: #000 !important;
   }
+
   .logo-fallback {
     border-color: #000 !important;
     color: #000 !important;

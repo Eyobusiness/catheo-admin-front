@@ -20,8 +20,8 @@
 }
 
 .logo-box {
-  width: 75px;
-  height: 75px;
+  width: 64px;
+  height: 64px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -33,8 +33,8 @@
 }
 
 .photo-box {
-  width: 80px;
-  height: 90px;
+  width: 65px;
+  height: 72px;
   border: 1.5px solid #333;
   padding: 2px;
   background: #f9fafb;
@@ -63,19 +63,19 @@
 }
 
 .user-icon {
-  font-size: 1.9rem;
+  font-size: 1.7rem;
   color: #6b7280;
 }
 
 .photo-txt {
-  font-size: 0.62rem;
+  font-size: 0.58rem;
   font-weight: 800;
   letter-spacing: 0.06em;
   color: #4b5563;
 }
 
 .church-icon {
-  font-size: 2.2rem;
+  font-size: 2.0rem;
   color: #1e3a8a;
 }
 
@@ -86,15 +86,24 @@
 }
 
 .line-diocese {
-  font-size: 0.9rem;
+  font-size: 0.90rem;
   font-weight: 700;
   margin: 0;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
+.line-cure {
+  font-size: 0.82rem;
+  font-weight: 700;
+  margin: 1px 0;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #111;
+}
+
 .line-doyenne {
-  font-size: 0.8rem;
+  font-size: 0.76rem;
   font-weight: 700;
   margin: 1px 0;
   letter-spacing: 0.04em;
@@ -102,9 +111,9 @@
 }
 
 .line-paroisse {
-  font-size: 1.05rem;
+  font-size: 1.10rem;
   font-weight: 800;
-  margin: 2px 0;
+  margin: 1px 0;
   letter-spacing: 0.03em;
   text-transform: uppercase;
 }
@@ -120,11 +129,11 @@
   width: 100%;
   height: 1.5px;
   background-color: #000;
-  margin: 6px 0 4px 0;
+  margin: 4px 0 3px 0;
 }
 
 .custom-title-block {
-  margin: 4px 0 2px 0;
+  margin: 3px 0 2px 0;
   text-align: center;
 }
 

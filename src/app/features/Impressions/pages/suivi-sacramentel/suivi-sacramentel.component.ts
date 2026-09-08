@@ -11,6 +11,7 @@ import { InscriptionAnnuelleService } from '../../../Catechumenes/inscriptions-a
 import { HeaderParoissePrintComponent } from '../../components/header-paroisse-print/header-paroisse-print.component';
 import { FooterParoissePrintComponent } from '../../components/footer-paroisse-print/footer-paroisse-print.component';
 import { PdfService } from '../../../../core/services/pdf.service';
+import { AnneeCatecheseService } from '../../../../core/services/annee-catechese.service';
 
 @Component({
   selector: 'app-suivi-sacramentel-print',
@@ -27,61 +28,105 @@ export class SuiviSacramentelPrintComponent implements OnInit {
   protected readonly catechumeneService = inject(CatechumeneService);
   protected readonly inscriptionService = inject(InscriptionAnnuelleService);
   protected readonly pdfService = inject(PdfService);
+  protected readonly anneeService = inject(AnneeCatecheseService);
 
-  public readonly selectedSacrament = signal<SacramentType>('communion');
-  public readonly selectedSectionId = signal<string>('tous');
-  public readonly selectedNiveauId = signal<string>('tous');
-  public readonly selectedClasseId = signal<string>('tous');
+  public readonly selectedSacrament = signal<SacramentType>('bapteme');
+  // Filtres Dynamiques (Sélection obligatoire Section -> Niveau -> Classe)
+  public readonly selectedSectionId = signal<string>('');
+  public readonly selectedNiveauId = signal<string>('');
+  public readonly selectedClasseId = signal<string>('');
   public readonly orientation = signal<'portrait' | 'landscape'>('landscape');
 
   // Listes réactives
   public readonly sections = this.sectionService.sections;
+  public readonly anneePastorale = computed(() => this.anneeService.activeAnnee()?.libelle || '');
 
   public readonly niveauxFiltres = computed(() => {
     const secId = this.selectedSectionId();
-    const list = this.niveauService.niveaux();
-    if (!secId || secId === 'tous') return list;
-    return list.filter(n => n.section_id === secId || n.section?.id === secId);
+    if (!secId) return [];
+    return this.niveauService.niveaux().filter(n => String(n.section_id) === String(secId) || String(n.section?.id) === String(secId));
   });
 
   public readonly classesFiltrees = computed(() => {
     const nivId = this.selectedNiveauId();
-    const secId = this.selectedSectionId();
-    let list = this.classeService.classes();
-
-    if (nivId && nivId !== 'tous') {
-      list = list.filter(c => c.niveau_id === nivId || c.niveau?.id === nivId);
-    } else if (secId && secId !== 'tous') {
-      const validNiveauIds = new Set(
-        this.niveauService.niveaux()
-          .filter(n => n.section_id === secId || n.section?.id === secId)
-          .map(n => n.id)
-      );
-      list = list.filter(c => {
-        const idToCheck = c.niveau_id || c.niveau?.id;
-        return idToCheck ? validNiveauIds.has(idToCheck) : false;
-      });
-    }
-    return list;
+    if (!nivId) return [];
+    return this.classeService.classes().filter(c => String(c.niveau_id) === String(nivId) || String(c.niveau?.id) === String(nivId));
   });
 
-  public readonly displayClasseTitle = computed(() => {
-    const clId = this.selectedClasseId();
-    if (clId && clId !== 'tous') {
-      const found = this.classeService.classes().find(c => c.id === clId);
-      if (found) return found.nom;
-    }
-    const nivId = this.selectedNiveauId();
-    if (nivId && nivId !== 'tous') {
-      const found = this.niveauService.niveaux().find(n => n.id === nivId);
-      if (found) return `Niveau : ${found.nom}`;
-    }
+  public readonly selectedSectionNom = computed(() => {
     const secId = this.selectedSectionId();
     if (secId && secId !== 'tous') {
       const found = this.sectionService.sections().find(s => s.id === secId);
-      if (found) return `Section : ${found.nom}`;
+      if (found) return found.nom;
     }
-    return 'Toutes les classes';
+    const clId = this.selectedClasseId();
+    if (clId && clId !== 'tous') {
+      const cl = this.classesFiltrees().find(c => c.id === clId) as any;
+      if (cl?.niveau?.section?.nom) return cl.niveau.section.nom;
+      if (cl?.section?.nom) return cl.section.nom;
+      const nivId = cl?.niveau_id || cl?.niveau?.id;
+      const niv = this.niveauService.niveaux().find(n => n.id === nivId);
+      const sec = this.sectionService.sections().find(s => s.id === niv?.section_id || s.id === niv?.section?.id);
+      if (sec) return sec.nom;
+    }
+    const nivId = this.selectedNiveauId();
+    if (nivId && nivId !== 'tous') {
+      const niv = this.niveauService.niveaux().find(n => n.id === nivId);
+      const sec = this.sectionService.sections().find(s => s.id === niv?.section_id || s.id === niv?.section?.id);
+      if (sec) return sec.nom;
+    }
+    return '';
+  });
+
+  public readonly selectedNiveauNom = computed(() => {
+    const nivId = this.selectedNiveauId();
+    if (nivId && nivId !== 'tous') {
+      const found = this.niveauService.niveaux().find(n => n.id === nivId);
+      if (found) return found.nom;
+    }
+    const clId = this.selectedClasseId();
+    if (clId && clId !== 'tous') {
+      const cl = this.classesFiltrees().find(c => c.id === clId) as any;
+      if (cl?.niveau?.nom) return cl.niveau.nom;
+      const niv = this.niveauService.niveaux().find(n => n.id === cl?.niveau_id);
+      if (niv) return niv.nom;
+    }
+    return '';
+  });
+
+  public readonly selectedClasseNom = computed(() => {
+    const clId = this.selectedClasseId();
+    if (!clId || clId === 'tous') return '';
+    const found = this.classesFiltrees().find(c => c.id === clId);
+    return found ? found.nom : '';
+  });
+
+  public readonly displaySubTitle = computed(() => {
+    const clNom = this.selectedClasseNom();
+    const nivNom = this.selectedNiveauNom();
+    const secNom = this.selectedSectionNom();
+
+    if (clNom) {
+      const parts: string[] = [];
+      if (secNom) parts.push(`SECTION : ${secNom.toUpperCase()}`);
+      if (nivNom) parts.push(`NIVEAU : ${nivNom.toUpperCase()}`);
+      parts.push(`CLASSE : ${clNom.toUpperCase()}`);
+      return parts.join('   •   ');
+    }
+
+    if (nivNom) {
+      const parts: string[] = [];
+      if (secNom) parts.push(`SECTION : ${secNom.toUpperCase()}`);
+      parts.push(`NIVEAU : ${nivNom.toUpperCase()}`);
+      parts.push('TOUTES LES CLASSES');
+      return parts.join('   •   ');
+    }
+
+    if (secNom) {
+      return `SECTION : ${secNom.toUpperCase()}   •   TOUTES LES CLASSES`;
+    }
+
+    return 'TOUTES LES CLASSES';
   });
 
   public readonly documentTitle = computed(() => {
@@ -97,13 +142,17 @@ export class SuiviSacramentelPrintComponent implements OnInit {
     }
   });
 
-  // Liste des candidats réels depuis la BD
+  // Liste des candidats réels depuis la BD : Uniquement si une classe est sélectionnée
   public readonly studentsList = computed(() => {
+    const clId = this.selectedClasseId();
+    if (!clId) {
+      return [];
+    }
+
     const inscriptions = this.inscriptionService.inscriptions();
     const allCats = this.catechumeneService.catechumenes();
-    const clId = this.selectedClasseId();
-    const nivId = this.selectedNiveauId();
-    const secId = this.selectedSectionId();
+
+    const filteredInsc = inscriptions.filter(i => String(i.classe_id) === String(clId) || String(i.classe?.id) === String(clId));
 
     let matchedCats: {
       id: string;
@@ -112,46 +161,70 @@ export class SuiviSacramentelPrintComponent implements OnInit {
       telephone: string;
     }[] = [];
 
-    if (inscriptions && inscriptions.length > 0) {
-      let filteredInsc = inscriptions;
-      if (clId && clId !== 'tous') {
-        filteredInsc = filteredInsc.filter(i => i.classe_id === clId || i.classe?.id === clId);
-      } else if (nivId && nivId !== 'tous') {
-        filteredInsc = filteredInsc.filter(i => i.niveau_id === nivId || i.niveau?.id === nivId);
-      } else if (secId && secId !== 'tous') {
-        filteredInsc = filteredInsc.filter(i => i.section_id === secId || i.section?.id === secId);
-      }
-
+    if (filteredInsc.length > 0) {
       matchedCats = filteredInsc.map((insc, index) => {
-        const cat = insc.catechumene || allCats.find(c => c.id === insc.catechumene_id);
+        const cat = insc.catechumene || allCats.find(c => String(c.id) === String(insc.catechumene_id));
+        const nom = cat?.nom || (insc as any).nom || '';
+        const prenoms = cat?.prenoms || (insc as any).prenoms || '';
+        const nomComplet = cat?.nom_complet || `${nom} ${prenoms}`.trim() || `Catéchumène #${index + 1}`;
+        const mat = cat?.matricule || cat?.code_catechumene || (insc as any).matricule || insc.code_inscription || 'CAT-00';
         const rawPhone = cat?.telephone || cat?.telephone_pere || cat?.telephone_mere || cat?.telephone_tuteur || cat?.telephone_parrain || '';
         const phoneFormatted = rawPhone ? rawPhone.trim().replace(/\s+/g, '\u00A0') : '-';
 
         return {
-          id: insc.id || cat?.id || String(index),
-          matricule: cat?.matricule || cat?.code_catechumene || insc.code_inscription || 'CAT-00',
-          nomPrenoms: cat?.nom_complet || (cat ? `${cat.nom} ${cat.prenoms || ''}`.trim() : `Catéchumène #${index + 1}`),
-          telephone: phoneFormatted
-        };
-      });
-    } else if (clId === 'tous' && nivId === 'tous' && secId === 'tous' && allCats.length > 0) {
-      matchedCats = allCats.map((c, index) => {
-        const rawPhone = c.telephone || c.telephone_pere || c.telephone_mere || c.telephone_tuteur || c.telephone_parrain || '';
-        const phoneFormatted = rawPhone ? rawPhone.trim().replace(/\s+/g, '\u00A0') : '-';
-
-        return {
-          id: c.id,
-          matricule: c.matricule || c.code_catechumene || 'CAT-00',
-          nomPrenoms: c.nom_complet || `${c.nom} ${c.prenoms || ''}`.trim(),
+          id: String(insc.id || cat?.id || index),
+          matricule: mat,
+          nomPrenoms: nomComplet,
           telephone: phoneFormatted
         };
       });
     }
 
+    if (matchedCats.length === 0 && allCats.length > 0) {
+      const filteredCats = allCats.filter(c =>
+        c.inscriptions_annuelles?.some((i: any) => String(i.classe_id) === String(clId) || String(i.classe?.id) === String(clId)) ||
+        String((c as any).classe_id) === String(clId)
+      );
+
+      matchedCats = filteredCats.map((cat, index) => {
+        const nom = cat?.nom || '';
+        const prenoms = cat?.prenoms || '';
+        const nomComplet = cat?.nom_complet || `${nom} ${prenoms}`.trim() || `Catéchumène #${index + 1}`;
+        const mat = cat?.matricule || cat?.code_catechumene || 'CAT-00';
+        const rawPhone = cat?.telephone || cat?.telephone_pere || cat?.telephone_mere || cat?.telephone_tuteur || cat?.telephone_parrain || '';
+        const phoneFormatted = rawPhone ? rawPhone.trim().replace(/\s+/g, '\u00A0') : '-';
+
+        return {
+          id: String(cat.id || index),
+          matricule: mat,
+          nomPrenoms: nomComplet,
+          telephone: phoneFormatted
+        };
+      });
+    }
+
+    // Tri alphabétique strict
+    matchedCats.sort((a, b) => a.nomPrenoms.trim().localeCompare(b.nomPrenoms.trim(), 'fr', { sensitivity: 'base' }));
+
     return matchedCats.map((st, idx) => ({
       ...st,
       num: String(idx + 1).padStart(2, '0')
     }));
+  });
+
+  public readonly emptyPaddingRows = computed(() => {
+    const currentCount = this.studentsList().length;
+    if (currentCount === 0) return [];
+    const minRows = 12;
+    if (currentCount >= minRows) return [];
+    const needed = minRows - currentCount;
+    const rows = [];
+    for (let i = 0; i < needed; i++) {
+      rows.push({
+        num: String(currentCount + i + 1).padStart(2, '0')
+      });
+    }
+    return rows;
   });
 
   public ngOnInit(): void {
@@ -164,13 +237,17 @@ export class SuiviSacramentelPrintComponent implements OnInit {
 
   public onSectionChange(secId: string): void {
     this.selectedSectionId.set(secId);
-    this.selectedNiveauId.set('tous');
-    this.selectedClasseId.set('tous');
+    this.selectedNiveauId.set('');
+    this.selectedClasseId.set('');
   }
 
   public onNiveauChange(nivId: string): void {
     this.selectedNiveauId.set(nivId);
-    this.selectedClasseId.set('tous');
+    this.selectedClasseId.set('');
+  }
+
+  public onClasseChange(clId: string): void {
+    this.selectedClasseId.set(clId);
   }
 
   public triggerPrint(): void {
@@ -182,13 +259,24 @@ export class SuiviSacramentelPrintComponent implements OnInit {
     if (this.selectedNiveauId() !== 'tous') filters.niveau_id = this.selectedNiveauId();
     if (this.selectedClasseId() !== 'tous') filters.classe_id = this.selectedClasseId();
 
-    const classeObj = this.classesFiltrees().find(c => c.id === this.selectedClasseId());
-    const classeNom = classeObj?.nom || 'Toutes les Classes';
-
     this.pdfService.previewSuiviSacramentalPdf(filters, {
-      title: `Suivi Sacramentel — ${this.selectedSacrament().toUpperCase()}`,
-      subtitle: `Classe : ${classeNom}`,
-      fileName: `suivi-sacramentel-${this.selectedSacrament()}.pdf`
+      title: this.documentTitle(),
+      subtitle: this.displaySubTitle(),
+      formatBadge: 'A4 Paysage',
+      fileName: `suivi-sacramental-${this.selectedSacrament()}.pdf`,
+      sectionNom: this.selectedSectionNom(),
+      niveauNom: this.selectedNiveauNom(),
+      classeNom: this.selectedClasseNom(),
+      students: this.studentsList().map(s => ({
+        id: s.id,
+        num: s.num,
+        numero: s.num,
+        matricule: s.matricule,
+        nom_complet: s.nomPrenoms,
+        nomPrenoms: s.nomPrenoms,
+        telephone: s.telephone,
+        contact: s.telephone
+      }))
     });
   }
 

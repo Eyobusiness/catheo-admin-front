@@ -3,7 +3,7 @@
   <div class="print-toolbar no-print">
     <div class="toolbar-top-row">
       <div class="toolbar-left">
-        <h2 class="toolbar-page-title">Liste de Présence</h2>
+        <h2 class="toolbar-page-title">Liste de Présence & Émargement</h2>
       </div>
 
       <div class="toolbar-top-actions">
@@ -16,35 +16,49 @@
           </button>
         </div>
 
-        <button type="button" class="btn-print" (click)="triggerPrint()">
+        <button
+          type="button"
+          class="btn-print"
+          [disabled]="!selectedClasseId()"
+          (click)="triggerPrint()"
+          [title]="selectedClasseId() ? 'Aperçu & Imprimer la feuille de présence' : 'Sélectionnez d\'abord une section, un niveau et une classe'"
+        >
           <i class="bi bi-printer-fill"></i>
           <span>Imprimer</span>
         </button>
       </div>
     </div>
 
-    <!-- Filtres Ligne 1 : Organisation (Section, Niveau, Classe) -->
+    <!-- Filtres Ligne 1 : Organisation en cascade (Section -> Niveau -> Classe) -->
     <div class="toolbar-filters-row">
       <div class="filter-group">
         <label><i class="bi bi-diagram-3"></i> Section :</label>
         <select [ngModel]="selectedSectionId()" (ngModelChange)="onSectionChange($event)">
-          <option value="tous">Toutes les sections</option>
+          <option value="">Sélectionner une section...</option>
           @for (s of sections(); track s.id) { <option [value]="s.id">{{ s.nom }}</option> }
         </select>
       </div>
 
       <div class="filter-group">
         <label><i class="bi bi-layers"></i> Niveau :</label>
-        <select [ngModel]="selectedNiveauId()" (ngModelChange)="onNiveauChange($event)">
-          <option value="tous">Tous les niveaux</option>
+        <select
+          [ngModel]="selectedNiveauId()"
+          (ngModelChange)="onNiveauChange($event)"
+          [disabled]="!selectedSectionId()"
+        >
+          <option value="">Sélectionner un niveau...</option>
           @for (n of niveauxFiltres(); track n.id) { <option [value]="n.id">{{ n.nom }}</option> }
         </select>
       </div>
 
       <div class="filter-group">
         <label><i class="bi bi-mortarboard"></i> Classe :</label>
-        <select [ngModel]="selectedClasseId()" (ngModelChange)="selectedClasseId.set($event)">
-          <option value="tous">Toutes les classes</option>
+        <select
+          [ngModel]="selectedClasseId()"
+          (ngModelChange)="onClasseChange($event)"
+          [disabled]="!selectedNiveauId()"
+        >
+          <option value="">Sélectionner une classe...</option>
           @for (c of classesFiltrees(); track c.id) { <option [value]="c.id">{{ c.nom }}</option> }
         </select>
       </div>
@@ -82,72 +96,81 @@
     </div>
   </div>
 
-  <!-- DOCUMENT IMPRIMABLE A4 -->
-  <div class="a4-document-container" [class.landscape-mode]="orientation() === 'landscape'">
-    <!-- En-tête officiel avec Logos Paroisse et Catéchèse -->
-    <app-header-paroisse-print customTitle="LISTE DE PRÉSENCE & ÉMARGEMENT"></app-header-paroisse-print>
-
-    <!-- Sous-titre officiel -->
-    <div class="doc-title-block">
-      <h2 class="doc-subtitle">{{ displayClasseTitle() }} • Rencontres : {{ jourCours() }}</h2>
+  <!-- ÉTAT INITIAL : MESSAGE SI AUCUNE CLASSE SÉLECTIONNÉE -->
+  @if (!selectedClasseId()) {
+    <div class="empty-selection-card">
+      <div class="empty-icon-wrap">
+        <i class="bi bi-person-lines-fill"></i>
+      </div>
+      <h3>Veuillez sélectionner une section, un niveau et une classe</h3>
+      <p>
+        Pour afficher la feuille de présence et faire sortir la liste des élèves,
+        veuillez choisir dans les filtres ci-dessus une <strong>Section</strong>, puis un <strong>Niveau</strong> et enfin une <strong>Classe</strong>.
+      </p>
     </div>
+  } @else {
+    <!-- DOCUMENT IMPRIMABLE A4 -->
+    <div class="a4-document-container catheo-printable-document" [class.portrait-mode]="orientation() === 'portrait'">
+      <div class="doc-body-wrapper">
+        <!-- En-tête officiel avec Logos Paroisse et Catéchèse -->
+        <app-header-paroisse-print customTitle="LISTE DE PRÉSENCE & ÉMARGEMENT"></app-header-paroisse-print>
 
-    <!-- Tableau d'émargement officiel -->
-    <table class="official-print-table">
-      <thead>
-        <tr class="black-banner-row">
-          <th class="th-num" rowspan="2">N°</th>
-          <th class="th-name" rowspan="2">NOMS ET PRÉNOMS</th>
-          <th class="th-phone" rowspan="2">CONTACTS</th>
-          <th [attr.colspan]="generatedDates().length" class="th-black-center">DATES DES SÉANCES</th>
-        </tr>
-        <tr class="dates-row">
-          @for (d of generatedDates(); track d.shortDate) {
-            <th class="th-date-col">
-              <span class="date-text">{{ d.shortDate }}</span>
-            </th>
-          }
-        </tr>
-      </thead>
-      <tbody>
-        @for (st of studentsList(); track st.id) {
-          <tr>
-            <td class="td-num">{{ st.num }}</td>
-            <td class="td-name">{{ st.nomPrenoms }}</td>
-            <td class="td-phone">{{ st.telephone }}</td>
-            @for (d of generatedDates(); track d.shortDate) {
-              <td class="td-cell-check"></td>
+        <!-- Sous-titre officiel -->
+        <div class="doc-title-block">
+          <h2 class="doc-subtitle">
+            <span>{{ displayClasseTitle() }} • RENCONTRES : {{ jourCours() | uppercase }}</span>
+            @if (animateursClasse()) {
+              <span class="anim-sep"> • </span>
+              <span class="anim-text">ANIMATEUR(S) : {{ animateursClasse() | uppercase }}</span>
             }
-          </tr>
-        }
-        @if (studentsList().length === 0) {
-          @for (i of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]; track i) {
-            <tr>
-              <td class="td-num">{{ i }}</td>
-              <td class="td-name"></td>
-              <td class="td-phone">-</td>
+          </h2>
+        </div>
+
+        <!-- Tableau d'émargement officiel -->
+        <table class="official-print-table">
+          <thead>
+            <tr class="black-banner-row">
+              <th class="th-num" rowspan="2">N°</th>
+              <th class="th-name" rowspan="2">NOMS ET PRÉNOMS</th>
+              <th class="th-phone" rowspan="2">CONTACTS</th>
+              <th [attr.colspan]="generatedDates().length" class="th-black-center">DATES DES SÉANCES</th>
+            </tr>
+            <tr class="dates-row">
               @for (d of generatedDates(); track d.shortDate) {
-                <td class="td-cell-check"></td>
+                <th class="th-date-col">
+                  <span class="date-text">{{ d.shortDate }}</span>
+                </th>
               }
             </tr>
-          }
-        }
-      </tbody>
-    </table>
+          </thead>
+          <tbody>
+            @for (st of studentsList(); track st.id) {
+              <tr>
+                <td class="td-num">{{ st.num }}</td>
+                <td class="td-name">{{ st.nomPrenoms }}</td>
+                <td class="td-phone">{{ st.telephone }}</td>
+                @for (d of generatedDates(); track d.shortDate) {
+                  <td class="td-cell-check"></td>
+                }
+              </tr>
+            }
+            @if (studentsList().length === 0) {
+              <tr>
+                <td [attr.colspan]="3 + generatedDates().length" class="empty-class-notice">
+                  <i class="bi bi-info-circle"></i>
+                  <span>Aucun élève n'est encore inscrit dans cette classe pour l'année pastorale sélectionnée.</span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
 
-    <!-- Signatures de part et d'autre -->
-    <div class="print-signatures-row">
-      <div class="sig-block sig-left">
-        <span class="sig-title">L'Animateur / Responsable</span>
-        <div class="sig-space"></div>
-      </div>
-      <div class="sig-block sig-right">
-        <span class="sig-title">La Coordination de Catéchèse</span>
-        <div class="sig-space"></div>
-      </div>
+      <!-- Pied de page officiel épinglé -->
+      <app-footer-paroisse-print
+        class="doc-footer"
+        pageNumber="Page 1/1"
+      ></app-footer-paroisse-print>
     </div>
-
-    <!-- Pied de page officiel -->
-    <app-footer-paroisse-print></app-footer-paroisse-print>
-  </div>
+  }
 </div>

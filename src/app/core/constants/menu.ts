@@ -149,17 +149,7 @@ export const APP_MENU: MenuItem[] = [
       {
         "order": null,
         "id": null,
-        "libelle": "Évaluations",
-        "icon": "bi bi-clipboard2-check",
-        "path": "/evaluations",
-        "code": "400",
-        "permission": null,
-        "reference": "evaluations"
-      },
-      {
-        "order": null,
-        "id": null,
-        "libelle": "Notes",
+        "libelle": "Notes & Évaluations",
         "icon": "bi bi-pencil-square",
         "path": "/notes",
         "code": "400",

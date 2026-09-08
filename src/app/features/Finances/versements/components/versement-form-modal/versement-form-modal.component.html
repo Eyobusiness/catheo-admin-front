@@ -28,6 +28,9 @@
       <div class="form-group">
         <label class="form-label" for="vrs_montant">
           Montant Reversé (FCFA) <span class="required">*</span>
+          @if (soldeDisponible() > 0 && !isEditing()) {
+            <span class="solde-hint">(Solde en caisse : {{ soldeDisponible() | number:'1.0-0' }} F)</span>
+          }
         </label>
         <input
           id="vrs_montant"

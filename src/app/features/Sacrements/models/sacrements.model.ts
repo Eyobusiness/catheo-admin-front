@@ -12,7 +12,7 @@ export interface SacrementRecord {
   type: TypeSacrement;
   date: string; // YYYY-MM-DD
   lieu: string;
-  celebrant: string; // Prêtre ou Évêque
+  celebrant?: string; // Prêtre ou Évêque
   parrain?: string;
   marraine?: string;
   numRegistre?: string;
@@ -35,20 +35,25 @@ export interface ExceptionSacrement {
   autorisePar: string;
   observation?: string;
   dateAjout: string;
+  annee_catechese_id?: string;
+  anneeCatecheseLibelle?: string;
 }
 
 export interface CatechumeneSacrement {
   id: string;
+  uuid?: string;
   avatar?: string;
   matricule: string;
   nom: string;
   prenoms: string;
   section: string;
   section_id?: string;
+  section_code?: string;
   classe: string;
   classe_id?: string;
   niveau: string;
   niveau_id?: string;
+  niveau_ordre?: number;
   telephone: string;
   statut?: string;
 

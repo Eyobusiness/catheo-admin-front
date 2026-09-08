@@ -1,0 +1,214 @@
+@if (data(); as d) {
+  <div class="thermal-receipt-sheet">
+    <div class="thermal-receipt" id="recu-preinscription-printable">
+      
+      <!-- 1. En-tête Paroisse -->
+      <div class="t-header text-center">
+        @if (logoParoisse()) {
+          <div class="t-logo-wrap">
+            <img [src]="logoParoisse()" alt="Logo Paroisse" class="t-logo-img" />
+          </div>
+        }
+        <h1 class="t-church-name">{{ nomParoisse() | uppercase }}</h1>
+        @if (diocese()) {
+          <p class="t-diocese">{{ diocese() | uppercase }}</p>
+        }
+        @if (doyenne()) {
+          <p class="t-doyenne">{{ doyenne() | uppercase }}</p>
+        }
+        <p class="t-dept">COMMISSION PASTORALE DE CATÉCHÈSE</p>
+        @if (localisation()) {
+          <p class="t-contact">{{ localisation() }}</p>
+        }
+        @if (telephone()) {
+          <p class="t-contact">Tél : {{ telephone() }}</p>
+        }
+      </div>
+
+      <div class="t-divider">================================</div>
+
+      <!-- 2. Titre & Code Dossier -->
+      <div class="t-title-box text-center">
+        <h2 class="t-receipt-title">RÉCÉPISSÉ DE PRÉINSCRIPTION</h2>
+        <div class="t-badge-dossier">
+          <span class="t-dossier-label">DOSSIER N°</span>
+          <span class="t-dossier-num">{{ d.code_dossier }}</span>
+        </div>
+        <p class="t-date-row">{{ (d.created_at || '') | date:'dd/MM/yyyy à HH:mm' }}</p>
+        <p class="t-type-row">Type : {{ getTypeDemandeLabel(d.type_demande) | uppercase }}</p>
+        @if (d.matricule) {
+          <p class="t-mat-row">Matricule : <strong>{{ d.matricule }}</strong></p>
+        }
+      </div>
+
+      <div class="t-divider">--------------------------------</div>
+
+      <!-- 3. Identité du Catéchumène -->
+      <div class="t-section">
+        <div class="t-sec-title">1. CATÉCHUMÈNE</div>
+        <div class="t-row">
+          <span class="t-label">Nom & Prénoms :</span>
+          <span class="t-val t-val-bold">{{ d.nom }} {{ d.prenoms }}</span>
+        </div>
+        <div class="t-row">
+          <span class="t-label">Sexe :</span>
+          <span class="t-val">{{ getSexeLabel(d.sexe) }}</span>
+        </div>
+        @if (d.date_naissance) {
+          <div class="t-row">
+            <span class="t-label">Né(e) le :</span>
+            <span class="t-val">{{ d.date_naissance | date:'dd/MM/yyyy' }}{{ d.lieu_naissance ? ' à ' + d.lieu_naissance : '' }}</span>
+          </div>
+        }
+        @if (d.telephone) {
+          <div class="t-row">
+            <span class="t-label">Téléphone :</span>
+            <span class="t-val">{{ d.telephone }}</span>
+          </div>
+        }
+        @if (d.domicile) {
+          <div class="t-row">
+            <span class="t-label">Domicile :</span>
+            <span class="t-val">{{ d.domicile }}</span>
+          </div>
+        }
+        @if (d.classe_scolaire) {
+          <div class="t-row">
+            <span class="t-label">Classe scol. :</span>
+            <span class="t-val">{{ d.classe_scolaire }}</span>
+          </div>
+        }
+        @if (d.profession) {
+          <div class="t-row">
+            <span class="t-label">Profession :</span>
+            <span class="t-val">{{ d.profession }}</span>
+          </div>
+        }
+      </div>
+
+      <div class="t-divider">--------------------------------</div>
+
+      <!-- 4. Orientation Catéchétique -->
+      <div class="t-section">
+        <div class="t-sec-title">2. ORIENTATION FORMATION</div>
+        <div class="t-row">
+          <span class="t-label">Année :</span>
+          <span class="t-val t-val-bold">{{ d.annee_pastorale || displayAnnee() }}</span>
+        </div>
+        <div class="t-row">
+          <span class="t-label">Section :</span>
+          <span class="t-val t-val-bold">{{ d.section_nom || '-' }}</span>
+        </div>
+        <div class="t-row">
+          <span class="t-label">Niveau :</span>
+          <span class="t-val t-val-bold">{{ d.niveau_nom || '-' }}</span>
+        </div>
+        @if (d.nom_campagne) {
+          <div class="t-row">
+            <span class="t-label">Campagne :</span>
+            <span class="t-val">{{ d.nom_campagne }}</span>
+          </div>
+        }
+      </div>
+
+      <!-- 5. Filiation & Contacts -->
+      @if (d.nom_tuteur || d.nom_pere || d.nom_mere) {
+        <div class="t-divider">--------------------------------</div>
+        <div class="t-section">
+          <div class="t-sec-title">3. PARENT / TUTEUR</div>
+          @if (d.nom_tuteur) {
+            <div class="t-row">
+              <span class="t-label">Tuteur :</span>
+              <span class="t-val">{{ d.nom_tuteur }}</span>
+            </div>
+            @if (d.telephone_tuteur) {
+              <div class="t-row">
+                <span class="t-label">Contact :</span>
+                <span class="t-val">{{ d.telephone_tuteur }}</span>
+              </div>
+            }
+          } @else if (d.nom_pere) {
+            <div class="t-row">
+              <span class="t-label">Père :</span>
+              <span class="t-val">{{ d.nom_pere }}</span>
+            </div>
+            @if (d.telephone_pere) {
+              <div class="t-row">
+                <span class="t-label">Contact :</span>
+                <span class="t-val">{{ d.telephone_pere }}</span>
+              </div>
+            }
+          } @else if (d.nom_mere) {
+            <div class="t-row">
+              <span class="t-label">Mère :</span>
+              <span class="t-val">{{ d.nom_mere }}</span>
+            </div>
+            @if (d.telephone_mere) {
+              <div class="t-row">
+                <span class="t-label">Contact :</span>
+                <span class="t-val">{{ d.telephone_mere }}</span>
+              </div>
+            }
+          }
+        </div>
+      }
+
+      <!-- 6. Sacrements -->
+      <div class="t-divider">--------------------------------</div>
+      <div class="t-section">
+        <div class="t-sec-title">4. SACREMENTS</div>
+        <div class="t-row">
+          <span class="t-label">Baptisé(e) :</span>
+          <span class="t-val t-val-bold">{{ d.est_baptise ? 'OUI' : 'NON' }}</span>
+        </div>
+        @if (d.est_baptise) {
+          @if (d.date_bapteme) {
+            <div class="t-row">
+              <span class="t-label">Date baptême :</span>
+              <span class="t-val">{{ d.date_bapteme | date:'dd/MM/yyyy' }}</span>
+            </div>
+          }
+          @if (d.paroisse_bapteme) {
+            <div class="t-row">
+              <span class="t-label">Paroisse :</span>
+              <span class="t-val">{{ d.paroisse_bapteme }}</span>
+            </div>
+          }
+          @if (d.num_carnet_bapteme) {
+            <div class="t-row">
+              <span class="t-label">N° Carnet :</span>
+              <span class="t-val">{{ d.num_carnet_bapteme }}</span>
+            </div>
+          }
+        }
+      </div>
+
+      <div class="t-divider">================================</div>
+
+      <!-- 7. Statut Secrétariat -->
+      <div class="t-notice-box">
+        <div class="t-status-line text-center">
+          <span class="t-status-badge">EN ATTENTE DE VALIDATION</span>
+        </div>
+      </div>
+
+      <div class="t-divider">--------------------------------</div>
+
+      <!-- 8. QR Code pour le Secrétariat -->
+      <div class="t-qrcode-box text-center">
+        <img [src]="qrCodeUrl()" alt="QR Code Dossier" class="t-qrcode-img" />
+       
+      </div>
+
+      <div class="t-divider">================================</div>
+
+      <!-- 9. Pied de page -->
+      <div class="t-footer text-center">
+        <p class="t-mention">Veuillez conserver précieusement ce ticket.</p>
+        <p class="t-blessing">† Que le Seigneur vous bénisse †</p>
+        <div class="t-cut-line">----------------- COUPER ICI -----------------</div>
+      </div>
+
+    </div>
+  </div>
+}

@@ -128,6 +128,9 @@
                 @case ('recu') {
                   <app-doc-recu [data]="documentData()" />
                 }
+                @case ('recu-preinscription') {
+                  <app-doc-recu-preinscription [data]="documentData()" />
+                }
                 @case ('fiche-catechumene') {
                   <app-doc-fiche-catechumene [data]="documentData()" />
                 }
@@ -136,6 +139,12 @@
                 }
                 @case ('fiche-notes') {
                   <app-doc-fiche-notes [data]="documentData()" />
+                }
+                @case ('releve-notes') {
+                  <app-doc-releve-notes [data]="documentData()" />
+                }
+                @case ('bulletin') {
+                  <app-doc-bulletin [data]="documentData()" />
                 }
                 @case ('liste-presence') {
                   <app-doc-liste-presence [data]="documentData()" />
@@ -157,6 +166,12 @@
                 }
                 @case ('renseignement-confirmation') {
                   <app-doc-renseignement-confirmation [data]="documentData()" />
+                }
+                @case ('bordereau-versement') {
+                  <app-doc-bordereau-versement [data]="documentData()" />
+                }
+                @case ('registre-sacrement') {
+                  <app-doc-registre-sacrement [data]="documentData()" />
                 }
                 @case ('pdf-blob') {
                   @if (pdfUrl()) {

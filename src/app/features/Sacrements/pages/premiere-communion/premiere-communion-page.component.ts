@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  OnInit,
   computed,
   inject,
   signal
@@ -16,20 +17,41 @@ import {
   MotifException
 } from '../../models/sacrements.model';
 import { PdfService } from '../../../../core/services/pdf.service';
+import { ConfigurationService } from '../../../Parametes/Configuration/services/configuration.service';
+import { AnneeCatecheseService } from '../../../../core/services/annee-catechese.service';
+import { ToastService } from '../../../../core/services/toast.service';
+
+import { HeaderParoissePrintComponent } from '../../../Impressions/components/header-paroisse-print/header-paroisse-print.component';
+import { FooterParoissePrintComponent } from '../../../Impressions/components/footer-paroisse-print/footer-paroisse-print.component';
 
 @Component({
   selector: 'app-premiere-communion-page',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, HeaderParoissePrintComponent, FooterParoissePrintComponent],
   templateUrl: './premiere-communion-page.component.html',
   styleUrl: './premiere-communion-page.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PremiereCommunionPageComponent {
+export class PremiereCommunionPageComponent implements OnInit {
   public readonly service = inject(SacrementsService);
   public readonly sectionService = inject(SectionService);
   public readonly niveauService = inject(NiveauService);
   public readonly classeService = inject(ClasseService);
   private readonly pdfService = inject(PdfService);
+  public readonly configService = inject(ConfigurationService);
+  public readonly anneeService = inject(AnneeCatecheseService);
+  private readonly toastService = inject(ToastService);
+
+  public readonly currentDate = new Date();
+  public readonly activeAnneeLibelle = computed(() => this.anneeService.activeAnnee()?.libelle || '');
+  public readonly nomParoisse = computed(() => this.configService.paroisseConfig()?.nom_paroisse || '');
+  public readonly diocese = computed(() => this.configService.paroisseConfig()?.diocese || '');
+
+  public ngOnInit(): void {
+    this.service.loadCatechumenesFromApi();
+    this.sectionService.getAll().subscribe();
+    this.niveauService.getAll().subscribe();
+    this.classeService.getAll().subscribe();
+  }
 
   // Signaux de données de la BD
   public readonly sections = this.sectionService.sections;
@@ -43,24 +65,25 @@ export class PremiereCommunionPageComponent {
   public readonly filterClasse = signal<string>('');
   public readonly filterStatut = signal<'tous' | 'en_attente' | 'valide'>('tous');
 
-  // Listes dynamiques en cascade selon la BD
+  private is3emeAnnee(niveauObj?: any): boolean {
+    if (!niveauObj) return false;
+    if (typeof niveauObj === 'object' && (niveauObj.ordre === 3 || niveauObj.ordre_affichage === 3)) return true;
+    const nom = (typeof niveauObj === 'string' ? niveauObj : (niveauObj.nom || '')).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    return nom.includes('3') || nom.includes('trois') || nom.includes('communion');
+  }
+
+  // Listes dynamiques en cascade selon la BD (verrouillées tant que la section n'est pas choisie)
   public readonly filteredNiveauxList = computed(() => {
     const secId = this.filterSection();
-    if (!secId) return this.niveaux();
-    return this.niveaux().filter(n => n.section_id === secId || n.section?.id === secId || n.section?.nom === secId);
+    if (!secId) return [];
+    return this.niveaux().filter(n => String(n.section_id) === String(secId) || String(n.section?.id) === String(secId) || n.section?.nom === secId);
   });
 
   public readonly filteredClassesList = computed(() => {
     const nivId = this.filterNiveau();
     const secId = this.filterSection();
-    let res = this.classes();
-    if (nivId) {
-      res = res.filter(c => c.niveau_id === nivId || c.niveau?.id === nivId || c.niveau?.nom === nivId);
-    } else if (secId) {
-      const nivIdsInSec = new Set(this.filteredNiveauxList().map(n => n.id));
-      res = res.filter(c => (!!c.niveau_id && nivIdsInSec.has(c.niveau_id)) || (!!c.niveau?.id && nivIdsInSec.has(c.niveau.id)));
-    }
-    return res;
+    if (!secId || !nivId) return [];
+    return this.classes().filter(c => String(c.niveau_id) === String(nivId) || String(c.niveau?.id) === String(nivId) || c.niveau?.nom === nivId);
   });
 
   public onSectionChange(val: string): void {
@@ -89,8 +112,8 @@ export class PremiereCommunionPageComponent {
   // Formulaire d'enregistrement sacrement
   public readonly sacrementFormData = signal({
     date: new Date().toISOString().split('T')[0],
-    lieu: 'Paroisse Cœur Immaculé de Marie',
-    celebrant: 'Père Curé',
+    lieu: '',
+    celebrant: '',
     parrain: '',
     marraine: '',
     numRegistre: '',
@@ -102,7 +125,7 @@ export class PremiereCommunionPageComponent {
   public readonly selectedCatechumeneForException = signal<CatechumeneSacrement | null>(null);
   public readonly exceptionFormData = signal({
     motif: 'Décision du Curé' as MotifException,
-    autorisePar: 'Père Curé',
+    autorisePar: '',
     observation: ''
   });
 
@@ -114,10 +137,7 @@ export class PremiereCommunionPageComponent {
     'Autre'
   ];
 
-  // Toast
-  public readonly toastMessage = signal('');
-  public readonly toastType = signal<'success' | 'danger' | 'warning' | 'info'>('success');
-  public readonly showToast = signal(false);
+
 
   // Liste des candidats à la Première Communion (3ème année baptisés ou exceptions)
   public readonly candidatsList = computed(() => {
@@ -139,16 +159,28 @@ export class PremiereCommunionPageComponent {
     }
 
     if (sec) {
-      list = list.filter(c => c.section_id === sec || c.section === sec);
+      list = list.filter(c => String(c.section_id) === String(sec) || c.section === sec);
     }
 
     if (niv) {
-      list = list.filter(c => c.niveau_id === niv || c.niveau === niv);
+      const selectedNiveau = this.niveaux().find(n => String(n.id) === String(niv));
+      if (selectedNiveau && !this.is3emeAnnee(selectedNiveau)) {
+        return [];
+      }
+      list = list.filter(c => String(c.niveau_id) === String(niv) || c.niveau === niv || (selectedNiveau && c.niveau === selectedNiveau.nom));
     }
 
     if (cla) {
-      list = list.filter(c => c.classe_id === cla || c.classe === cla);
+      const selectedClasse = this.classes().find(c => String(c.id) === String(cla));
+      const nivObj = this.niveaux().find(n => String(n.id) === String(selectedClasse?.niveau_id || selectedClasse?.niveau?.id)) || selectedClasse?.niveau;
+      if (selectedClasse && !this.is3emeAnnee(nivObj) && !this.is3emeAnnee(selectedClasse.nom)) {
+        return [];
+      }
+      list = list.filter(c => String(c.classe_id) === String(cla) || c.classe === cla || (selectedClasse && c.classe === selectedClasse.nom));
     }
+
+    // Condition 2 : Être obligatoirement baptisé
+    list = list.filter(c => c.isBaptise);
 
     if (st === 'en_attente') {
       list = list.filter(c => !c.isPremiereCommunion);
@@ -163,7 +195,8 @@ export class PremiereCommunionPageComponent {
     const all = this.service.candidatsPremiereCommunion();
     const total = all.length;
     const valides = all.filter(c => c.isPremiereCommunion).length;
-    const enAttente = total - valides;
+    const nonValides = all.filter(c => !c.isPremiereCommunion).length;
+    const enAttente = nonValides;
 
     const dbSections = this.sections();
     const sectionsStats = dbSections.map(s => {
@@ -174,6 +207,7 @@ export class PremiereCommunionPageComponent {
     return {
       total,
       valides,
+      nonValides,
       enAttente,
       sectionsStats
     };
@@ -229,9 +263,9 @@ export class PremiereCommunionPageComponent {
   public openValidationModal(cat: CatechumeneSacrement): void {
     this.selectedCatechumene.set(cat);
     this.sacrementFormData.set({
-      date: new Date().toISOString().split('T')[0],
-      lieu: 'Paroisse Cœur Immaculé de Marie',
-      celebrant: 'Père Curé',
+      date: cat.premiereCommunionRecord?.date || new Date().toISOString().split('T')[0],
+      lieu: cat.premiereCommunionRecord?.lieu || this.configService.paroisseConfig()?.nom_paroisse || '',
+      celebrant: cat.premiereCommunionRecord?.celebrant || '',
       parrain: '',
       marraine: '',
       numRegistre: '',
@@ -257,7 +291,7 @@ export class PremiereCommunionPageComponent {
     });
 
     this.isValidationModalOpen.set(false);
-    this.triggerToast(`La Première Communion de ${cat.nom} ${cat.prenoms} a été validée et enregistrée !`, 'success');
+    this.toastService.success('Première Communion validée', `La Première Communion de ${cat.nom} ${cat.prenoms} a été validée et enregistrée !`);
   }
 
   public validerSelectionBulk(): void {
@@ -266,7 +300,7 @@ export class PremiereCommunionPageComponent {
 
     this.service.validerSacrementsBulk(ids, 'Première Communion');
     this.selectedIds.set(new Set());
-    this.triggerToast(`${ids.length} première(s) communion(s) validée(s) avec succès !`, 'success');
+    this.toastService.success('Premières Communions validées', `${ids.length} première(s) communion(s) validée(s) avec succès !`);
   }
 
   public openExceptionModal(): void {
@@ -289,9 +323,15 @@ export class PremiereCommunionPageComponent {
     if (!target) return;
 
     const f = this.exceptionFormData();
-    this.service.addException(target.id, 'Première Communion', f.motif, f.autorisePar, f.observation);
-    this.isExceptionModalOpen.set(false);
-    this.triggerToast(`Exception pastorale ajoutée pour ${target.nom} ${target.prenoms} (Première Communion).`, 'success');
+    this.service.addException(target.id, 'Première Communion', f.motif, f.autorisePar, f.observation).subscribe({
+      next: () => {
+        this.isExceptionModalOpen.set(false);
+        this.toastService.success('Exception pastorale', `Exception ajoutée pour ${target.nom} ${target.prenoms} (Première Communion).`);
+      },
+      error: () => {
+        this.toastService.error('Erreur', "Impossible d'enregistrer l'exception pastorale.");
+      }
+    });
   }
 
   public openDeleteModal(cat: CatechumeneSacrement): void {
@@ -303,30 +343,23 @@ export class PremiereCommunionPageComponent {
     const cat = this.selectedCatechumene();
     if (cat) {
       this.service.removeCandidate(cat.id);
-      this.triggerToast(`Candidat retiré du registre de préparation à la Première Communion.`, 'danger');
+      this.toastService.info('Candidat retiré', `Candidat retiré du registre de préparation à la Première Communion.`);
     }
     this.isDeleteModalOpen.set(false);
   }
 
   public printList(): void {
-    const filters: any = {
-      sacrement: 'communion'
-    };
-    if (this.filterSection()) filters.section_id = this.filterSection();
-    if (this.filterNiveau()) filters.niveau_id = this.filterNiveau();
-    if (this.filterClasse()) filters.classe_id = this.filterClasse();
-
-    this.pdfService.previewSuiviSacramentalPdf(filters, {
-      title: 'Registre de Première Communion',
-      subtitle: 'Sacrement de la Première Communion',
-      fileName: 'registre-premiere-communion.pdf'
-    });
+    window.print();
   }
 
-  private triggerToast(msg: string, type: 'success' | 'danger' | 'warning' | 'info'): void {
-    this.toastMessage.set(msg);
-    this.toastType.set(type);
-    this.showToast.set(true);
-    setTimeout(() => this.showToast.set(false), 3500);
+  public openPdfReader(): void {
+    this.pdfService.previewRegistreSacrementPdf({
+      sacrement: 'communion',
+      title: 'Registre Officiel de Première Communion',
+      customTitle: 'REGISTRE PASTORAL DES CANDIDATS À LA PREMIÈRE COMMUNION',
+      candidats: this.candidatsList(),
+      anneePastorale: this.activeAnneeLibelle(),
+      fileName: 'registre-premiere-communion.pdf'
+    });
   }
 }

@@ -1,0 +1,267 @@
+:host {
+  display: block;
+}
+
+.thermal-receipt-sheet {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding: 1rem 0;
+  box-sizing: border-box;
+}
+
+/* Thermal Receipt Ticket Body (80mm) */
+.thermal-receipt {
+  background: #ffffff;
+  color: #000000;
+  font-family: 'Courier New', Courier, monospace, sans-serif;
+  width: 80mm;
+  max-width: 80mm;
+  box-sizing: border-box;
+  padding: 1rem 0.75rem;
+  line-height: 1.25;
+  font-size: 13px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.t-logo-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0.35rem;
+}
+
+.t-logo-img {
+  max-width: 52px;
+  max-height: 52px;
+  object-fit: contain;
+}
+
+.t-church-name {
+  font-size: 1.05em;
+  font-weight: 900;
+  margin: 0;
+  line-height: 1.15;
+}
+
+.t-diocese {
+  font-size: 0.85em;
+  font-weight: 700;
+  margin: 0.15rem 0 0;
+}
+
+.t-doyenne {
+  font-size: 0.8em;
+  font-weight: 600;
+  margin: 0.1rem 0 0;
+}
+
+.t-dept {
+  font-size: 0.75em;
+  font-weight: 600;
+  margin: 0.15rem 0 0;
+  letter-spacing: 0.2px;
+}
+
+.t-contact {
+  font-size: 0.75em;
+  margin: 0.1rem 0 0;
+}
+
+.t-divider {
+  font-size: 0.75em;
+  letter-spacing: -0.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-align: center;
+  margin: 0.35rem 0;
+  font-weight: bold;
+}
+
+.t-title-box {
+  margin: 0.3rem 0;
+}
+
+.t-receipt-title {
+  font-size: 1em;
+  font-weight: 900;
+  margin: 0 0 0.25rem;
+  letter-spacing: 0.5px;
+}
+
+.t-badge-dossier {
+  display: inline-block;
+  border: 2px dashed #000000;
+  padding: 4px 10px;
+  margin: 0.25rem 0;
+  background: #f8fafc;
+}
+
+.t-dossier-label {
+  display: block;
+  font-size: 0.75em;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.t-dossier-num {
+  display: block;
+  font-size: 1.25em;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.t-date-row {
+  font-size: 0.82em;
+  font-weight: 600;
+  margin: 0.2rem 0 0;
+}
+
+.t-type-row {
+  font-size: 0.85em;
+  font-weight: 800;
+  margin: 0.15rem 0 0;
+}
+
+.t-mat-row {
+  font-size: 0.85em;
+  margin: 0.15rem 0 0;
+}
+
+.t-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.t-sec-title {
+  font-size: 0.85em;
+  font-weight: 900;
+  text-decoration: underline;
+  margin-bottom: 0.15rem;
+}
+
+.t-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+
+.t-label {
+  font-size: 0.82em;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.t-val {
+  font-size: 0.88em;
+  text-align: right;
+  word-break: break-word;
+}
+
+.t-val-bold {
+  font-weight: 900;
+}
+
+/* Notice & Statut */
+.t-notice-box {
+  margin: 0.25rem 0;
+}
+
+.t-status-line {
+  margin-bottom: 0.4rem;
+}
+
+.t-status-badge {
+  display: inline-block;
+  background: #000000;
+  color: #ffffff;
+  padding: 3px 8px;
+  font-size: 0.85em;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+}
+
+
+/* QR Code */
+.t-qrcode-box {
+  margin: 0.35rem 0;
+}
+
+.t-qrcode-img {
+  width: 110px;
+  height: 110px;
+  object-fit: contain;
+  margin: 0 auto;
+  display: block;
+}
+
+.t-qrcode-caption {
+  font-size: 0.72em;
+  font-weight: 600;
+  margin: 0.2rem 0 0;
+}
+
+/* Pied de page */
+.t-footer {
+  margin-top: 0.4rem;
+}
+
+.t-mention {
+  font-size: 0.75em;
+  margin: 0;
+  font-style: italic;
+}
+
+.t-blessing {
+  font-size: 0.82em;
+  font-weight: 800;
+  margin: 0.3rem 0 0;
+}
+
+.t-cut-line {
+  font-size: 0.68em;
+  letter-spacing: -0.5px;
+  margin-top: 0.5rem;
+}
+
+.text-center {
+  text-align: center;
+}
+
+/* =========================================================================
+   IMPRESSION PHYSIQUE (80MM / 76MM THERMAL PRINTERS)
+   ========================================================================= */
+@media print {
+  @page {
+    size: auto;
+    margin: 0;
+  }
+
+  .thermal-receipt-sheet {
+    padding: 0 !important;
+    display: block !important;
+  }
+
+  .thermal-receipt {
+    width: 76mm !important;
+    max-width: 76mm !important;
+    margin: 0 auto !important;
+    padding: 2mm !important;
+    box-shadow: none !important;
+    border: none !important;
+    font-size: 11pt !important;
+  }
+
+  .t-badge-dossier {
+    background: transparent !important;
+    border: 2px dashed #000000 !important;
+  }
+
+  .t-status-badge {
+    background: #000000 !important;
+    color: #ffffff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}

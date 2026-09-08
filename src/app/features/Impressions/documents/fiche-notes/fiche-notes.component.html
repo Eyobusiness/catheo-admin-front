@@ -1,104 +1,80 @@
 @if (data(); as d) {
   <article class="notes-doc-container">
-    <!-- EN-TÊTE PAYSAGE OFFICIEL -->
-    <header class="doc-header-landscape">
-      <div class="header-logo-col left">
-        @if (logoParoisse()) {
-          <img [src]="logoParoisse()" alt="Logo Paroisse" class="parish-logo" />
-        }
-      </div>
+    <div class="doc-body-wrapper">
+      <!-- EN-TÊTE OFFICIEL PAROISSE -->
+      <app-header-paroisse-print
+        customTitle="FICHE DE NOTES & ÉVALUATIONS"
+        [anneePastorale]="anneePastorale()"
+      ></app-header-paroisse-print>
 
-      <div class="header-center-col">
-        @if (diocese()) {
-          <div class="doc-diocese">{{ diocese() | uppercase }}</div>
-        }
-        <h1 class="doc-parish-title">{{ nomParoisse() | uppercase }}</h1>
-        <div class="doc-doc-title">FICHE DE NOTES & ÉVALUATIONS PÉDAGOGIQUES</div>
-        <div class="doc-sub-filter">
-          <span>Année Pastorale : <strong>{{ anneePastorale() }}</strong></span>
-          @if (sectionNom()) { <span> • Section : <strong>{{ sectionNom() }}</strong></span> }
-          @if (niveauNom()) { <span> • Niveau : <strong>{{ niveauNom() }}</strong></span> }
-          @if (classeNom()) { <span> • Classe : <strong>{{ classeNom() }}</strong></span> }
+      <!-- Sous-titre officiel avec Section, Niveau et Classe -->
+      <div class="doc-title-block">
+        <div class="doc-filter-pills">
+          <span class="pill-item">Section : <strong>{{ sectionNom() || 'Toutes les sections' }}</strong></span>
+          <span class="pill-sep">•</span>
+          <span class="pill-item">Niveau : <strong>{{ niveauNom() || 'Tous les niveaux' }}</strong></span>
+          <span class="pill-sep">•</span>
+          <span class="pill-item">Classe : <strong>{{ classeNom() || 'Toutes les classes' }}</strong></span>
         </div>
       </div>
 
-      <div class="header-logo-col right">
-        @if (logoCatechese()) {
-          <img [src]="logoCatechese()" alt="Logo Catéchèse" class="catechese-logo" />
-        }
-      </div>
-    </header>
-
-    <!-- TABLEAU DE NOTES OFFICIEL -->
-    <table class="official-notes-table">
-      <thead>
-        <tr>
-          <th class="th-num" rowspan="2">N°</th>
-          <th class="th-mat" rowspan="2">MATRICULE</th>
-          <th class="th-name" rowspan="2">NOMS ET PRÉNOMS</th>
-          <th class="th-sexe" rowspan="2">SEXE</th>
-          <th class="th-phone" rowspan="2">CONTACTS</th>
-          <th [attr.colspan]="evalCols().length" class="th-evals-group">ÉVALUATIONS CONTINUES</th>
-          <th class="th-stat" rowspan="2">MOYENNE</th>
-          <th class="th-obs" rowspan="2">DÉCISION / OBSERVATIONS</th>
-        </tr>
-        <tr class="sub-headers-row">
-          @for (c of evalCols(); track c.id) {
-            <th class="th-eval-sub">{{ c.titre }}</th>
-          }
-        </tr>
-      </thead>
-      <tbody>
-        @for (st of studentsList(); track st.matricule || st.num) {
-          <tr>
-            <td class="td-num">{{ st.num }}</td>
-            <td class="td-mat">{{ st.matricule }}</td>
-            <td class="td-name font-bold">{{ st.nom_complet }}</td>
-            <td class="td-sexe text-center">{{ st.sexe }}</td>
-            <td class="td-phone">{{ st.telephone }}</td>
-            @for (c of evalCols(); track c.id) {
-              <td class="td-note">{{ getNote(st, c.id, $index) }}</td>
-            }
-            <td class="td-stat font-bold text-center">
-              {{ st.moyenne }}
-            </td>
-            <td class="td-obs">{{ st.decision }}</td>
+      <!-- TABLEAU DE NOTES OFFICIEL SANS MATRICULE, SANS RETOUR À LA LIGNE -->
+      <table class="official-notes-table">
+        <thead>
+          <tr class="table-banner-row">
+            <th class="th-num" rowspan="2">N°</th>
+            <th class="th-name" rowspan="2">NOMS ET PRÉNOMS</th>
+            <th class="th-phone" rowspan="2">CONTACTS</th>
+            <th colspan="6" class="th-evals-header">DATES DES ÉVALUATIONS</th>
           </tr>
-        }
-        @if (studentsList().length === 0) {
-          @for (i of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]; track i) {
-            <tr class="empty-row">
-              <td class="td-num">{{ i }}</td>
-              <td class="td-mat"></td>
-              <td class="td-name"></td>
-              <td class="td-sexe"></td>
-              <td class="td-phone"></td>
-              @for (c of evalCols(); track c.id) {
-                <td class="td-note"></td>
-              }
-              <td class="td-stat"></td>
-              <td class="td-obs"></td>
+          <tr class="sub-headers-row">
+            <th class="th-cell"></th>
+            <th class="th-cell"></th>
+            <th class="th-cell"></th>
+            <th class="th-cell"></th>
+            <th class="th-cell"></th>
+            <th class="th-cell"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (st of studentsList(); track st.num) {
+            <tr>
+              <td class="td-num">{{ st.num }}</td>
+              <td class="td-name font-bold">{{ st.nom_complet }}</td>
+              <td class="td-phone">{{ st.telephone || '-' }}</td>
+              <td class="td-blank"></td>
+              <td class="td-blank"></td>
+              <td class="td-blank"></td>
+              <td class="td-blank"></td>
+              <td class="td-blank"></td>
+              <td class="td-blank"></td>
             </tr>
           }
-        }
-      </tbody>
-    </table>
+          @if (studentsList().length === 0) {
+            @for (i of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]; track i) {
+              <tr class="empty-row">
+                <td class="td-num">{{ i < 10 ? '0' + i : i }}</td>
+                <td class="td-name"></td>
+                <td class="td-phone"></td>
+                <td class="td-blank"></td>
+                <td class="td-blank"></td>
+                <td class="td-blank"></td>
+                <td class="td-blank"></td>
+                <td class="td-blank"></td>
+                <td class="td-blank"></td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
 
-    <!-- SIGNATURES & VALIDATIONS -->
-    <footer class="notes-footer">
-      <div class="sig-box">
-        <span class="sig-role">Le Catéchiste Titulaire</span>
-        <div class="sig-line"></div>
-      </div>
-      <div class="sig-box">
-        <span class="sig-role">Le Responsable Pédagogique</span>
-        <div class="sig-line"></div>
-      </div>
-      <div class="sig-box">
-        <span class="sig-role">Le Prêtre Aumônier / Curé (Visa)</span>
-        <div class="sig-stamp"></div>
-      </div>
-    </footer>
+    <!-- PIED DE PAGE OFFICIEL (Pas de signatures) -->
+    <app-footer-paroisse-print
+      class="doc-footer"
+      pageNumber="Page 1/1"
+      [anneePastorale]="anneePastorale()"
+    ></app-footer-paroisse-print>
   </article>
 } @else {
   <div class="notes-empty-state">

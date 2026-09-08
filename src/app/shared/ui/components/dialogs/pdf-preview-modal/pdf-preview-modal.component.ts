@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PdfPreviewService } from '../../../../../core/services/pdf-preview.service';
 import { RecuComponent } from '../../../../../features/Impressions/documents/recu/recu.component';
+import { RecuPreinscriptionComponent } from '../../../../../features/Impressions/documents/recu-preinscription/recu-preinscription.component';
 import { FicheCatechumeneComponent } from '../../../../../features/Impressions/documents/fiche-catechumene/fiche-catechumene.component';
 import { ListeCatechumenesComponent } from '../../../../../features/Impressions/documents/liste-catechumenes/liste-catechumenes.component';
 import { FicheNotesComponent } from '../../../../../features/Impressions/documents/fiche-notes/fiche-notes.component';
@@ -12,22 +13,31 @@ import { RapportAnnuelComponent } from '../../../../../features/Impressions/docu
 import { RenseignementBaptemeComponent } from '../../../../../features/Impressions/documents/renseignement-bapteme/renseignement-bapteme.component';
 import { RenseignementPremiereCommunionComponent } from '../../../../../features/Impressions/documents/renseignement-premiere-communion/renseignement-premiere-communion.component';
 import { RenseignementConfirmationComponent } from '../../../../../features/Impressions/documents/renseignement-confirmation/renseignement-confirmation.component';
+import { ReleveNotesComponent } from '../../../../../features/Impressions/documents/releve-notes/releve-notes.component';
+import { BulletinDocComponent } from '../../../../../features/Impressions/documents/bulletin/bulletin.component';
+import { BordereauVersementComponent } from '../../../../../features/Impressions/documents/bordereau-versement/bordereau-versement.component';
+import { RegistreSacrementComponent } from '../../../../../features/Impressions/documents/registre-sacrement/registre-sacrement.component';
 
 @Component({
   selector: 'app-pdf-preview-modal',
   imports: [
     CommonModule,
     RecuComponent,
+    RecuPreinscriptionComponent,
     FicheCatechumeneComponent,
     ListeCatechumenesComponent,
     FicheNotesComponent,
+    ReleveNotesComponent,
+    BulletinDocComponent,
+    BordereauVersementComponent,
     ListePresenceComponent,
     SuiviSacramentalComponent,
     BilanAnnuelComponent,
     RapportAnnuelComponent,
     RenseignementBaptemeComponent,
     RenseignementPremiereCommunionComponent,
-    RenseignementConfirmationComponent
+    RenseignementConfirmationComponent,
+    RegistreSacrementComponent
   ],
   templateUrl: './pdf-preview-modal.component.html',
   styleUrl: './pdf-preview-modal.component.css',
@@ -36,8 +46,14 @@ import { RenseignementConfirmationComponent } from '../../../../../features/Impr
     '(keydown.escape)': 'onEscape()'
   }
 })
-export class PdfPreviewModalComponent {
+export class PdfPreviewModalComponent implements OnDestroy {
   protected readonly pdfService = inject(PdfPreviewService);
+
+  public ngOnDestroy(): void {
+    if (typeof document !== 'undefined') {
+      document.body.classList.remove('pdf-modal-open');
+    }
+  }
 
   protected readonly isOpen = this.pdfService.isOpen;
   protected readonly isLoading = this.pdfService.isLoading;

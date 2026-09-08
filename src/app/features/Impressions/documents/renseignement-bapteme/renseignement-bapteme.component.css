@@ -1,333 +1,206 @@
 /* RENSEIGNEMENT BAPTÊME — A4 PORTRAIT */
-@page {
-  size: A4 portrait;
-  margin: 8mm 12mm;
-}
-
 :host {
   display: block;
-  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
-  color: #111827;
+  font-family: 'Times New Roman', Times, serif, Arial, sans-serif;
+  color: #000;
   background-color: transparent;
 }
 
 .baptism-doc-container {
-  width: 100%;
-  max-width: 190mm;
+  background: #ffffff;
+  width: 210mm;
+  height: 297mm;
+  min-height: 297mm;
+  max-height: 297mm;
+  padding: 8mm 12mm;
   margin: 0 auto;
-  background: #ffffff;
-  padding: 4mm 6mm;
+  border: 1px solid #d1d5db;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   box-sizing: border-box;
-}
-
-/* Header */
-.doc-header {
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
-  align-items: center;
-  border-bottom: 2px solid #0f172a;
-  padding-bottom: 6px;
-  margin-bottom: 8px;
+  overflow: hidden;
 }
 
-.header-logo-col {
-  width: 54px;
-  height: 54px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.parish-logo,
-.catechese-logo {
-  max-width: 50px;
-  max-height: 50px;
-  object-fit: contain;
-}
-
-.header-center-col {
+.sheet-body {
   flex: 1;
-  text-align: center;
-  padding: 0 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin-top: 3px;
+  font-size: 1.02rem;
 }
 
-.doc-diocese {
-  font-size: 8pt;
+.form-dotted-line {
+  display: flex;
+  align-items: flex-end;
+  margin-bottom: 2.8px;
+  line-height: 1.30;
+}
+
+.lbl {
   font-weight: 700;
-  color: #475569;
-  letter-spacing: 0.5px;
+  color: #000;
+  white-space: nowrap;
+  margin-right: 8px;
+  font-size: 1.02rem;
 }
 
-.doc-doyenne {
-  font-size: 7.5pt;
-  color: #64748b;
-}
-
-.doc-parish-title {
-  font-size: 12.5pt;
-  font-weight: 900;
-  color: #0f172a;
-  margin: 2px 0;
-  letter-spacing: 0.5px;
-}
-
-.doc-service-title {
-  font-size: 8pt;
-  font-weight: 800;
-  color: #0284c7;
-  letter-spacing: 0.5px;
-}
-
-/* Bannière */
-.doc-title-box {
-  text-align: center;
-  background: #f0f9ff;
-  border: 1.5px solid #bae6fd;
-  border-left: 5px solid #0284c7;
-  border-radius: 4px;
-  padding: 6px 12px;
-  margin-bottom: 8px;
-}
-
-.title-badge {
+.val {
+  flex: 1;
+  border-bottom: 1.5px dotted #000;
+  min-height: 1.38rem;
+  padding-left: 5px;
+  padding-bottom: 1px;
+  font-size: 1.05rem;
+  color: #000;
   display: inline-block;
-  font-size: 6.5pt;
-  font-weight: 800;
-  letter-spacing: 1px;
-  padding: 2px 6px;
-  background: #0284c7;
-  color: #ffffff;
-  border-radius: 3px;
-  margin-bottom: 3px;
 }
 
-.doc-main-title {
-  font-size: 12pt;
-  font-weight: 900;
-  color: #0c4a6e;
-  margin: 2px 0;
-  letter-spacing: 0.5px;
-}
-
-.doc-sub-details {
-  font-size: 8pt;
-  color: #0369a1;
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  align-items: baseline;
-}
-
-.mat-badge {
-  background: #ffffff;
-  border: 1px solid #7dd3fc;
-  padding: 1px 6px;
-  border-radius: 3px;
-  font-family: monospace;
-}
-
-/* Sections */
-.doc-section {
-  margin-bottom: 8px;
-  border: 1px solid #e2e8f0;
-  border-radius: 4px;
-  padding: 6px 10px;
-  background: #ffffff;
-}
-
-.section-title {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 8pt;
-  font-weight: 800;
-  color: #0369a1;
-  border-bottom: 1px solid #cbd5e1;
-  padding-bottom: 3px;
-  margin: 0 0 6px 0;
-}
-
-.section-num {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 15px;
-  height: 15px;
-  background: #0284c7;
-  color: #ffffff;
-  border-radius: 50%;
-  font-size: 7pt;
+.val.bold {
   font-weight: 900;
 }
 
-.form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  row-gap: 4px;
-  column-gap: 14px;
-  font-size: 8.5pt;
-}
-
-.grid-item {
-  display: flex;
-  align-items: baseline;
-  gap: 5px;
-}
-
-.grid-item.span-2 {
-  grid-column: span 2;
-}
-
-.item-label {
-  font-size: 7.5pt;
-  font-weight: 600;
-  color: #64748b;
-  white-space: nowrap;
-}
-
-.item-value {
-  font-size: 8.5pt;
-  color: #0f172a;
-}
-
-.item-value.strong {
-  font-weight: 700;
-}
-
-.item-value.uppercase {
+.val.uppercase {
   text-transform: uppercase;
 }
 
-/* Parrain / Marraine */
-.godparents-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+.val:empty::before {
+  content: '\00a0';
+  visibility: hidden;
 }
 
-.godparent-card {
-  border: 1px solid #cbd5e1;
-  border-radius: 4px;
-  padding: 6px 8px;
-  background: #f8fafc;
+.val::after {
+  content: '\00a0';
+  visibility: hidden;
+  display: inline-block;
+  width: 0;
 }
 
-.card-role {
-  display: block;
-  font-size: 7.5pt;
-  font-weight: 800;
-  color: #0369a1;
-  margin-bottom: 4px;
-  border-bottom: 1px dashed #cbd5e1;
-  padding-bottom: 2px;
-}
-
-.card-field {
+.form-line-split {
   display: flex;
-  gap: 4px;
-  font-size: 8pt;
-  margin-bottom: 2px;
-}
-
-.card-field.sub {
-  font-size: 7pt;
-  color: #64748b;
-}
-
-.card-field .lbl {
-  color: #64748b;
-  white-space: nowrap;
-}
-
-.card-field .val {
-  color: #0f172a;
-}
-
-.card-field .val.strong {
-  font-weight: 700;
-}
-
-/* Pièces jointes */
-.check-items-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.check-item {
-  display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: 6px;
-  font-size: 7.5pt;
-  color: #334155;
 }
 
-.box {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 14px;
-  height: 14px;
-  border: 1.5px solid #64748b;
-  border-radius: 2px;
-  font-weight: 900;
-  font-size: 8pt;
-  color: #0284c7;
-}
-
-.box.checked {
-  background: #e0f2fe;
-  border-color: #0284c7;
-}
-
-/* Signatures */
-.baptism-signatures-footer {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  margin-top: 10px;
-}
-
-.sig-box {
+.val-split {
   flex: 1;
-  border: 1px solid #cbd5e1;
-  border-radius: 4px;
-  padding: 6px 8px;
-  background: #fafafa;
 }
 
-.sig-title {
-  display: block;
-  font-size: 7pt;
-  font-weight: 700;
-  color: #334155;
+.lbl-split {
+  margin-left: 10px;
+}
+
+.doc-text-red {
+  color: #b91c1c;
+}
+
+.sacrament-subheading {
+  font-size: 1.08rem;
+  font-weight: 800;
+  text-align: center;
+  margin-top: 5px;
+  margin-bottom: 2px;
+  color: #000;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 
-.sig-area {
-  height: 34px;
-  border-bottom: 1px dashed #94a3b8;
-  margin-top: 4px;
+.dossier-card {
+  margin-top: 5px;
+  border: 1.5px solid #000;
+  border-radius: 6px;
+  padding: 6px 12px;
+  background: #fafafa;
+  page-break-inside: avoid;
 }
 
-.sig-area-stamp {
-  height: 34px;
-  border: 1px dashed #94a3b8;
-  border-radius: 3px;
-  margin-top: 4px;
-  background: #ffffff;
+.dossier-card-title {
+  font-weight: 800;
+  font-size: 0.92rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+  color: #000;
 }
 
-.baptism-empty-state {
-  padding: 30px;
-  text-align: center;
-  color: #64748b;
+.dossier-list {
+  margin: 0;
+  padding-left: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  line-height: 1.25;
 }
 
-/* Print CSS */
+.dossier-list > li {
+  font-size: 0.85rem;
+  color: #000;
+}
+
+.dossier-sublist {
+  margin: 2px 0 2px 0;
+  padding-left: 0.8rem;
+  list-style-type: none;
+}
+
+.dossier-sublist li {
+  font-size: 0.80rem;
+  color: #222;
+  line-height: 1.2;
+}
+
+.dossier-sublist li::before {
+  content: "– ";
+  font-weight: bold;
+}
+
+.doc-footer {
+  margin-top: auto !important;
+  padding-top: 3px !important;
+  page-break-inside: avoid !important;
+}
+
+/* PRINT MEDIA */
 @media print {
-  .baptism-doc-container {
-    max-width: 100% !important;
+  html, body {
+    background: #fff !important;
+    margin: 0 !important;
     padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .baptism-doc-container {
+    width: 100% !important;
+    height: 284mm !important;
+    min-height: 284mm !important;
+    max-height: 284mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    box-sizing: border-box !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-after: auto !important;
+    break-after: auto !important;
+    overflow: hidden !important;
+  }
+
+  .sheet-body {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 6mm 10mm;
   }
 }

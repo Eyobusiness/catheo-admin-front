@@ -12,11 +12,34 @@
     </div>
 
     <div class="header-actions">
+      @if (filteredBilans().length > 0) {
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="printBilan()"
+          title="Imprimer ou exporter le bilan officiel en PDF"
+        >
+          <i class="bi bi-printer-fill"></i>
+          <span>Imprimer le bilan (PDF)</span>
+        </button>
+      }
       @if (isValide()) {
         <span class="badge-locked">
           <i class="bi bi-lock-fill"></i>
           Bilan validé & officiel
         </span>
+        @if (isAdmin()) {
+          <button
+            type="button"
+            class="btn btn-unlock"
+            [disabled]="service.isSaving()"
+            (click)="openDeverrouillerModal()"
+            title="Déverrouiller le bilan officiel pour corriger une erreur"
+          >
+            <i class="bi bi-unlock-fill"></i>
+            <span>Déverrouiller</span>
+          </button>
+        }
       } @else {
         <button
           type="button"
@@ -83,7 +106,7 @@
         [ngModel]="selectedSectionId()"
         (ngModelChange)="onSectionChange($event)"
       >
-        <option value="">Toutes les sections</option>
+        <option value="">Sélectionner une section</option>
         @for (s of sections(); track s.id) {
           <option [value]="s.id">{{ s.nom }}</option>
         }
@@ -94,10 +117,11 @@
       <label class="filter-label">Niveau :</label>
       <select
         class="filter-select"
+        [disabled]="!selectedSectionId()"
         [ngModel]="selectedNiveauId()"
         (ngModelChange)="onNiveauChange($event)"
       >
-        <option value="">Tous les niveaux</option>
+        <option value="">Sélectionner un niveau</option>
         @for (n of filteredNiveaux(); track n.id) {
           <option [value]="n.id">{{ n.nom }}</option>
         }
@@ -108,10 +132,11 @@
       <label class="filter-label">Classe :</label>
       <select
         class="filter-select highlight-select"
+        [disabled]="!selectedNiveauId()"
         [ngModel]="selectedClasseId()"
         (ngModelChange)="onClasseChange($event)"
       >
-        <option value="">Toutes les classes</option>
+        <option value="">Sélectionner une classe</option>
         @for (c of filteredClasses(); track c.id) {
           <option [value]="c.id">
             {{ c.nom }}
@@ -124,153 +149,177 @@
     </div>
   </div>
 
-  <!-- 4. Tableau du Bilan Annuel -->
-  <div class="card-table">
-    <div class="table-header-info">
-      <div class="search-box table-search">
-        <i class="bi bi-search search-icon"></i>
-        <input
-          type="text"
-          placeholder="Rechercher..."
-          [ngModel]="searchQuery()"
-          (ngModelChange)="searchQuery.set($event)"
-        />
+  @if (!selectedClasseId()) {
+    <div class="empty-filter-state animate-fade-in">
+      <div class="empty-filter-icon">
+        <i class="bi bi-funnel"></i>
       </div>
-
-      <div class="info-title">
-        <i class="bi bi-list-check"></i>
-        <span>
-          Bilan de la Classe :
-          <strong>{{ selectedClasseName() }}</strong>
-          ({{ filteredBilans().length }} élève(s))
-        </span>
-      </div>
+      <h4 class="empty-filter-title">Sélectionnez une section, un niveau et une classe</h4>
+      <p class="empty-filter-desc">
+        Pour voir le bilan annuel d'une classe et les moyennes de chaque personne, veuillez obligatoirement filtrer d'abord la <strong>Section</strong>, le <strong>Niveau</strong> et la <strong>Classe</strong> dans les menus déroulants ci-dessus.
+      </p>
     </div>
+  } @else {
+    <!-- 4. Tableau du Bilan Annuel -->
+    <div class="card-table animate-fade-in">
+      <div class="table-header-info">
+        <div class="search-box table-search">
+          <i class="bi bi-search search-icon"></i>
+          <input
+            type="text"
+            placeholder="Rechercher un élève..."
+            [ngModel]="searchQuery()"
+            (ngModelChange)="searchQuery.set($event)"
+          />
+        </div>
 
-    <div class="table-responsive">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Matricule</th>
-            <th>Nom & Prénoms</th>
-            <th class="text-center">Moyenne Gén.</th>
-            <th class="text-center">Présence Cours</th>
-            <th class="text-center">Messe (nb)</th>
-            <th class="text-center">CEB (nb)</th>
-            <th class="text-center">Mouvement (nb)</th>
-            <th>Décision Pastorale</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (b of filteredBilans(); track b.catechumeneId) {
-            <tr class="data-row" [class.is-admis]="b.decision === 'Admis'" [class.is-non-admis]="b.decision === 'Non admis'">
-              <td>
-                <span class="badge-matricule">{{ b.matricule || 'N/A' }}</span>
-              </td>
-              <td>
-                <strong class="student-name">{{ b.nomPrenoms }}</strong>
-              </td>
-              <td class="text-center">
-                <span class="font-bold note-badge" [class.note-good]="b.moyenneGenerale >= 10" [class.note-bad]="b.moyenneGenerale < 10">
-                  {{ b.moyenneGenerale }} / 20
-                </span>
-              </td>
-              <td class="text-center">
-                <span
-                  class="pct-badge"
-                  [class.pct-good]="b.presenceCoursPct >= 80"
-                  [class.pct-bad]="b.presenceCoursPct < 80"
-                  title="Compté automatiquement par le système"
-                >
-                  <i class="bi bi-cpu me-1"></i>{{ b.presenceCoursPct }}%
-                </span>
-              </td>
-              <td class="text-center">
-                <div class="number-input-wrapper">
-                  <input
-                    type="number"
-                    min="0"
-                    class="table-input-number"
-                    [disabled]="isValide()"
-                    [ngModel]="b.presenceMesse"
-                    (ngModelChange)="updateField(b.catechumeneId, 'presenceMesse', $event)"
-                    placeholder="0"
-                  />
-                  <span class="input-unit">fois</span>
-                </div>
-              </td>
-              <td class="text-center">
-                <div class="number-input-wrapper">
-                  <input
-                    type="number"
-                    min="0"
-                    class="table-input-number"
-                    [disabled]="isValide()"
-                    [ngModel]="b.presenceCEB"
-                    (ngModelChange)="updateField(b.catechumeneId, 'presenceCEB', $event)"
-                    placeholder="0"
-                  />
-                  <span class="input-unit">fois</span>
-                </div>
-              </td>
-              <td class="text-center">
-                <div class="number-input-wrapper">
-                  <input
-                    type="number"
-                    min="0"
-                    class="table-input-number"
-                    [disabled]="isValide()"
-                    [ngModel]="b.presenceMouvement"
-                    (ngModelChange)="updateField(b.catechumeneId, 'presenceMouvement', $event)"
-                    placeholder="0"
-                  />
-                  <span class="input-unit">fois</span>
-                </div>
-              </td>
-              <td>
-                <select
-                  class="decision-select"
-                  [class.decision-admis]="b.decision === 'Admis'"
-                  [class.decision-non-admis]="b.decision === 'Non admis'"
-                  [class.decision-ajourne]="b.decision === 'Ajourné'"
-                  [disabled]="isValide()"
-                  [ngModel]="b.decision"
-                  (ngModelChange)="updateField(b.catechumeneId, 'decision', $event)"
-                >
-                  @for (dec of optionsDecision; track dec) {
-                    <option [value]="dec">{{ dec }}</option>
-                  }
-                </select>
-              </td>
-            </tr>
-          }
-          @if (filteredBilans().length === 0) {
+        <div class="info-title">
+          <i class="bi bi-list-check"></i>
+          <span>
+            Bilan de la Classe :
+            <strong>{{ selectedClasseName() }}</strong>
+            ({{ filteredBilans().length }} élève(s))
+          </span>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
             <tr>
-              <td colspan="8" class="empty-cell">
-                <i class="bi bi-folder-x empty-icon"></i>
-                <p>Aucun catéchumène trouvé pour ce bilan de classe.</p>
-              </td>
+              <th>Matricule</th>
+              <th>Nom & Prénoms</th>
+              <th class="text-center">Moyenne Gén.</th>
+              <th class="text-center">Présence Cours (nb)</th>
+              <th class="text-center">Messe (nb)</th>
+              <th class="text-center">CEB (nb)</th>
+              <th class="text-center">Mouvement (nb)</th>
+              <th>Décision Pastorale</th>
             </tr>
-          }
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            @for (b of filteredBilans(); track b.catechumeneId) {
+              <tr class="data-row" [class.is-admis]="b.decision === 'Admis'" [class.is-non-admis]="b.decision === 'Non admis'">
+                <td>
+                  <span class="badge-matricule">{{ b.matricule || 'N/A' }}</span>
+                </td>
+                <td>
+                  <strong class="student-name">{{ b.nomPrenoms }}</strong>
+                </td>
+                <td class="text-center">
+                  @if (b.moyenneGenerale !== null && b.moyenneGenerale !== undefined) {
+                    <span class="font-bold note-badge" [class.note-good]="b.moyenneGenerale >= 10" [class.note-bad]="b.moyenneGenerale < 10">
+                      {{ b.moyenneGenerale }} / 20
+                    </span>
+                  } @else {
+                    <span class="text-muted fst-italic">Non évalué</span>
+                  }
+                </td>
+                <td class="text-center">
+                  <div class="number-input-wrapper">
+                    <input
+                      type="number"
+                      min="0"
+                      class="table-input-number"
+                      [disabled]="isValide()"
+                      [ngModel]="b.presenceCoursNb"
+                      (ngModelChange)="updateField(b.catechumeneId, 'presenceCoursNb', $event)"
+                      placeholder="0"
+                      title="Nombre de fois où le catéchumène a été présent aux cours (compté automatiquement)"
+                    />
+                    <span class="input-unit">fois</span>
+                    @if (b.totalSeances && b.totalSeances > 0) {
+                      <span class="presence-ratio-tag" title="{{ b.presenceCoursNb }} présence(s) sur {{ b.totalSeances }} séance(s) ({{ b.presenceCoursPct }}%)">/{{ b.totalSeances }}</span>
+                    }
+                  </div>
+                </td>
+                <td class="text-center">
+                  <div class="number-input-wrapper">
+                    <input
+                      type="number"
+                      min="0"
+                      class="table-input-number"
+                      [disabled]="isValide()"
+                      [ngModel]="b.presenceMesse"
+                      (ngModelChange)="updateField(b.catechumeneId, 'presenceMesse', $event)"
+                      placeholder="0"
+                    />
+                    <span class="input-unit">fois</span>
+                  </div>
+                </td>
+                <td class="text-center">
+                  <div class="number-input-wrapper">
+                    <input
+                      type="number"
+                      min="0"
+                      class="table-input-number"
+                      [disabled]="isValide()"
+                      [ngModel]="b.presenceCEB"
+                      (ngModelChange)="updateField(b.catechumeneId, 'presenceCEB', $event)"
+                      placeholder="0"
+                    />
+                    <span class="input-unit">fois</span>
+                  </div>
+                </td>
+                <td class="text-center">
+                  <div class="number-input-wrapper">
+                    <input
+                      type="number"
+                      min="0"
+                      class="table-input-number"
+                      [disabled]="isValide()"
+                      [ngModel]="b.presenceMouvement"
+                      (ngModelChange)="updateField(b.catechumeneId, 'presenceMouvement', $event)"
+                      placeholder="0"
+                    />
+                    <span class="input-unit">fois</span>
+                  </div>
+                </td>
+                <td>
+                  <select
+                    class="decision-select"
+                    [class.decision-admis]="b.decision === 'Admis'"
+                    [class.decision-non-admis]="b.decision === 'Non admis'"
+                    [class.decision-ajourne]="b.decision === 'Ajourné'"
+                    [disabled]="isValide()"
+                    [ngModel]="b.decision"
+                    (ngModelChange)="updateField(b.catechumeneId, 'decision', $event)"
+                  >
+                    @for (dec of optionsDecision; track dec) {
+                      <option [value]="dec">{{ dec }}</option>
+                    }
+                  </select>
+                </td>
+              </tr>
+            }
+            @if (filteredBilans().length === 0) {
+              <tr>
+                <td colspan="8" class="empty-cell">
+                  <i class="bi bi-folder-x empty-icon"></i>
+                  <p>Aucun catéchumène trouvé pour ce bilan de classe.</p>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
 
-    <div class="table-footer">
-      <span>Total élèves : <strong>{{ filteredBilans().length }}</strong></span>
-      @if (!isValide()) {
-        <button
-          type="button"
-          class="btn btn-primary btn-sm"
-          [disabled]="service.isSaving() || filteredBilans().length === 0"
-          (click)="openValiderModal()"
-        >
-          <i class="bi bi-check2-circle"></i>
-          <span>Valider le bilan</span>
-        </button>
-      }
+      <div class="table-footer">
+        <span>Total élèves : <strong>{{ filteredBilans().length }}</strong></span>
+        @if (!isValide()) {
+          <button
+            type="button"
+            class="btn btn-primary btn-sm"
+            [disabled]="service.isSaving() || filteredBilans().length === 0"
+            (click)="openValiderModal()"
+          >
+            <i class="bi bi-check2-circle"></i>
+            <span>Valider le bilan</span>
+          </button>
+        }
+      </div>
     </div>
-  </div>
+  }
 </div>
 
 <!-- MODAL : CONFIRMATION VALIDATION BILAN -->
@@ -308,3 +357,40 @@
     </div>
   </div>
 }
+
+<!-- MODAL : CONFIRMATION DÉVERROUILLAGE DU BILAN (ADMIN) -->
+@if (isUnlockModalOpen()) {
+  <div class="modal-overlay" (click)="closeDeverrouillerModal()">
+    <div class="modal-card modal-sm" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title-group text-warning">
+          <i class="bi bi-unlock-fill"></i>
+          <h3>Déverrouiller le Bilan</h3>
+        </div>
+        <button type="button" class="btn-close" (click)="closeDeverrouillerModal()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <p>
+          En tant qu'administrateur, souhaitez-vous déverrouiller le bilan de la classe
+          <strong>"{{ selectedClasseName() }}"</strong> (<strong>{{ currentAnneePastorale() }}</strong>) ?
+        </p>
+        <div class="alert-box alert-unlock">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+          <span>Le déverrouillage permettra de modifier à nouveau les présences et les décisions pastorales en cas d'erreur.</span>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeDeverrouillerModal()">Annuler</button>
+        <button type="button" class="btn btn-unlock-confirm" (click)="confirmDeverrouillerBilan()">
+          <i class="bi bi-unlock"></i>
+          <span>Confirmer le déverrouillage</span>
+        </button>
+      </div>
+    </div>
+  </div>
+}
+

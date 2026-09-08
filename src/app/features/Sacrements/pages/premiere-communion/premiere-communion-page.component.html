@@ -17,10 +17,6 @@
         <span>Imprimer le registre</span>
       </button>
 
-      <button type="button" class="btn btn-outline-primary" (click)="openExceptionModal()">
-        <i class="bi bi-shield-plus"></i>
-        <span>Ajouter une exception</span>
-      </button>
 
       @if (selectedIds().size > 0) {
         <button type="button" class="btn btn-success" (click)="validerSelectionBulk()">
@@ -63,17 +59,15 @@
       </div>
     </div>
 
-    @for (secStat of stats().sectionsStats.slice(0, 1); track secStat.id || secStat.nom) {
-      <div class="kpi-card">
-        <div class="kpi-icon icon-jeunes">
-          <i class="bi bi-diagram-2"></i>
-        </div>
-        <div class="kpi-info">
-          <span class="kpi-value">{{ secStat.count }}</span>
-          <span class="kpi-label">{{ secStat.nom }}</span>
-        </div>
+    <div class="kpi-card">
+      <div class="kpi-icon icon-danger">
+        <i class="bi bi-x-circle-fill"></i>
       </div>
-    }
+      <div class="kpi-info">
+        <span class="kpi-value">{{ stats().nonValides }}</span>
+        <span class="kpi-label">Communion non reçues</span>
+      </div>
+    </div>
   </div>
 
   <!-- Barre de Filtres & Recherche Dynamiques depuis la BD -->
@@ -100,8 +94,13 @@
 
     <div class="filter-group">
       <label class="filter-label">Niveau :</label>
-      <select class="filter-select" [ngModel]="filterNiveau()" (ngModelChange)="onNiveauChange($event)">
-        <option value="">Tous les niveaux</option>
+      <select
+        class="filter-select"
+        [ngModel]="filterNiveau()"
+        (ngModelChange)="onNiveauChange($event)"
+        [disabled]="!filterSection()"
+      >
+        <option value="">{{ !filterSection() ? 'Sélectionner une section' : 'Tous les niveaux' }}</option>
         @for (n of filteredNiveauxList(); track n.id) {
           <option [value]="n.id">{{ n.nom }}</option>
         }
@@ -110,8 +109,13 @@
 
     <div class="filter-group">
       <label class="filter-label">Classe :</label>
-      <select class="filter-select" [ngModel]="filterClasse()" (ngModelChange)="filterClasse.set($event)">
-        <option value="">Toutes les classes</option>
+      <select
+        class="filter-select"
+        [ngModel]="filterClasse()"
+        (ngModelChange)="filterClasse.set($event)"
+        [disabled]="!filterSection() || !filterNiveau()"
+      >
+        <option value="">{{ !filterNiveau() ? 'Sélectionner un niveau' : 'Toutes les classes' }}</option>
         @for (c of filteredClassesList(); track c.id) {
           <option [value]="c.id">{{ c.nom }}</option>
         }
@@ -143,11 +147,11 @@
               />
             </th>
             <th>Matricule</th>
-            <th>Candidat (Nom & Prénoms)</th>
+            <th>Candidat</th>
             <th>Section</th>
             <th>Niveau</th>
             <th>Classe</th>
-            <th>Certificat Baptême</th>
+            <th>Statut Baptême</th>
             <th>Statut Communion</th>
             <th class="text-right">Actions</th>
           </tr>
@@ -504,65 +508,71 @@
 
       <div class="modal-body">
         <div class="print-sheet-container" id="printable-sheet">
-          <div class="sheet-header-parish">
-            <h3>ARCHIDIOCÈSE D'ABIDJAN — PAROISSE CŒUR IMMACULÉ DE MARIE</h3>
-            <h2>REGISTRE PASTORAL DES CANDIDATS À LA PREMIÈRE COMMUNION</h2>
-            <p>Coordination Paroissiale de la Catéchèse — Année Pastorale 2025-2026</p>
+          <div class="doc-body-wrapper">
+            <app-header-paroisse-print
+              customTitle="REGISTRE PASTORAL DES CANDIDATS À LA PREMIÈRE COMMUNION"
+              [anneePastorale]="activeAnneeLibelle()"
+            ></app-header-paroisse-print>
+
             <div class="sheet-meta-box">
-              <span><strong>Total inscrits :</strong> {{ candidatsList().length }} candidats</span>
-              <span><strong>Date d'édition :</strong> 19/08/2026</span>
+              <span><strong>Total candidats :</strong> {{ candidatsList().length }}</span>
+              <span><strong>Date d'édition :</strong> {{ currentDate | date:'dd/MM/yyyy' }}</span>
             </div>
-          </div>
 
-          <table class="photo-style-table">
-            <thead>
-              <tr>
-                <th class="text-center">N°</th>
-                <th>Matricule</th>
-                <th>Nom & Prénoms</th>
-                <th>Section</th>
-                <th>Classe</th>
-                <th>Paroisse de Baptême</th>
-                <th class="text-center">Statut</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (c of candidatsList(); track c.id; let idx = $index) {
+            <table class="photo-style-table">
+              <thead>
                 <tr>
-                  <td class="text-center">{{ idx + 1 }}</td>
-                  <td>{{ c.matricule }}</td>
-                  <td><strong>{{ c.nom }} {{ c.prenoms }}</strong></td>
-                  <td>{{ c.section }}</td>
-                  <td>{{ c.classe }}</td>
-                  <td>{{ c.baptemeRecord?.lieu || 'Paroisse C.I.M.' }}</td>
-                  <td class="text-center">{{ c.isPremiereCommunion ? 'Reçue ✓' : 'En attente' }}</td>
+                  <th class="text-center">N°</th>
+                  <th>Matricule</th>
+                  <th>Nom & Prénoms</th>
+                  <th>Contact</th>
+                  <th>Section</th>
+                  <th>Classe</th>
+                  <th>Paroisse de Baptême</th>
+                  <th class="text-center">Statut</th>
                 </tr>
-              }
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                @for (c of candidatsList(); track c.id; let idx = $index) {
+                  <tr>
+                    <td class="text-center">{{ idx + 1 }}</td>
+                    <td>{{ c.matricule }}</td>
+                    <td><strong>{{ c.nom }} {{ c.prenoms }}</strong></td>
+                    <td>{{ c.telephone || '-' }}</td>
+                    <td>{{ c.section }}</td>
+                    <td>{{ c.classe }}</td>
+                    <td>{{ c.baptemeRecord?.lieu || 'Paroisse C.I.M.' }}</td>
+                    <td class="text-center">{{ c.isPremiereCommunion ? 'Reçue ✓' : 'En attente' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
 
-          <div class="sheet-signatures-grid">
-            <div class="sig-col">
-              <span>L'Animateur Responsable</span>
-              <div class="sig-line-space"></div>
-            </div>
-            <div class="sig-col">
-              <span>Le Responsable Pastorale</span>
-              <div class="sig-line-space"></div>
-            </div>
-            <div class="sig-col">
-              <span>Le Curé de la Paroisse</span>
-              <div class="sig-line-space"></div>
+            <div class="sheet-signatures-grid single-sig">
+              <div class="sig-col">
+                <span>Le Responsable du Catéchuménat</span>
+                <div class="sig-line-space"></div>
+              </div>
             </div>
           </div>
+
+          <app-footer-paroisse-print
+            class="doc-footer"
+            pageNumber="Page 1/1"
+            [anneePastorale]="activeAnneeLibelle()"
+          ></app-footer-paroisse-print>
         </div>
       </div>
 
       <div class="modal-footer no-print">
         <button type="button" class="btn btn-secondary" (click)="isPrintModalOpen.set(false)">Fermer</button>
+        <button type="button" class="btn btn-outline-primary" (click)="openPdfReader()">
+          <i class="bi bi-file-earmark-pdf"></i>
+          <span>Aperçu Lecteur PDF</span>
+        </button>
         <button type="button" class="btn btn-primary" (click)="printList()">
           <i class="bi bi-printer-fill"></i>
-          <span>Imprimer le registre</span>
+          <span>Imprimer</span>
         </button>
       </div>
     </div>
@@ -590,13 +600,5 @@
         <button type="button" class="btn btn-danger" (click)="confirmDelete()">Retirer</button>
       </div>
     </div>
-  </div>
-}
-
-<!-- TOAST -->
-@if (showToast()) {
-  <div class="toast-floating" [class.success]="toastType() === 'success'" [class.danger]="toastType() === 'danger'" [class.info]="toastType() === 'info'">
-    <i class="bi" [class.bi-check-circle]="toastType() === 'success'" [class.bi-x-circle]="toastType() === 'danger'" [class.bi-info-circle]="toastType() === 'info'"></i>
-    <span>{{ toastMessage() }}</span>
   </div>
 }

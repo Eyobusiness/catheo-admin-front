@@ -253,6 +253,7 @@ export interface FicheRenseignementBaptemeDto {
   lieu_naissance?: string;
   domicile?: string;
   profession?: string;
+  telephone?: string;
   nom_pere?: string;
   origine_pere?: string;
   telephone_pere?: string;
@@ -298,6 +299,8 @@ export interface FicheRenseignementPremiereCommunionDto {
   date_naissance?: string;
   lieu_naissance?: string;
   domicile?: string;
+  profession?: string;
+  telephone?: string;
   classe_nom?: string;
   niveau_nom?: string;
   section_nom?: string;
@@ -312,7 +315,11 @@ export interface FicheRenseignementPremiereCommunionDto {
     paroisse?: string;
     num_carnet?: string;
     diocese?: string;
+    ville?: string;
   };
+  parrain_marraine_origine?: string;
+  representant_par?: string;
+  contact_parrain_marraine?: string;
 }
 
 export interface FicheRenseignementConfirmationDto {
@@ -325,6 +332,8 @@ export interface FicheRenseignementConfirmationDto {
   date_naissance?: string;
   lieu_naissance?: string;
   domicile?: string;
+  profession?: string;
+  telephone?: string;
   classe_nom?: string;
   niveau_nom?: string;
   section_nom?: string;
@@ -338,16 +347,26 @@ export interface FicheRenseignementConfirmationDto {
     lieu?: string;
     paroisse?: string;
     num_carnet?: string;
+    diocese?: string;
+    ville?: string;
+    parrain?: string;
   };
   premiere_communion?: {
     date?: string;
     paroisse?: string;
+  };
+  confirmation?: {
+    date?: string;
+    paroisse?: string;
+    ministre?: string;
   };
   parrain_confirmation?: {
     nom: string;
     telephone?: string;
     paroisse?: string;
   };
+  nom_parrain?: string;
+  ministre_confirmation?: string;
 }
 
 // Compatibilité legacy

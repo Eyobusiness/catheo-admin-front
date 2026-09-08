@@ -1,0 +1,124 @@
+@if (data(); as d) {
+  <article class="releve-notes-doc-container">
+    <div class="doc-body-wrapper">
+      <!-- En-tête officiel Paroisse & Catéchèse -->
+      <app-entete-catechese
+        [titreDocument]="'RELEVÉ GÉNÉRAL DES NOTES & MOYENNES'"
+        [sousTitre]="'CLASSE : ' + classeNom()"
+        [classeNom]="classeNom()"
+        [anneePastorale]="anneeLibelle()"
+      ></app-entete-catechese>
+
+      <!-- Bandeau d'informations pédagogiques -->
+      <div class="print-meta-bar mt-2">
+        <div class="meta-item">
+          <span class="meta-lbl">Section :</span>
+          <strong>{{ sectionNom() }}</strong>
+        </div>
+        <div class="meta-item">
+          <span class="meta-lbl">Niveau :</span>
+          <strong>{{ niveauNom() }}</strong>
+        </div>
+        <div class="meta-item">
+          <span class="meta-lbl">Année Pastorale :</span>
+          <strong>{{ anneeLibelle() }}</strong>
+        </div>
+        <div class="meta-item">
+          <span class="meta-lbl">Total Évaluations :</span>
+          <strong>{{ d.evaluations.length }}</strong>
+        </div>
+      </div>
+
+      <!-- Tableau de Notes complet -->
+      <div class="table-responsive mt-2">
+        <table class="data-table print-table">
+          <thead>
+            <tr>
+              <th class="text-center col-numero" style="width: 45px;">N°</th>
+              <th>Matricule</th>
+              <th>Nom & Prénoms</th>
+              @for (ev of d.evaluations; track ev.id) {
+                <th class="text-center eval-col-th">
+                  <div class="th-eval-title">{{ ev.titre }}</div>
+                  <div class="th-eval-sub">Coeff. {{ ev.coefficient }} (/{{ ev.note_max }})</div>
+                </th>
+              }
+              <th class="text-center col-moyenne">Moyenne (/20)</th>
+              <th>Appréciation</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (eleve of d.eleves; track eleve.catechumene_id; let i = $index) {
+              <tr>
+                <td class="text-center">{{ i + 1 }}</td>
+                <td><span class="badge-matricule">{{ eleve.matricule || '—' }}</span></td>
+                <td class="student-name font-bold">{{ eleve.nom_prenoms }}</td>
+                @for (ev of d.evaluations; track ev.id) {
+                  <td class="text-center eval-col-td">
+                    {{ getEleveNoteForEval(eleve, ev.id) }}
+                  </td>
+                }
+                <td
+                  class="text-center col-moyenne font-bold"
+                  [class.text-danger]="eleve.moyenne !== null && eleve.moyenne < 10"
+                  [class.text-success]="eleve.moyenne !== null && eleve.moyenne >= 10"
+                >
+                  {{ eleve.moyenne !== null ? eleve.moyenne : '—' }}
+                </td>
+                <td>{{ eleve.appreciation || '—' }}</td>
+              </tr>
+            }
+            @if (d.eleves.length === 0) {
+              <tr>
+                <td [attr.colspan]="4 + d.evaluations.length" class="text-center py-4 text-muted">
+                  Aucun élève trouvé dans cette classe.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Statistiques globales de la classe -->
+      @if (d.statistiques) {
+        <div class="print-stats-box mt-2">
+          <div class="stat-item">
+            <span class="stat-lbl">Moyenne Générale Classe</span>
+            <strong class="stat-val text-primary">
+              {{ d.statistiques.moyenne_classe !== null && d.statistiques.moyenne_classe !== undefined ? d.statistiques.moyenne_classe : '—' }} / 20
+            </strong>
+          </div>
+          <div class="stat-item">
+            <span class="stat-lbl">Meilleure Moyenne</span>
+            <strong class="stat-val text-success">
+              {{ d.statistiques.meilleure_moyenne !== null && d.statistiques.meilleure_moyenne !== undefined ? d.statistiques.meilleure_moyenne : '—' }}
+            </strong>
+          </div>
+          <div class="stat-item">
+            <span class="stat-lbl">Plus Faible Moyenne</span>
+            <strong class="stat-val text-danger">
+              {{ d.statistiques.plus_faible_moyenne !== null && d.statistiques.plus_faible_moyenne !== undefined ? d.statistiques.plus_faible_moyenne : '—' }}
+            </strong>
+          </div>
+          <div class="stat-item">
+            <span class="stat-lbl">Élèves Évalués</span>
+            <strong class="stat-val">
+              {{ d.statistiques.eleves_evalues }} / {{ d.statistiques.total_eleves }}
+            </strong>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- PIED DE PAGE OFFICIEL PAROISSE -->
+    <app-footer-paroisse-print
+      class="doc-footer"
+      pageNumber="Page 1/1"
+      [anneePastorale]="anneeLibelle()"
+    ></app-footer-paroisse-print>
+  </article>
+} @else {
+  <div class="notes-empty-state">
+    <p>Aucune donnée disponible pour l'édition du relevé de notes.</p>
+  </div>
+}

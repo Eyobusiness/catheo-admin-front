@@ -109,6 +109,49 @@
   border: 1px solid #bbf7d0;
 }
 
+.btn-unlock {
+  background: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fde68a;
+  box-shadow: 0 1px 2px rgba(180, 83, 9, 0.08);
+}
+
+.btn-unlock:hover:not(:disabled) {
+  background: #fef3c7;
+  color: #92400e;
+  border-color: #fcd34d;
+  transform: translateY(-1px);
+}
+
+.btn-unlock-confirm {
+  background: #d97706;
+  color: #fff;
+  border: 1px solid #b45309;
+  box-shadow: 0 2px 4px rgba(217, 119, 6, 0.25);
+}
+
+.btn-unlock-confirm:hover:not(:disabled) {
+  background: #b45309;
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(180, 83, 9, 0.35);
+}
+
+.text-warning {
+  color: #d97706 !important;
+}
+
+.alert-unlock {
+  background: #fffbeb !important;
+  border-color: #fde68a !important;
+  color: #92400e !important;
+}
+
+.alert-unlock i {
+  color: #d97706 !important;
+}
+
+
 /* 2. KPI / Stats Grid (identique aux notes) */
 .kpi-grid {
   display: grid;
@@ -459,6 +502,17 @@
   user-select: none;
 }
 
+.presence-ratio-tag {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--primary-600, #0284c7);
+  background: var(--primary-50, #f0f9ff);
+  padding: 1px 4px;
+  border-radius: 4px;
+  margin-left: 2px;
+  user-select: none;
+}
+
 .table-select {
   padding: 0.35rem 0.6rem;
   font-size: 0.8125rem;
@@ -625,3 +679,46 @@
   gap: 0.75rem;
   background: var(--neutral-50, #f8fafc);
 }
+
+/* État d'attente de filtrage */
+.empty-filter-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  background: var(--neutral-0, #fff);
+  border: 1px dashed var(--neutral-300, #cbd5e1);
+  border-radius: var(--radius-lg, 12px);
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.empty-filter-icon {
+  width: 64px;
+  height: 64px;
+  background: #f0f9ff;
+  color: #0284c7;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+}
+
+.empty-filter-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--neutral-800, #1e293b);
+  margin: 0 0 0.5rem 0;
+}
+
+.empty-filter-desc {
+  font-size: 0.875rem;
+  color: var(--neutral-500, #64748b);
+  max-width: 520px;
+  margin: 0;
+  line-height: 1.5;
+}
+

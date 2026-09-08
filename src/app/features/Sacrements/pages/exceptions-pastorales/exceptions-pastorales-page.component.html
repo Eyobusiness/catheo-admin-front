@@ -91,8 +91,13 @@
 
     <div class="filter-group">
       <label class="filter-label">Niveau :</label>
-      <select class="filter-select" [ngModel]="filterNiveau()" (ngModelChange)="onNiveauChange($event)">
-        <option value="">Tous les niveaux</option>
+      <select
+        class="filter-select"
+        [ngModel]="filterNiveau()"
+        (ngModelChange)="onNiveauChange($event)"
+        [disabled]="!filterSection()"
+      >
+        <option value="">{{ !filterSection() ? 'Sélectionner une section' : 'Tous les niveaux' }}</option>
         @for (n of filteredNiveauxList(); track n.id) {
           <option [value]="n.id">{{ n.nom }}</option>
         }
@@ -101,8 +106,13 @@
 
     <div class="filter-group">
       <label class="filter-label">Classe :</label>
-      <select class="filter-select" [ngModel]="filterClasse()" (ngModelChange)="filterClasse.set($event)">
-        <option value="">Toutes les classes</option>
+      <select
+        class="filter-select"
+        [ngModel]="filterClasse()"
+        (ngModelChange)="filterClasse.set($event)"
+        [disabled]="!filterSection() || !filterNiveau()"
+      >
+        <option value="">{{ !filterNiveau() ? 'Sélectionner un niveau' : 'Toutes les classes' }}</option>
         @for (c of filteredClassesList(); track c.id) {
           <option [value]="c.id">{{ c.nom }}</option>
         }
@@ -176,6 +186,9 @@
                 <span class="item-obs">{{ exc.observation || '—' }}</span>
               </td>
               <td class="text-right">
+                <button type="button" class="action-btn edit-btn" (click)="openEditModal(exc)" title="Modifier la dérogation">
+                  <i class="bi bi-pencil"></i>
+                </button>
                 <button type="button" class="action-btn delete-btn" (click)="openDeleteModal(exc)" title="Supprimer la dérogation">
                   <i class="bi bi-trash"></i>
                 </button>
@@ -219,13 +232,40 @@
       </div>
 
       <div class="modal-body form-grid">
+        <!-- 1. SÉLECTION DU SACREMENT CONCERNÉ -->
         <div class="form-group">
-          <label class="form-label">Rechercher le catéchumène *</label>
+          <label class="form-label">1. Sacrement pour lequel accorder une dérogation *</label>
+          <div class="sacrement-tabs-pills">
+            @for (s of sacrementsTypes; track s) {
+              <button
+                type="button"
+                class="tab-pill-btn"
+                [class.active]="selectedSacrementForAdd() === s"
+                (click)="onSacrementSelectChange(s)"
+              >
+                @if (s === 'Baptême') { <i class="bi bi-droplet-fill"></i> }
+                @if (s === 'Première Communion') { <i class="bi bi-cup-hot-fill"></i> }
+                @if (s === 'Confirmation') { <i class="bi bi-patch-check-fill"></i> }
+                <span>{{ s }}</span>
+              </button>
+            }
+          </div>
+          <div class="derogation-help-tip">
+            <i class="bi bi-info-circle-fill"></i>
+            <span>
+              Catéchumènes inscrits cette année ne remplissant pas les critères automatiques de <strong>{{ selectedSacrementForAdd() }}</strong>.
+            </span>
+          </div>
+        </div>
+
+        <!-- 2. RECHERCHE DU CATÉCHUMÈNE -->
+        <div class="form-group">
+          <label class="form-label">2. Rechercher et choisir le catéchumène à dispenser *</label>
           <div class="search-box width-100">
             <i class="bi bi-search search-icon"></i>
             <input
               type="text"
-              placeholder="Rechercher par nom, prénom, classe..."
+              placeholder="Filtrer par nom, prénom, classe, niveau..."
               [ngModel]="catSearchQuery()"
               (ngModelChange)="catSearchQuery.set($event)"
             />
@@ -263,40 +303,43 @@
                   </td>
                 </tr>
               }
+              @if (searchedCatechumenes().length === 0) {
+                <tr>
+                  <td colspan="5" class="empty-cell-sm">
+                    <em>Aucun catéchumène éligible à une dérogation de {{ selectedSacrementForAdd() }} trouvé.</em>
+                  </td>
+                </tr>
+              }
             </tbody>
           </table>
         </div>
 
         @if (selectedCatechumene()) {
           <div class="exception-form-box animate-fade-in">
+            <div class="selected-cat-summary">
+              <i class="bi bi-person-check-fill text-primary"></i>
+              <span>Candidat sélectionné : <strong>{{ selectedCatechumene()?.nom }} {{ selectedCatechumene()?.prenoms }}</strong> ({{ selectedCatechumene()?.classe }} - {{ selectedCatechumene()?.niveau }})</span>
+            </div>
+
             <div class="form-row">
               <div class="form-group flex-1">
-                <label class="form-label">Sacrement accordé *</label>
-                <select class="form-control" [ngModel]="newExceptionForm().sacrementType" (ngModelChange)="newExceptionForm().sacrementType = $event">
-                  @for (s of sacrementsTypes; track s) {
-                    <option [value]="s">{{ s }}</option>
-                  }
-                </select>
-              </div>
-
-              <div class="form-group flex-1">
                 <label class="form-label">Motif de dérogation *</label>
-                <select class="form-control" [ngModel]="newExceptionForm().motif" (ngModelChange)="newExceptionForm().motif = $event">
+                <select class="form-control" [ngModel]="newExceptionForm().motif" (ngModelChange)="updateNewForm({ motif: $event })">
                   @for (m of motifsList; track m) {
                     <option [value]="m">{{ m }}</option>
                   }
                 </select>
               </div>
-            </div>
 
-            <div class="form-group">
-              <label class="form-label">Autorisé par (Autorité pastorale) *</label>
-              <input type="text" class="form-control" [ngModel]="newExceptionForm().autorisePar" (ngModelChange)="newExceptionForm().autorisePar = $event" placeholder="Ex: Père Curé / Mgr l'Archevêque" />
+              <div class="form-group flex-1">
+                <label class="form-label">Autorisé par (Autorité pastorale) *</label>
+                <input type="text" class="form-control" [ngModel]="newExceptionForm().autorisePar" (ngModelChange)="updateNewForm({ autorisePar: $event })" placeholder="Ex: Père Curé / Mgr l'Archevêque" />
+              </div>
             </div>
 
             <div class="form-group">
               <label class="form-label">Observations et justification canonique</label>
-              <textarea class="form-control" rows="2" placeholder="Précisez les circonstances de la dérogation..." [ngModel]="newExceptionForm().observation" (ngModelChange)="newExceptionForm().observation = $event"></textarea>
+              <textarea class="form-control" rows="2" placeholder="Précisez les circonstances de la dérogation..." [ngModel]="newExceptionForm().observation" (ngModelChange)="updateNewForm({ observation: $event })"></textarea>
             </div>
           </div>
         }
@@ -310,6 +353,95 @@
             <span>Enregistrer la dérogation</span>
           </button>
         }
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ========================================================================= -->
+<!-- MODAL : IMPRESSION DU REGISTRE DES DÉROGATIONS A4 PAYSAGE                 -->
+<!-- ========================================================================= -->
+@if (isPrintModalOpen()) {
+  <div class="modal-overlay" (click)="isPrintModalOpen.set(false)">
+    <div class="modal-card modal-xl" (click)="$event.stopPropagation()">
+      <div class="modal-header no-print">
+        <div class="modal-title-group">
+          <i class="bi bi-file-earmark-pdf"></i>
+          <h3>Registre Officiel des Exceptions & Dérogations Pastorales</h3>
+        </div>
+        <button type="button" class="btn-close" (click)="isPrintModalOpen.set(false)">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="print-sheet-container" id="printable-sheet">
+          <div class="doc-body-wrapper">
+            <app-header-paroisse-print
+              customTitle="REGISTRE PASTORAL DES EXCEPTIONS & DÉROGATIONS"
+              [anneePastorale]="activeAnneeLibelle()"
+            ></app-header-paroisse-print>
+
+            <div class="sheet-meta-box">
+              <span><strong>Total dérogations :</strong> {{ filteredExceptions().length }}</span>
+              <span><strong>Date d'édition :</strong> {{ currentDate | date:'dd/MM/yyyy' }}</span>
+            </div>
+
+            <table class="photo-style-table">
+              <thead>
+                <tr>
+                  <th class="text-center">N°</th>
+                  <th>Date d'accord</th>
+                  <th>Catéchumène</th>
+                  <th>Section & Classe</th>
+                  <th>Sacrement accordé</th>
+                  <th>Motif de dérogation</th>
+                  <th>Autorisé par</th>
+                  <th>Observations</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (exc of filteredExceptions(); track exc.id; let idx = $index) {
+                  <tr>
+                    <td class="text-center">{{ idx + 1 }}</td>
+                    <td>{{ exc.dateAjout }}</td>
+                    <td><strong>{{ exc.catechumeneNomComplet }}</strong></td>
+                    <td>{{ exc.section }} • {{ exc.classe }}</td>
+                    <td>{{ exc.sacrementType }}</td>
+                    <td>{{ exc.motif }}</td>
+                    <td>{{ exc.autorisePar }}</td>
+                    <td>{{ exc.observation || '—' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+
+            <div class="sheet-signatures-grid single-sig">
+              <div class="sig-col">
+                <span>Le Responsable du Catéchuménat</span>
+                <div class="sig-line-space"></div>
+              </div>
+            </div>
+          </div>
+
+          <app-footer-paroisse-print
+            class="doc-footer"
+            pageNumber="Page 1/1"
+            [anneePastorale]="activeAnneeLibelle()"
+          ></app-footer-paroisse-print>
+        </div>
+      </div>
+
+      <div class="modal-footer no-print">
+        <button type="button" class="btn btn-secondary" (click)="isPrintModalOpen.set(false)">Fermer</button>
+        <button type="button" class="btn btn-outline-primary" (click)="openPdfReader()">
+          <i class="bi bi-file-earmark-pdf"></i>
+          <span>Aperçu Lecteur PDF</span>
+        </button>
+        <button type="button" class="btn btn-primary" (click)="printList()">
+          <i class="bi bi-printer-fill"></i>
+          <span>Imprimer</span>
+        </button>
       </div>
     </div>
   </div>
@@ -339,10 +471,77 @@
   </div>
 }
 
-<!-- TOAST -->
-@if (showToast()) {
-  <div class="toast-floating" [class.success]="toastType() === 'success'" [class.danger]="toastType() === 'danger'" [class.info]="toastType() === 'info'">
-    <i class="bi" [class.bi-check-circle]="toastType() === 'success'" [class.bi-x-circle]="toastType() === 'danger'" [class.bi-info-circle]="toastType() === 'info'"></i>
-    <span>{{ toastMessage() }}</span>
+<!-- ========================================================================= -->
+<!-- MODAL : MODIFIER UNE DÉROGATION EXISTANTE (UPDATE)                         -->
+<!-- ========================================================================= -->
+@if (isEditModalOpen()) {
+  <div class="modal-overlay" (click)="isEditModalOpen.set(false)">
+    <div class="modal-card modal-md" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <i class="bi bi-pencil-square text-primary"></i>
+          <h3>Modifier la Dérogation Pastorale</h3>
+        </div>
+        <button type="button" class="btn-close" (click)="isEditModalOpen.set(false)">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <div class="modal-body form-grid">
+        <div class="selected-cat-summary">
+          <i class="bi bi-person-check-fill text-primary"></i>
+          <span>Catéchumène : <strong>{{ editExceptionForm().catechumeneNomComplet }}</strong></span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Sacrement concerné *</label>
+          <div class="sacrement-tabs-pills">
+            @for (s of sacrementsTypes; track s) {
+              <button
+                type="button"
+                class="tab-pill-btn"
+                [class.active]="editExceptionForm().sacrementType === s"
+                (click)="updateEditForm({ sacrementType: s })"
+              >
+                @if (s === 'Baptême') { <i class="bi bi-droplet-fill"></i> }
+                @if (s === 'Première Communion') { <i class="bi bi-cup-hot-fill"></i> }
+                @if (s === 'Confirmation') { <i class="bi bi-patch-check-fill"></i> }
+                <span>{{ s }}</span>
+              </button>
+            }
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label class="form-label">Motif de dérogation *</label>
+            <select class="form-control" [ngModel]="editExceptionForm().motif" (ngModelChange)="updateEditForm({ motif: $event })">
+              @for (m of motifsList; track m) {
+                <option [value]="m">{{ m }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-group flex-1">
+            <label class="form-label">Autorisé par *</label>
+            <input type="text" class="form-control" [ngModel]="editExceptionForm().autorisePar" (ngModelChange)="updateEditForm({ autorisePar: $event })" placeholder="Ex: Père Curé" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Observations et justification canonique</label>
+          <textarea class="form-control" rows="3" placeholder="Précisez les circonstances de la dérogation..." [ngModel]="editExceptionForm().observation" (ngModelChange)="updateEditForm({ observation: $event })"></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="isEditModalOpen.set(false)">Annuler</button>
+        <button type="button" class="btn btn-primary" (click)="saveEditException()">
+          <i class="bi bi-check-lg"></i>
+          <span>Enregistrer les modifications</span>
+        </button>
+      </div>
+    </div>
   </div>
 }
+

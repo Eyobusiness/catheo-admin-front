@@ -42,6 +42,11 @@ export class HeaderParoissePrintComponent {
     return p?.diocese || '';
   });
 
+  public readonly cure = computed(() => {
+    const p = this.paroisseConfig();
+    return p?.cure_nom || '';
+  });
+
   public readonly doyenne = computed(() => {
     const p = this.paroisseConfig();
     return p?.doyenne || '';

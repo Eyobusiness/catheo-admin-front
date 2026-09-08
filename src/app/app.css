@@ -21,3 +21,15 @@
   flex: 1;
   overflow-y: auto;
 }
+
+@media print {
+  :host,
+  .app-layout,
+  .app-main-wrapper,
+  .app-content-view {
+    min-height: auto !important;
+    height: auto !important;
+    overflow: visible !important;
+    background: transparent !important;
+  }
+}

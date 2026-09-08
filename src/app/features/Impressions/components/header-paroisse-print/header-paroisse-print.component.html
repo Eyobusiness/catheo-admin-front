@@ -14,6 +14,9 @@
       @if (diocese()) {
         <h3 class="line-diocese">{{ diocese() | uppercase }}</h3>
       }
+      @if (cure()) {
+        <h4 class="line-cure">{{ cure() | uppercase }}</h4>
+      }
       @if (doyenne()) {
         <h4 class="line-doyenne">{{ doyenne() | uppercase }}</h4>
       }

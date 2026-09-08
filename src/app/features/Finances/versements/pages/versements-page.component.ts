@@ -13,6 +13,7 @@ import { VersementTableComponent } from '../components/versement-table/versement
 import { VersementFormModalComponent } from '../components/versement-form-modal/versement-form-modal.component';
 import { VersementDeleteModalComponent } from '../components/versement-delete-modal/versement-delete-modal.component';
 import { VersementRecuModalComponent } from '../components/versement-recu-modal/versement-recu-modal.component';
+import { PdfPreviewService } from '../../../../core/services/pdf-preview.service';
 
 @Component({
   selector: 'app-versements-page',
@@ -32,6 +33,7 @@ import { VersementRecuModalComponent } from '../components/versement-recu-modal/
 })
 export class VersementsPageComponent implements OnInit {
   protected readonly versementService = inject(VersementCureService);
+  private readonly pdfPreviewService = inject(PdfPreviewService);
 
   protected readonly versements = this.versementService.versements;
   protected readonly kpis = this.versementService.kpis;
@@ -106,8 +108,12 @@ export class VersementsPageComponent implements OnInit {
   }
 
   protected openRecuModal(item: VersementCureDto): void {
-    this.selectedVersementForRecu.set(item);
-    this.isRecuModalOpen.set(true);
+    this.pdfPreviewService.openDocument('bordereau-versement', item, {
+      title: 'Bordereau de Versement',
+      subtitle: `N° ${item.reference} • ${item.periode_concernee}`,
+      formatBadge: 'A4 Portrait',
+      fileName: `bordereau-versement-${item.reference}.pdf`
+    });
   }
 
   protected closeModals(): void {

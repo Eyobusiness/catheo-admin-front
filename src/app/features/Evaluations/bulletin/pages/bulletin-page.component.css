@@ -614,3 +614,46 @@
     margin: 10mm;
   }
 }
+
+/* État d'attente de filtrage */
+.empty-filter-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  background: var(--neutral-0, #fff);
+  border: 1px dashed var(--neutral-300, #cbd5e1);
+  border-radius: var(--radius-lg, 12px);
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.empty-filter-icon {
+  width: 64px;
+  height: 64px;
+  background: #f0f9ff;
+  color: #0284c7;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+}
+
+.empty-filter-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--neutral-800, #1e293b);
+  margin: 0 0 0.5rem 0;
+}
+
+.empty-filter-desc {
+  font-size: 0.875rem;
+  color: var(--neutral-500, #64748b);
+  max-width: 520px;
+  margin: 0;
+  line-height: 1.5;
+}
+
