@@ -16,6 +16,7 @@ import { MutationTableComponent } from '../components/mutation-table/mutation-ta
 import { MutationFormModalComponent } from '../components/mutation-form-modal/mutation-form-modal.component';
 import { MutationDetailModalComponent } from '../components/mutation-detail-modal/mutation-detail-modal.component';
 import { MutationDeleteModalComponent } from '../components/mutation-delete-modal/mutation-delete-modal.component';
+import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-mutations-page',
@@ -25,7 +26,8 @@ import { MutationDeleteModalComponent } from '../components/mutation-delete-moda
     MutationTableComponent,
     MutationFormModalComponent,
     MutationDetailModalComponent,
-    MutationDeleteModalComponent
+    MutationDeleteModalComponent,
+    HasPermissionDirective
   ],
   templateUrl: './mutations-page.component.html',
   styleUrl: './mutations-page.component.css',

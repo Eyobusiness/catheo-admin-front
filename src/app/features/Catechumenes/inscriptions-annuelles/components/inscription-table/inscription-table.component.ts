@@ -4,10 +4,11 @@ import { InscriptionAnnuelleDto, StatutInscriptionAnnuelle } from '../../models/
 import { AppIconButton } from '../../../../../shared/ui/components/buttons/app-icon-button/app-icon-button.component';
 import { AppButton } from '../../../../../shared/ui/components/buttons/app-button/app-button.component';
 import { AppPagination } from '../../../../../shared/ui/components/tables/app-pagination/app-pagination.component';
+import { HasPermissionDirective } from '../../../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-inscription-table',
-  imports: [CommonModule, AppIconButton, AppButton, AppPagination],
+  imports: [CommonModule, AppIconButton, AppButton, AppPagination, HasPermissionDirective],
   templateUrl: './inscription-table.component.html',
   styleUrl: './inscription-table.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

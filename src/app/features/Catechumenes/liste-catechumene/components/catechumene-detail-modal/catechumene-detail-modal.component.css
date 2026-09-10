@@ -156,6 +156,12 @@
   text-align: right;
 }
 
+.affectation-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.75rem 1.5rem;
+}
+
 /* Timeline Sacrements */
 .sacrement-timeline {
   display: grid;

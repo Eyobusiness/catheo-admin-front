@@ -44,11 +44,14 @@
             <!-- Libellé -->
             <td class="col-libelle">
               <div class="libelle-cell">
-                <span class="libelle-main">{{ getDisplayLibelle(item) }}</span>
-                @if (item.tarif_intitule || item.tarif?.intitule) {
-                  <span class="tarif-sub"><i class="bi bi-tag"></i> 
-                    {{ item.tarif_intitule || item.tarif?.intitule }}
+                <span class="libelle-main" [title]="getDisplayLibelle(item)">
+                  {{ truncateText(getDisplayLibelle(item), 22) }}
                 </span>
+                @if (item.tarif_intitule || item.tarif?.intitule) {
+                  <span class="tarif-sub" [title]="item.tarif_intitule || item.tarif?.intitule">
+                    <i class="bi bi-tag"></i> 
+                    {{ truncateText(item.tarif_intitule || item.tarif?.intitule, 22) }}
+                  </span>
                 }
               </div>
             </td>
@@ -96,6 +99,7 @@
                 <!-- 1. Encaisser au guichet (si non payé) -->
                 @if (item.statut !== 'paye' && item.statut !== 'annule') {
                   <app-icon-button
+                    *hasPermission="'operations_financieres:update'"
                     variant="success"
                     size="sm"
                     title="Encaisser"
@@ -119,6 +123,7 @@
 
                 <!-- 2. Supprimer -->
                 <app-icon-button
+                  *hasPermission="'operations_financieres:delete'"
                   variant="danger"
                   size="sm"
                   title="Supprimer l'opération"

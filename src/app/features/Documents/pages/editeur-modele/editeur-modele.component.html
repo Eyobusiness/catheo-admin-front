@@ -190,13 +190,8 @@
         </div>
 
         <div class="preview-paper-box">
-          <app-entete-catechese [showBorder]="false" />
+          <app-header-paroisse-print [isFicheIndividuelle]="false" />
           <div class="preview-body" [innerHTML]="previewContentHtml()"></div>
-          <div class="preview-footer">
-            <div class="signature-date">Fait à {{ service.paroisseInfo().nom }}, le {{ '2026-08-28' | date:'dd MMMM yyyy' }}</div>
-            <div class="signature-title">{{ formModele().signature_titre || 'Le Curé de la Paroisse' }}</div>
-            <div class="signature-seal">[ Sceau & Signature ]</div>
-          </div>
         </div>
       </div>
     }

@@ -140,6 +140,10 @@ export class PublicPreinscriptionPageComponent implements OnInit {
   // Aperçu photo
   public readonly photoPreview = signal<string>('');
 
+  // Alerte dossier déjà existant pour l'année pastorale
+  public readonly isDuplicateDetected = signal<boolean>(false);
+  public readonly duplicateMessage = signal<string>('');
+
   // Résultat de la soumission réussie
   public readonly submittedDossier = signal<PreinscriptionDto | null>(null);
 
@@ -452,6 +456,8 @@ export class PublicPreinscriptionPageComponent implements OnInit {
     this.currentMode.set('choice');
     this.searchMatriculeError.set(null);
     this.foundCatechumene.set(null);
+    this.isDuplicateDetected.set(false);
+    this.duplicateMessage.set('');
     this.activeStep.set(1);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -527,6 +533,8 @@ export class PublicPreinscriptionPageComponent implements OnInit {
 
   private applyFoundCatechumene(cat: CatechumeneDto): void {
     this.foundCatechumene.set(cat);
+    this.isDuplicateDetected.set(false);
+    this.duplicateMessage.set('');
 
     // Pré-remplir le formulaire
     this.reinscriptionForm.patchValue({
@@ -544,6 +552,25 @@ export class PublicPreinscriptionPageComponent implements OnInit {
 
     if (cat.photo_url || cat.photo_path) {
       this.photoPreview.set(cat.photo_url || cat.photo_path || '');
+    }
+
+    // Vérifier si le catéchumène possède déjà une inscription ou préinscription pour cette campagne
+    const campagneId = this.currentCampagne()?.id || this.route.snapshot.paramMap.get('campagneId') || '';
+    if (campagneId) {
+      this.preinscriptionService.checkDuplicate({
+        campagne_id: campagneId,
+        matricule: cat.matricule || cat.code_catechumene || '',
+        catechumene_id: cat.id
+      }).subscribe({
+        next: (res) => {
+          if (res.exists) {
+            const msg = res.message || "Vous avez déjà une préinscription ou réinscription avec ces informations pour l'année de la campagne concernée, veuillez vous rendre au bureau de la catéchèse.";
+            this.isDuplicateDetected.set(true);
+            this.duplicateMessage.set(msg);
+            this.toastService.warning('Dossier Déjà Enregistré', msg);
+          }
+        }
+      });
     }
 
     this.toastService.success('Dossier Retrouvé', `Bienvenue ${cat.nom} ${cat.prenoms} !`);
@@ -633,8 +660,15 @@ export class PublicPreinscriptionPageComponent implements OnInit {
         window.scrollTo({ top: 0, behavior: 'smooth' });
         this.openRecuThermal(created);
       },
-      error: () => {
+      error: (err) => {
         this.isLoading.set(false);
+        const errorMsg = err.error?.message;
+        if (err.status === 422 && (err.error?.code === 'ALREADY_EXISTS_FOR_YEAR' || (typeof errorMsg === 'string' && errorMsg.toLowerCase().includes('bureau de la cat')))) {
+          this.isDuplicateDetected.set(true);
+          this.duplicateMessage.set(errorMsg || "Vous avez déjà une préinscription ou réinscription avec ces informations pour l'année de la campagne concernée, veuillez vous rendre au bureau de la catéchèse.");
+          this.toastService.error('Dossier Déjà Enregistré', this.duplicateMessage());
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
       }
     });
   }
@@ -653,6 +687,11 @@ export class PublicPreinscriptionPageComponent implements OnInit {
       return;
     }
 
+    if (this.isDuplicateDetected()) {
+      this.toastService.warning('Démarche Impossible', this.duplicateMessage());
+      return;
+    }
+
     const val = this.reinscriptionForm.getRawValue();
     const paramCampagneId = this.route.snapshot.paramMap.get('campagneId');
     const campagneId = this.currentCampagne()?.id || paramCampagneId || '';
@@ -668,6 +707,8 @@ export class PublicPreinscriptionPageComponent implements OnInit {
     const dto: SubmitPreinscriptionDto = {
       campagne_id: campagneId,
       type_demande: 'reinscription',
+      matricule: cat.matricule || cat.code_catechumene,
+      catechumene_id: cat.id,
       section_souhaite_id: val.section_id,
       niveau_souhaite_id: val.niveau_id,
       nom: cat.nom,
@@ -704,8 +745,15 @@ export class PublicPreinscriptionPageComponent implements OnInit {
         window.scrollTo({ top: 0, behavior: 'smooth' });
         this.openRecuThermal(created);
       },
-      error: () => {
+      error: (err) => {
         this.isLoading.set(false);
+        const errorMsg = err.error?.message;
+        if (err.status === 422 && (err.error?.code === 'ALREADY_EXISTS_FOR_YEAR' || (typeof errorMsg === 'string' && errorMsg.toLowerCase().includes('bureau de la cat')))) {
+          this.isDuplicateDetected.set(true);
+          this.duplicateMessage.set(errorMsg || "Vous avez déjà une préinscription ou réinscription avec ces informations pour l'année de la campagne concernée, veuillez vous rendre au bureau de la catéchèse.");
+          this.toastService.error('Dossier Déjà Enregistré', this.duplicateMessage());
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
       }
     });
   }

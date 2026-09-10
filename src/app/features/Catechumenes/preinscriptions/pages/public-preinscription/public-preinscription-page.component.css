@@ -1812,3 +1812,69 @@
     color: #000000 !important;
   }
 }
+
+/* ======================================================== */
+/* ALERTE DOSSIER DÉJÀ EXISTANT / BUREAU CATÉCHÈSE          */
+/* ======================================================== */
+.duplicate-alert-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  background: linear-gradient(135deg, #fff1f2 0%, #fee2e2 100%);
+  border: 1.5px solid #f87171;
+  border-radius: 14px;
+  padding: 1.25rem 1.35rem;
+  margin: 1.25rem 0;
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.08);
+}
+
+.duplicate-alert-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #ef4444;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+  box-shadow: 0 4px 10px rgba(239, 68, 68, 0.25);
+}
+
+.duplicate-alert-body {
+  flex: 1;
+}
+
+.duplicate-alert-title {
+  margin: 0 0 0.35rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #991b1b;
+}
+
+.duplicate-alert-message {
+  margin: 0 0 0.75rem;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: #7f1d1d;
+}
+
+.duplicate-office-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #ffffff;
+  color: #b91c1c;
+  padding: 0.4rem 0.85rem;
+  border-radius: 20px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  border: 1px solid #fca5a5;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.04);
+}
+
+.duplicate-office-chip i {
+  font-size: 0.95rem;
+}
+

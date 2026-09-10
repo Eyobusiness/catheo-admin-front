@@ -7,6 +7,7 @@ import { AppButton } from '../../../../shared/ui/components/buttons/app-button/a
 import { AnneeTableComponent } from '../components/annee-table/annee-table.component';
 import { AnneeFormModalComponent } from '../components/annee-form-modal/annee-form-modal.component';
 import { AnneeDeleteModalComponent } from '../components/annee-delete-modal/annee-delete-modal.component';
+import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-annees-pastorales-page',
@@ -15,7 +16,8 @@ import { AnneeDeleteModalComponent } from '../components/annee-delete-modal/anne
     AppButton,
     AnneeTableComponent,
     AnneeFormModalComponent,
-    AnneeDeleteModalComponent
+    AnneeDeleteModalComponent,
+    HasPermissionDirective
   ],
   templateUrl: './annees-pastorales-page.component.html',
   styleUrl: './annees-pastorales-page.component.css',

@@ -2,7 +2,13 @@
   <!-- Topbar Header -->
   <section class="page-topbar">
     <div class="topbar-headings">
-      <h2 class="topbar-title">Gestion des Préinscriptions</h2>
+      <div class="title-with-badge">
+        <h2 class="topbar-title">Gestion des Préinscriptions</h2>
+        <span class="topbar-annee-badge">
+          <i class="bi bi-calendar3"></i>
+          Année : {{ workingAnneeLibelle() }}
+        </span>
+      </div>
       <p class="topbar-subtitle">
         File d'attente, traitement et validation des dossiers de préinscription soumis en ligne.
       </p>
@@ -93,6 +99,23 @@
             <option value="">Toutes les sections</option>
             @for (s of sections(); track s.id) {
               <option [value]="s.id">{{ s.nom }}</option>
+            }
+          </select>
+          <i class="bi bi-chevron-down select-chevron-icon"></i>
+        </div>
+
+        <!-- Année Pastorale Filter -->
+        <div class="select-wrapper">
+          <i class="bi bi-calendar3 select-prefix-icon"></i>
+          <select
+            class="filter-select-control"
+            [value]="anneeFilter()"
+            (change)="onAnneeFilterChange($event)"
+          >
+            <option value="">Année active ({{ workingAnneeLibelle() }})</option>
+            <option value="all">Toutes les années</option>
+            @for (a of annees(); track a.id) {
+              <option [value]="a.id">{{ a.libelle }}</option>
             }
           </select>
           <i class="bi bi-chevron-down select-chevron-icon"></i>

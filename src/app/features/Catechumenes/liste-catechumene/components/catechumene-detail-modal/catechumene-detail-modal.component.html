@@ -148,11 +148,48 @@
           </div>
         </div>
 
-        <!-- 4. Parrains & Marraines -->
+        <!-- 4. Affectation Pastorale & CEB -->
+        @if (c.ceb?.nom || (c.inscriptions_annuelles && c.inscriptions_annuelles.length > 0) || (c.classe_scolaire)) {
+          <div class="info-card full-width">
+            <h5 class="card-title"><i class="bi bi-church"></i> Communauté & Affectation Paroissiale</h5>
+            <div class="affectation-grid">
+              <div class="info-line">
+                <span class="label">Communauté (CEB) :</span>
+                <span class="value">{{ c.ceb?.nom || 'Non rattaché(e)' }}</span>
+              </div>
+              @if (c.inscriptions_annuelles && c.inscriptions_annuelles.length > 0) {
+                <div class="info-line">
+                  <span class="label">Année Pastorale :</span>
+                  <span class="value">{{ c.inscriptions_annuelles[0].annee_catechese?.libelle || 'En cours' }}</span>
+                </div>
+                <div class="info-line">
+                  <span class="label">Section :</span>
+                  <span class="value">{{ c.inscriptions_annuelles[0].section?.nom || c.inscriptions_annuelles[0].section_nom || 'N/A' }}</span>
+                </div>
+                <div class="info-line">
+                  <span class="label">Niveau :</span>
+                  <span class="value">{{ c.inscriptions_annuelles[0].niveau?.nom || c.inscriptions_annuelles[0].niveau_nom || 'N/A' }}</span>
+                </div>
+                <div class="info-line">
+                  <span class="label">Classe :</span>
+                  <span class="value">{{ c.inscriptions_annuelles[0].classe?.nom || c.inscriptions_annuelles[0].classe_nom || 'Non assigné(e)' }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- 5. Parrains & Marraines -->
         <div class="info-card full-width">
           <div class="card-header-flex">
             <h5 class="card-title"><i class="bi bi-person-heart"></i> Parrains & Marraines Associés</h5>
-            <app-button variant="primary" size="sm" icon="plus" (clicked)="onAddParrain()">
+            <app-button
+              *hasPermission="'catechumenes:update'"
+              variant="primary"
+              size="sm"
+              icon="plus"
+              (clicked)="onAddParrain()"
+            >
               Ajouter Parrain / Marraine
             </app-button>
           </div>
@@ -178,6 +215,7 @@
                 </div>
                 <div class="p-actions">
                   <app-icon-button
+                    *hasPermission="'catechumenes:update'"
                     variant="danger"
                     size="sm"
                     title="Dissocier"
@@ -197,11 +235,19 @@
 
       <!-- Footer Actions -->
       <div class="modal-footer-actions">
+        <app-button variant="secondary" (clicked)="onClose()">
+          Fermer
+        </app-button>
         <app-button variant="secondary" icon="printer" (clicked)="printFiche()">
           Imprimer la Fiche (PDF)
         </app-button>
-        <app-button variant="primary" (clicked)="onClose()">
-          Fermer
+        <app-button
+          *hasPermission="'catechumenes:update'"
+          variant="primary"
+          icon="pencil"
+          (clicked)="onEdit()"
+        >
+          Modifier
         </app-button>
       </div>
     </div>

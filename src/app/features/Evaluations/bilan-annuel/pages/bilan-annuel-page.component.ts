@@ -26,9 +26,11 @@ import {
   DecisionStatus
 } from '../models/bilan-annuel.model';
 
+import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
+
 @Component({
   selector: 'app-bilan-annuel-page',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, HasPermissionDirective],
   templateUrl: './bilan-annuel-page.component.html',
   styleUrl: './bilan-annuel-page.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

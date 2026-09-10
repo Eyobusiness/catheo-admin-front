@@ -42,6 +42,7 @@
         }
       } @else {
         <button
+          *hasPermission="'bilans_annuels:update'"
           type="button"
           class="btn btn-primary"
           [disabled]="service.isSaving() || filteredBilans().length === 0"
@@ -308,6 +309,7 @@
         <span>Total élèves : <strong>{{ filteredBilans().length }}</strong></span>
         @if (!isValide()) {
           <button
+            *hasPermission="'bilans_annuels:update'"
             type="button"
             class="btn btn-primary btn-sm"
             [disabled]="service.isSaving() || filteredBilans().length === 0"

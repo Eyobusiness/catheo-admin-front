@@ -101,6 +101,7 @@
 
 
                 <app-icon-button
+                  *hasPermission="'inscriptions_annuelles:update'"
                   variant="primary"
                   size="sm"
                   title="Modifier"
@@ -111,6 +112,7 @@
                 </app-icon-button>
 
                 <app-icon-button
+                  *hasPermission="'inscriptions_annuelles:delete'"
                   variant="danger"
                   size="sm"
                   title="Supprimer"
@@ -129,7 +131,13 @@
                 <i class="bi bi-journal-check" style="font-size: 2.25rem;"></i>
                 <p class="empty-title">Aucune inscription annuelle</p>
                 <p class="empty-desc">Inscrivez un catéchumène pour cette année pastorale.</p>
-                <app-button variant="primary" size="sm" icon="plus" (clicked)="onCreate()">
+                <app-button
+                  *hasPermission="'inscriptions_annuelles:create'"
+                  variant="primary"
+                  size="sm"
+                  icon="plus"
+                  (clicked)="onCreate()"
+                >
                   Nouvelle Inscription
                 </app-button>
               </div>

@@ -2,10 +2,11 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
 import { ProfilDto } from '../../models/profil.model';
 import { AppIconButton } from '../../../../../shared/ui/components/buttons/app-icon-button/app-icon-button.component';
 import { AppButton } from '../../../../../shared/ui/components/buttons/app-button/app-button.component';
+import { HasPermissionDirective } from '../../../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-profil-table',
-  imports: [AppIconButton, AppButton],
+  imports: [AppIconButton, AppButton, HasPermissionDirective],
   templateUrl: './profil-table.component.html',
   styleUrl: './profil-table.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush

@@ -6,6 +6,7 @@ import { AppHeader } from './shared/ui/components/layout/app-header/app-header.c
 import { AppFooter } from './shared/ui/components/layout/app-footer/app-footer.component';
 import { AppToast } from './shared/ui/components/feedback/app-toast/app-toast.component';
 import { PdfPreviewModalComponent } from './shared/ui/components/dialogs/pdf-preview-modal/pdf-preview-modal.component';
+import { WorkingAnneeModalComponent } from './shared/ui/components/dialogs/working-annee-modal/working-annee-modal.component';
 import { AuthService } from './core/services/auth.service';
 import { ThemeService } from './core/services/theme.service';
 
@@ -37,7 +38,8 @@ function isPublicRoute(url: string): boolean {
     AppHeader,
     AppFooter,
     AppToast,
-    PdfPreviewModalComponent
+    PdfPreviewModalComponent,
+    WorkingAnneeModalComponent
   ],
   templateUrl: './app.html',
   styleUrl: './app.css',

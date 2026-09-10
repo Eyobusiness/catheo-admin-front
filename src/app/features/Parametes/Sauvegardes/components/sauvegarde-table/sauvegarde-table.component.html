@@ -108,6 +108,7 @@
 
               <!-- Restore button -->
               <app-icon-button
+                *hasPermission="'sauvegardes:update'"
                 variant="ghost"
                 size="sm"
                 title="Restaurer cette sauvegarde"
@@ -119,6 +120,7 @@
 
               <!-- Delete button -->
               <app-icon-button
+                *hasPermission="'sauvegardes:delete'"
                 variant="ghost"
                 size="sm"
                 title="Supprimer la sauvegarde"
@@ -139,7 +141,13 @@
               </div>
               <h4>Aucune sauvegarde disponible</h4>
               <p>Aucun instantané de base de données n'a encore été créé ou ne correspond aux filtres.</p>
-              <app-button variant="primary" size="sm" icon="plus" (clicked)="createRequested.emit()">
+              <app-button
+                *hasPermission="'sauvegardes:create'"
+                variant="primary"
+                size="sm"
+                icon="plus"
+                (clicked)="createRequested.emit()"
+              >
                 Générer une première sauvegarde
               </app-button>
             </div>

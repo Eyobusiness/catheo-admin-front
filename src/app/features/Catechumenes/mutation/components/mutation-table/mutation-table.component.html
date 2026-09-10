@@ -73,6 +73,7 @@
 
                 @if (item.statut === 'demande') {
                   <app-icon-button
+                    *hasPermission="'mutations:update'"
                     variant="success"
                     size="sm"
                     title="Approuver la mutation"
@@ -83,6 +84,7 @@
                   </app-icon-button>
 
                   <app-icon-button
+                    *hasPermission="'mutations:update'"
                     variant="danger"
                     size="sm"
                     title="Refuser la mutation"
@@ -94,6 +96,7 @@
                 }
 
                 <app-icon-button
+                  *hasPermission="'mutations:delete'"
                   variant="danger"
                   size="sm"
                   title="Supprimer la mutation"
@@ -112,7 +115,13 @@
                 <i class="bi bi-arrow-left-right" style="font-size: 2.25rem;"></i>
                 <p class="empty-title">Aucune mutation ou transfert enregistré</p>
                 <p class="empty-desc">Enregistrez un transfert de paroisse pour un catéchumène.</p>
-                <app-button variant="primary" size="sm" icon="plus" (clicked)="onCreate()">
+                <app-button
+                  *hasPermission="'mutations:create'"
+                  variant="primary"
+                  size="sm"
+                  icon="plus"
+                  (clicked)="onCreate()"
+                >
                   Nouveau Transfert
                 </app-button>
               </div>

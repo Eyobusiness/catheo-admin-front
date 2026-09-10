@@ -50,6 +50,29 @@
   background-color: var(--primary-50);
 }
 
+.table-row.is-working-row {
+  background-color: rgba(16, 185, 129, 0.04);
+}
+
+.table-row.is-working-row:hover {
+  background-color: rgba(16, 185, 129, 0.08);
+}
+
+.working-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #047857;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: 9999px;
+  padding: 0.125rem 0.5rem;
+  margin-top: 0.25rem;
+  width: fit-content;
+}
+
 .annee-cell {
   display: flex;
   align-items: center;
@@ -148,8 +171,30 @@
   align-items: center;
   gap: 0.5rem;
   font-size: 0.8125rem;
-  font-weight: 600;
   color: var(--neutral-700);
+}
+
+.inscrits-box i {
+  color: #10b981;
+  font-size: 1rem;
+}
+
+.inscrits-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: #f0fdf4;
+  color: #166534;
+  padding: 0.2rem 0.55rem;
+  border-radius: 9999px;
+  border: 1px solid #bbf7d0;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.inscrits-badge strong {
+  font-weight: 700;
+  color: #15803d;
 }
 
 .actions-flex {

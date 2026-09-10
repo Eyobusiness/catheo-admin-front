@@ -80,6 +80,7 @@
           <td class="text-end">
             <div class="row-actions">
               <app-icon-button
+                *hasPermission="'utilisateurs:update'"
                 variant="ghost"
                 size="sm"
                 title="Modifier ce compte"
@@ -90,6 +91,7 @@
               </app-icon-button>
 
               <app-icon-button
+                *hasPermission="'utilisateurs:delete'"
                 variant="ghost"
                 size="sm"
                 title="Supprimer ce compte"
@@ -110,7 +112,13 @@
               </div>
               <h4>Aucun utilisateur trouvé</h4>
               <p>Aucun compte ne correspond à vos critères de recherche ou de filtre.</p>
-              <app-button variant="primary" size="sm" icon="plus" (clicked)="createRequested.emit()">
+              <app-button
+                *hasPermission="'utilisateurs:create'"
+                variant="primary"
+                size="sm"
+                icon="plus"
+                (clicked)="createRequested.emit()"
+              >
                 Créer un premier utilisateur
               </app-button>
             </div>

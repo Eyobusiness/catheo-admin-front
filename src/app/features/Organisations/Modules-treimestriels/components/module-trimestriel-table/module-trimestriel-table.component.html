@@ -62,7 +62,9 @@
                 </app-icon-button>
 
                 <!-- Action: Modifier -->
+                <!-- Action: Modifier -->
                 <app-icon-button
+                  *hasPermission="'modules_trimestriels:update'"
                   variant="primary"
                   size="sm"
                   title="Modifier"
@@ -74,6 +76,7 @@
 
                 <!-- Action: Supprimer -->
                 <app-icon-button
+                  *hasPermission="'modules_trimestriels:delete'"
                   variant="danger"
                   size="sm"
                   title="Supprimer"

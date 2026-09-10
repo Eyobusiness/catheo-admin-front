@@ -5,10 +5,11 @@ import { AppIconButton } from '../../../../../shared/ui/components/buttons/app-i
 import { AppButton } from '../../../../../shared/ui/components/buttons/app-button/app-button.component';
 import { AppPagination } from '../../../../../shared/ui/components/tables/app-pagination/app-pagination.component';
 import { ToastService } from '../../../../../core/services/toast.service';
+import { HasPermissionDirective } from '../../../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-campagne-table',
-  imports: [CommonModule, DatePipe, AppIconButton, AppButton, AppPagination],
+  imports: [CommonModule, DatePipe, AppIconButton, AppButton, AppPagination, HasPermissionDirective],
   templateUrl: './campagne-table.component.html',
   styleUrl: './campagne-table.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

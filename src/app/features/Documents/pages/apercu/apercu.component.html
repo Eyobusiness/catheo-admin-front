@@ -30,34 +30,14 @@
   @if (documentGenere()) {
     <div class="a4-container">
       <div class="a4-page" id="printableDocument">
-        <!-- EN-TÊTE INSTITUTIONNEL OFFICIEL PAROISSIAL (Configuration backend) -->
-        <app-entete-catechese [showBorder]="false" />
-
-        <div class="header-divider-double"></div>
+        <!-- EN-TÊTE INSTITUTIONNEL OFFICIEL PAROISSIAL (Header impression) -->
+        <app-header-paroisse-print
+          [anneePastorale]="documentGenere()?.annee_libelle || ''"
+          [isFicheIndividuelle]="false"
+        />
 
         <!-- CORPS DU DOCUMENT (CONTENU FUSIONNÉ) -->
         <div class="a4-body" [innerHTML]="safeContenuRendu()"></div>
-
-        <!-- PIED DE PAGE OFFICIEL AVEC LIEU, DATE & SIGNATURE DU CURÉ -->
-        <div class="a4-footer">
-          <div class="footer-left-seal">
-            <div class="seal-placeholder">
-              <span></span>
-            </div>
-          </div>
-          <div class="footer-right-signature">
-            <div class="signature-date">Fait à {{ service.paroisseInfo().nom }}, le {{ currentDateFormatted() }}</div>
-            <div class="signature-name">{{ service.paroisseInfo().cureNom }}</div>
-            <div class="signature-space">
-              <span class="sig-note"></span>
-            </div>
-          </div>
-        </div>
-
-        <!-- PIED DE PAGE DISCRET BAS DE FEUILLE -->
-        <div class="a4-bottom-bar">
-          <span>Catheo • Documents Officiels Paroissiaux • Réf : {{ documentGenere()!.reference_document || documentGenere()!.id }}</span>
-        </div>
       </div>
     </div>
   } @else {

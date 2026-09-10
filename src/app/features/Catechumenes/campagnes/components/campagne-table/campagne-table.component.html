@@ -134,6 +134,7 @@
 
                 <!-- 3. Basculer Statut (Ouvrir/Fermer) -->
                 <app-icon-button
+                  *hasPermission="'campagnes_preinscriptions:update'"
                   [variant]="campagne.statut === 'ouverte' ? 'success' : 'ghost'"
                   size="sm"
                   [title]="campagne.statut === 'ouverte' ? 'Clôturer les inscriptions' : 'Ouvrir les inscriptions'"
@@ -156,6 +157,7 @@
 
                 <!-- 5. Modifier -->
                 <app-icon-button
+                  *hasPermission="'campagnes_preinscriptions:update'"
                   variant="primary"
                   size="sm"
                   title="Modifier la campagne"
@@ -167,6 +169,7 @@
 
                 <!-- 6. Supprimer -->
                 <app-icon-button
+                  *hasPermission="'campagnes_preinscriptions:delete'"
                   variant="danger"
                   size="sm"
                   title="Supprimer la campagne"
@@ -189,7 +192,13 @@
                 <p class="empty-desc">
                   Créez une nouvelle campagne pour ouvrir les inscriptions en ligne et générer des QR Codes pour vos fidèles.
                 </p>
-                <app-button variant="primary" size="md" icon="plus" (clicked)="onCreate()">
+                <app-button
+                  *hasPermission="'campagnes_preinscriptions:create'"
+                  variant="primary"
+                  size="md"
+                  icon="plus"
+                  (clicked)="onCreate()"
+                >
                   Créer une Campagne
                 </app-button>
               </div>

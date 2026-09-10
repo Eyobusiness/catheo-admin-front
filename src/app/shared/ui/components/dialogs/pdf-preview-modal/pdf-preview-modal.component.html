@@ -173,6 +173,9 @@
                 @case ('registre-sacrement') {
                   <app-doc-registre-sacrement [data]="documentData()" />
                 }
+                @case ('document-officiel') {
+                  <app-doc-document-officiel [data]="documentData()" />
+                }
                 @case ('pdf-blob') {
                   @if (pdfUrl()) {
                     <iframe

@@ -106,6 +106,10 @@ export class CatechumeneFormModalComponent {
       const item = this.catechumeneToEdit();
       const activeAnnee = this.annees().find(a => a.est_active) || (this.annees().length > 0 ? this.annees()[0] : null);
 
+      if (this.isOpen()) {
+        this.activeTab.set('identite');
+      }
+
       if (this.isEditing() && item) {
         const lastIns = item.inscriptions_annuelles && item.inscriptions_annuelles.length > 0
           ? item.inscriptions_annuelles[0]
@@ -124,16 +128,16 @@ export class CatechumeneFormModalComponent {
           domicile: item.domicile || '',
           profession: item.profession || '',
           classe_scolaire: item.classe_scolaire || '',
-          situation_matrimoniale: item.situation_matrimoniale || '',
+          situation_matrimoniale: item.situation_matrimoniale || 'celibataire',
           telephone: item.telephone || '',
           photo_url: item.photo_url || item.photo_path || '',
           statut: item.statut || 'actif',
 
           ceb_id: item.ceb_id || item.ceb?.id || '',
-          annee_catechese_id: lastIns?.annee_catechese_id || (activeAnnee ? activeAnnee.id : ''),
-          section_id: lastIns?.section_id || '',
-          niveau_id: lastIns?.niveau_id || '',
-          classe_id: lastIns?.classe_id || '',
+          annee_catechese_id: lastIns?.annee_catechese_id || (item as any).annee_catechese_id || (activeAnnee ? activeAnnee.id : ''),
+          section_id: lastIns?.section_id || (item as any).section_id || (item as any).section?.id || '',
+          niveau_id: lastIns?.niveau_id || (item as any).niveau_id || (item as any).niveau?.id || '',
+          classe_id: lastIns?.classe_id || (item as any).classe_id || (item as any).classe?.id || '',
 
           nom_pere: item.nom_pere || '',
           origine_pere: item.origine_pere || '',

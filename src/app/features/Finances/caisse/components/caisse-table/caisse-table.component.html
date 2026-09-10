@@ -35,9 +35,11 @@
             <!-- Libellé & Catégorie -->
             <td class="col-libelle">
               <div class="libelle-cell">
-                <span class="libelle-main">{{ item.libelle }}</span>
-                <span class="categorie-sub">
-                  <i class="bi bi-folder2"></i> {{ item.categorie }}
+                <span class="libelle-main" [title]="item.libelle">
+                  {{ truncateText(item.libelle, 22) }}
+                </span>
+                <span class="categorie-sub" [title]="item.categorie">
+                  <i class="bi bi-folder2"></i> {{ truncateText(item.categorie, 22) }}
                 </span>
               </div>
             </td>
@@ -67,6 +69,7 @@
                 <!-- Rembourser (si entrée de caisse) -->
                 @if (isEntree(item.type_mouvement)) {
                   <app-icon-button
+                    *hasPermission="'caisse:update'"
                     variant="danger"
                     size="sm"
                     title="Effectuer un remboursement"
@@ -79,6 +82,7 @@
 
                 <!-- Supprimer -->
                 <app-icon-button
+                  *hasPermission="'caisse:delete'"
                   variant="danger"
                   size="sm"
                   title="Supprimer l'écriture"

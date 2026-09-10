@@ -1,17 +1,20 @@
-import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output, signal } from '@angular/core';
 import { AnneeCatechese } from '../../models/annee-catechese.model';
 import { AppIconButton } from '../../../../../shared/ui/components/buttons/app-icon-button/app-icon-button.component';
 import { AppButton } from '../../../../../shared/ui/components/buttons/app-button/app-button.component';
 import { AppPagination } from '../../../../../shared/ui/components/tables/app-pagination/app-pagination.component';
+import { WorkingAnneeService } from '../../../../../core/services/working-annee.service';
+import { HasPermissionDirective } from '../../../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-annee-table',
-  imports: [AppIconButton, AppButton, AppPagination],
+  imports: [AppIconButton, AppButton, AppPagination, HasPermissionDirective],
   templateUrl: './annee-table.component.html',
   styleUrl: './annee-table.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AnneeTableComponent {
+  protected readonly workingAnneeService = inject(WorkingAnneeService);
   public readonly annees = input<AnneeCatechese[]>([]);
 
   public readonly viewRequested = output<AnneeCatechese>();
@@ -19,6 +22,9 @@ export class AnneeTableComponent {
   public readonly deleteRequested = output<AnneeCatechese>();
   public readonly toggleActiveRequested = output<AnneeCatechese>();
   public readonly createRequested = output<void>();
+
+  // Année de travail sélectionnée
+  protected readonly currentWorkingId = computed(() => this.workingAnneeService.workingAnnee()?.id);
 
   // Local Pagination Signals
   public readonly currentPage = signal<number>(1);
@@ -46,6 +52,10 @@ export class AnneeTableComponent {
 
   protected onToggleActive(annee: AnneeCatechese): void {
     this.toggleActiveRequested.emit(annee);
+  }
+
+  protected onSelectWorkingAnnee(annee: AnneeCatechese): void {
+    this.workingAnneeService.setWorkingAnnee(annee);
   }
 
   protected onCreate(): void {

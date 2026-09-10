@@ -4,10 +4,11 @@ import { CaisseMouvementDto, TypeMouvementCaisse } from '../../models/caisse.mod
 import { AppIconButton } from '../../../../../shared/ui/components/buttons/app-icon-button/app-icon-button.component';
 import { AppButton } from '../../../../../shared/ui/components/buttons/app-button/app-button.component';
 import { AppPagination } from '../../../../../shared/ui/components/tables/app-pagination/app-pagination.component';
+import { HasPermissionDirective } from '../../../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-caisse-table',
-  imports: [CommonModule, DecimalPipe, DatePipe, AppIconButton, AppButton, AppPagination],
+  imports: [CommonModule, DecimalPipe, DatePipe, AppIconButton, AppButton, AppPagination, HasPermissionDirective],
   templateUrl: './caisse-table.component.html',
   styleUrl: './caisse-table.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -66,6 +67,12 @@ export class CaisseTableComponent {
 
   protected onRembourser(item: CaisseMouvementDto): void {
     this.rembourserRequested.emit(item);
+  }
+
+  protected truncateText(text: string | null | undefined, limit = 22): string {
+    if (!text) return '';
+    const trimmed = text.trim();
+    return trimmed.length > limit ? `${trimmed.slice(0, limit)}...` : trimmed;
   }
 
   protected onDelete(item: CaisseMouvementDto): void {

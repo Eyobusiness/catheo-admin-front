@@ -73,6 +73,7 @@
 
                 <!-- Action: Modifier -->
                 <app-icon-button
+                  *hasPermission="'affectations_animateurs:update'"
                   variant="primary"
                   size="sm"
                   title="Modifier"
@@ -84,6 +85,7 @@
 
                 <!-- Action: Supprimer -->
                 <app-icon-button
+                  *hasPermission="'affectations_animateurs:delete'"
                   variant="danger"
                   size="sm"
                   title="Annuler l'affectation"

@@ -4,12 +4,13 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ConfigurationService } from '../../services/configuration.service';
 import { AppCard } from '../../../../../shared/ui/components/layout/app-card/app-card.component';
 import { AppButton } from '../../../../../shared/ui/components/buttons/app-button/app-button.component';
+import { HasPermissionDirective } from '../../../../../shared/directives/has-permission.directive';
 import { UpdateParoisseConfigurationDto } from '../../models/configuration.model';
 import { ToastService } from '../../../../../core/services/toast.service';
 
 @Component({
   selector: 'app-tab-paroisse-config',
-  imports: [ReactiveFormsModule, AppCard, AppButton, TitleCasePipe],
+  imports: [ReactiveFormsModule, AppCard, AppButton, TitleCasePipe, HasPermissionDirective],
   templateUrl: './tab-paroisse-config.component.html',
   styleUrl: './tab-paroisse-config.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush

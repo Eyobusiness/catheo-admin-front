@@ -1,0 +1,404 @@
+.working-annee-modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Custom smooth scrollbar */
+.working-annee-modal-content::-webkit-scrollbar {
+  width: 6px;
+}
+.working-annee-modal-content::-webkit-scrollbar-track {
+  background: var(--surface-bg-subtle, #f1f5f9);
+  border-radius: 4px;
+}
+.working-annee-modal-content::-webkit-scrollbar-thumb {
+  background: var(--border-color, #cbd5e1);
+  border-radius: 4px;
+}
+
+/* Search Bar Wrapper */
+.search-bar-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.search-input-box {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.search-input-box svg {
+  position: absolute;
+  left: 0.875rem;
+  color: #64748b;
+  pointer-events: none;
+}
+
+.modal-search-input {
+  width: 100%;
+  padding: 0.625rem 1rem 0.625rem 2.625rem;
+  font-size: 0.875rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-color, #e2e8f0);
+  background: var(--surface-bg, #ffffff);
+  color: var(--text-color, #1e293b);
+  transition: all 0.2s ease;
+}
+
+.modal-search-input:focus {
+  outline: none;
+  border-color: var(--primary-500, #3b82f6);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.total-count-badge {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #64748b;
+  background: #f1f5f9;
+  padding: 0.5rem 0.875rem;
+  border-radius: 0.5rem;
+  white-space: nowrap;
+}
+
+/* Info Box */
+.info-alert-box {
+  display: flex;
+  gap: 0.75rem;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.06), rgba(14, 165, 233, 0.03));
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 0.75rem;
+  padding: 0.875rem 1rem;
+}
+
+.info-alert-icon {
+  color: #0284c7;
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+.info-alert-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.alert-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #0369a1;
+  margin: 0;
+}
+
+.alert-desc {
+  font-size: 0.8125rem;
+  color: #475569;
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* Years List */
+.years-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Year Card */
+.year-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: var(--surface-bg, #ffffff);
+  border: 1.5px solid var(--border-color, #e2e8f0);
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.year-card:hover {
+  border-color: var(--primary-400, #60a5fa);
+  background: #f8fafc;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.08);
+}
+
+.year-card.is-selected {
+  border-color: #10b981;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(5, 150, 105, 0.02));
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.12);
+}
+
+.year-card.is-selected:hover {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(5, 150, 105, 0.04));
+}
+
+.year-card-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+}
+
+.calendar-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 0.625rem;
+  background: #f1f5f9;
+  color: #64748b;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.calendar-icon-wrapper.selected {
+  background: #10b981;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
+}
+
+.year-card:hover:not(.is-selected) .calendar-icon-wrapper {
+  background: #e0f2fe;
+  color: #0284c7;
+}
+
+.year-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  flex: 1;
+}
+
+.year-title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.year-label {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-color, #0f172a);
+  margin: 0;
+}
+
+/* Badges */
+.badge-working-active {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: #10b981;
+  color: #ffffff;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 0.2rem 0.55rem;
+  border-radius: 9999px;
+  letter-spacing: 0.02em;
+}
+
+.badge-official-active {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 0.175rem 0.55rem;
+  border-radius: 9999px;
+}
+
+.badge-preparation {
+  display: inline-flex;
+  align-items: center;
+  background: #fffbeb;
+  color: #92400e;
+  border: 1px solid #fde68a;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 0.175rem 0.55rem;
+  border-radius: 9999px;
+}
+
+.badge-cloturee {
+  display: inline-flex;
+  align-items: center;
+  background: #f8fafc;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 0.175rem 0.55rem;
+  border-radius: 9999px;
+}
+
+.pulse-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #10b981;
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: pulse-green 2s infinite;
+}
+
+@keyframes pulse-green {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 5px rgba(16, 185, 129, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+/* Meta Row */
+.year-meta-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8125rem;
+  color: #64748b;
+}
+
+.meta-item svg {
+  color: #94a3b8;
+}
+
+.catechumene-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: #f0fdf4;
+  color: #166534;
+  padding: 0.2rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid #bbf7d0;
+  transition: all 0.2s ease;
+}
+
+.catechumene-badge strong {
+  font-weight: 700;
+  color: #15803d;
+}
+
+.catechumene-badge svg {
+  color: #16a34a;
+}
+
+/* Right Section */
+.year-card-right {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.checked-circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #10b981;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.4);
+}
+
+.btn-select-year {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #2563eb;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.year-card:hover .btn-select-year {
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+}
+
+/* Empty State & Loading State */
+.empty-years,
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1rem;
+  text-align: center;
+  color: #64748b;
+}
+
+.empty-years svg {
+  color: #cbd5e1;
+  margin-bottom: 0.75rem;
+}
+
+.empty-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #334155;
+  margin: 0 0 0.25rem 0;
+}
+
+.empty-desc {
+  font-size: 0.8125rem;
+  color: #94a3b8;
+  margin: 0;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #e2e8f0;
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 0.75rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.modal-footer-actions {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+}

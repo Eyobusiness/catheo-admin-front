@@ -17,6 +17,7 @@ import { ReleveNotesComponent } from '../../../../../features/Impressions/docume
 import { BulletinDocComponent } from '../../../../../features/Impressions/documents/bulletin/bulletin.component';
 import { BordereauVersementComponent } from '../../../../../features/Impressions/documents/bordereau-versement/bordereau-versement.component';
 import { RegistreSacrementComponent } from '../../../../../features/Impressions/documents/registre-sacrement/registre-sacrement.component';
+import { DocumentOfficielComponent } from '../../../../../features/Impressions/documents/document-officiel/document-officiel.component';
 
 @Component({
   selector: 'app-pdf-preview-modal',
@@ -37,7 +38,8 @@ import { RegistreSacrementComponent } from '../../../../../features/Impressions/
     RenseignementBaptemeComponent,
     RenseignementPremiereCommunionComponent,
     RenseignementConfirmationComponent,
-    RegistreSacrementComponent
+    RegistreSacrementComponent,
+    DocumentOfficielComponent
   ],
   templateUrl: './pdf-preview-modal.component.html',
   styleUrl: './pdf-preview-modal.component.css',

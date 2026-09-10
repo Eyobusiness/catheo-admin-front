@@ -83,6 +83,7 @@
 
                 <!-- Action: Modifier -->
                 <app-icon-button
+                  *hasPermission="'mouvements:update'"
                   variant="primary"
                   size="sm"
                   title="Modifier"
@@ -94,6 +95,7 @@
 
                 <!-- Action: Supprimer -->
                 <app-icon-button
+                  *hasPermission="'mouvements:delete'"
                   variant="danger"
                   size="sm"
                   title="Supprimer"

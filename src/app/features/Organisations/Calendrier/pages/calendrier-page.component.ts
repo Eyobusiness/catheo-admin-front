@@ -9,6 +9,7 @@ import { CalendrierTableComponent } from '../components/calendrier-table/calendr
 import { CalendrierMonthViewComponent } from '../components/calendrier-month-view/calendrier-month-view.component';
 import { CalendrierFormModalComponent } from '../components/calendrier-form-modal/calendrier-form-modal.component';
 import { CalendrierDeleteModalComponent } from '../components/calendrier-delete-modal/calendrier-delete-modal.component';
+import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 
 export type CalendarViewMode = 'calendar' | 'table';
 
@@ -20,7 +21,8 @@ export type CalendarViewMode = 'calendar' | 'table';
     CalendrierMonthViewComponent,
     CalendrierTableComponent,
     CalendrierFormModalComponent,
-    CalendrierDeleteModalComponent
+    CalendrierDeleteModalComponent,
+    HasPermissionDirective
   ],
   templateUrl: './calendrier-page.component.html',
   styleUrl: './calendrier-page.component.css',

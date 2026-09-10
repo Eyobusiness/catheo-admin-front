@@ -12,7 +12,7 @@
     </div>
 
     <div class="header-actions">
-      <button type="button" class="btn btn-primary" (click)="openNewModelePage()">
+      <button *hasPermission="'modeles_documents:create'" type="button" class="btn btn-primary" (click)="openNewModelePage()">
         <i class="bi bi-plus-lg"></i>
         <span>Nouveau modèle</span>
       </button>
@@ -71,8 +71,8 @@
               <td>
                 <div class="item-nom">
                   <i class="bi bi-file-earmark-text file-icon"></i>
-                  <div>
-                    <strong>{{ m.titre }}</strong>
+                  <div class="item-title-group">
+                    <strong class="item-title">{{ m.titre }}</strong>
                     @if (m.code) {
                       <span class="code-pill">{{ m.code }}</span>
                     }
@@ -112,15 +112,15 @@
                     <i class="bi bi-eye"></i>
                   </button>
 
-                  <button type="button" class="action-btn edit-btn" title="Modifier le modèle" (click)="openEditModelePage(m)">
+                  <button *hasPermission="'modeles_documents:update'" type="button" class="action-btn edit-btn" title="Modifier le modèle" (click)="openEditModelePage(m)">
                     <i class="bi bi-pencil"></i>
                   </button>
 
-                  <button type="button" class="action-btn copy-btn" title="Dupliquer" (click)="dupliquerModele(m)">
+                  <button *hasPermission="'modeles_documents:create'" type="button" class="action-btn copy-btn" title="Dupliquer" (click)="dupliquerModele(m)">
                     <i class="bi bi-copy"></i>
                   </button>
 
-                  <button type="button" class="action-btn delete-btn" title="Supprimer" (click)="openDeleteConfirm(m)">
+                  <button *hasPermission="'modeles_documents:delete'" type="button" class="action-btn delete-btn" title="Supprimer" (click)="openDeleteConfirm(m)">
                     <i class="bi bi-trash"></i>
                   </button>
                 </div>
@@ -169,13 +169,8 @@
 
       <div class="modal-body">
         <div class="preview-paper-box">
-          <app-entete-catechese [showBorder]="false" />
+          <app-header-paroisse-print [isFicheIndividuelle]="false" />
           <div class="preview-body" [innerHTML]="previewContentHtml()"></div>
-          <div class="preview-footer">
-            <div class="signature-date">Fait à {{ service.paroisseInfo().nom }}, le {{ (selectedModele()?.created_at || '2026-08-28') | date:'dd MMMM yyyy' }}</div>
-            <div class="signature-title">{{ selectedModele()?.signature_titre || 'Le Curé de la Paroisse' }}</div>
-            <div class="signature-seal">[ Sceau & Signature Officielle ]</div>
-          </div>
         </div>
       </div>
 

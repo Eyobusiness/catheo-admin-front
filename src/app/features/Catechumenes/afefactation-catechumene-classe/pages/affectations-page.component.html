@@ -12,6 +12,7 @@
     <div class="topbar-actions">
       @if (selectedInscriptionIds().length > 0) {
         <app-button
+          *hasPermission="'affectations:create'"
           variant="primary"
           size="md"
           icon="check2-all"

@@ -12,15 +12,19 @@
       </thead>
       <tbody>
         @for (annee of paginatedAnnees(); track annee.id) {
-          <tr class="table-row">
+          <tr class="table-row" [class.is-working-row]="currentWorkingId() === annee.id">
             <td>
               <div class="annee-cell">
-                <div class="annee-icon-box" [class.is-active-icon]="annee.est_active">
+                <div class="annee-icon-box" [class.is-active-icon]="annee.est_active || currentWorkingId() === annee.id">
                   <i class="bi bi-calendar3"></i>
                 </div>
                 <div class="annee-meta">
                   <span class="annee-title">{{ annee.libelle }}</span>
-                  
+                  @if (currentWorkingId() === annee.id) {
+                    <span class="working-pill">
+                      <i class="bi bi-check-circle-fill"></i> Année de travail en cours
+                    </span>
+                  }
                 </div>
               </div>
             </td>
@@ -38,7 +42,7 @@
               @if (annee.est_active || annee.statut === 'active') {
                 <span class="active-badge">
                   <span class="pulse-dot"></span>
-                  Année Active
+                  Active officielle
                 </span>
               } @else if (annee.statut === 'preparation') {
                 <span class="preparation-badge">
@@ -52,18 +56,29 @@
 
             <td>
               <div class="inscrits-box">
-                <i class="bi bi-person-lines-fill"></i>
-                <span>{{ annee.total_inscrits || 0 }} inscrits</span>
+                <i class="bi bi-people-fill"></i>
+                <span class="inscrits-badge"><strong>{{ annee.total_inscrits || 0 }}</strong> inscrit(s)</span>
               </div>
             </td>
 
             <td class="text-right">
               <div class="actions-flex">
+                <!-- Action: Travailler sur cette année -->
+                <app-icon-button
+                  [variant]="currentWorkingId() === annee.id ? 'success' : 'ghost'"
+                  size="sm"
+                  [title]="currentWorkingId() === annee.id ? 'Année de travail en cours' : 'Sélectionner comme année de travail'"
+                  ariaLabel="Sélectionner comme année de travail"
+                  (clicked)="onSelectWorkingAnnee(annee)"
+                >
+                  <i [class]="'bi ' + (currentWorkingId() === annee.id ? 'bi-check2-circle' : 'bi-cursor-fill')"></i>
+                </app-icon-button>
+
                 <!-- Action: Bascule statut actif -->
                 <app-icon-button
                   [variant]="annee.est_active ? 'success' : 'ghost'"
                   size="sm"
-                  [title]="annee.est_active ? 'Année active' : 'Définir comme active'"
+                  [title]="annee.est_active ? 'Année active officielle' : 'Définir comme active officielle en base'"
                   ariaLabel="Statut actif"
                   (clicked)="onToggleActive(annee)"
                 >
@@ -83,6 +98,7 @@
 
                 <!-- Action: Modifier -->
                 <app-icon-button
+                  *hasPermission="'annees_pastorales:update'"
                   variant="primary"
                   size="sm"
                   title="Modifier"
@@ -94,6 +110,7 @@
 
                 <!-- Action: Supprimer -->
                 <app-icon-button
+                  *hasPermission="'annees_pastorales:delete'"
                   variant="danger"
                   size="sm"
                   title="Supprimer"

@@ -949,7 +949,46 @@ export class PdfService {
   // =========================================================================
   // 12. DOCUMENTS OFFICIELS GÉNÉRÉS
   // =========================================================================
-  public previewDocumentGenerePdf(uuid: string | number, options?: { titre?: string; reference?: string }): void {
-    this.toastService.info('Document Officiel', `Ouverture du document ${options?.reference || uuid}`);
+  public previewDocumentOfficielPdf(doc: any, options?: { title?: string; fileName?: string }): void {
+    if (!doc) return;
+    const title = options?.title || doc.titre || 'Document Officiel';
+    const catNom = doc.catechumene?.nom_complet || (doc.catechumene ? `${doc.catechumene.nom} ${doc.catechumene.prenoms || ''}`.trim() : '');
+    const ref = doc.reference_document || doc.reference || 'DOC';
+    this.pdfPreview.openDocument('document-officiel', doc, {
+      title,
+      subtitle: catNom ? `${catNom} — Réf: ${ref}` : `Réf: ${ref}`,
+      formatBadge: 'A4 Portrait',
+      fileName: options?.fileName || `${title.toLowerCase().replace(/\s+/g, '-')}-${ref}.pdf`
+    });
+  }
+
+  public previewDocumentGenerePdf(docOrUuid: any, options?: { titre?: string; reference?: string }): void {
+    if (typeof docOrUuid === 'object' && docOrUuid !== null) {
+      this.previewDocumentOfficielPdf(docOrUuid, { title: options?.titre });
+      return;
+    }
+    const uuid = String(docOrUuid);
+    this.pdfPreview.startLoading('document-officiel', {
+      title: options?.titre || 'Document Officiel',
+      subtitle: options?.reference ? `Réf: ${options.reference}` : '',
+      formatBadge: 'A4 Portrait'
+    });
+
+    this.http.get<any>(`${this.baseUrl}/documents-generes/${uuid}`).pipe(
+      map(res => extractItem(res)),
+      tap(data => {
+        if (data) {
+          this.previewDocumentOfficielPdf(data, { title: options?.titre });
+        } else {
+          this.pdfPreview.hasError.set(true);
+          this.pdfPreview.errorMessage.set('Document officiel introuvable.');
+        }
+      }),
+      catchError(err => {
+        this.pdfPreview.hasError.set(true);
+        this.pdfPreview.errorMessage.set('Impossible de charger le document officiel.');
+        return of(null);
+      })
+    ).subscribe();
   }
 }

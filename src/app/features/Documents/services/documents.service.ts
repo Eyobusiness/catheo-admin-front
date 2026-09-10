@@ -45,6 +45,69 @@ function extractObjectData(res: any): any {
   return res;
 }
 
+export const DEFAULT_ATTESTATION_CONTENU = `<div class="attestation-document-container" style="font-family: 'Times New Roman', Times, serif; color: #000; padding: 5px 0;">
+  
+  <!-- Titre sous-jacent à l'en-tête paroissial -->
+  <div style="text-align: center; margin-top: 10px; margin-bottom: 25px;">
+    <h3 style="margin: 0; font-size: 1.15rem; font-weight: bold; text-decoration: underline; letter-spacing: 1.5px; text-transform: uppercase;">
+      COORDINATION DE LA CATECHESE
+    </h3>
+  </div>
+
+  <!-- Encadré Double Bordure du Titre du Document -->
+  <div style="text-align: center; margin-bottom: 35px;">
+    <div style="display: inline-block; border: 3px double #000; padding: 8px 32px;">
+      <h1 style="margin: 0; font-size: 1.45rem; font-weight: 800; font-style: italic; letter-spacing: 2px; text-transform: uppercase;">
+        ATTESTATION DE CATECHESE
+      </h1>
+    </div>
+  </div>
+
+  <!-- Corps de l'attestation -->
+  <div style="font-size: 1.125rem; line-height: 2.1; text-align: justify; margin-bottom: 35px;">
+    <p style="margin-bottom: 24px; text-indent: 40px;">
+      Je soussigné, révérend Père <strong>{{cure_nom}}</strong>, curé de la paroisse {{nom_paroisse}}, et responsable de la catéchèse, atteste que <strong>{{nom_complet}}</strong> a régulièrement suivi les cours de catéchèse de la <strong>{{classe}}</strong> ({{section}}) durant l'année pastorale <strong>{{annee_pastorale}}</strong> et a été admise en <strong>{{niveau_suivant}}</strong>.
+    </p>
+
+    <p style="margin-bottom: 24px; text-indent: 40px;">
+      Cependant, elle a quitté notre paroisse pour motif de {{motif_depart}}.
+    </p>
+
+    <p style="margin-bottom: 20px; text-indent: 40px;">
+      En foi de quoi nous lui délivrons le présent document pour servir et valoir ce que de droit.
+    </p>
+  </div>
+
+  <!-- Date et Lieu -->
+  <div style="text-align: right; font-style: italic; font-size: 1.1rem; margin-bottom: 45px; padding-right: 15px;">
+    Fait à {{ville_paroisse}} le {{date_du_jour}}
+  </div>
+
+  <!-- Bloc Signatures & Cachets (2 colonnes comme sur l'exemplaire) -->
+  <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 20px; padding: 0 10px;">
+    <!-- Colonne Gauche : La Coordination -->
+    <div style="text-align: center; width: 45%;">
+      <div style="font-weight: bold; font-size: 1.1rem; text-decoration: underline; margin-bottom: 75px;">
+        La Coordination
+      </div>
+      <div style="font-weight: 700; font-size: 1.05rem;">
+        {{responsable_coordination}}
+      </div>
+    </div>
+
+    <!-- Colonne Droite : Le Curé de la Paroisse -->
+    <div style="text-align: center; width: 45%;">
+      <div style="font-weight: bold; font-size: 1.1rem; text-decoration: underline; margin-bottom: 75px;">
+        Le Curé de la Paroisse
+      </div>
+      <div style="font-weight: 700; font-size: 1.05rem;">
+        {{cure_nom}}
+      </div>
+    </div>
+  </div>
+
+</div>`;
+
 @Injectable({
   providedIn: 'root'
 })
@@ -58,7 +121,7 @@ export class DocumentsService {
   private readonly baseUrlModeles = `${environment.apiUrl}/modeles-documents`;
   private readonly baseUrlDocuments = `${environment.apiUrl}/documents-generes`;
 
-  // Reactive state signals
+  // Reactive state signals (Strictement alimentés par la BD)
   public readonly modeles = signal<ModeleDocumentDto[]>([]);
   public readonly documentsGeneres = signal<DocumentGenereDto[]>([]);
   public readonly variablesSysteme = signal<ModeleDocumentVariableDto[]>(VARIABLES_SYSTEME_DEFAUT);
@@ -73,17 +136,17 @@ export class DocumentsService {
   public readonly totalModeles = computed(() => this.modeles().length);
   public readonly totalGeneres = computed(() => this.documentsGeneres().length);
 
-  // Configuration institutionnelle de la paroisse
+  // Configuration institutionnelle réelle de la paroisse
   public readonly paroisseInfo = computed(() => {
     const config = this.configService.paroisseConfig();
     return {
-      nom: config?.nom_paroisse || config?.nom || 'Paroisse Coeur Immaculé de Marie',
-      diocese: config?.diocese || 'Archidiocèse d\'Abidjan',
-      doyenne: config?.doyenne || 'Vicariat Épiscopal',
-      adresse: config?.adresse || '01 BP 1234 Abidjan 01',
-      telephone: config?.telephone || '+225 07 00 00 00',
-      email: config?.email || 'contact@catheo.ci',
-      cureNom: 'Le Curé de la Paroisse',
+      nom: config?.nom_paroisse || config?.nom || '',
+      diocese: config?.diocese || '',
+      doyenne: config?.doyenne || '',
+      adresse: config?.adresse || '',
+      telephone: config?.telephone || '',
+      email: config?.email || '',
+      cureNom: config?.cure_nom || '',
       logoUrl: config?.logo_paroisse_url || config?.logo_paroisse || config?.logo_url || ''
     };
   });
@@ -117,8 +180,10 @@ export class DocumentsService {
       }),
       catchError((error: HttpErrorResponse) => {
         this.isLoading.set(false);
-        this.toastService.error('Erreur', 'Impossible de charger les modèles de documents.');
-        return of(this.modeles());
+        const msg = error?.error?.message || 'Erreur lors du chargement des modèles de documents.';
+        this.toastService.error('Erreur', msg);
+        this.modeles.set([]);
+        return of([]);
       })
     );
   }
@@ -148,7 +213,7 @@ export class DocumentsService {
   }
 
   public getModeleById(id: string): Observable<ModeleDocumentDto | null> {
-    const cached = this.modeles().find(m => m.id === id);
+    const cached = this.modeles().find(m => m.id === id || m.code === id);
     if (cached) return of(cached);
 
     this.isLoading.set(true);
@@ -158,9 +223,8 @@ export class DocumentsService {
         return raw ? this.normalizeModele(raw) : null;
       }),
       tap(() => this.isLoading.set(false)),
-      catchError((error: HttpErrorResponse) => {
+      catchError(() => {
         this.isLoading.set(false);
-        this.toastService.error('Erreur', 'Modèle de document introuvable.');
         return of(null);
       })
     );
@@ -380,39 +444,79 @@ export class DocumentsService {
     if (!template) return '';
     const cat = catechumeneId
       ? this.catechumeneService.catechumenes().find(c => c.id === catechumeneId)
-      : this.catechumeneService.catechumenes()[0];
+      : (this.catechumeneService.catechumenes().length > 0 ? this.catechumeneService.catechumenes()[0] : null);
     const pInfo = this.paroisseInfo();
-    const anneeActive = this.anneeService.activeAnnee()?.libelle || '2026-2027';
+    const config = this.configService.paroisseConfig();
+    const anneeActive = this.anneeService.activeAnnee()?.libelle || '';
 
     const dateToday = new Date().toLocaleDateString('fr-FR', {
-      day: 'numeric',
+      day: '2-digit',
       month: 'long',
       year: 'numeric'
     });
 
-    const context: Record<string, string> = {
-      'nom_paroisse': pInfo.nom,
-      'diocese': pInfo.diocese,
-      'doyenne': pInfo.doyenne,
-      'adresse_paroisse': pInfo.adresse,
-      'telephone_paroisse': pInfo.telephone,
-      'email_paroisse': pInfo.email,
-      'cure_nom': pInfo.cureNom,
+    const nomParoisse = config?.nom_paroisse || config?.nom || pInfo.nom || '';
+    const cureNom = config?.cure_nom || pInfo.cureNom || '';
+    const respList = this.configService.responsables();
+    const activeResp = respList.find(r => r.statut === 'actif' && (
+      r.fonction?.toLowerCase().includes('coordination') ||
+      r.fonction?.toLowerCase().includes('catéchèse') ||
+      r.fonction?.toLowerCase().includes('responsable')
+    )) || respList.find(r => r.statut === 'actif');
+    const coordNom = activeResp?.nom_prenoms || config?.coordination_nom || 'La Coordination';
+    const ville = config?.ville || config?.commune || '';
 
-      'nom_complet': cat?.nom_complet || (cat ? `${cat.nom} ${cat.prenoms}` : 'NOM DU CATÉCHUMÈNE'),
-      'nom': cat?.nom || 'NOM',
-      'prenoms': cat?.prenoms || 'Prénoms',
-      'matricule': cat?.matricule || cat?.code_catechumene || 'CAT-2026-000',
-      'date_naissance': cat?.date_naissance || '01/01/2010',
-      'lieu_naissance': cat?.lieu_naissance || 'Abidjan',
+    const catNom = cat?.nom_complet || (cat ? `${cat.nom || ''} ${cat.prenoms || ''}`.trim() : '');
+    const catClasse = (cat as any)?.classe?.nom || cat?.classe_scolaire || '';
+    const catSection = (cat as any)?.section?.nom || '';
+    const catNiveau = (cat as any)?.niveau?.nom || '';
+
+    const context: Record<string, string> = {
+      'nom_paroisse': nomParoisse,
+      'paroisse_nom': nomParoisse,
+      'paroisse': nomParoisse,
+      'diocese': config?.diocese || pInfo.diocese || '',
+      'paroisse_diocese': config?.diocese || pInfo.diocese || '',
+      'doyenne': config?.doyenne || pInfo.doyenne || '',
+      'paroisse_doyenne': config?.doyenne || pInfo.doyenne || '',
+      'adresse_paroisse': config?.adresse || pInfo.adresse || '',
+      'paroisse_adresse': config?.adresse || pInfo.adresse || '',
+      'telephone_paroisse': config?.telephone || pInfo.telephone || '',
+      'paroisse_telephone': config?.telephone || pInfo.telephone || '',
+      'email_paroisse': config?.email || pInfo.email || '',
+      'paroisse_email': config?.email || pInfo.email || '',
+      'cure_nom': cureNom,
+      'nom_cure': cureNom,
+      'paroisse_cure': cureNom,
+      'cure': cureNom,
+      'responsable_coordination': coordNom,
+      'coordination_responsable': coordNom,
+      'coordination_nom': coordNom,
+      'responsable_catechese': coordNom,
+      'ville_paroisse': ville,
+      'paroisse_ville': ville,
+      'ville': ville,
+
+      'nom_complet': catNom,
+      'nom': cat?.nom || '',
+      'prenom': cat?.prenoms || '',
+      'prenoms': cat?.prenoms || '',
+      'matricule': cat?.matricule || cat?.code_catechumene || '',
+      'date_naissance': cat?.date_naissance || '',
+      'lieu_naissance': cat?.lieu_naissance || '',
       'telephone': cat?.telephone || '',
       'nom_pere': cat?.nom_pere || '',
+      'pere_nom': cat?.nom_pere || '',
       'nom_mere': cat?.nom_mere || '',
+      'mere_nom': cat?.nom_mere || '',
 
       'annee_pastorale': anneeActive,
-      'classe': cat?.classe_scolaire || '',
-      'niveau': '',
-      'section': '',
+      'classe': catClasse,
+      'niveau': catNiveau,
+      'section': catSection,
+      'niveau_suivant': customVars?.['niveau_suivant'] || '',
+      'motif_depart': customVars?.['motif_depart'] || 'déménagement',
+      'motif': customVars?.['motif'] || customVars?.['motif_depart'] || 'déménagement',
 
       'date_du_jour': dateToday,
       'date_generation': dateToday,

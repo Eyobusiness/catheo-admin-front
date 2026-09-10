@@ -4,6 +4,8 @@ import { CampagnePreinscriptionService } from '../../campagnes/services/campagne
 import { SectionService } from '../../../Organisations/Sections/services/section.service';
 import { NiveauService } from '../../../Organisations/Niveaux/services/niveau.service';
 import { ClasseService } from '../../../Organisations/Classe/services/classe.service';
+import { AnneeCatecheseService } from '../../../../core/services/annee-catechese.service';
+import { WorkingAnneeService } from '../../../../core/services/working-annee.service';
 import { ToastService } from '../../../../core/services/toast.service';
 import {
   PreinscriptionDto,
@@ -44,6 +46,8 @@ export class PreinscriptionsPageComponent implements OnInit {
   protected readonly sectionService = inject(SectionService);
   protected readonly niveauService = inject(NiveauService);
   protected readonly classeService = inject(ClasseService);
+  protected readonly anneeService = inject(AnneeCatecheseService);
+  protected readonly workingAnneeService = inject(WorkingAnneeService);
   protected readonly toastService = inject(ToastService);
 
   // Signals
@@ -52,12 +56,16 @@ export class PreinscriptionsPageComponent implements OnInit {
   protected readonly sections = this.sectionService.sections;
   protected readonly niveaux = this.niveauService.niveaux;
   protected readonly classes = this.classeService.classes;
+  protected readonly annees = this.anneeService.annees;
+  protected readonly workingAnneeLibelle = this.workingAnneeService.workingAnneeLibelle;
+  protected readonly workingAnneeId = this.workingAnneeService.workingAnneeId;
   protected readonly isLoading = this.preinscriptionService.isLoading;
 
   // Local Page Filters
   protected readonly searchQuery = signal<string>('');
   protected readonly statusFilter = signal<string>('');
   protected readonly sectionFilter = signal<string>('');
+  protected readonly anneeFilter = signal<string>('');
 
   // Modals state
   protected readonly isFormModalOpen = signal<boolean>(false);
@@ -79,13 +87,14 @@ export class PreinscriptionsPageComponent implements OnInit {
   });
 
   protected readonly hasActiveFilters = computed(() => {
-    return !!this.searchQuery() || !!this.statusFilter() || !!this.sectionFilter();
+    return !!this.searchQuery() || !!this.statusFilter() || !!this.sectionFilter() || !!this.anneeFilter();
   });
 
   protected readonly filteredPreinscriptions = computed(() => {
     const q = this.searchQuery().toLowerCase().trim();
     const sf = this.statusFilter();
     const secId = this.sectionFilter();
+    const af = this.anneeFilter();
     let list = this.preinscriptions();
 
     if (sf) {
@@ -93,6 +102,9 @@ export class PreinscriptionsPageComponent implements OnInit {
     }
     if (secId) {
       list = list.filter(p => p.section_souhaite_id === secId || p.section_souhaite?.id === secId);
+    }
+    if (af) {
+      list = list.filter(p => p.annee_catechese_id === af || p.annee_catechese?.id === af);
     }
 
     if (!q) return list;
@@ -110,6 +122,7 @@ export class PreinscriptionsPageComponent implements OnInit {
     this.sectionService.getAll().subscribe();
     this.niveauService.getAll().subscribe();
     this.classeService.getAll().subscribe();
+    this.anneeService.getAll().subscribe();
   }
 
   protected onSearchChange(event: Event): void {
@@ -131,10 +144,19 @@ export class PreinscriptionsPageComponent implements OnInit {
     this.sectionFilter.set(select.value);
   }
 
+  protected onAnneeFilterChange(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    const val = select.value;
+    this.anneeFilter.set(val);
+    this.preinscriptionService.getAll(val || undefined).subscribe();
+  }
+
   protected resetFilters(): void {
     this.searchQuery.set('');
     this.statusFilter.set('');
     this.sectionFilter.set('');
+    this.anneeFilter.set('');
+    this.preinscriptionService.getAll().subscribe();
   }
 
   protected openCreateModal(): void {

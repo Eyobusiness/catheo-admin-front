@@ -7,6 +7,7 @@ import { AppIconButton } from '../../../../shared/ui/components/buttons/app-icon
 import { ProfilTableComponent } from '../components/profil-table/profil-table.component';
 import { ProfilFormModalComponent } from '../components/profil-form-modal/profil-form-modal.component';
 import { ProfilDeleteModalComponent } from '../components/profil-delete-modal/profil-delete-modal.component';
+import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-profils-page',
@@ -16,7 +17,8 @@ import { ProfilDeleteModalComponent } from '../components/profil-delete-modal/pr
     AppIconButton,
     ProfilTableComponent,
     ProfilFormModalComponent,
-    ProfilDeleteModalComponent
+    ProfilDeleteModalComponent,
+    HasPermissionDirective
   ],
   templateUrl: './profils-page.component.html',
   styleUrl: './profils-page.component.css',

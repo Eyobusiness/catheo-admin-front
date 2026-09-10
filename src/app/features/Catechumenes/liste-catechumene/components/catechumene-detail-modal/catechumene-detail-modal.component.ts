@@ -5,10 +5,11 @@ import { AppDialog } from '../../../../../shared/ui/components/dialogs/app-dialo
 import { AppButton } from '../../../../../shared/ui/components/buttons/app-button/app-button.component';
 import { AppIconButton } from '../../../../../shared/ui/components/buttons/app-icon-button/app-icon-button.component';
 import { PdfService } from '../../../../../core/services/pdf.service';
+import { HasPermissionDirective } from '../../../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-catechumene-detail-modal',
-  imports: [CommonModule, DatePipe, AppDialog, AppButton, AppIconButton],
+  imports: [CommonModule, DatePipe, AppDialog, AppButton, AppIconButton, HasPermissionDirective],
   templateUrl: './catechumene-detail-modal.component.html',
   styleUrl: './catechumene-detail-modal.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -23,6 +24,7 @@ export class CatechumeneDetailModalComponent {
   public readonly modalClosed = output<void>();
   public readonly addParrainRequested = output<CatechumeneDto>();
   public readonly deleteParrainRequested = output<string>();
+  public readonly editRequested = output<CatechumeneDto>();
 
   protected readonly catechumeneParrains = computed(() => {
     const cat = this.catechumene();
@@ -32,6 +34,11 @@ export class CatechumeneDetailModalComponent {
 
   protected onClose(): void {
     this.modalClosed.emit();
+  }
+
+  protected onEdit(): void {
+    const c = this.catechumene();
+    if (c) this.editRequested.emit(c);
   }
 
   protected onAddParrain(): void {

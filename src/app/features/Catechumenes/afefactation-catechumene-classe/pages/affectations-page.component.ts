@@ -10,6 +10,7 @@ import { AppCard } from '../../../../shared/ui/components/layout/app-card/app-ca
 import { AppButton } from '../../../../shared/ui/components/buttons/app-button/app-button.component';
 import { AffectationTableComponent } from '../components/affectation-table/affectation-table.component';
 import { AffectationBulkModalComponent } from '../components/affectation-bulk-modal/affectation-bulk-modal.component';
+import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-affectations-page',
@@ -17,7 +18,8 @@ import { AffectationBulkModalComponent } from '../components/affectation-bulk-mo
     AppCard,
     AppButton,
     AffectationTableComponent,
-    AffectationBulkModalComponent
+    AffectationBulkModalComponent,
+    HasPermissionDirective
   ],
   templateUrl: './affectations-page.component.html',
   styleUrl: './affectations-page.component.css',

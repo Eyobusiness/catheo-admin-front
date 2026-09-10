@@ -20,7 +20,7 @@
     <div class="kpi-card success">
       <div class="kpi-icon"><i class="bi bi-door-open-fill"></i></div>
       <div class="kpi-content">
-        <span class="kpi-number">{{ data()?.summary?.classes ?? 0 }}</span>
+        <span class="kpi-number">{{ totalClassesCount() }}</span>
         <span class="kpi-label">Classes de Catéchèse</span>
       </div>
     </div>
@@ -78,8 +78,12 @@
 
       <!-- Répartition par Niveau -->
       <app-card title="Répartition par Niveau de Catéchèse">
+        <span card-actions class="card-count-badge purple">
+          <i class="bi bi-layers-fill"></i>
+          {{ totalNiveauxCount() }} niveau(x)
+        </span>
         <div class="distribution-list">
-          @for (niv of data()?.effectifs?.par_niveau || []; track niv.niveau_id) {
+          @for (niv of displayedNiveaux(); track niv.niveau_id) {
             <div class="dist-item">
               <div class="dist-item-header">
                 <span class="dist-name">
@@ -102,40 +106,22 @@
             <p class="empty-hint">Aucun niveau de catéchèse configuré.</p>
           }
         </div>
-      </app-card>
 
-      <!-- Effectifs et Répartition par Classe -->
-      <app-card title="Effectif par Classe de Catéchèse">
-        <div class="classes-occupation-list">
-          @for (cl of data()?.effectifs?.par_classe || []; track cl.classe_id) {
-            <div class="class-occ-item">
-              <div class="class-occ-header">
-                <span class="class-title">
-                  {{ cl.classe_nom }}
-                  <small>({{ cl.niveau_nom }} - {{ cl.section_nom }})</small>
-                </span>
-                <span class="class-numbers">
-                  <strong>{{ cl.effectif }}</strong>
-                  @if (cl.capacite_max) {
-                    / {{ cl.capacite_max }} élèves
-                  } @else {
-                    élève(s)
-                  }
-                </span>
-              </div>
-              <div class="class-occ-track">
-                <div
-                  class="class-occ-fill"
-                  [style.width.%]="cl.pourcentage !== undefined ? cl.pourcentage : getClassOccupancy(cl.effectif, cl.capacite_max)"
-                  [class.full]="(cl.pourcentage || getClassOccupancy(cl.effectif, cl.capacite_max)) >= 95"
-                  [class.medium]="(cl.pourcentage || getClassOccupancy(cl.effectif, cl.capacite_max)) < 95 && (cl.pourcentage || getClassOccupancy(cl.effectif, cl.capacite_max)) >= 75"
-                ></div>
-              </div>
-            </div>
-          } @empty {
-            <p class="empty-hint">Aucune classe répertoriée pour cette année pastorale.</p>
-          }
-        </div>
+        @if (totalNiveauxCount() > 5) {
+          <button
+            type="button"
+            class="btn-toggle-view"
+            (click)="toggleShowAllNiveaux()"
+          >
+            @if (showAllNiveaux()) {
+              <i class="bi bi-chevron-up"></i>
+              <span>Voir moins</span>
+            } @else {
+              <i class="bi bi-chevron-down"></i>
+              <span>Voir plus (+{{ totalNiveauxCount() - 5 }})</span>
+            }
+          </button>
+        }
       </app-card>
     </div>
 
@@ -226,6 +212,60 @@
             </p>
           }
         </div>
+      </app-card>
+
+      <!-- Effectifs et Répartition par Classe de Catéchèse -->
+      <app-card title="Effectif par Classe de Catéchèse">
+        <span card-actions class="card-count-badge">
+          <i class="bi bi-door-open-fill"></i>
+          {{ totalClassesCount() }} classe(s)
+        </span>
+        <div class="classes-occupation-list">
+          @for (cl of displayedClasses(); track cl.classe_id) {
+            <div class="class-occ-item">
+              <div class="class-occ-header">
+                <span class="class-title">
+                  {{ cl.classe_nom }}
+                  <small>({{ cl.niveau_nom }} - {{ cl.section_nom }})</small>
+                </span>
+                <span class="class-numbers">
+                  <strong>{{ cl.effectif }}</strong>
+                  @if (cl.capacite_max) {
+                    / {{ cl.capacite_max }} élèves
+                  } @else {
+                    élève(s)
+                  }
+                </span>
+              </div>
+              <div class="class-occ-track">
+                <div
+                  class="class-occ-fill"
+                  [style.width.%]="cl.pourcentage !== undefined ? cl.pourcentage : getClassOccupancy(cl.effectif, cl.capacite_max)"
+                  [class.full]="(cl.pourcentage || getClassOccupancy(cl.effectif, cl.capacite_max)) >= 95"
+                  [class.medium]="(cl.pourcentage || getClassOccupancy(cl.effectif, cl.capacite_max)) < 95 && (cl.pourcentage || getClassOccupancy(cl.effectif, cl.capacite_max)) >= 75"
+                ></div>
+              </div>
+            </div>
+          } @empty {
+            <p class="empty-hint">Aucune classe répertoriée pour cette année pastorale.</p>
+          }
+        </div>
+
+        @if (totalClassesCount() > 5) {
+          <button
+            type="button"
+            class="btn-toggle-view"
+            (click)="toggleShowAllClasses()"
+          >
+            @if (showAllClasses()) {
+              <i class="bi bi-chevron-up"></i>
+              <span>Voir moins</span>
+            } @else {
+              <i class="bi bi-chevron-down"></i>
+              <span>Voir plus (+{{ totalClassesCount() - 5 }})</span>
+            }
+          </button>
+        }
       </app-card>
     </div>
   </div>

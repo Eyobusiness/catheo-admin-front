@@ -7,6 +7,10 @@ import { SystemNotificationService } from '../../../../../core/services/system-n
 import { SystemNotification } from '../../../../../core/models/system-notification.model';
 import { AppButton } from '../../buttons/app-button/app-button.component';
 import { DatePipe } from '@angular/common';
+import { WorkingAnneeService } from '../../../../../core/services/working-annee.service';
+import { CatechumeneService } from '../../../../../features/Catechumenes/liste-catechumene/services/catechumene.service';
+import { CatechumeneDto } from '../../../../../features/Catechumenes/liste-catechumene/models/catechumene.model';
+import { Subject, of, debounceTime, distinctUntilChanged, switchMap, catchError, finalize } from 'rxjs';
 
 @Component({
   selector: 'app-header',
@@ -15,7 +19,8 @@ import { DatePipe } from '@angular/common';
   styleUrl: './app-header.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    '(document:click)': 'onDocumentClick($event)'
+    '(document:click)': 'onDocumentClick($event)',
+    '(document:keydown)': 'onDocumentKeyDown($event)'
   }
 })
 export class AppHeader implements OnInit {
@@ -24,7 +29,21 @@ export class AppHeader implements OnInit {
   protected readonly toastService = inject(ToastService);
   protected readonly authService = inject(AuthService);
   protected readonly notificationService = inject(SystemNotificationService);
+  protected readonly workingAnneeService = inject(WorkingAnneeService);
+  protected readonly catechumeneService = inject(CatechumeneService);
   protected readonly router = inject(Router);
+
+  // Recherche dynamique de catéchumènes par année de travail
+  public readonly searchQuery = signal<string>('');
+  public readonly searchResults = signal<CatechumeneDto[]>([]);
+  public readonly isSearching = signal<boolean>(false);
+  public readonly showSearchResults = signal<boolean>(false);
+  private readonly searchSubject = new Subject<string>();
+
+  // Année pastorale de travail
+  public readonly workingAnnee = this.workingAnneeService.workingAnnee;
+  public readonly workingAnneeLibelle = this.workingAnneeService.workingAnneeLibelle;
+  public readonly isOfficialActive = this.workingAnneeService.isOfficialActive;
 
   public readonly notificationCount = this.notificationService.unreadCount;
   public readonly recentNotifications = this.notificationService.recentNotifications;
@@ -77,6 +96,29 @@ export class AppHeader implements OnInit {
   });
 
   public ngOnInit(): void {
+    // Écoute de la barre de recherche avec debounce et filtre selon l'année pastorale
+    this.searchSubject.pipe(
+      debounceTime(250),
+      distinctUntilChanged(),
+      switchMap(term => {
+        const q = term.trim();
+        if (!q) {
+          this.searchResults.set([]);
+          this.isSearching.set(false);
+          return of([]);
+        }
+        this.isSearching.set(true);
+        const anneeId = this.workingAnneeService.workingAnneeId();
+        return this.catechumeneService.searchQuick(q, anneeId).pipe(
+          catchError(() => of([])),
+          finalize(() => this.isSearching.set(false))
+        );
+      })
+    ).subscribe(results => {
+      this.searchResults.set(results);
+      this.showSearchResults.set(true);
+    });
+
     // Charger le compteur de notifications et la liste pour le dropdown
     this.notificationService.fetchUnreadCount().subscribe();
     this.notificationService.fetchNotifications().subscribe();
@@ -84,6 +126,22 @@ export class AppHeader implements OnInit {
     // Charger l'utilisateur connecté depuis l'API/BD
     if (this.authService.token()) {
       this.authService.getMe().subscribe();
+    }
+  }
+
+  /**
+   * Raccourci clavier global : Ctrl+K ou Cmd+K pour activer la recherche
+   */
+  protected onDocumentKeyDown(event: KeyboardEvent): void {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+      event.preventDefault();
+      const input = this.elementRef.nativeElement.querySelector('.search-input') as HTMLInputElement;
+      input?.focus();
+      if (this.searchQuery().trim().length > 0) {
+        this.showSearchResults.set(true);
+      }
+    } else if (event.key === 'Escape') {
+      this.showSearchResults.set(false);
     }
   }
 
@@ -96,6 +154,7 @@ export class AppHeader implements OnInit {
 
     const notifContainer = this.elementRef.nativeElement.querySelector('.notifications-menu-container');
     const userMenuContainer = this.elementRef.nativeElement.querySelector('.user-menu-container');
+    const searchContainer = this.elementRef.nativeElement.querySelector('.header-search');
 
     if (this.showNotifications() && notifContainer && !notifContainer.contains(target)) {
       this.showNotifications.set(false);
@@ -104,6 +163,39 @@ export class AppHeader implements OnInit {
     if (this.showUserMenu() && userMenuContainer && !userMenuContainer.contains(target)) {
       this.showUserMenu.set(false);
     }
+
+    if (this.showSearchResults() && searchContainer && !searchContainer.contains(target)) {
+      this.showSearchResults.set(false);
+    }
+  }
+
+  protected onSearchInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const val = input.value;
+    this.searchQuery.set(val);
+    this.searchSubject.next(val);
+  }
+
+  protected onSearchFocus(): void {
+    if (this.searchQuery().trim().length > 0) {
+      this.showSearchResults.set(true);
+    }
+  }
+
+  protected clearSearch(): void {
+    this.searchQuery.set('');
+    this.searchResults.set([]);
+    this.showSearchResults.set(false);
+  }
+
+  protected goToCatechumeneDetail(cat: CatechumeneDto, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.showSearchResults.set(false);
+    this.router.navigate(['/catechumenes'], {
+      queryParams: { id: cat.id, matricule: cat.matricule }
+    });
   }
 
   protected toggleNotifications(event?: MouseEvent): void {

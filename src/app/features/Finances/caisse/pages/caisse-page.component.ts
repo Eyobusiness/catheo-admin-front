@@ -13,6 +13,7 @@ import { CaisseTableComponent } from '../components/caisse-table/caisse-table.co
 import { CaisseMouvementModalComponent } from '../components/caisse-mouvement-modal/caisse-mouvement-modal.component';
 import { CaisseRembourserModalComponent } from '../components/caisse-rembourser-modal/caisse-rembourser-modal.component';
 import { CaisseDeleteModalComponent } from '../components/caisse-delete-modal/caisse-delete-modal.component';
+import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-caisse-page',
@@ -24,7 +25,8 @@ import { CaisseDeleteModalComponent } from '../components/caisse-delete-modal/ca
     CaisseTableComponent,
     CaisseMouvementModalComponent,
     CaisseRembourserModalComponent,
-    CaisseDeleteModalComponent
+    CaisseDeleteModalComponent,
+    HasPermissionDirective
   ],
   templateUrl: './caisse-page.component.html',
   styleUrl: './caisse-page.component.css',

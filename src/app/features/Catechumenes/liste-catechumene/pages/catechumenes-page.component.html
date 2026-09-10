@@ -132,8 +132,9 @@
     <!-- Table Sub-component -->
     <app-catechumene-table
       [catechumenes]="filteredCatechumenes()"
-      (createRequested)="redirectToInscription()"
+      (createRequested)="openCreateModal()"
       (viewRequested)="openDetailModal($event)"
+      (editRequested)="openEditModal($event)"
       (deleteRequested)="openDeleteModal($event)"
     />
   </app-card>
@@ -145,8 +146,24 @@
   [catechumene]="selectedItem()"
   [parrains]="parrains()"
   (modalClosed)="closeModals()"
+  (editRequested)="openEditModal($event)"
   (addParrainRequested)="openParrainModal($event)"
   (deleteParrainRequested)="handleDeleteParrain($event)"
+/>
+
+<!-- Full Inscription / Edit Form Modal (All tabs pre-filled) -->
+<app-catechumene-form-modal
+  [isOpen]="isFormModalOpen()"
+  [isEditing]="isEditing()"
+  [catechumeneToEdit]="selectedItem()"
+  [cebs]="cebs()"
+  [annees]="annees()"
+  [sections]="sections()"
+  [niveaux]="niveaux()"
+  [classes]="classes()"
+  [isLoading]="isLoading()"
+  (formClosed)="closeModals()"
+  (formSubmitted)="handleFormSubmit($event)"
 />
 
 <!-- Add Parrain Modal -->
@@ -167,3 +184,4 @@
   (modalClosed)="closeModals()"
   (confirmed)="handleDeleteConfirm()"
 />
+

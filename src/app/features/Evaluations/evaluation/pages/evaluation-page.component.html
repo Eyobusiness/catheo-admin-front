@@ -36,7 +36,7 @@
         </button>
       </div>
 
-      <button type="button" class="btn btn-primary" (click)="openCreateModal()">
+      <button *hasPermission="'notes:create'" type="button" class="btn btn-primary" (click)="openCreateModal()">
         <i class="bi bi-plus-lg"></i>
         <span>Nouvelle évaluation</span>
       </button>
@@ -269,6 +269,7 @@
                   <div class="action-group">
                     <!-- Saisie des notes -->
                     <button
+                      *hasPermission="'notes:update'"
                       type="button"
                       class="action-btn notes-btn"
                       (click)="openNotesGrid(ev)"
@@ -289,6 +290,7 @@
 
                     <!-- Modifier -->
                     <button
+                      *hasPermission="'notes:update'"
                       type="button"
                       class="action-btn edit-btn"
                       (click)="openEditModal(ev)"
@@ -299,6 +301,7 @@
 
                     <!-- Supprimer -->
                     <button
+                      *hasPermission="'notes:delete'"
                       type="button"
                       class="action-btn delete-btn"
                       (click)="openDeleteModal(ev)"

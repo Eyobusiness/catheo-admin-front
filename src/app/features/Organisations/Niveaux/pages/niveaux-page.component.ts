@@ -8,6 +8,7 @@ import { AppButton } from '../../../../shared/ui/components/buttons/app-button/a
 import { NiveauTableComponent } from '../components/niveau-table/niveau-table.component';
 import { NiveauFormModalComponent } from '../components/niveau-form-modal/niveau-form-modal.component';
 import { NiveauDeleteModalComponent } from '../components/niveau-delete-modal/niveau-delete-modal.component';
+import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-niveaux-page',
@@ -16,7 +17,8 @@ import { NiveauDeleteModalComponent } from '../components/niveau-delete-modal/ni
     AppButton,
     NiveauTableComponent,
     NiveauFormModalComponent,
-    NiveauDeleteModalComponent
+    NiveauDeleteModalComponent,
+    HasPermissionDirective
   ],
   templateUrl: './niveaux-page.component.html',
   styleUrl: './niveaux-page.component.css',

@@ -2,10 +2,11 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
 import { SauvegardeDto } from '../../models/sauvegarde.model';
 import { AppIconButton } from '../../../../../shared/ui/components/buttons/app-icon-button/app-icon-button.component';
 import { AppButton } from '../../../../../shared/ui/components/buttons/app-button/app-button.component';
+import { HasPermissionDirective } from '../../../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-sauvegarde-table',
-  imports: [AppIconButton, AppButton],
+  imports: [AppIconButton, AppButton, HasPermissionDirective],
   templateUrl: './sauvegarde-table.component.html',
   styleUrl: './sauvegarde-table.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush

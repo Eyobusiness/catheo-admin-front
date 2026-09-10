@@ -7,13 +7,15 @@
   inset: 0;
   z-index: 1000;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 1.5rem;
+  padding: 4.5rem 1.5rem 2.5rem;
   background-color: rgba(15, 23, 42, 0.6);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   animation: backdrop-fade 0.2s ease-out;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 @keyframes backdrop-fade {
@@ -30,12 +32,13 @@
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-xl), 0 25px 50px -12px rgba(15, 23, 42, 0.25);
   width: 100%;
-  max-height: calc(100vh - 3rem);
+  max-height: calc(100dvh - 7rem);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   border: 1px solid var(--neutral-200);
   animation: dialog-pop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  margin: 0 auto;
 }
 
 @keyframes dialog-pop {
@@ -143,4 +146,13 @@
 
 .dialog-footer:empty {
   display: none;
+}
+
+@media (max-width: 640px) {
+  .dialog-backdrop {
+    padding: 2.5rem 0.75rem 1.5rem;
+  }
+  .dialog-container {
+    max-height: calc(100dvh - 4rem);
+  }
 }

@@ -18,14 +18,15 @@ import {
   CreateModeleDocumentDto,
   UpdateModeleDocumentDto
 } from '../../models/document-officiel.model';
-import { EnteteCatecheseComponent } from '../../../../shared/ui/components/entete-catechese/entete-catechese.component';
+import { HeaderParoissePrintComponent } from '../../../Impressions/components/header-paroisse-print/header-paroisse-print.component';
+import { DEFAULT_ATTESTATION_CONTENU } from '../../services/documents.service';
 
 @Component({
   selector: 'app-editeur-modele-page',
   imports: [
     CommonModule,
     FormsModule,
-    EnteteCatecheseComponent
+    HeaderParoissePrintComponent
   ],
   templateUrl: './editeur-modele.component.html',
   styleUrl: './editeur-modele.component.css',
@@ -45,11 +46,11 @@ export class EditeurModelePageComponent implements OnInit {
     code: '',
     type_document: 'attestation',
     description: '',
-    contenu: '',
+    contenu: DEFAULT_ATTESTATION_CONTENU,
     statut: 'actif',
     en_tete_active: true,
-    pied_page_active: true,
-    signature_nom: 'Père Curé',
+    pied_page_active: false,
+    signature_nom: '',
     signature_titre: 'Le Curé de la Paroisse'
   });
 
@@ -114,12 +115,7 @@ export class EditeurModelePageComponent implements OnInit {
       });
     } else {
       // Modèle modèle par défaut
-      const defaultHtml = `<p style="text-align: justify; line-height: 1.8; font-size: 1.05rem;">
-Je soussigné, <strong>{{cure_nom}}</strong>, Curé de la paroisse <strong>{{paroisse}}</strong>, atteste que le catéchumène <strong>{{nom_complet}}</strong> (Matricule : <strong>{{matricule}}</strong>) a suivi avec assiduité les cours de catéchèse au sein du niveau <strong>{{niveau}}</strong> durant l'année pastorale <strong>{{annee_pastorale}}</strong>.
-</p>
-<p style="text-align: justify; line-height: 1.8; font-size: 1.05rem; margin-top: 20px;">
-Fait à {{paroisse}}, le {{date_du_jour}} pour servir et valoir ce que de droit.
-</p>`;
+      const defaultHtml = DEFAULT_ATTESTATION_CONTENU;
       this.formModele.update(c => ({ ...c, contenu: defaultHtml }));
       setTimeout(() => {
         const editor = document.getElementById('dedicatedWordEditor');

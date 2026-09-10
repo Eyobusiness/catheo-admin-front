@@ -3,10 +3,11 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { InscriptionAnnuelleDto } from '../../models/inscription-annuelle.model';
 import { AppDialog } from '../../../../../shared/ui/components/dialogs/app-dialog/app-dialog.component';
 import { AppButton } from '../../../../../shared/ui/components/buttons/app-button/app-button.component';
+import { HasPermissionDirective } from '../../../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-inscription-detail-modal',
-  imports: [CommonModule, DatePipe, AppDialog, AppButton],
+  imports: [CommonModule, DatePipe, AppDialog, AppButton, HasPermissionDirective],
   templateUrl: './inscription-detail-modal.component.html',
   styleUrl: './inscription-detail-modal.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

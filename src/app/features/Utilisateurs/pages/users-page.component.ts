@@ -9,6 +9,7 @@ import { AppButton } from '../../../shared/ui/components/buttons/app-button/app-
 import { UserTableComponent } from '../components/user-table/user-table.component';
 import { UserFormModalComponent } from '../components/user-form-modal/user-form-modal.component';
 import { UserDeleteModalComponent } from '../components/user-delete-modal/user-delete-modal.component';
+import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-users-page',
@@ -19,7 +20,8 @@ import { UserDeleteModalComponent } from '../components/user-delete-modal/user-d
     AppPagination,
     UserTableComponent,
     UserFormModalComponent,
-    UserDeleteModalComponent
+    UserDeleteModalComponent,
+    HasPermissionDirective
   ],
   templateUrl: './users-page.component.html',
   styleUrl: './users-page.component.css',

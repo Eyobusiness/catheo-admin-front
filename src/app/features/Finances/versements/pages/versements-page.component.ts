@@ -14,6 +14,7 @@ import { VersementFormModalComponent } from '../components/versement-form-modal/
 import { VersementDeleteModalComponent } from '../components/versement-delete-modal/versement-delete-modal.component';
 import { VersementRecuModalComponent } from '../components/versement-recu-modal/versement-recu-modal.component';
 import { PdfPreviewService } from '../../../../core/services/pdf-preview.service';
+import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-versements-page',
@@ -25,7 +26,8 @@ import { PdfPreviewService } from '../../../../core/services/pdf-preview.service
     VersementTableComponent,
     VersementFormModalComponent,
     VersementDeleteModalComponent,
-    VersementRecuModalComponent
+    VersementRecuModalComponent,
+    HasPermissionDirective
   ],
   templateUrl: './versements-page.component.html',
   styleUrl: './versements-page.component.css',

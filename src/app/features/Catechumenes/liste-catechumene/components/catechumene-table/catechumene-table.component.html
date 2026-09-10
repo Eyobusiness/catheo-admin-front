@@ -93,19 +93,32 @@
 
             <td class="text-right">
               <div class="actions-flex">
-                <!-- Voir Fiche & Parrains -->
+                <!-- Détails & Récapitulatif -->
                 <app-icon-button
                   variant="info"
                   size="sm"
-                  title="Voir la fiche complète & parrains"
-                  ariaLabel="Voir"
+                  title="Détails du catéchumène"
+                  ariaLabel="Détails"
                   (clicked)="onView(item)"
                 >
                   <i class="bi bi-eye"></i>
                 </app-icon-button>
 
+                <!-- Modifier -->
+                <app-icon-button
+                  *hasPermission="'catechumenes:update'"
+                  variant="primary"
+                  size="sm"
+                  title="Modifier le catéchumène"
+                  ariaLabel="Modifier"
+                  (clicked)="onEdit(item)"
+                >
+                  <i class="bi bi-pencil"></i>
+                </app-icon-button>
+
                 <!-- Supprimer -->
                 <app-icon-button
+                  *hasPermission="'catechumenes:delete'"
                   variant="danger"
                   size="sm"
                   title="Supprimer"

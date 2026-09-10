@@ -25,20 +25,166 @@
     </button>
   </div>
 
-  <!-- Header Global Search -->
+  <!-- Header Global Search with Live Catechumen Autocomplete -->
   <div class="header-search">
     <div class="search-input-wrapper">
-      <svg class="search-icon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <svg class="search-icon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
       <input
         type="search"
-        placeholder="Rechercher..."
+        placeholder="Rechercher catéchumène (nom, prénom, matricule)..."
         class="search-input"
+        [value]="searchQuery()"
+        (input)="onSearchInput($event)"
+        (focus)="onSearchFocus()"
+        autocomplete="off"
+        spellcheck="false"
       />
-      <kbd class="search-shortcut">⌘K</kbd>
+      @if (isSearching()) {
+        <span class="search-spinner-icon"></span>
+      } @else if (searchQuery()) {
+        <button type="button" class="search-clear-btn" (click)="clearSearch()" aria-label="Effacer">
+          <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      } @else {
+        <kbd class="search-shortcut">⌘K</kbd>
+      }
     </div>
+
+    <!-- Live Dropdown Results Menu -->
+    @if (showSearchResults() && searchQuery().trim().length >= 1) {
+      <div class="search-dropdown-menu">
+        <div class="search-dropdown-header">
+          <div class="search-header-title">
+            <i class="bi bi-people-fill"></i>
+            <span>Catéchumènes trouvés</span>
+          </div>
+          <span class="search-annee-tag">
+            <i class="bi bi-calendar3"></i>
+            Année : {{ workingAnneeLibelle() }}
+          </span>
+        </div>
+
+        <div class="search-dropdown-list">
+          @if (isSearching()) {
+            <div class="search-loading-state">
+              <span class="search-spinner-inline"></span>
+              <span>Recherche sur l'année {{ workingAnneeLibelle() }}...</span>
+            </div>
+          } @else {
+            @for (cat of searchResults(); track cat.id) {
+              <div class="search-result-item" (click)="goToCatechumeneDetail(cat)">
+                <div class="result-avatar">
+                  @if (cat.photo_url) {
+                    <img [src]="cat.photo_url" [alt]="cat.nom_complet" class="avatar-img" />
+                  } @else {
+                    <span>{{ (cat.nom ? cat.nom[0] : 'C') + (cat.prenoms ? cat.prenoms[0] : '') }}</span>
+                  }
+                </div>
+
+                <div class="result-info">
+                  <div class="result-main-line">
+                    <span class="result-name">{{ cat.nom_complet || (cat.nom + ' ' + cat.prenoms) }}</span>
+                    @if (cat.matricule) {
+                      <span class="result-matricule-badge">
+                        <i class="bi bi-person-badge"></i>
+                        {{ cat.matricule }}
+                      </span>
+                    }
+                  </div>
+
+                  <div class="result-sub-line">
+                    @if (cat.telephone) {
+                      <span class="result-phone">
+                        <i class="bi bi-telephone-fill"></i>
+                        {{ cat.telephone }}
+                      </span>
+                    } @else {
+                      <span class="result-phone no-phone">
+                        <i class="bi bi-telephone-x"></i>
+                        Sans tél.
+                      </span>
+                    }
+
+                    @if (cat.classe_nom || cat.niveau_nom) {
+                      <span class="result-classe">
+                        <i class="bi bi-mortarboard-fill"></i>
+                        {{ cat.classe_nom || cat.niveau_nom }}
+                      </span>
+                    }
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  class="btn-result-detail"
+                  (click)="goToCatechumeneDetail(cat, $event)"
+                  title="Voir les détails complets de ce catéchumène"
+                >
+                  <span>Détail</span>
+                  <i class="bi bi-chevron-right"></i>
+                </button>
+              </div>
+            } @empty {
+              <div class="search-empty-box">
+                <i class="bi bi-person-x" style="font-size: 1.75rem;"></i>
+                <p class="empty-main">Aucun catéchumène trouvé</p>
+                <p class="empty-sub">
+                  Aucun résultat pour « <strong>{{ searchQuery() }}</strong> » sur l'année pastorale <strong>{{ workingAnneeLibelle() }}</strong>.
+                </p>
+              </div>
+            }
+          }
+        </div>
+
+        <div class="search-dropdown-footer">
+          <span class="footer-hint">
+            <i class="bi bi-info-circle"></i>
+            Filtré sur l'année de travail : <strong>{{ workingAnneeLibelle() }}</strong>
+          </span>
+        </div>
+      </div>
+    }
   </div>
 
   <div class="header-right">
+    <!-- Working Pastoral Year Pill Selector -->
+    <button
+      type="button"
+      class="working-annee-btn"
+      (click)="workingAnneeService.openModal()"
+      title="Cliquer pour changer l'année pastorale de travail"
+      aria-label="Sélectionner l'année pastorale de travail"
+    >
+      <div class="working-annee-icon-box" [class.is-official]="isOfficialActive()">
+        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+      </div>
+
+      <div class="working-annee-labels">
+        <span class="annee-tag">Année de travail</span>
+        <span class="annee-name">{{ workingAnneeLibelle() }}</span>
+      </div>
+
+      <div class="working-annee-badge" [class.is-official]="isOfficialActive()">
+        <span class="status-indicator"></span>
+        <span class="badge-text">{{ isOfficialActive() ? 'En cours' : 'Archive' }}</span>
+      </div>
+
+      <svg class="annee-chevron" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none">
+        <polyline points="6 9 12 15 18 9"></polyline>
+      </svg>
+    </button>
+
     <!-- Quick Sync Action -->
     <app-button
       variant="ghost"

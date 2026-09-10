@@ -99,6 +99,7 @@
 
                 <!-- Action: Modifier -->
                 <app-icon-button
+                  *hasPermission="'animateurs:update'"
                   variant="primary"
                   size="sm"
                   title="Modifier"
@@ -110,6 +111,7 @@
 
                 <!-- Action: Supprimer -->
                 <app-icon-button
+                  *hasPermission="'animateurs:delete'"
                   variant="danger"
                   size="sm"
                   title="Supprimer"

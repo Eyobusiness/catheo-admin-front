@@ -93,6 +93,7 @@
 
                 <!-- Modifier -->
                 <app-icon-button
+                  *hasPermission="'versements:update'"
                   variant="primary"
                   size="sm"
                   title="Modifier le versement"
@@ -104,6 +105,7 @@
 
                 <!-- Supprimer -->
                 <app-icon-button
+                  *hasPermission="'versements:delete'"
                   variant="danger"
                   size="sm"
                   title="Supprimer le versement"

@@ -4,10 +4,11 @@ import { PreinscriptionDto } from '../../models/preinscription.model';
 import { AppDialog } from '../../../../../shared/ui/components/dialogs/app-dialog/app-dialog.component';
 import { AppButton } from '../../../../../shared/ui/components/buttons/app-button/app-button.component';
 import { PdfService } from '../../../../../core/services/pdf.service';
+import { HasPermissionDirective } from '../../../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-preinscription-detail-modal',
-  imports: [CommonModule, DatePipe, AppDialog, AppButton],
+  imports: [CommonModule, DatePipe, AppDialog, AppButton, HasPermissionDirective],
   templateUrl: './preinscription-detail-modal.component.html',
   styleUrl: './preinscription-detail-modal.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

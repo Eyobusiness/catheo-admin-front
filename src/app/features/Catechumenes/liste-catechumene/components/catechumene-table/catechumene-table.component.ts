@@ -4,10 +4,11 @@ import { CatechumeneDto, StatutCatechumene } from '../../models/catechumene.mode
 import { AppIconButton } from '../../../../../shared/ui/components/buttons/app-icon-button/app-icon-button.component';
 import { AppButton } from '../../../../../shared/ui/components/buttons/app-button/app-button.component';
 import { AppPagination } from '../../../../../shared/ui/components/tables/app-pagination/app-pagination.component';
+import { HasPermissionDirective } from '../../../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-catechumene-table',
-  imports: [CommonModule, DatePipe, AppIconButton, AppButton, AppPagination],
+  imports: [CommonModule, DatePipe, AppIconButton, AppButton, AppPagination, HasPermissionDirective],
   templateUrl: './catechumene-table.component.html',
   styleUrl: './catechumene-table.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

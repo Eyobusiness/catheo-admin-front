@@ -4,10 +4,11 @@ import { TarifDto, TypeTarif } from '../../models/tarif.model';
 import { AppIconButton } from '../../../../../shared/ui/components/buttons/app-icon-button/app-icon-button.component';
 import { AppButton } from '../../../../../shared/ui/components/buttons/app-button/app-button.component';
 import { AppPagination } from '../../../../../shared/ui/components/tables/app-pagination/app-pagination.component';
+import { HasPermissionDirective } from '../../../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-tarif-table',
-  imports: [CommonModule, DecimalPipe, AppIconButton, AppButton, AppPagination],
+  imports: [CommonModule, DecimalPipe, AppIconButton, AppButton, AppPagination, HasPermissionDirective],
   templateUrl: './tarif-table.component.html',
   styleUrl: './tarif-table.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

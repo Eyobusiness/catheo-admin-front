@@ -6,11 +6,12 @@ import { ThemeService } from '../../../../../core/services/theme.service';
 import { AppCard } from '../../../../../shared/ui/components/layout/app-card/app-card.component';
 import { AppButton } from '../../../../../shared/ui/components/buttons/app-button/app-button.component';
 import { AppConfirmDialog } from '../../../../../shared/ui/components/dialogs/app-confirm-dialog/app-confirm-dialog.component';
+import { HasPermissionDirective } from '../../../../../shared/directives/has-permission.directive';
 import { PoliceCaracteres, UpdateApparenceConfigurationDto } from '../../models/configuration.model';
 
 @Component({
   selector: 'app-tab-apparence-config',
-  imports: [ReactiveFormsModule, AppCard, AppButton, AppConfirmDialog],
+  imports: [ReactiveFormsModule, AppCard, AppButton, AppConfirmDialog, HasPermissionDirective],
   templateUrl: './tab-apparence-config.component.html',
   styleUrl: './tab-apparence-config.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush

@@ -3,10 +3,11 @@ import { CommonModule, DecimalPipe, DatePipe } from '@angular/common';
 import { OperationPaiementDto, StatutOperation } from '../../models/operation.model';
 import { AppIconButton } from '../../../../../shared/ui/components/buttons/app-icon-button/app-icon-button.component';
 import { AppPagination } from '../../../../../shared/ui/components/tables/app-pagination/app-pagination.component';
+import { HasPermissionDirective } from '../../../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-operation-table',
-  imports: [CommonModule, DecimalPipe, DatePipe, AppIconButton, AppPagination],
+  imports: [CommonModule, DecimalPipe, DatePipe, AppIconButton, AppPagination, HasPermissionDirective],
   templateUrl: './operation-table.component.html',
   styleUrl: './operation-table.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -94,6 +95,12 @@ export class OperationTableComponent {
       }
     }
     return lib.trim();
+  }
+
+  protected truncateText(text: string | null | undefined, limit = 22): string {
+    if (!text) return '';
+    const trimmed = text.trim();
+    return trimmed.length > limit ? `${trimmed.slice(0, limit)}...` : trimmed;
   }
 
   protected onDelete(item: OperationPaiementDto): void {

@@ -70,10 +70,17 @@ export class PreinscriptionService {
   public readonly preinscriptions = signal<PreinscriptionDto[]>([]);
   public readonly isLoading = signal<boolean>(false);
 
-  public getAll(): Observable<PreinscriptionDto[]> {
+  public getAll(anneeId?: string): Observable<PreinscriptionDto[]> {
     this.isLoading.set(true);
 
-    return this.http.get<unknown>(this.baseUrl).pipe(
+    let url = this.baseUrl;
+    if (anneeId && anneeId !== 'all') {
+      url += `?annee_catechese_id=${encodeURIComponent(anneeId)}`;
+    } else if (anneeId === 'all') {
+      url += '?annee_catechese_id=all';
+    }
+
+    return this.http.get<unknown>(url).pipe(
       map(res => extractArrayData(res).map(item => this.normalizePreinscription(item))),
       tap(preinscriptions => {
         this.preinscriptions.set(preinscriptions);
@@ -263,6 +270,16 @@ export class PreinscriptionService {
     );
   }
 
+  /**
+   * Vérifie si un dossier (préinscription ou inscription) existe déjà pour l'année pastorale ciblée.
+   */
+  public checkDuplicate(params: Record<string, string>): Observable<{ exists: boolean; message?: string; type?: string; code?: string }> {
+    const checkUrl = `${environment.apiUrl}/public/preinscriptions/check`;
+    return this.http.get<{ exists: boolean; message?: string; type?: string; code?: string }>(checkUrl, { params }).pipe(
+      catchError(() => of({ exists: false }))
+    );
+  }
+
   public updateStatus(id: string, statut: StatutPreinscription): Observable<PreinscriptionDto> {
     this.isLoading.set(true);
 
@@ -388,6 +405,13 @@ export class PreinscriptionService {
       niveau_souhaite: (item['niveau_souhaite'] as NiveauDto | undefined) || (item['niveau'] as NiveauDto | undefined) || context.niveau || current?.niveau_souhaite,
       campagne: (item['campagne'] as CampagnePreinscriptionDto | undefined) || context.campagne || current?.campagne,
       annee_catechese: (item['annee_catechese'] as PreinscriptionDto['annee_catechese']) || current?.annee_catechese,
+      annee_catechese_id: this.pickString(
+        item['annee_catechese_id'],
+        item['annee_id'],
+        item['annee_catechese'] && (item['annee_catechese'] as Record<string, unknown>)['id'],
+        context.campagne?.annee_catechese?.id,
+        current?.annee_catechese_id
+      ),
       classe_affectee: (item['classe_affectee'] as ClasseDto | undefined) || (item['classe'] as ClasseDto | undefined) || context.classe || current?.classe_affectee,
       acte_naissance_url: this.optionalString(item['acte_naissance_url']) ?? current?.acte_naissance_url,
       statut: this.normalizeStatut(item['statut'] ?? current?.statut),

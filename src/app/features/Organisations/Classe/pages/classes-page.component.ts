@@ -9,6 +9,7 @@ import { AppButton } from '../../../../shared/ui/components/buttons/app-button/a
 import { ClasseTableComponent } from '../components/classe-table/classe-table.component';
 import { ClasseFormModalComponent } from '../components/classe-form-modal/classe-form-modal.component';
 import { ClasseDeleteModalComponent } from '../components/classe-delete-modal/classe-delete-modal.component';
+import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-classes-page',
@@ -17,7 +18,8 @@ import { ClasseDeleteModalComponent } from '../components/classe-delete-modal/cl
     AppButton,
     ClasseTableComponent,
     ClasseFormModalComponent,
-    ClasseDeleteModalComponent
+    ClasseDeleteModalComponent,
+    HasPermissionDirective
   ],
   templateUrl: './classes-page.component.html',
   styleUrl: './classes-page.component.css',

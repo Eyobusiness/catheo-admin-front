@@ -47,6 +47,14 @@ export interface CatechumeneDto {
   statut: StatutCatechumene;
   ceb_id?: string;
   ceb?: Ceb;
+  classe_id?: string;
+  classe_nom?: string;
+  niveau_id?: string;
+  niveau_nom?: string;
+  section_id?: string;
+  section_nom?: string;
+  annee_catechese_id?: string;
+  annee_libelle?: string;
   inscriptions_annuelles?: any[];
   parrains_marraines?: ParrainMarraineDto[];
   created_at: string;

@@ -14,6 +14,7 @@ import { SeanceTableComponent } from '../components/seance-table/seance-table.co
 import { SeanceFormModalComponent } from '../components/seance-form-modal/seance-form-modal.component';
 import { SeancePresencesModalComponent } from '../components/seance-presences-modal/seance-presences-modal.component';
 import { SeanceDeleteModalComponent } from '../components/seance-delete-modal/seance-delete-modal.component';
+import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-seances-page',
@@ -24,7 +25,8 @@ import { SeanceDeleteModalComponent } from '../components/seance-delete-modal/se
     SeanceTableComponent,
     SeanceFormModalComponent,
     SeancePresencesModalComponent,
-    SeanceDeleteModalComponent
+    SeanceDeleteModalComponent,
+    HasPermissionDirective
   ],
   templateUrl: './seances-page.component.html',
   styleUrl: './seances-page.component.css',

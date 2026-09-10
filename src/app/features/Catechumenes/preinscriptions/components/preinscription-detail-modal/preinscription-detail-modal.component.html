@@ -176,15 +176,30 @@
         </app-button>
 
         @if (item.statut === 'en_attente') {
-          <app-button variant="danger" icon="x-circle" (clicked)="onRejeter()">
+          <app-button
+            *hasPermission="'preinscriptions:update'"
+            variant="danger"
+            icon="x-circle"
+            (clicked)="onRejeter()"
+          >
             Rejeter
           </app-button>
-          <app-button variant="success" icon="check2-circle" (clicked)="onValider()">
+          <app-button
+            *hasPermission="'preinscriptions:update'"
+            variant="success"
+            icon="check2-circle"
+            (clicked)="onValider()"
+          >
             Valider 
           </app-button>
         }
 
-        <app-button variant="primary" icon="pencil" (clicked)="onEdit()">
+        <app-button
+          *hasPermission="'preinscriptions:update'"
+          variant="primary"
+          icon="pencil"
+          (clicked)="onEdit()"
+        >
           Modifier
         </app-button>
       </div>

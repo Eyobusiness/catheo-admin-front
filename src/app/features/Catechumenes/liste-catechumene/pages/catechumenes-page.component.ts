@@ -1,16 +1,22 @@
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CatechumeneService } from '../services/catechumene.service';
 import { SectionService } from '../../../Organisations/Sections/services/section.service';
 import { NiveauService } from '../../../Organisations/Niveaux/services/niveau.service';
 import { ClasseService } from '../../../Organisations/Classe/services/classe.service';
+import { CebService } from '../../../Organisations/Ceb/services/ceb.service';
+import { AnneeCatecheseService } from '../../../Organisations/AnneesPastorales/services/annee-catechese.service';
 import {
   CatechumeneDto,
+  CreateCatechumeneDto,
+  UpdateCatechumeneDto,
   CreateParrainMarraineDto
 } from '../models/catechumene.model';
+import { Ceb } from '../../../Organisations/Ceb/models/ceb.model';
 import { AppCard } from '../../../../shared/ui/components/layout/app-card/app-card.component';
 import { CatechumeneTableComponent } from '../components/catechumene-table/catechumene-table.component';
 import { CatechumeneDetailModalComponent } from '../components/catechumene-detail-modal/catechumene-detail-modal.component';
+import { CatechumeneFormModalComponent } from '../components/catechumene-form-modal/catechumene-form-modal.component';
 import { ParrainModalComponent } from '../components/parrain-modal/parrain-modal.component';
 import { CatechumeneDeleteModalComponent } from '../components/catechumene-delete-modal/catechumene-delete-modal.component';
 
@@ -20,6 +26,7 @@ import { CatechumeneDeleteModalComponent } from '../components/catechumene-delet
     AppCard,
     CatechumeneTableComponent,
     CatechumeneDetailModalComponent,
+    CatechumeneFormModalComponent,
     ParrainModalComponent,
     CatechumeneDeleteModalComponent
   ],
@@ -29,16 +36,21 @@ import { CatechumeneDeleteModalComponent } from '../components/catechumene-delet
 })
 export class CatechumenesPageComponent implements OnInit {
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   protected readonly catechumeneService = inject(CatechumeneService);
   protected readonly sectionService = inject(SectionService);
   protected readonly niveauService = inject(NiveauService);
   protected readonly classeService = inject(ClasseService);
+  protected readonly cebService = inject(CebService);
+  protected readonly anneeService = inject(AnneeCatecheseService);
 
   // Signals
   protected readonly catechumenes = this.catechumeneService.catechumenes;
   protected readonly sections = this.sectionService.sections;
   protected readonly niveaux = this.niveauService.niveaux;
   protected readonly classes = this.classeService.classes;
+  protected readonly cebs = this.cebService.cebs;
+  protected readonly annees = this.anneeService.annees;
   protected readonly parrains = this.catechumeneService.parrains;
   protected readonly isLoading = this.catechumeneService.isLoading;
 
@@ -63,6 +75,8 @@ export class CatechumenesPageComponent implements OnInit {
 
   // Modals state
   protected readonly isDetailModalOpen = signal<boolean>(false);
+  protected readonly isFormModalOpen = signal<boolean>(false);
+  protected readonly isEditing = signal<boolean>(false);
   protected readonly isParrainModalOpen = signal<boolean>(false);
   protected readonly isDeleteModalOpen = signal<boolean>(false);
   protected readonly selectedItem = signal<CatechumeneDto | null>(null);
@@ -124,10 +138,61 @@ export class CatechumenesPageComponent implements OnInit {
   });
 
   public ngOnInit(): void {
-    this.catechumeneService.getAll().subscribe();
+    this.catechumeneService.getAll().subscribe(list => {
+      const params = this.route.snapshot.queryParams;
+      const targetId = params['id'] || params['catechumene_id'];
+      const targetMatricule = params['matricule'];
+      const searchParam = params['search'];
+
+      if (searchParam) {
+        this.searchQuery.set(searchParam);
+      }
+
+      if (targetId || targetMatricule) {
+        const found = list.find(c =>
+          (targetId && (c.id === targetId || (c as any).uuid === targetId)) ||
+          (targetMatricule && (c.matricule === targetMatricule || c.code_catechumene === targetMatricule))
+        );
+        if (found) {
+          this.openDetailModal(found);
+        } else if (targetId) {
+          this.catechumeneService.getById(targetId).subscribe(cat => {
+            if (cat) this.openDetailModal(cat);
+          });
+        }
+      }
+    });
+
+    this.route.queryParams.subscribe(params => {
+      const targetId = params['id'] || params['catechumene_id'];
+      const targetMatricule = params['matricule'];
+      const searchParam = params['search'];
+
+      if (searchParam !== undefined) {
+        this.searchQuery.set(searchParam);
+      }
+
+      if (targetId || targetMatricule) {
+        const list = this.catechumenes();
+        const found = list.find(c =>
+          (targetId && (c.id === targetId || (c as any).uuid === targetId)) ||
+          (targetMatricule && (c.matricule === targetMatricule || c.code_catechumene === targetMatricule))
+        );
+        if (found) {
+          this.openDetailModal(found);
+        } else if (targetId) {
+          this.catechumeneService.getById(targetId).subscribe(cat => {
+            if (cat) this.openDetailModal(cat);
+          });
+        }
+      }
+    });
+
     this.sectionService.getAll().subscribe();
     this.niveauService.getAll().subscribe();
     this.classeService.getAll().subscribe();
+    this.cebService.getAll().subscribe();
+    this.anneeService.getAll().subscribe();
   }
 
   protected onSearchChange(event: Event): void {
@@ -168,9 +233,23 @@ export class CatechumenesPageComponent implements OnInit {
     this.router.navigate(['/inscriptions-annuelles']);
   }
 
+  protected openCreateModal(): void {
+    this.selectedItem.set(null);
+    this.isEditing.set(false);
+    this.isFormModalOpen.set(true);
+  }
+
   protected openDetailModal(item: CatechumeneDto): void {
     this.selectedItem.set(item);
+    this.catechumeneService.getParrains(item.id).subscribe();
     this.isDetailModalOpen.set(true);
+  }
+
+  protected openEditModal(item: CatechumeneDto): void {
+    this.selectedItem.set(item);
+    this.isEditing.set(true);
+    this.isDetailModalOpen.set(false);
+    this.isFormModalOpen.set(true);
   }
 
   protected openParrainModal(item: CatechumeneDto): void {
@@ -187,10 +266,38 @@ export class CatechumenesPageComponent implements OnInit {
 
   protected closeModals(): void {
     this.isDetailModalOpen.set(false);
+    this.isFormModalOpen.set(false);
     this.isParrainModalOpen.set(false);
     this.isDeleteModalOpen.set(false);
     this.selectedItem.set(null);
     this.itemToDelete.set(null);
+    this.isEditing.set(false);
+  }
+
+  protected handleFormSubmit(event: {
+    dto: CreateCatechumeneDto | UpdateCatechumeneDto;
+    ceb?: Ceb;
+    inscriptionData?: {
+      annee_catechese_id?: string;
+      section_id?: string;
+      niveau_id?: string;
+      classe_id?: string;
+    };
+  }): void {
+    const target = this.selectedItem();
+    if (this.isEditing() && target) {
+      this.catechumeneService.update(target.id, event.dto as UpdateCatechumeneDto, event.ceb).subscribe({
+        next: () => {
+          this.closeModals();
+        }
+      });
+    } else {
+      this.catechumeneService.create(event.dto as CreateCatechumeneDto, event.ceb).subscribe({
+        next: () => {
+          this.closeModals();
+        }
+      });
+    }
   }
 
   protected handleAddParrain(event: CreateParrainMarraineDto): void {

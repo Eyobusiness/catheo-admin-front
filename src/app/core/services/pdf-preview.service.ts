@@ -20,6 +20,7 @@ export type PrintDocumentType =
   | 'renseignement-confirmation'
   | 'bordereau-versement'
   | 'registre-sacrement'
+  | 'document-officiel'
   | 'pdf-blob'
   | null;
 
@@ -250,6 +251,7 @@ export class PdfPreviewService {
       case 'renseignement-confirmation': return 'Fiche de Renseignement — Confirmation';
       case 'bordereau-versement': return 'Bordereau de Versement Paroissial';
       case 'registre-sacrement': return 'Registre Pastoral des Candidats au Sacrement';
+      case 'document-officiel': return 'Document Officiel';
       default: return 'Document Officiel';
     }
   }
@@ -272,6 +274,7 @@ export class PdfPreviewService {
       case 'renseignement-confirmation': return 'A4 Portrait';
       case 'bordereau-versement': return 'A4 Portrait';
       case 'registre-sacrement': return 'A4 Paysage';
+      case 'document-officiel': return 'A4 Portrait';
       default: return 'A4 Portrait';
     }
   }

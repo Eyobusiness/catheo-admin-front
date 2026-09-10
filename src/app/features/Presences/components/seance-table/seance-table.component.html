@@ -90,6 +90,7 @@
               <div class="actions-flex">
                 <!-- 1. Faire l'appel / Présences -->
                 <app-icon-button
+                  *hasPermission="'seances:update'"
                   variant="success"
                   size="sm"
                   title="Faire l'appel et gérer les présences"
@@ -101,6 +102,7 @@
 
                 <!-- 2. Modifier la séance -->
                 <app-icon-button
+                  *hasPermission="'seances:update'"
                   variant="primary"
                   size="sm"
                   title="Modifier les informations de la séance"
@@ -112,6 +114,7 @@
 
                 <!-- 3. Supprimer la séance -->
                 <app-icon-button
+                  *hasPermission="'seances:delete'"
                   variant="danger"
                   size="sm"
                   title="Supprimer la séance"
@@ -135,6 +138,7 @@
                   Créez et planifiez la première séance de catéchèse pour cette classe.
                 </p>
                 <app-button
+                  *hasPermission="'seances:create'"
                   variant="primary"
                   size="sm"
                   icon="plus"

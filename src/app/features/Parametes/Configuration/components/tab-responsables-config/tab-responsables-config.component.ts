@@ -5,6 +5,7 @@ import { AppButton } from '../../../../../shared/ui/components/buttons/app-butto
 import { AppIconButton } from '../../../../../shared/ui/components/buttons/app-icon-button/app-icon-button.component';
 import { ResponsableFormModalComponent } from '../responsable-form-modal/responsable-form-modal.component';
 import { ResponsableDeleteModalComponent } from '../responsable-delete-modal/responsable-delete-modal.component';
+import { HasPermissionDirective } from '../../../../../shared/directives/has-permission.directive';
 import {
   CreateResponsableParoisseDto,
   ResponsableParoisse,
@@ -18,7 +19,8 @@ import {
     AppButton,
     AppIconButton,
     ResponsableFormModalComponent,
-    ResponsableDeleteModalComponent
+    ResponsableDeleteModalComponent,
+    HasPermissionDirective
   ],
   templateUrl: './tab-responsables-config.component.html',
   styleUrl: './tab-responsables-config.component.css',

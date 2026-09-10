@@ -10,12 +10,12 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { DocumentsService } from '../../services/documents.service';
 import { DocumentGenereDto } from '../../models/document-officiel.model';
-import { EnteteCatecheseComponent } from '../../../../shared/ui/components/entete-catechese/entete-catechese.component';
+import { HeaderParoissePrintComponent } from '../../../Impressions/components/header-paroisse-print/header-paroisse-print.component';
 import { PdfService } from '../../../../core/services/pdf.service';
 
 @Component({
   selector: 'app-apercu-document-page',
-  imports: [CommonModule, EnteteCatecheseComponent],
+  imports: [CommonModule, HeaderParoissePrintComponent],
   templateUrl: './apercu.component.html',
   styleUrl: './apercu.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -25,7 +25,6 @@ export class ApercuDocumentPageComponent implements OnInit {
   private readonly router = inject(Router);
   public readonly service = inject(DocumentsService);
   private readonly sanitizer = inject(DomSanitizer);
-  private readonly pdfService = inject(PdfService);
 
   public readonly documentGenere = signal<DocumentGenereDto | null>(null);
   public readonly safeContenuRendu = signal<SafeHtml>('');
@@ -52,16 +51,22 @@ export class ApercuDocumentPageComponent implements OnInit {
 
   private setDoc(doc: DocumentGenereDto): void {
     this.documentGenere.set(doc);
-    this.safeContenuRendu.set(this.sanitizer.bypassSecurityTrustHtml(doc.contenu));
+    let raw = doc.contenu || '';
+    if (raw && raw.includes('{{')) {
+      raw = this.service.fusionnerContenu(raw, doc.catechumene_id || doc.catechumene?.id, doc.metadonnees);
+    }
+    this.safeContenuRendu.set(this.sanitizer.bypassSecurityTrustHtml(raw));
   }
+
+  private readonly pdfService = inject(PdfService);
 
   public imprimerDocument(): void {
     const doc = this.documentGenere();
-    if (!doc) return;
-    this.pdfService.previewDocumentGenerePdf(doc.id || (doc as any).uuid || doc.reference, {
-      titre: doc.titre || 'Document Officiel',
-      reference: doc.reference_document || doc.reference
-    });
+    if (doc) {
+      this.pdfService.previewDocumentOfficielPdf(doc);
+    } else {
+      window.print();
+    }
   }
 
   public retourHistorique(): void {

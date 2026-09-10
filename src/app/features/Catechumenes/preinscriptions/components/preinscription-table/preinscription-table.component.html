@@ -84,6 +84,7 @@
                 <!-- Valider (si en_attente) -->
                 @if (item.statut === 'en_attente') {
                   <app-icon-button
+                    *hasPermission="'preinscriptions:update'"
                     variant="success"
                     size="sm"
                     title="Valider la préinscription"
@@ -94,6 +95,7 @@
                   </app-icon-button>
 
                   <app-icon-button
+                    *hasPermission="'preinscriptions:update'"
                     variant="danger"
                     size="sm"
                     title="Rejeter la préinscription"
@@ -117,6 +119,7 @@
 
                 <!-- Modifier -->
                 <app-icon-button
+                  *hasPermission="'preinscriptions:update'"
                   variant="primary"
                   size="sm"
                   title="Modifier"
@@ -128,6 +131,7 @@
 
                 <!-- Supprimer -->
                 <app-icon-button
+                  *hasPermission="'preinscriptions:delete'"
                   variant="danger"
                   size="sm"
                   title="Supprimer"

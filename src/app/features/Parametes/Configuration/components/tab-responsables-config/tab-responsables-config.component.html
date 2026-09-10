@@ -4,6 +4,7 @@
     subtitle="Gestion des coordinateurs de la catéchèse">
     <div card-actions>
       <app-button
+        *hasPermission="'configuration_paroisse:create'"
         variant="primary"
         size="md"
         icon="plus"
@@ -137,6 +138,7 @@
               <td class="text-end">
                 <div class="row-actions">
                   <app-icon-button
+                    *hasPermission="'configuration_paroisse:update'"
                     variant="ghost"
                     size="sm"
                     title="Modifier ce responsable"
@@ -147,6 +149,7 @@
                   </app-icon-button>
 
                   <app-icon-button
+                    *hasPermission="'configuration_paroisse:delete'"
                     variant="ghost"
                     size="sm"
                     title="Supprimer ce responsable"
@@ -167,7 +170,13 @@
                   </div>
                   <h4>Aucun responsable trouvé</h4>
                   <p>Aucun membre pastoral ne correspond à vos critères de recherche.</p>
-                  <app-button variant="primary" size="sm" icon="plus" (clicked)="openCreateModal()">
+                  <app-button
+                    *hasPermission="'configuration_paroisse:create'"
+                    variant="primary"
+                    size="sm"
+                    icon="plus"
+                    (clicked)="openCreateModal()"
+                  >
                     Ajouter un premier responsable
                   </app-button>
                 </div>

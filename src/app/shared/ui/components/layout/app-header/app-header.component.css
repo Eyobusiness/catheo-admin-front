@@ -82,7 +82,8 @@
 /* Search */
 .header-search {
   flex: 1;
-  max-width: 480px;
+  max-width: 520px;
+  position: relative;
 }
 
 .search-input-wrapper {
@@ -127,11 +128,448 @@
   border: 1px solid var(--neutral-300);
 }
 
+.search-clear-btn {
+  position: absolute;
+  right: 0.75rem;
+  background: transparent;
+  border: none;
+  color: var(--neutral-400);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.search-clear-btn:hover {
+  background-color: var(--neutral-200);
+  color: var(--neutral-700);
+}
+
+.search-spinner-icon {
+  position: absolute;
+  right: 0.875rem;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #e2e8f0;
+  border-top-color: #0284c7;
+  border-radius: 50%;
+  animation: search-spin 0.6s linear infinite;
+}
+
+@keyframes search-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Autocomplete Results Dropdown Menu */
+.search-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  right: 0;
+  min-width: 460px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.875rem;
+  box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.12), 0 8px 10px -6px rgba(15, 23, 42, 0.08);
+  overflow: hidden;
+  z-index: 1050;
+  animation: search-dropdown-pop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes search-dropdown-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.search-dropdown-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.search-header-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #475569;
+}
+
+.search-header-title i {
+  color: #0284c7;
+  font-size: 0.875rem;
+}
+
+.search-annee-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #0369a1;
+  background: #e0f2fe;
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+  border: 1px solid #bae6fd;
+}
+
+.search-dropdown-list {
+  max-height: 380px;
+  overflow-y: auto;
+  padding: 0.375rem 0;
+}
+
+.search-loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  padding: 1.75rem 1rem;
+  font-size: 0.8125rem;
+  color: #64748b;
+}
+
+.search-spinner-inline {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #e2e8f0;
+  border-top-color: #0284c7;
+  border-radius: 50%;
+  animation: search-spin 0.6s linear infinite;
+}
+
+/* Result Row Item */
+.search-result-item {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.search-result-item:last-child {
+  border-bottom: none;
+}
+
+.search-result-item:hover {
+  background-color: #f0fdf4;
+}
+
+.result-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0284c7, #0369a1);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(2, 132, 199, 0.2);
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.result-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.result-main-line {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.result-name {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.result-matricule-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.6875rem;
+  font-family: var(--font-family-mono, monospace);
+  font-weight: 700;
+  background: #f1f5f9;
+  color: #475569;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+}
+
+.result-sub-line {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  font-size: 0.75rem;
+  color: #64748b;
+  flex-wrap: wrap;
+}
+
+.result-phone {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #166534;
+  background: #dcfce7;
+  padding: 0.05rem 0.45rem;
+  border-radius: 9999px;
+  font-weight: 600;
+}
+
+.result-phone.no-phone {
+  color: #94a3b8;
+  background: #f1f5f9;
+  font-weight: 500;
+}
+
+.result-classe {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #0369a1;
+}
+
+.btn-result-detail {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #0284c7;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.btn-result-detail:hover {
+  background: #0284c7;
+  color: #ffffff;
+  border-color: #0284c7;
+  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);
+}
+
+/* Empty State */
+.search-empty-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  color: #64748b;
+}
+
+.search-empty-box i {
+  color: #cbd5e1;
+  margin-bottom: 0.5rem;
+}
+
+.empty-main {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #334155;
+  margin: 0 0 0.25rem 0;
+}
+
+.empty-sub {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Footer Hint */
+.search-dropdown-footer {
+  padding: 0.625rem 1rem;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  font-size: 0.6875rem;
+  color: #64748b;
+}
+
+.footer-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.footer-hint i {
+  color: #0284c7;
+}
+
 /* Header Right */
 .header-right {
   display: flex;
   align-items: center;
   gap: 0.875rem;
+}
+
+/* Working Pastoral Year Selector Pill */
+.working-annee-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.3125rem 0.625rem;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border: 1.5px solid var(--neutral-200, #e2e8f0);
+  border-radius: 0.625rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.working-annee-btn:hover {
+  border-color: var(--primary-400, #38bdf8);
+  background: linear-gradient(135deg, #f0f9ff 0%, #ffffff 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.12);
+}
+
+.working-annee-btn:active {
+  transform: translateY(0);
+}
+
+.working-annee-icon-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: #f1f5f9;
+  color: #64748b;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.working-annee-icon-box.is-official {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+.working-annee-btn:hover .working-annee-icon-box {
+  background: #0284c7;
+  color: #ffffff;
+}
+
+.working-annee-labels {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  line-height: 1.15;
+}
+
+.annee-tag {
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.annee-name {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #0f172a;
+  white-space: nowrap;
+}
+
+.working-annee-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.125rem 0.45rem;
+  border-radius: 9999px;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+
+.working-annee-badge.is-official {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.status-indicator {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #64748b;
+}
+
+.working-annee-badge.is-official .status-indicator {
+  background-color: #10b981;
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: pulse-dot 2s infinite;
+}
+
+@keyframes pulse-dot {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+.annee-chevron {
+  color: #94a3b8;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.working-annee-btn:hover .annee-chevron {
+  color: #0284c7;
+  transform: translateX(1px);
 }
 
 .header-dropdown-container {

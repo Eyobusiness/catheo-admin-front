@@ -3,10 +3,11 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { StatutUtilisateur, UserItem } from '../../models/user.model';
 import { AppIconButton } from '../../../../shared/ui/components/buttons/app-icon-button/app-icon-button.component';
 import { AppButton } from '../../../../shared/ui/components/buttons/app-button/app-button.component';
+import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-user-table',
-  imports: [CommonModule, DatePipe, AppIconButton, AppButton],
+  imports: [CommonModule, DatePipe, AppIconButton, AppButton, HasPermissionDirective],
   templateUrl: './user-table.component.html',
   styleUrl: './user-table.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush

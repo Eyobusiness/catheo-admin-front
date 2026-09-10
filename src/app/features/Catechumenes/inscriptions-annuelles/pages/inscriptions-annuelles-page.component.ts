@@ -34,6 +34,7 @@ import { InscriptionDetailModalComponent } from '../components/inscription-detai
 import { InscriptionDeleteModalComponent } from '../components/inscription-delete-modal/inscription-delete-modal.component';
 import { RecuThermiqueModalComponent } from '../../../../shared/ui/components/recu-thermique-modal/recu-thermique-modal.component';
 import { RecuPaiementData } from '../../../../shared/ui/components/recu-thermique-modal/models/recu-thermique.model';
+import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-inscriptions-annuelles-page',
@@ -44,7 +45,8 @@ import { RecuPaiementData } from '../../../../shared/ui/components/recu-thermiqu
     InscriptionFormModalComponent,
     InscriptionDetailModalComponent,
     InscriptionDeleteModalComponent,
-    RecuThermiqueModalComponent
+    RecuThermiqueModalComponent,
+    HasPermissionDirective
   ],
   templateUrl: './inscriptions-annuelles-page.component.html',
   styleUrl: './inscriptions-annuelles-page.component.css',

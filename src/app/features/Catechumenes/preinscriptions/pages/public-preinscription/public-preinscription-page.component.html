@@ -249,6 +249,22 @@
           </div>
         </div>
 
+        @if (isDuplicateDetected()) {
+          <div class="duplicate-alert-banner animate-fade-in">
+            <div class="duplicate-alert-icon">
+              <i class="bi bi-shield-exclamation"></i>
+            </div>
+            <div class="duplicate-alert-body">
+              <h4 class="duplicate-alert-title">Dossier Déjà Enregistré pour cette Année</h4>
+              <p class="duplicate-alert-message">{{ duplicateMessage() }}</p>
+              <div class="duplicate-office-chip">
+                <i class="bi bi-building"></i>
+                <span>Veuillez vous rendre au bureau de la catéchèse</span>
+              </div>
+            </div>
+          </div>
+        }
+
         <!-- Stepper Progress Bar Visuel -->
         <div class="stepper-track">
           <!-- Step 1 -->
@@ -777,6 +793,22 @@
               </div>
             </div>
 
+            @if (isDuplicateDetected()) {
+              <div class="duplicate-alert-banner animate-fade-in">
+                <div class="duplicate-alert-icon">
+                  <i class="bi bi-shield-exclamation"></i>
+                </div>
+                <div class="duplicate-alert-body">
+                  <h4 class="duplicate-alert-title">Dossier Déjà Existant pour cette Année</h4>
+                  <p class="duplicate-alert-message">{{ duplicateMessage() }}</p>
+                  <div class="duplicate-office-chip">
+                    <i class="bi bi-building"></i>
+                    <span>Veuillez vous rendre au bureau de la catéchèse</span>
+                  </div>
+                </div>
+              </div>
+            }
+
             <form [formGroup]="reinscriptionForm" (ngSubmit)="submitReinscription()" class="mt-4">
               
               <!-- Choix de la Section et Niveau pour la nouvelle année -->
@@ -904,7 +936,7 @@
                   <i class="bi bi-x-circle"></i>
                   <span>Annuler</span>
                 </button>
-                <button type="submit" class="btn-submit-glow" [disabled]="isLoading()">
+                <button type="submit" class="btn-submit-glow" [disabled]="isLoading() || isDuplicateDetected()">
                   @if (isLoading()) {
                     <span class="btn-spinner"></span>
                     <span>Validation de la réinscription...</span>

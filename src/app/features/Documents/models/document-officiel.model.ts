@@ -125,7 +125,9 @@ export const VARIABLES_SYSTEME_DEFAUT: ModeleDocumentVariableDto[] = [
   { tag: '{{adresse_paroisse}}', cle: 'adresse_paroisse', label: 'Adresse paroisse', description: 'Adresse postale et géographique de la paroisse', categorie: 'Paroisse' },
   { tag: '{{telephone_paroisse}}', cle: 'telephone_paroisse', label: 'Téléphone paroisse', description: 'Contact téléphonique officiel', categorie: 'Paroisse' },
   { tag: '{{email_paroisse}}', cle: 'email_paroisse', label: 'Email paroisse', description: 'Courriel officiel du secrétariat paroissial', categorie: 'Paroisse' },
+  { tag: '{{ville_paroisse}}', cle: 'ville_paroisse', label: 'Ville paroisse', description: 'Ville ou commune de la paroisse', categorie: 'Paroisse' },
   { tag: '{{cure_nom}}', cle: 'cure_nom', label: 'Nom du Curé', description: 'Nom du curé ou premier responsable', categorie: 'Paroisse' },
+  { tag: '{{responsable_coordination}}', cle: 'responsable_coordination', label: 'Responsable Coordination', description: 'Nom du responsable de la coordination de catéchèse', categorie: 'Paroisse' },
 
   // Catéchumène
   { tag: '{{matricule}}', cle: 'matricule', label: 'Matricule', description: 'Code matricule unique du catéchumène', categorie: 'Catéchumène' },
@@ -139,10 +141,12 @@ export const VARIABLES_SYSTEME_DEFAUT: ModeleDocumentVariableDto[] = [
   { tag: '{{telephone}}', cle: 'telephone', label: 'Téléphone', description: 'Numéro de téléphone du catéchumène ou du parent', categorie: 'Catéchumène' },
 
   // Parcours & Classe
-  { tag: '{{annee_pastorale}}', cle: 'annee_pastorale', label: 'Année pastorale', description: 'Année pastorale en cours (ex: 2026-2027)', categorie: 'Année' },
+  { tag: '{{annee_pastorale}}', cle: 'annee_pastorale', label: 'Année pastorale', description: 'Année pastorale en cours (ex: 2024-2025)', categorie: 'Année' },
   { tag: '{{section}}', cle: 'section', label: 'Section', description: 'Section catéchétique (Enfants, Jeunes, Adultes)', categorie: 'Année' },
-  { tag: '{{niveau}}', cle: 'niveau', label: 'Niveau', description: 'Niveau d\'enseignement (ex: 1ère Année Eucharistie)', categorie: 'Année' },
-  { tag: '{{classe}}', cle: 'classe', label: 'Classe', description: 'Nom de la classe assignée', categorie: 'Année' },
+  { tag: '{{niveau}}', cle: 'niveau', label: 'Niveau', description: 'Niveau d\'enseignement (ex: 2ème année)', categorie: 'Année' },
+  { tag: '{{classe}}', cle: 'classe', label: 'Classe', description: 'Nom de la classe assignée (ex: 2ème année)', categorie: 'Année' },
+  { tag: '{{niveau_suivant}}', cle: 'niveau_suivant', label: 'Niveau suivant admis', description: 'Niveau supérieur dans lequel le catéchumène est admis (ex: 3ème année)', categorie: 'Année' },
+  { tag: '{{motif_depart}}', cle: 'motif_depart', label: 'Motif de départ', description: 'Motif du départ ou de mutation (ex: déménagement)', categorie: 'Année' },
 
   // Sacrements
   { tag: '{{date_bapteme}}', cle: 'date_bapteme', label: 'Date du baptême', description: 'Date de célébration du baptême', categorie: 'Sacrements' },

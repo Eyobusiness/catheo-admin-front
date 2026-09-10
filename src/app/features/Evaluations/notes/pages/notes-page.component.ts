@@ -30,6 +30,7 @@ import { ToastService } from '../../../../core/services/toast.service';
 import { PdfService } from '../../../../core/services/pdf.service';
 import { PdfPreviewService } from '../../../../core/services/pdf-preview.service';
 import { AnneeCatecheseService } from '../../../../core/services/annee-catechese.service';
+import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 
 interface NoteDraftItem {
   catechumeneId: string;
@@ -44,7 +45,7 @@ interface NoteDraftItem {
 
 @Component({
   selector: 'app-notes-page',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, HasPermissionDirective],
   templateUrl: './notes-page.component.html',
   styleUrl: './notes-page.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

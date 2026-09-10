@@ -26,6 +26,7 @@ import { EvaluationNotesGridModalComponent } from '../components/evaluation-note
 import { EvaluationDetailModalComponent } from '../components/evaluation-detail-modal/evaluation-detail-modal.component';
 import { ClasseMoyennesViewComponent } from '../components/classe-moyennes-view/classe-moyennes-view.component';
 import { CatechumeneSyntheseModalComponent } from '../components/catechumene-synthese-modal/catechumene-synthese-modal.component';
+import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-evaluation-page',
@@ -36,7 +37,8 @@ import { CatechumeneSyntheseModalComponent } from '../components/catechumene-syn
     EvaluationNotesGridModalComponent,
     EvaluationDetailModalComponent,
     ClasseMoyennesViewComponent,
-    CatechumeneSyntheseModalComponent
+    CatechumeneSyntheseModalComponent,
+    HasPermissionDirective
   ],
   templateUrl: './evaluation-page.component.html',
   styleUrl: './evaluation-page.component.css',

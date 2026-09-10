@@ -52,7 +52,12 @@
         <app-button variant="ghost" (clicked)="onClose()">
           Fermer
         </app-button>
-        <app-button variant="primary" icon="pencil" (clicked)="onEdit()">
+        <app-button
+          *hasPermission="'inscriptions_annuelles:update'"
+          variant="primary"
+          icon="pencil"
+          (clicked)="onEdit()"
+        >
           Modifier l'inscription
         </app-button>
       </div>

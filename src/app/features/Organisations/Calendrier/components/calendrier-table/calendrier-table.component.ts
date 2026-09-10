@@ -4,10 +4,11 @@ import { AnneeCatechese } from '../../../AnneesPastorales/models/annee-catechese
 import { AppIconButton } from '../../../../../shared/ui/components/buttons/app-icon-button/app-icon-button.component';
 import { AppButton } from '../../../../../shared/ui/components/buttons/app-button/app-button.component';
 import { AppPagination } from '../../../../../shared/ui/components/tables/app-pagination/app-pagination.component';
+import { HasPermissionDirective } from '../../../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-calendrier-table',
-  imports: [AppIconButton, AppButton, AppPagination],
+  imports: [AppIconButton, AppButton, AppPagination, HasPermissionDirective],
   templateUrl: './calendrier-table.component.html',
   styleUrl: './calendrier-table.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

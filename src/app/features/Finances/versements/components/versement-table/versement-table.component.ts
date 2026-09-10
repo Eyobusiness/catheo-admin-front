@@ -4,10 +4,11 @@ import { VersementCureDto, ModeRemise, StatutVersement } from '../../models/vers
 import { AppIconButton } from '../../../../../shared/ui/components/buttons/app-icon-button/app-icon-button.component';
 import { AppButton } from '../../../../../shared/ui/components/buttons/app-button/app-button.component';
 import { AppPagination } from '../../../../../shared/ui/components/tables/app-pagination/app-pagination.component';
+import { HasPermissionDirective } from '../../../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-versement-table',
-  imports: [CommonModule, DecimalPipe, DatePipe, AppIconButton, AppButton, AppPagination],
+  imports: [CommonModule, DecimalPipe, DatePipe, AppIconButton, AppButton, AppPagination, HasPermissionDirective],
   templateUrl: './versement-table.component.html',
   styleUrl: './versement-table.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

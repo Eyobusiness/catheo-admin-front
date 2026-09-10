@@ -7,6 +7,7 @@ import { AppButton } from '../../../../shared/ui/components/buttons/app-button/a
 import { SectionTableComponent } from '../components/section-table/section-table.component';
 import { SectionFormModalComponent } from '../components/section-form-modal/section-form-modal.component';
 import { SectionDeleteModalComponent } from '../components/section-delete-modal/section-delete-modal.component';
+import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-sections-page',
@@ -15,7 +16,8 @@ import { SectionDeleteModalComponent } from '../components/section-delete-modal/
     AppButton,
     SectionTableComponent,
     SectionFormModalComponent,
-    SectionDeleteModalComponent
+    SectionDeleteModalComponent,
+    HasPermissionDirective
   ],
   templateUrl: './sections-page.component.html',
   styleUrl: './sections-page.component.css',

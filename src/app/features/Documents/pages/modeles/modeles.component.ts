@@ -5,11 +5,12 @@ import { Router } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { DocumentsService } from '../../services/documents.service';
 import { ModeleDocumentDto, TypeDocumentOfficiel } from '../../models/document-officiel.model';
-import { EnteteCatecheseComponent } from '../../../../shared/ui/components/entete-catechese/entete-catechese.component';
+import { HeaderParoissePrintComponent } from '../../../Impressions/components/header-paroisse-print/header-paroisse-print.component';
+import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-modeles-documents-page',
-  imports: [CommonModule, FormsModule, EnteteCatecheseComponent],
+  imports: [CommonModule, FormsModule, HeaderParoissePrintComponent, HasPermissionDirective],
   templateUrl: './modeles.component.html',
   styleUrl: './modeles.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

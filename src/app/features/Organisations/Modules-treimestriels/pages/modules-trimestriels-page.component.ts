@@ -12,6 +12,7 @@ import { AppButton } from '../../../../shared/ui/components/buttons/app-button/a
 import { ModuleTrimestrielTableComponent } from '../components/module-trimestriel-table/module-trimestriel-table.component';
 import { ModuleTrimestrielFormModalComponent } from '../components/module-trimestriel-form-modal/module-trimestriel-form-modal.component';
 import { ModuleTrimestrielDeleteModalComponent } from '../components/module-trimestriel-delete-modal/module-trimestriel-delete-modal.component';
+import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-modules-trimestriels-page',
@@ -20,7 +21,8 @@ import { ModuleTrimestrielDeleteModalComponent } from '../components/module-trim
     AppButton,
     ModuleTrimestrielTableComponent,
     ModuleTrimestrielFormModalComponent,
-    ModuleTrimestrielDeleteModalComponent
+    ModuleTrimestrielDeleteModalComponent,
+    HasPermissionDirective
   ],
   templateUrl: './modules-trimestriels-page.component.html',
   styleUrl: './modules-trimestriels-page.component.css',

@@ -8,6 +8,7 @@ import { AppButton } from '../../../../shared/ui/components/buttons/app-button/a
 import { TarifTableComponent } from '../components/tarif-table/tarif-table.component';
 import { TarifFormModalComponent } from '../components/tarif-form-modal/tarif-form-modal.component';
 import { TarifDeleteModalComponent } from '../components/tarif-delete-modal/tarif-delete-modal.component';
+import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-tarifs-page',
@@ -17,7 +18,8 @@ import { TarifDeleteModalComponent } from '../components/tarif-delete-modal/tari
     AppButton,
     TarifTableComponent,
     TarifFormModalComponent,
-    TarifDeleteModalComponent
+    TarifDeleteModalComponent,
+    HasPermissionDirective
   ],
   templateUrl: './tarifs-page.component.html',
   styleUrl: './tarifs-page.component.css',

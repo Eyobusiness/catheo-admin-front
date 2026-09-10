@@ -17,6 +17,7 @@ import { CampagneFormModalComponent } from '../components/campagne-form-modal/ca
 import { CampagneDetailModalComponent } from '../components/campagne-detail-modal/campagne-detail-modal.component';
 import { CampagneDeleteModalComponent } from '../components/campagne-delete-modal/campagne-delete-modal.component';
 import { CampagneQrModalComponent } from '../components/campagne-qr-modal/campagne-qr-modal.component';
+import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-campagnes-page',
@@ -27,7 +28,8 @@ import { CampagneQrModalComponent } from '../components/campagne-qr-modal/campag
     CampagneFormModalComponent,
     CampagneDetailModalComponent,
     CampagneDeleteModalComponent,
-    CampagneQrModalComponent
+    CampagneQrModalComponent,
+    HasPermissionDirective
   ],
   templateUrl: './campagnes-page.component.html',
   styleUrl: './campagnes-page.component.css',

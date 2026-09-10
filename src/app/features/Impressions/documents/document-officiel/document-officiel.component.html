@@ -1,0 +1,12 @@
+@if (data(); as doc) {
+  <article class="doc-officiel-sheet">
+    <!-- EN-TÊTE OFFICIEL PAROISSIAL (HeaderParoissePrint) -->
+    <app-header-paroisse-print
+      [anneePastorale]="doc.annee_libelle || ''"
+      [isFicheIndividuelle]="false"
+    />
+
+    <!-- CORPS DU DOCUMENT (CONTENU FUSIONNÉ SANS PIED DE PAGE) -->
+    <div class="doc-officiel-body" [innerHTML]="safeContenu()"></div>
+  </article>
+}

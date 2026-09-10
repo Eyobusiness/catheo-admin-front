@@ -1,4 +1,4 @@
-﻿import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
+import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
@@ -19,6 +19,12 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   if (token && !req.headers.has('Authorization')) {
     headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const workingAnneeId = typeof window !== 'undefined' ? localStorage.getItem('catheo_working_annee_id') : null;
+  if (workingAnneeId && !req.headers.has('X-Annee-Id')) {
+    headers['X-Annee-Id'] = workingAnneeId;
+    headers['X-Annee-Catechese-Id'] = workingAnneeId;
   }
 
   const authReq = req.clone({

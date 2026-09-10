@@ -134,6 +134,29 @@
           <div class="extra-inputs-box">
             <div class="form-row">
               <div class="form-group flex-1">
+                <label class="form-label">Niveau suivant (optionnel)</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  [ngModel]="niveauSuivant()"
+                  (ngModelChange)="niveauSuivant.set($event)"
+                  placeholder="Ex : 2ème Année"
+                />
+              </div>
+              <div class="form-group flex-1">
+                <label class="form-label">Motif départ / transfert (optionnel)</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  [ngModel]="motifDepart()"
+                  (ngModelChange)="motifDepart.set($event)"
+                  placeholder="Ex : déménagement, convenance personnelle"
+                />
+              </div>
+            </div>
+
+            <div class="form-row" style="margin-top: 0.5rem;">
+              <div class="form-group flex-1">
                 <label class="form-label">Moyenne (optionnel)</label>
                 <input
                   type="text"
@@ -173,6 +196,7 @@
         </p>
 
         <button
+          *hasPermission="'generation_documents:create'"
           type="button"
           class="btn btn-primary btn-generate-big"
           [disabled]="!selectedCatechumene() || !selectedModeleId() || service.isLoading()"
@@ -252,11 +276,11 @@
                     <i class="bi bi-eye"></i>
                   </button>
 
-                  <button type="button" class="action-btn print-btn" title="Imprimer le document" (click)="voirDocumentApercu(doc.id)">
+                  <button type="button" class="action-btn print-btn" title="Imprimer le document (Lecteur PDF)" (click)="imprimerDocumentPdf(doc)">
                     <i class="bi bi-printer"></i>
                   </button>
 
-                  <button type="button" class="action-btn delete-btn" title="Supprimer de l'historique" (click)="openDeleteConfirm(doc)">
+                  <button *hasPermission="'generation_documents:delete'" type="button" class="action-btn delete-btn" title="Supprimer de l'historique" (click)="openDeleteConfirm(doc)">
                     <i class="bi bi-trash"></i>
                   </button>
                 </div>

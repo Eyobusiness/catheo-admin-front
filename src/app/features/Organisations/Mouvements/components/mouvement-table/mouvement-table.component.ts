@@ -3,10 +3,11 @@ import { Mouvement } from '../../models/mouvement.model';
 import { AppIconButton } from '../../../../../shared/ui/components/buttons/app-icon-button/app-icon-button.component';
 import { AppButton } from '../../../../../shared/ui/components/buttons/app-button/app-button.component';
 import { AppPagination } from '../../../../../shared/ui/components/tables/app-pagination/app-pagination.component';
+import { HasPermissionDirective } from '../../../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-mouvement-table',
-  imports: [AppIconButton, AppButton, AppPagination],
+  imports: [AppIconButton, AppButton, AppPagination, HasPermissionDirective],
   templateUrl: './mouvement-table.component.html',
   styleUrl: './mouvement-table.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -14,6 +14,7 @@ import { AppButton } from '../../../../shared/ui/components/buttons/app-button/a
 import { AffectationTableComponent } from '../components/affectation-table/affectation-table.component';
 import { AffectationFormModalComponent } from '../components/affectation-form-modal/affectation-form-modal.component';
 import { AffectationDeleteModalComponent } from '../components/affectation-delete-modal/affectation-delete-modal.component';
+import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-affectations-page',
@@ -22,7 +23,8 @@ import { AffectationDeleteModalComponent } from '../components/affectation-delet
     AppButton,
     AffectationTableComponent,
     AffectationFormModalComponent,
-    AffectationDeleteModalComponent
+    AffectationDeleteModalComponent,
+    HasPermissionDirective
   ],
   templateUrl: './affectations-page.component.html',
   styleUrl: './affectations-page.component.css',

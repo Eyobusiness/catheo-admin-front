@@ -25,6 +25,70 @@ function extractArrayData(res: any): any[] {
   return [];
 }
 
+function normalizeCatechumene(item: any): CatechumeneDto {
+  const cat = item.catechumene || {};
+  const nom = item.nom || cat.nom || '';
+  const prenoms = item.prenoms || item.prenom || cat.prenoms || cat.prenom || '';
+  const nom_complet = item.nom_complet || item.nomPrenoms || `${nom} ${prenoms}`.trim();
+  const phone = item.telephone || cat.telephone || item.telephone_pere || item.telephone_mere || item.telephone_tuteur || '';
+  const matricule = item.matricule || cat.matricule || item.code_catechumene || cat.code_catechumene || '';
+  const targetId = item.catechumene_id || item.catechumeneId || cat.id || cat.uuid || item.id || item.uuid;
+
+  return {
+    id: String(targetId || ''),
+    code_catechumene: matricule || item.code_inscription || `CAT-${String(targetId).substring(0, 6)}`,
+    matricule,
+    nom,
+    prenoms,
+    nom_complet,
+    sexe: item.sexe || cat.sexe || 'M',
+    date_naissance: item.date_naissance || cat.date_naissance,
+    lieu_naissance: item.lieu_naissance || cat.lieu_naissance,
+    adresse: item.adresse || cat.adresse,
+    domicile: item.domicile || cat.domicile,
+    profession: item.profession || cat.profession,
+    classe_scolaire: item.classe_scolaire || cat.classe_scolaire,
+    situation_matrimoniale: item.situation_matrimoniale || cat.situation_matrimoniale,
+    telephone: phone,
+    photo_path: item.photo_path || item.photo_url || cat.photo_path || cat.photo_url,
+    photo_url: item.photo_url || item.photo_path || cat.photo_url || cat.photo_path,
+    nom_pere: item.nom_pere || cat.nom_pere,
+    origine_pere: item.origine_pere || cat.origine_pere,
+    telephone_pere: item.telephone_pere || cat.telephone_pere,
+    nom_mere: item.nom_mere || cat.nom_mere,
+    origine_mere: item.origine_mere || cat.origine_mere,
+    telephone_mere: item.telephone_mere || cat.telephone_mere,
+    nom_tuteur: item.nom_tuteur || cat.nom_tuteur,
+    telephone_tuteur: item.telephone_tuteur || cat.telephone_tuteur,
+    est_baptise: item.est_baptise ?? cat.est_baptise ?? false,
+    num_carnet_bapteme: item.num_carnet_bapteme || cat.num_carnet_bapteme,
+    date_bapteme: item.date_bapteme || cat.date_bapteme,
+    lieu_bapteme: item.lieu_bapteme || cat.lieu_bapteme,
+    diocese_bapteme: item.diocese_bapteme || cat.diocese_bapteme,
+    ville_bapteme: item.ville_bapteme || cat.ville_bapteme,
+    paroisse_bapteme: item.paroisse_bapteme || cat.paroisse_bapteme,
+    date_premiere_communion: item.date_premiere_communion || cat.date_premiere_communion,
+    paroisse_premiere_communion: item.paroisse_premiere_communion || cat.paroisse_premiere_communion,
+    date_confirmation: item.date_confirmation || cat.date_confirmation,
+    paroisse_confirmation: item.paroisse_confirmation || cat.paroisse_confirmation,
+    ministre_confirmation: item.ministre_confirmation || cat.ministre_confirmation,
+    statut: item.statut || item.statut_inscription || cat.statut || 'actif',
+    ceb_id: item.ceb_id || item.ceb?.id || cat.ceb_id,
+    ceb: item.ceb || cat.ceb,
+    classe_id: item.classe_id || cat.classe_id,
+    classe_nom: item.classe?.nom || item.classe_nom || cat.classe_nom,
+    niveau_id: item.niveau_id || cat.niveau_id,
+    niveau_nom: item.niveau?.nom || item.niveau_nom || cat.niveau_nom,
+    section_id: item.section_id || cat.section_id,
+    section_nom: item.section?.nom || item.section_nom || cat.section_nom,
+    annee_catechese_id: item.annee_catechese_id || cat.annee_catechese_id,
+    annee_libelle: item.annee_catechese?.libelle || item.annee_libelle || cat.annee_libelle,
+    inscriptions_annuelles: item.inscriptions_annuelles || cat.inscriptions_annuelles || [],
+    parrains_marraines: item.parrains_marraines || cat.parrains_marraines || [],
+    created_at: item.created_at || new Date().toISOString()
+  };
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -33,6 +97,7 @@ export class CatechumeneService {
   private readonly toastService = inject(ToastService);
 
   private readonly baseUrl = `${environment.apiUrl}/catechumenes`;
+  private readonly inscriptionsUrl = `${environment.apiUrl}/inscriptions-annuelles`;
   private readonly parrainsUrl = `${environment.apiUrl}/parrains-marraines`;
 
   // Reactive Signals
@@ -47,51 +112,7 @@ export class CatechumeneService {
     return this.http.get<any>(this.baseUrl).pipe(
       tap(res => {
         const raw = extractArrayData(res);
-        const normalized: CatechumeneDto[] = raw.map((item: any) => ({
-          id: item.id,
-          code_catechumene: item.code_catechumene || `CAT-${item.id?.substring(0, 6)}`,
-          matricule: item.matricule || item.code_catechumene,
-          nom: item.nom,
-          prenoms: item.prenoms,
-          nom_complet: item.nom_complet || `${item.nom} ${item.prenoms}`,
-          sexe: item.sexe || 'M',
-          date_naissance: item.date_naissance,
-          lieu_naissance: item.lieu_naissance,
-          adresse: item.adresse,
-          domicile: item.domicile,
-          profession: item.profession,
-          classe_scolaire: item.classe_scolaire,
-          situation_matrimoniale: item.situation_matrimoniale,
-          telephone: item.telephone,
-          photo_path: item.photo_path || item.photo_url,
-          photo_url: item.photo_url || item.photo_path,
-          nom_pere: item.nom_pere,
-          origine_pere: item.origine_pere,
-          telephone_pere: item.telephone_pere,
-          nom_mere: item.nom_mere,
-          origine_mere: item.origine_mere,
-          telephone_mere: item.telephone_mere,
-          nom_tuteur: item.nom_tuteur,
-          telephone_tuteur: item.telephone_tuteur,
-          est_baptise: item.est_baptise ?? false,
-          num_carnet_bapteme: item.num_carnet_bapteme,
-          date_bapteme: item.date_bapteme,
-          lieu_bapteme: item.lieu_bapteme,
-          diocese_bapteme: item.diocese_bapteme,
-          ville_bapteme: item.ville_bapteme,
-          paroisse_bapteme: item.paroisse_bapteme,
-          date_premiere_communion: item.date_premiere_communion,
-          paroisse_premiere_communion: item.paroisse_premiere_communion,
-          date_confirmation: item.date_confirmation,
-          paroisse_confirmation: item.paroisse_confirmation,
-          ministre_confirmation: item.ministre_confirmation,
-          statut: item.statut || 'actif',
-          ceb_id: item.ceb_id || item.ceb?.id,
-          ceb: item.ceb,
-          inscriptions_annuelles: item.inscriptions_annuelles || [],
-          parrains_marraines: item.parrains_marraines || [],
-          created_at: item.created_at || new Date().toISOString()
-        }));
+        const normalized: CatechumeneDto[] = raw.map(normalizeCatechumene);
         this.catechumenes.set(normalized);
         this.isLoading.set(false);
       }),
@@ -99,6 +120,42 @@ export class CatechumeneService {
         this.isLoading.set(false);
         return of(this.catechumenes());
       })
+    );
+  }
+
+  /**
+   * Recherche rapide de catéchumènes par nom, prénom ou matricule,
+   * basée sur la table des inscriptions (inscriptions-annuelles) et filtrée
+   * selon l'année pastorale sélectionnée.
+   */
+  public searchQuick(term: string, anneeId?: string): Observable<CatechumeneDto[]> {
+    const trimmed = term.trim();
+    if (!trimmed) {
+      return of([]);
+    }
+
+    const params: Record<string, string> = {
+      search: trimmed,
+      per_page: '15'
+    };
+
+    if (anneeId && anneeId !== 'all') {
+      params['annee_catechese_id'] = anneeId;
+    }
+
+    return this.http.get<any>(this.inscriptionsUrl, { params }).pipe(
+      map(res => {
+        const raw = extractArrayData(res);
+        const list = raw.map(normalizeCatechumene);
+        // Éliminer les doublons éventuels
+        const seen = new Set<string>();
+        return list.filter(item => {
+          if (!item.id || seen.has(item.id)) return false;
+          seen.add(item.id);
+          return true;
+        });
+      }),
+      catchError(() => of([]))
     );
   }
 

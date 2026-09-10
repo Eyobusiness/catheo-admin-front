@@ -5,10 +5,11 @@ import { AffectationAnimateurService } from '../../../Organisations/affectation-
 import { AppIconButton } from '../../../../shared/ui/components/buttons/app-icon-button/app-icon-button.component';
 import { AppButton } from '../../../../shared/ui/components/buttons/app-button/app-button.component';
 import { AppPagination } from '../../../../shared/ui/components/tables/app-pagination/app-pagination.component';
+import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-seance-table',
-  imports: [CommonModule, DatePipe, AppIconButton, AppButton, AppPagination],
+  imports: [CommonModule, DatePipe, AppIconButton, AppButton, AppPagination, HasPermissionDirective],
   templateUrl: './seance-table.component.html',
   styleUrl: './seance-table.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

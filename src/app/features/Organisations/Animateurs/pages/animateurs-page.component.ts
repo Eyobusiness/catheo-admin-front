@@ -7,6 +7,7 @@ import { AppButton } from '../../../../shared/ui/components/buttons/app-button/a
 import { AnimateurTableComponent } from '../components/animateur-table/animateur-table.component';
 import { AnimateurFormModalComponent } from '../components/animateur-form-modal/animateur-form-modal.component';
 import { AnimateurDeleteModalComponent } from '../components/animateur-delete-modal/animateur-delete-modal.component';
+import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-animateurs-page',
@@ -15,7 +16,8 @@ import { AnimateurDeleteModalComponent } from '../components/animateur-delete-mo
     AppButton,
     AnimateurTableComponent,
     AnimateurFormModalComponent,
-    AnimateurDeleteModalComponent
+    AnimateurDeleteModalComponent,
+    HasPermissionDirective
   ],
   templateUrl: './animateurs-page.component.html',
   styleUrl: './animateurs-page.component.css',

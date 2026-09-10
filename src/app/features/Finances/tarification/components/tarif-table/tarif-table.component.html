@@ -99,6 +99,7 @@
                 </app-icon-button>
 
                 <app-icon-button
+                  *hasPermission="'tarifications:update'"
                   variant="primary"
                   size="sm"
                   title="Modifier le tarif"
@@ -109,6 +110,7 @@
                 </app-icon-button>
 
                 <app-icon-button
+                  *hasPermission="'tarifications:delete'"
                   variant="danger"
                   size="sm"
                   title="Supprimer le tarif"

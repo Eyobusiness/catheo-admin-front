@@ -9,6 +9,7 @@ import { SauvegardeTableComponent } from '../components/sauvegarde-table/sauvega
 import { SauvegardeCreateModalComponent } from '../components/sauvegarde-create-modal/sauvegarde-create-modal.component';
 import { SauvegardeRestaurerModalComponent } from '../components/sauvegarde-restaurer-modal/sauvegarde-restaurer-modal.component';
 import { SauvegardeDeleteModalComponent } from '../components/sauvegarde-delete-modal/sauvegarde-delete-modal.component';
+import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-sauvegardes-page',
@@ -20,7 +21,8 @@ import { SauvegardeDeleteModalComponent } from '../components/sauvegarde-delete-
     SauvegardeTableComponent,
     SauvegardeCreateModalComponent,
     SauvegardeRestaurerModalComponent,
-    SauvegardeDeleteModalComponent
+    SauvegardeDeleteModalComponent,
+    HasPermissionDirective
   ],
   templateUrl: './sauvegardes-page.component.html',
   styleUrl: './sauvegardes-page.component.css',

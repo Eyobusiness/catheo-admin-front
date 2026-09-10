@@ -8,6 +8,7 @@ import { CatechumeneService } from '../../../Catechumenes/liste-catechumene/serv
 import { CatechumeneDto } from '../../../Catechumenes/liste-catechumene/models/catechumene.model';
 import { InscriptionAnnuelleService } from '../../../Catechumenes/inscriptions-annuelles/services/inscription-annuelle.service';
 import { AnneeCatecheseService } from '../../../../core/services/annee-catechese.service';
+import { PdfService } from '../../../../core/services/pdf.service';
 
 export interface EnrichedCatechumene {
   id: string;
@@ -25,9 +26,11 @@ export interface EnrichedCatechumene {
   rawCatechumene: CatechumeneDto;
 }
 
+import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
+
 @Component({
   selector: 'app-generation-documents-page',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, HasPermissionDirective],
   templateUrl: './generation.component.html',
   styleUrl: './generation.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -38,6 +41,7 @@ export class GenerationDocumentsPageComponent implements OnInit {
   protected readonly inscriptionService = inject(InscriptionAnnuelleService);
   private readonly anneeService = inject(AnneeCatecheseService);
   private readonly router = inject(Router);
+  private readonly pdfService = inject(PdfService);
 
   // Étape 1 : Recherche Catéchumène
   public readonly searchQuery = signal('');
@@ -107,6 +111,8 @@ export class GenerationDocumentsPageComponent implements OnInit {
   public readonly selectedModeleId = signal<string>('');
   public readonly moyenneNote = signal<string>('');
   public readonly decisionEvaluation = signal<string>('');
+  public readonly niveauSuivant = signal<string>('');
+  public readonly motifDepart = signal<string>('');
 
   // Filtre Historique
   public readonly historySearchQuery = signal('');
@@ -143,11 +149,35 @@ export class GenerationDocumentsPageComponent implements OnInit {
 
   public selectCatechumene(c: EnrichedCatechumene): void {
     this.selectedCatechumene.set(c);
+
+    // Pré-remplissage intelligent du niveau suivant
+    if (c.niveau) {
+      const lower = c.niveau.toLowerCase();
+      if (lower.includes('1ère') || lower.includes('1ere') || lower.includes('1er')) {
+        this.niveauSuivant.set('2ème Année');
+      } else if (lower.includes('2ème') || lower.includes('2eme')) {
+        this.niveauSuivant.set('3ème Année');
+      } else if (lower.includes('3ème') || lower.includes('3eme')) {
+        this.niveauSuivant.set('4ème Année');
+      } else if (lower.includes('4ème') || lower.includes('4eme')) {
+        this.niveauSuivant.set('5ème Année');
+      } else {
+        this.niveauSuivant.set('Année supérieure');
+      }
+    } else {
+      this.niveauSuivant.set('Année supérieure');
+    }
+
+    if (!this.motifDepart()) {
+      this.motifDepart.set('déménagement');
+    }
   }
 
   public resetCatechumeneSelection(): void {
     this.selectedCatechumene.set(null);
     this.searchQuery.set('');
+    this.niveauSuivant.set('');
+    this.motifDepart.set('');
   }
 
   public genererDocumentOfficiel(): void {
@@ -164,6 +194,13 @@ export class GenerationDocumentsPageComponent implements OnInit {
     }
     if (this.decisionEvaluation().trim()) {
       vars['decision'] = this.decisionEvaluation().trim();
+    }
+    if (this.niveauSuivant().trim()) {
+      vars['niveau_suivant'] = this.niveauSuivant().trim();
+    }
+    if (this.motifDepart().trim()) {
+      vars['motif_depart'] = this.motifDepart().trim();
+      vars['motif'] = this.motifDepart().trim();
     }
 
     const anneeId = this.anneeService.activeAnnee()?.id;
@@ -184,6 +221,10 @@ export class GenerationDocumentsPageComponent implements OnInit {
 
   public voirDocumentApercu(id: string): void {
     this.router.navigate(['/documents/apercu', id]);
+  }
+
+  public imprimerDocumentPdf(doc: DocumentGenereDto): void {
+    this.pdfService.previewDocumentOfficielPdf(doc);
   }
 
   public openDeleteConfirm(doc: DocumentGenereDto): void {

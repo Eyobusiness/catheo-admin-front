@@ -75,6 +75,7 @@
           <div class="row-actions">
               @if (!profil.is_system) {
                 <app-icon-button
+                  *hasPermission="'profils:update'"
                   variant="ghost"
                   size="sm"
                   title="Modifier les droits du profil"
@@ -85,6 +86,7 @@
                 </app-icon-button>
 
                 <app-icon-button
+                  *hasPermission="'profils:delete'"
                   variant="ghost"
                   size="sm"
                   title="Supprimer ce profil"
@@ -106,7 +108,13 @@
               </div>
               <h4>Aucun profil trouvé</h4>
               <p>Aucun rôle utilisateur ne correspond à vos critères de recherche.</p>
-              <app-button variant="primary" size="sm" icon="plus" (clicked)="createRequested.emit()">
+              <app-button
+                *hasPermission="'profils:create'"
+                variant="primary"
+                size="sm"
+                icon="plus"
+                (clicked)="createRequested.emit()"
+              >
                 Créer un premier profil
               </app-button>
             </div>

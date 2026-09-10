@@ -82,6 +82,7 @@
 
                 <!-- Action: Modifier -->
                 <app-icon-button
+                  *hasPermission="'sections:update'"
                   variant="primary"
                   size="sm"
                   title="Modifier"
@@ -93,6 +94,7 @@
 
                 <!-- Action: Supprimer -->
                 <app-icon-button
+                  *hasPermission="'sections:delete'"
                   variant="danger"
                   size="sm"
                   title="Supprimer"

@@ -56,6 +56,8 @@ interface PreinscriptionOrientationFields {
   type_demande: TypeDemandePreinscription;
   section_souhaite_id: string;
   niveau_souhaite_id: string;
+  matricule?: string;
+  catechumene_id?: string;
 }
 
 type PreinscriptionMutableFields =
@@ -70,6 +72,7 @@ export interface PreinscriptionDto extends PreinscriptionMutableFields {
   nom_complet?: string;
   campagne?: CampagnePreinscriptionDto;
   annee_catechese?: AnneeCatecheseDto;
+  annee_catechese_id?: string;
   section_souhaite?: Section;
   niveau_souhaite?: NiveauDto;
   classe_affectee?: ClasseDto;

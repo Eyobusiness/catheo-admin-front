@@ -7,6 +7,7 @@ import { AppButton } from '../../../../shared/ui/components/buttons/app-button/a
 import { MouvementTableComponent } from '../components/mouvement-table/mouvement-table.component';
 import { MouvementFormModalComponent } from '../components/mouvement-form-modal/mouvement-form-modal.component';
 import { MouvementDeleteModalComponent } from '../components/mouvement-delete-modal/mouvement-delete-modal.component';
+import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-mouvements-page',
@@ -15,7 +16,8 @@ import { MouvementDeleteModalComponent } from '../components/mouvement-delete-mo
     AppButton,
     MouvementTableComponent,
     MouvementFormModalComponent,
-    MouvementDeleteModalComponent
+    MouvementDeleteModalComponent,
+    HasPermissionDirective
   ],
   templateUrl: './mouvements-page.component.html',
   styleUrl: './mouvements-page.component.css',

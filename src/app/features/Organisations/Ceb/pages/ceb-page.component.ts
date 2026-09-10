@@ -7,6 +7,7 @@ import { AppButton } from '../../../../shared/ui/components/buttons/app-button/a
 import { CebTableComponent } from '../components/ceb-table/ceb-table.component';
 import { CebFormModalComponent } from '../components/ceb-form-modal/ceb-form-modal.component';
 import { CebDeleteModalComponent } from '../components/ceb-delete-modal/ceb-delete-modal.component';
+import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-ceb-page',
@@ -15,7 +16,8 @@ import { CebDeleteModalComponent } from '../components/ceb-delete-modal/ceb-dele
     AppButton,
     CebTableComponent,
     CebFormModalComponent,
-    CebDeleteModalComponent
+    CebDeleteModalComponent,
+    HasPermissionDirective
   ],
   templateUrl: './ceb-page.component.html',
   styleUrl: './ceb-page.component.css',

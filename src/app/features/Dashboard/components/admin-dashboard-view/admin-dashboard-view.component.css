@@ -552,8 +552,61 @@
   font-style: italic;
 }
 
+/* Badges de comptage dans les en-têtes de cartes */
+.card-count-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 999px;
+  background-color: var(--primary-50, #eff6ff);
+  color: var(--primary-700, #1d4ed8);
+  border: 1px solid var(--primary-200, #bfdbfe);
+  line-height: 1.2;
+}
+
+.card-count-badge.purple {
+  background-color: #f5f3ff;
+  color: #7c3aed;
+  border-color: #ddd6fe;
+}
+
+/* Bouton interactif Dérouler / Réduire (Voir plus / Voir moins) */
+.btn-toggle-view {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.625rem 1rem;
+  margin-top: 0.75rem;
+  background: var(--neutral-50, #f8fafc);
+  color: var(--primary-700, #1d4ed8);
+  border: 1px dashed var(--neutral-300, #cbd5e1);
+  border-radius: var(--radius-md, 8px);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast, 0.2s ease);
+}
+
+.btn-toggle-view:hover {
+  background: var(--primary-50, #eff6ff);
+  border-color: var(--primary-400, #60a5fa);
+  color: var(--primary-800, #1e40af);
+  transform: translateY(-1px);
+}
+
+.btn-toggle-view i {
+  font-size: 0.875rem;
+  transition: transform 0.2s ease;
+}
+
 @media (max-width: 900px) {
   .dash-grid-2 {
     grid-template-columns: 1fr;
   }
 }
+
