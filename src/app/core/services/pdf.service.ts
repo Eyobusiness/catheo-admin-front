@@ -109,6 +109,8 @@ export class PdfService {
             annee_pastorale: data.annee_catechese?.libelle || data.annee_pastorale,
             libelle: data.libelle || data.type_operation || 'Paiement officiel',
             montant_total: data.montant_total || data.montant || 0,
+            remise: data.remise || 0,
+            montant_net: data.montant_net ?? Math.max(0, (data.montant_total || data.montant || 0) - (data.remise || 0)),
             montant_paye: data.montant_paye || data.montant || 0,
             montant_restant: data.montant_restant ?? 0,
             mode_paiement: data.mode_paiement || data.mode_remise,
@@ -519,6 +521,7 @@ export class PdfService {
         if (options?.niveauNom) finalData.niveau_nom = options.niveauNom;
         if (options?.subtitle) finalData.custom_subtitle = options.subtitle;
         if (options?.title) finalData.custom_title = options.title;
+        if (filters.sacrement || filters.sacrament) finalData.sacrement = filters.sacrement || filters.sacrament;
 
         this.pdfPreview.openDocument('suivi-sacramental', finalData, {
           title: options?.title || `Suivi Sacramental — ${(finalData?.sacrement || 'Sacrement').toUpperCase()}`,
@@ -534,6 +537,7 @@ export class PdfService {
           niveau_nom: options?.niveauNom || '',
           custom_subtitle: options?.subtitle || '',
           custom_title: options?.title || '',
+          sacrement: filters.sacrement || filters.sacrament || '',
           candidats: localStudents,
           catechumenes: localStudents
         };
@@ -753,51 +757,92 @@ export class PdfService {
   // =========================================================================
   // 8. RAPPORT ANNUEL PASTORAL
   // =========================================================================
-  public previewRapportAnnuelPdf(params?: { annee_catechese_id?: string | number; anneeLibelle?: string }): void {
+  public previewRapportAnnuelPdf(params?: {
+    annee_catechese_id?: string | number;
+    anneeLibelle?: string;
+    bilanData?: any;
+  }): void {
     this.pdfPreview.startLoading('rapport-annuel', {
       title: 'Rapport Pastoral Annuel',
       subtitle: params?.anneeLibelle ? `Année : ${params.anneeLibelle}` : 'Synthèse des effectifs et activités',
       formatBadge: 'A4 Portrait'
     });
 
-    // Chargement des données statistiques depuis Laravel
-    this.http.get<any>(`${this.baseUrl}/dashboard/kpis`).pipe(
+    const buildAndOpen = (b: any, kpiData?: any) => {
+      const secList = b?.effectifs?.par_section?.map((s: any) => ({
+        nom: s.section_nom || s.nom || '',
+        effectif: Number(s.effectif) || 0,
+        garcons: Number(s.garcons || s.total_garcons || 0),
+        filles: Number(s.filles || s.total_filles || 0)
+      })) || kpiData?.repartition_sections || [];
+
+      const rapport: RapportAnnuelData = {
+        annee_libelle: params?.anneeLibelle || b?.annee?.libelle || 'Année Pastorale',
+        total_inscrits: b?.synthese?.effectif_total ?? kpiData?.total_inscrits ?? 0,
+        total_garcons: b?.synthese?.total_garcons ?? kpiData?.total_garcons ?? 0,
+        total_filles: b?.synthese?.total_filles ?? kpiData?.total_filles ?? 0,
+        total_classes: b?.synthese?.classes ?? kpiData?.total_classes ?? 0,
+        total_niveaux: b?.synthese?.niveaux ?? kpiData?.total_niveaux ?? 0,
+        total_sections: b?.synthese?.sections ?? kpiData?.total_sections ?? 0,
+        total_animateurs: b?.synthese?.animateurs ?? kpiData?.total_animateurs ?? 0,
+        total_preinscriptions: b?.inscriptions?.preinscriptions_total ?? kpiData?.total_preinscriptions ?? 0,
+        taux_assiduite: b?.assiduite?.taux_presence ?? b?.synthese_finale?.taux_assiduite ?? kpiData?.taux_assiduite_global ?? 95,
+        taux_recouvrement: b?.totalRecouvrementPct ?? kpiData?.taux_recouvrement ?? 88,
+        taux_reussite: (b?.progression && b.progression.length > 0)
+          ? Math.round(b.progression.reduce((acc: number, p: any) => acc + (p.admis || 0), 0) / Math.max(1, b.progression.reduce((acc: number, p: any) => acc + (p.effectif_inscrit || 0), 0)) * 100)
+          : (kpiData?.taux_reussite ?? 92),
+        candidats_bapteme: b?.sacrements?.bapteme?.candidats ?? kpiData?.candidats_bapteme ?? 0,
+        bapteme_realises: b?.sacrements?.bapteme?.realises ?? kpiData?.bapteme_realises ?? 0,
+        candidats_communion: b?.sacrements?.premiere_communion?.candidats ?? kpiData?.candidats_communion ?? 0,
+        communion_realises: b?.sacrements?.premiere_communion?.realises ?? kpiData?.communion_realises ?? 0,
+        candidats_confirmation: b?.sacrements?.confirmation?.candidats ?? kpiData?.candidats_confirmation ?? 0,
+        confirmation_realises: b?.sacrements?.confirmation?.realises ?? kpiData?.confirmation_realises ?? 0,
+        sections: secList
+      };
+
+      this.pdfPreview.openDocument('rapport-annuel', rapport, {
+        title: 'Rapport Pastoral Annuel',
+        subtitle: params?.anneeLibelle ? `Année Pastorale ${params.anneeLibelle}` : '',
+        formatBadge: 'A4 Portrait',
+        fileName: `rapport-annuel-${params?.anneeLibelle || 'pastoral'}.pdf`
+      });
+    };
+
+    if (params?.bilanData) {
+      buildAndOpen(params.bilanData);
+      return;
+    }
+
+    const url = params?.annee_catechese_id
+      ? `${this.baseUrl}/dashboard/bilan-annuel/${params.annee_catechese_id}`
+      : `${this.baseUrl}/dashboard/bilan-annuel`;
+
+    this.http.get<any>(url).pipe(
       map(res => extractItem(res)),
       tap(d => {
-        const rapport: RapportAnnuelData = {
-          annee_libelle: params?.anneeLibelle || 'Année Pastorale',
-          total_inscrits: d?.total_inscrits || 0,
-          total_garcons: d?.total_garcons || 0,
-          total_filles: d?.total_filles || 0,
-          total_classes: d?.total_classes || 0,
-          total_niveaux: d?.total_niveaux || 0,
-          total_sections: d?.total_sections || 0,
-          total_animateurs: d?.total_animateurs || 0,
-          total_preinscriptions: d?.total_preinscriptions || 0,
-          taux_assiduite: d?.taux_assiduite_global || 95,
-          taux_recouvrement: d?.taux_recouvrement || 88,
-          taux_reussite: d?.taux_reussite || 92,
-          candidats_bapteme: d?.candidats_bapteme || 45,
-          candidats_communion: d?.candidats_communion || 78,
-          candidats_confirmation: d?.candidats_confirmation || 62,
-          sections: d?.repartition_sections || [
-            { nom: 'Éveil à la Foi', effectif: 40, garcons: 20, filles: 20 },
-            { nom: 'Enfance', effectif: 120, garcons: 55, filles: 65 },
-            { nom: 'Adolescents', effectif: 95, garcons: 48, filles: 47 },
-            { nom: 'Adultes (Catéchuménat)', effectif: 35, garcons: 15, filles: 20 }
-          ]
-        };
-
-        this.pdfPreview.openDocument('rapport-annuel', rapport, {
-          title: 'Rapport Pastoral Annuel',
-          subtitle: params?.anneeLibelle ? `Année Pastorale ${params.anneeLibelle}` : '',
-          formatBadge: 'A4 Portrait',
-          fileName: `rapport-annuel-${params?.anneeLibelle || 'pastoral'}.pdf`
-        });
+        if (d && (d.synthese || d.effectifs)) {
+          buildAndOpen(d);
+        } else {
+          this.http.get<any>(`${this.baseUrl}/dashboard/kpis`).pipe(
+            map(kRes => extractItem(kRes)),
+            tap(kpi => buildAndOpen(null, kpi)),
+            catchError(() => {
+              buildAndOpen(null, {});
+              return of(null);
+            })
+          ).subscribe();
+        }
       }),
-      catchError(err => {
-        this.pdfPreview.close();
-        this.toastService.error('Erreur', 'Impossible de charger les données du rapport.');
+      catchError(() => {
+        this.http.get<any>(`${this.baseUrl}/dashboard/kpis`).pipe(
+          map(kRes => extractItem(kRes)),
+          tap(kpi => buildAndOpen(null, kpi)),
+          catchError(() => {
+            this.pdfPreview.close();
+            this.toastService.error('Erreur', 'Impossible de charger les données du rapport.');
+            return of(null);
+          })
+        ).subscribe();
         return of(null);
       })
     ).subscribe();

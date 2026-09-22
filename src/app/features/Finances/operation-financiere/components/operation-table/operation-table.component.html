@@ -60,6 +60,11 @@
             <td class="col-montant">
               <div class="montant-cell">
                 <span class="montant-amount">{{ (item.montant_total || item.montant || 0) | number:'1.0-0' }} <small>FCFA</small></span>
+                @if (item.remise && item.remise > 0) {
+                  <span class="text-xs text-rose-600 font-semibold" style="color: #dc2626; font-size: 0.75rem;">
+                    Remise : -{{ item.remise | number:'1.0-0' }} F
+                  </span>
+                }
                 @if (item.statut === 'partiellement_paye' && item.montant_paye) {
                   <span class="montant-paye-sub">Payé : {{ item.montant_paye | number:'1.0-0' }} F (Reste: {{ item.montant_restant | number:'1.0-0' }} F)</span>
                 }

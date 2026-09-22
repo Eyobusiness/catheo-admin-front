@@ -20,17 +20,18 @@ export class WorkingAnneeService {
 
   // Accès aux années pastorales chargées
   public readonly availableAnnees = this.anneeService.annees;
+  public readonly activeAnnee = this.anneeService.activeAnnee;
   public readonly isLoading = this.anneeService.isLoading;
 
   // Dérivations calculées
   public readonly workingAnneeId = computed(() => this.workingAnnee()?.id || '');
   public readonly workingAnneeLibelle = computed(() => {
-    const current = this.workingAnnee();
+    const current = this.workingAnnee() || this.activeAnnee();
     return current ? current.libelle : 'Année en cours';
   });
 
   public readonly isOfficialActive = computed(() => {
-    const current = this.workingAnnee();
+    const current = this.workingAnnee() || this.activeAnnee();
     return !!current && (current.est_active === true || current.statut === 'active');
   });
 
@@ -45,26 +46,36 @@ export class WorkingAnneeService {
   public init(): void {
     this.anneeService.getAll().subscribe({
       next: (list) => {
-        if (!list || list.length === 0) return;
-
-        const savedId = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null;
-        let selected: AnneeCatechese | undefined;
-
-        if (savedId) {
-          selected = list.find(a => String(a.id) === String(savedId));
-        }
-
-        // Si non trouvé ou pas de sauvegarde, repli sur l'année active officielle ou la plus récente
-        if (!selected) {
-          selected = list.find(a => a.est_active || a.statut === 'active') || list[0];
-          if (selected && typeof window !== 'undefined') {
-            localStorage.setItem(STORAGE_KEY, selected.id);
-          }
-        }
-
-        this.workingAnnee.set(selected || null);
+        this.resolveWorkingAnnee(list);
       }
     });
+  }
+
+  public resolveWorkingAnnee(list?: AnneeCatechese[]): void {
+    const candidates = (list && Array.isArray(list) && list.length > 0)
+      ? list
+      : this.anneeService.annees();
+
+    if (!candidates || candidates.length === 0) return;
+
+    const savedId = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null;
+    let selected: AnneeCatechese | undefined;
+
+    if (savedId) {
+      selected = candidates.find(a => String(a.id) === String(savedId));
+    }
+
+    // Si non trouvé ou pas de sauvegarde, repli sur l'année active officielle ou la plus récente
+    if (!selected) {
+      selected = candidates.find(a => a.est_active || a.statut === 'active') || candidates[0];
+      if (selected && typeof window !== 'undefined') {
+        localStorage.setItem(STORAGE_KEY, String(selected.id));
+      }
+    }
+
+    if (selected) {
+      this.workingAnnee.set(selected);
+    }
   }
 
   /**
@@ -72,14 +83,14 @@ export class WorkingAnneeService {
    */
   public setWorkingAnnee(annee: AnneeCatechese, reload: boolean = true): void {
     const previous = this.workingAnnee();
-    if (previous?.id === annee.id) {
+    if (previous && String(previous.id) === String(annee.id)) {
       this.closeModal();
       return;
     }
 
     this.workingAnnee.set(annee);
     if (typeof window !== 'undefined') {
-      localStorage.setItem(STORAGE_KEY, annee.id);
+      localStorage.setItem(STORAGE_KEY, String(annee.id));
     }
     this.closeModal();
 
@@ -98,7 +109,16 @@ export class WorkingAnneeService {
 
   public openModal(): void {
     // Rafraîchir la liste des années lors de l'ouverture
-    this.anneeService.getAll().subscribe();
+    this.anneeService.getAll().subscribe({
+      next: (list) => {
+        if (!this.workingAnnee()) {
+          this.resolveWorkingAnnee(list);
+        }
+      }
+    });
+    if (!this.workingAnnee()) {
+      this.resolveWorkingAnnee();
+    }
     this.isModalOpen.set(true);
   }
 

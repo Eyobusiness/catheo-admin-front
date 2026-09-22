@@ -126,6 +126,21 @@
   font-weight: 700;
 }
 
+.t-discount-row {
+  font-size: 0.85em;
+  font-weight: 700;
+  color: #b91c1c;
+}
+
+.t-net-row {
+  font-size: 0.95em;
+  font-weight: 900;
+  border-top: 1px dashed #000000;
+  border-bottom: 1px dashed #000000;
+  padding: 0.15rem 0;
+  margin: 0.15rem 0;
+}
+
 .t-paid-row {
   font-size: 1.05em;
   font-weight: 900;

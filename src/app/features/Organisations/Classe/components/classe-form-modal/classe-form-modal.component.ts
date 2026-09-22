@@ -55,6 +55,8 @@ export class ClasseFormModalComponent {
     })
   });
 
+  private previousIsOpen = false;
+
   constructor() {
     effect(() => {
       const open = this.isOpen();
@@ -63,10 +65,10 @@ export class ClasseFormModalComponent {
       const allNiveaux = this.niveaux();
       const allSections = this.sections();
 
-      if (open) {
+      if (open && !this.previousIsOpen) {
         if (isEdit && item) {
           const itemNiveauId = item.niveau_id || item.niveau?.id || '';
-          const foundNiveau = allNiveaux.find(n => n.id === itemNiveauId);
+          const foundNiveau = allNiveaux.find(n => n.id === itemNiveauId || (n as any).uuid === itemNiveauId);
           const secId = foundNiveau?.section_id || foundNiveau?.section?.id || item.niveau?.section_id || item.niveau?.section?.id || (allSections.length > 0 ? allSections[0].id : '');
 
           this.selectedSectionId.set(secId);
@@ -94,7 +96,8 @@ export class ClasseFormModalComponent {
           });
         }
       }
-    });
+      this.previousIsOpen = open;
+    }, { allowSignalWrites: true });
   }
 
   protected onSectionChange(event: Event): void {

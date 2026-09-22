@@ -24,6 +24,8 @@ export interface RecuPaiementData {
   type_operation?: string;
   montant?: number;
   montant_total: number;
+  remise?: number;
+  montant_net?: number;
   montant_recu?: number;
   montant_paye: number;
   montant_restant: number;

@@ -1,0 +1,357 @@
+<div class="bilan-viewport">
+  <!-- En-tête de navigation -->
+  <div class="page-top-nav">
+    <a routerLink="/animateur/dashboard" class="back-link-btn">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+      <span>Accueil</span>
+    </a>
+    <div class="nav-title-block">
+      <h1 class="page-title">Bilan Annuel</h1>
+      <span class="page-subtitle">{{ anneeLibelle() }} &bull; {{ classe()?.nom || 'Classe' }}</span>
+    </div>
+    <!-- <div class="nav-actions">
+      <button type="button" class="btn-icon-nav" (click)="printBilan()" title="Aperçu / Imprimer le bilan PDF">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="6 9 6 2 18 2 18 9"></polyline>
+          <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+          <rect x="6" y="14" width="12" height="8"></rect>
+        </svg>
+      </button>
+    </div> -->
+  </div>
+
+  <!-- État Aucune Affectation -->
+  @if (hasNoAffectation()) {
+    <div class="empty-state-card">
+      <span class="empty-icon">⚠️</span>
+      <h3 class="empty-title">Aucune classe affectée</h3>
+      <p class="empty-desc">Vous n'avez pas de classe active pour cette année pastorale. Vous ne pouvez donc pas gérer de bilan annuel.</p>
+    </div>
+  } @else {
+    <!-- Bannière de Statut du Bilan -->
+    @if (isLocked()) {
+      <div class="status-banner banner-locked">
+        <div class="banner-icon-col">
+          <span class="lock-icon-badge">🔒</span>
+        </div>
+        <div class="banner-text-col">
+          <div class="banner-headline">
+            <span class="badge-locked">Bilan Validé & Verrouillé</span>
+          </div>
+          <p class="banner-desc">
+            Ce bilan annuel a été validé et verrouillé pour votre compte. Les délibérations et décisions sont définitives.
+          </p>
+          <p class="banner-admin-notice">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <span>Seul l'administrateur de la paroisse est habilité à déverrouiller ce bilan si une modification s'avère nécessaire.</span>
+          </p>
+        </div>
+      </div>
+    } @else {
+      <div class="status-banner banner-editable">
+        <div class="banner-icon-col">
+          <span class="edit-icon-badge">📝</span>
+        </div>
+        <div class="banner-text-col">
+          <div class="banner-headline">
+            <span class="badge-draft">Saisie & Délibération en cours</span>
+          </div>
+          <p class="banner-desc">
+            Révisez les moyennes et ajustez les décisions de fin d'année. Cliquez ensuite sur <strong>"Valider et Verrouiller"</strong> pour transmettre le bilan officiel à la direction.
+          </p>
+          <p class="banner-warning-note">
+            ⚠️ Une fois validé, le bilan se verrouillera immédiatement pour votre compte.
+          </p>
+        </div>
+      </div>
+    }
+
+    <!-- Barre KPI Statistiques Rapides -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <span class="stat-num">{{ stats().total }}</span>
+        <span class="stat-label">Total élèves</span>
+      </div>
+      <div class="stat-card stat-admis">
+        <span class="stat-num">{{ stats().admis }}</span>
+        <span class="stat-label">Admis</span>
+      </div>
+      <div class="stat-card stat-ajourne">
+        <span class="stat-num">{{ stats().ajournes }}</span>
+        <span class="stat-label">Ajournés</span>
+      </div>
+      <div class="stat-card stat-non-admis">
+        <span class="stat-num">{{ stats().nonAdmis }}</span>
+        <span class="stat-label">Non admis</span>
+      </div>
+      <div class="stat-card stat-abandon">
+        <span class="stat-num">{{ stats().abandons }}</span>
+        <span class="stat-label">Abandons</span>
+      </div>
+      <div class="stat-card stat-taux">
+        <span class="stat-num">{{ stats().tauxReussite }}%</span>
+        <span class="stat-label">Réussite</span>
+      </div>
+    </div>
+
+    <!-- Barre de Recherche & Filtre -->
+    <div class="search-bar-wrap">
+      <div class="search-input-box">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Rechercher un catéchumène..."
+          [(ngModel)]="searchQuery"
+        />
+        @if (searchQuery()) {
+          <button type="button" class="btn-clear-search" (click)="searchQuery.set('')">✕</button>
+        }
+      </div>
+    </div>
+
+    <!-- Liste des Cartes Délibérations (Mobile-First) -->
+    <div class="deliberations-list">
+      @if (filteredBilanRows().length === 0) {
+        <div class="empty-list-card">
+          <p>Aucun catéchumène trouvé.</p>
+        </div>
+      } @else {
+        @for (row of filteredBilanRows(); track row.catechumeneId) {
+          <div class="deliberation-card" [class.card-locked]="isLocked()">
+            <div class="card-header-row">
+              <div class="student-info-block">
+                <span class="student-name">{{ row.nomPrenoms }}</span>
+                <span class="student-matricule">{{ row.matricule || 'Sans matricule' }}</span>
+              </div>
+              <div class="student-moyenne-badge" [class.moyenne-admis]="row.moyenneGenerale !== null && row.moyenneGenerale >= 10" [class.moyenne-ajourne]="row.moyenneGenerale !== null && row.moyenneGenerale >= 8.5 && row.moyenneGenerale < 10" [class.moyenne-echec]="row.moyenneGenerale !== null && row.moyenneGenerale < 8.5">
+                <span class="moyenne-val">{{ row.moyenneGenerale !== null ? row.moyenneGenerale : '--' }}</span>
+                <span class="moyenne-max">/20</span>
+              </div>
+            </div>
+
+            <!-- Grille des Assiduités & Présences Pastorales -->
+            <div class="card-presences-section">
+              <span class="presences-section-title">Présences & Assiduité :</span>
+              <div class="card-presences-grid">
+                <!-- 1. Cours (automatique depuis séances + ajustable) -->
+                <div class="presence-field-box">
+                  <div class="presence-field-header" title="Présence aux cours (calculé automatiquement depuis les séances)">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                    </svg>
+                    <span class="field-label">Cours</span>
+                  </div>
+                  <div class="presence-input-wrapper">
+                    <input
+                      type="number"
+                      min="0"
+                      class="presence-num-input"
+                      [disabled]="isLocked()"
+                      [ngModel]="row.presenceCoursNb"
+                      (ngModelChange)="updateField(row.catechumeneId, 'presenceCoursNb', $event)"
+                      placeholder="0"
+                      title="Présences aux cours (calculé automatiquement)"
+                    />
+                    @if (row.totalSeances > 0) {
+                      <span class="presence-ratio-tag" title="{{ row.presenceCoursNb }} présence(s) sur {{ row.totalSeances }} séance(s) ({{ row.presenceCoursPct }}%)">/{{ row.totalSeances }}</span>
+                    } @else {
+                      <span class="presence-unit">fois</span>
+                    }
+                  </div>
+                </div>
+
+                <!-- 2. Messe (saisie) -->
+                <div class="presence-field-box">
+                  <div class="presence-field-header">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                      <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                    </svg>
+                    <span class="field-label">Messe</span>
+                  </div>
+                  <div class="presence-input-wrapper">
+                    <input
+                      type="number"
+                      min="0"
+                      class="presence-num-input"
+                      [disabled]="isLocked()"
+                      [ngModel]="row.presenceMesse"
+                      (ngModelChange)="updateField(row.catechumeneId, 'presenceMesse', $event)"
+                      placeholder="0"
+                    />
+                    <span class="presence-unit">fois</span>
+                  </div>
+                </div>
+
+                <!-- 3. CEB (saisie) -->
+                <div class="presence-field-box">
+                  <div class="presence-field-header">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="9" cy="7" r="4"></circle>
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    <span class="field-label">CEB</span>
+                  </div>
+                  <div class="presence-input-wrapper">
+                    <input
+                      type="number"
+                      min="0"
+                      class="presence-num-input"
+                      [disabled]="isLocked()"
+                      [ngModel]="row.presenceCEB"
+                      (ngModelChange)="updateField(row.catechumeneId, 'presenceCEB', $event)"
+                      placeholder="0"
+                    />
+                    <span class="presence-unit">fois</span>
+                  </div>
+                </div>
+
+                <!-- 4. Mouvement (saisie) -->
+                <div class="presence-field-box">
+                  <div class="presence-field-header">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
+                      <line x1="4" y1="22" x2="4" y2="15"></line>
+                    </svg>
+                    <span class="field-label">Mouv.</span>
+                  </div>
+                  <div class="presence-input-wrapper">
+                    <input
+                      type="number"
+                      min="0"
+                      class="presence-num-input"
+                      [disabled]="isLocked()"
+                      [ngModel]="row.presenceMouvement"
+                      (ngModelChange)="updateField(row.catechumeneId, 'presenceMouvement', $event)"
+                      placeholder="0"
+                    />
+                    <span class="presence-unit">fois</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-decision-row">
+              <label class="decision-label" [for]="'decision-' + row.catechumeneId">Décision finale :</label>
+              <div class="decision-select-wrapper">
+                <select
+                  [id]="'decision-' + row.catechumeneId"
+                  class="decision-select"
+                  [class.decision-is-admis]="row.decision === 'Admis'"
+                  [class.decision-is-ajourne]="row.decision === 'Ajourné'"
+                  [class.decision-is-non-admis]="row.decision === 'Non admis'"
+                  [class.decision-is-abandon]="row.decision === 'Abandon'"
+                  [ngModel]="row.decision"
+                  (ngModelChange)="updateDecision(row.catechumeneId, $event)"
+                  [disabled]="isLocked()"
+                >
+                  @for (opt of decisionOptions; track opt) {
+                    <option [value]="opt">{{ opt }}</option>
+                  }
+                </select>
+                @if (!isLocked()) {
+                  <svg class="select-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
+                }
+              </div>
+            </div>
+          </div>
+        }
+      }
+    </div>
+
+    <!-- Barre d'Action Flottante en Bas -->
+    <div class="bottom-action-bar">
+      @if (isLocked()) {
+        <div class="locked-footer-msg">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          <span>Bilan verrouillé &bull; Seul l'administrateur peut déverrouiller</span>
+        </div>
+      } @else {
+        <button
+          type="button"
+          class="btn-valider-bilan"
+          (click)="openConfirmModal()"
+          [disabled]="isSaving() || bilanRows().length === 0"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+          <span>Valider et Verrouiller le Bilan</span>
+        </button>
+      }
+    </div>
+  }
+</div>
+
+<!-- Modal de Confirmation de Validation (Verrouillage Définitif) -->
+@if (isConfirmModalOpen()) {
+  <div class="modal-backdrop" (click)="closeConfirmModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-icon-header">
+        <div class="warning-icon-circle">
+          🔒
+        </div>
+      </div>
+
+      <div class="modal-body-content">
+        <h2 class="modal-title">Valider et Verrouiller le Bilan ?</h2>
+        <p class="modal-paragraph">
+          Vous êtes sur le point de valider les délibérations officielles pour la classe
+          <strong>{{ classe()?.nom }}</strong> ({{ anneeLibelle() }}).
+        </p>
+
+        <div class="modal-alert-box">
+          <div class="alert-icon">⚠️</div>
+          <div class="alert-text">
+            <strong>Attention : Verrouillage irréversible pour l'animateur</strong>
+            <p>Une fois validé, ce bilan sera automatiquement verrouillé. Vous ne pourrez plus le modifier. Seul un administrateur de la paroisse pourra le déverrouiller.</p>
+          </div>
+        </div>
+
+        <div class="modal-summary-pills">
+          <span class="pill-stat admis">{{ stats().admis }} Admis</span>
+          <span class="pill-stat ajourne">{{ stats().ajournes }} Ajournés</span>
+          <span class="pill-stat non-admis">{{ stats().nonAdmis }} Non admis</span>
+        </div>
+      </div>
+
+      <div class="modal-footer-actions">
+        <button type="button" class="btn-cancel" (click)="closeConfirmModal()" [disabled]="isSaving()">
+          Annuler
+        </button>
+        <button
+          type="button"
+          class="btn-confirm-lock"
+          (click)="onValiderBilan()"
+          [disabled]="isSaving()"
+        >
+          @if (isSaving()) {
+            <span class="spinner-sm"></span>
+            <span>Verrouillage en cours...</span>
+          } @else {
+            <span>Oui, Valider et Verrouiller</span>
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

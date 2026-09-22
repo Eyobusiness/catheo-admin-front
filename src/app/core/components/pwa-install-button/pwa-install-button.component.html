@@ -1,0 +1,114 @@
+@if (!isInstalled() && (canInstall() || isIos())) {
+  @if (displayMode() === 'header-btn') {
+    <button
+      type="button"
+      class="pwa-header-btn"
+      (click)="triggerInstall()"
+      [attr.aria-label]="isAnimateur() ? 'Installer Cathéo Animateur' : 'Installer Cathéo Admin'"
+      title="Installer l'application sur votre appareil"
+    >
+      <svg class="install-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+        <polyline points="7 10 12 15 17 10"></polyline>
+        <line x1="12" y1="15" x2="12" y2="3"></line>
+      </svg>
+      <span class="btn-text">Installer l'app</span>
+    </button>
+  }
+
+  @else if (displayMode() === 'drawer-item') {
+    <button
+      type="button"
+      class="pwa-drawer-item"
+      (click)="triggerInstall()"
+    >
+      <span class="pwa-drawer-icon">📲</span>
+      <div class="pwa-drawer-text">
+        <span class="pwa-drawer-title">Installer l'application</span>
+        <span class="pwa-drawer-sub">Accès direct hors-ligne</span>
+      </div>
+    </button>
+  }
+
+  @else if (displayMode() === 'banner-card') {
+    <article class="pwa-banner-card">
+      <div class="banner-left">
+        <div class="banner-icon-box">
+          <img src="logo/catheo.png" alt="Cathéo" class="banner-app-logo" />
+          <span class="install-badge">PWA</span>
+        </div>
+        <div class="banner-info">
+          <h4 class="banner-title">
+            {{ isAnimateur() ? 'Installer Cathéo Animateur' : 'Installer Cathéo Admin' }}
+          </h4>
+          <p class="banner-desc">
+            Installez l'application sur votre écran d'accueil pour un accès rapide, tactile et hors-ligne.
+          </p>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        class="banner-install-action"
+        [disabled]="isInstalling()"
+        (click)="triggerInstall()"
+      >
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        <span>{{ isInstalling() ? 'Installation...' : 'Installer' }}</span>
+      </button>
+    </article>
+  }
+}
+
+<!-- Dialogue d'instructions pour iPhone / iPad Safari -->
+@if (showIosModal()) {
+  <div class="ios-modal-backdrop" (click)="closeIosModal()"></div>
+  <div class="ios-modal-card" role="dialog" aria-label="Installation sur iOS">
+    <div class="ios-modal-header">
+      <div class="ios-title-wrap">
+        <span class="apple-icon"></span>
+        <h3>Installation sur iPhone / iPad</h3>
+      </div>
+      <button type="button" class="btn-close-modal" (click)="closeIosModal()" aria-label="Fermer">✕</button>
+    </div>
+
+    <div class="ios-modal-body">
+      <p class="ios-intro">
+        Sur Safari iOS, installez l'application en 2 étapes simples :
+      </p>
+      <ol class="ios-steps">
+        <li>
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <span>Appuyez sur le bouton <strong>Partager</strong></span>
+            <svg class="share-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+              <polyline points="16 6 12 2 8 6"></polyline>
+              <line x1="12" y1="2" x2="12" y2="15"></line>
+            </svg>
+            <span class="sub-hint">(en bas ou en haut de Safari)</span>
+          </div>
+        </li>
+        <li>
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <span>Faites défiler puis choisissez <strong>« Sur l'écran d'accueil »</strong></span>
+            <svg class="add-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="12" y1="8" x2="12" y2="16"></line>
+              <line x1="8" y1="12" x2="16" y2="12"></line>
+            </svg>
+          </div>
+        </li>
+      </ol>
+    </div>
+
+    <div class="ios-modal-footer">
+      <button type="button" class="btn-got-it" (click)="closeIosModal()">J'ai compris</button>
+    </div>
+  </div>
+}

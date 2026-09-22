@@ -32,13 +32,13 @@
         <div class="select-wrapper">
           <select id="tarif_type" formControlName="type_tarif" class="form-control">
             <option value="inscription">Droit d'inscription</option>
-            <option value="sacrement_bapteme">Droit de sacrement Baptême</option>
-            <option value="sacrement_premiere_communion">Droit de sacrement Première Communion</option>
+            <option value="sacrement_bapteme">Droit de sacrement Baptême + 1ère Comm</option>
+            <!-- <option value="sacrement_">Droit de sacrement Première Communion</option> -->
             <option value="sacrement_confirmation">Droit de sacrement Confirmation</option>
-            <option value="manuel">Manuel de Catéchèse</option>
+            <!-- <option value="manuel">Manuel de Catéchèse</option>
             <option value="uniforme">Uniforme / Tenue</option>
             <option value="examen">Frais d'Examen</option>
-            <option value="autre">Autre Contribution</option>
+            <option value="autre">Autre Contribution</option> -->
           </select>
           <i class="bi bi-chevron-down select-chevron"></i>
         </div>
@@ -82,8 +82,15 @@
         </div>
       </div>
 
+      @if (isSacrementType()) {
+        <div class="sacrement-info-note">
+          <i class="bi bi-info-circle-fill"></i>
+          <span>Pour les sacrements, seuls les niveaux de <strong>3ème Année</strong> sont concernés.</span>
+        </div>
+      }
+
       <div class="niveaux-checkbox-grid">
-        @for (n of niveaux(); track n.id) {
+        @for (n of displayedNiveaux(); track n.id) {
           <label class="niveau-checkbox-item" [class.selected]="isNiveauSelected(n.id)">
             <input
               type="checkbox"
@@ -93,7 +100,10 @@
             />
             <span class="niveau-name-label">
               <i class="bi bi-layers-fill"></i>
-              {{ n.nom }}
+              <span>{{ n.nom }}</span>
+              @if (n.section; as sec) {
+                <small class="niveau-section-tag">({{ sec.nom }})</small>
+              }
             </span>
           </label>
         } @empty {

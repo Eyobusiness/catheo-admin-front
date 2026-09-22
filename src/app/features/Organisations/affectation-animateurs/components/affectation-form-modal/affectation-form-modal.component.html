@@ -34,7 +34,7 @@
       </label>
       <select id="classeId" formControlName="classe_id" class="form-control">
         <option value="" disabled>Sélectionner une classe</option>
-        @for (cls of classes(); track cls.id) {
+        @for (cls of availableClasses(); track cls.id) {
           <option [value]="cls.id">
             {{ cls.nom }} ({{ cls.niveau?.nom || 'Niveau' }})
           </option>
@@ -53,7 +53,7 @@
       <select id="role" formControlName="role" class="form-control">
         <option value="principal">Principal</option>
         <option value="assistant">Assistant</option>
-        <!-- <option value="adjoint">Adjoint</option> -->
+        <option value="adjoint">Adjoint</option>
       </select>
     </div>
   </form>

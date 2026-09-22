@@ -11,6 +11,8 @@ export type StatutInscriptionAnnuelle = 'valide' | 'en_attente' | 'inscrit' | 'a
 export interface InscriptionAnnuelleDto {
   id: string;
   code_inscription?: string;
+  matricule?: string;
+  code_catechumene?: string;
   date_inscription: string;
   statut_inscription: StatutInscriptionAnnuelle;
   frais_inscription_payes: boolean;

@@ -1,7 +1,8 @@
-import { ApplicationConfig, inject, Injectable, provideBrowserGlobalErrorListeners } from '@angular/core';
+import { ApplicationConfig, inject, Injectable, isDevMode, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideRouter, RouterStateSnapshot, TitleStrategy } from '@angular/router';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { Title } from '@angular/platform-browser';
+import { provideServiceWorker } from '@angular/service-worker';
 
 import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
@@ -34,6 +35,10 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
     provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
-    { provide: TitleStrategy, useClass: AppTitleStrategy }
+    { provide: TitleStrategy, useClass: AppTitleStrategy },
+    provideServiceWorker('ngsw-worker.js', {
+      enabled: !isDevMode(),
+      registrationStrategy: 'registerWhenStable:30000'
+    })
   ]
 };

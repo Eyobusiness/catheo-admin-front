@@ -54,7 +54,7 @@
         @for (annee of filteredAnnees(); track annee.id) {
           <div
             class="year-card"
-            [class.is-selected]="currentWorkingAnnee()?.id === annee.id"
+            [class.is-selected]="isSelectedAnnee(annee)"
             [class.is-official]="annee.est_active || annee.statut === 'active'"
             (click)="selectAnnee(annee)"
             role="button"
@@ -63,7 +63,7 @@
             (keydown.space)="selectAnnee(annee)"
           >
             <div class="year-card-left">
-              <div class="calendar-icon-wrapper" [class.selected]="currentWorkingAnnee()?.id === annee.id">
+              <div class="calendar-icon-wrapper" [class.selected]="isSelectedAnnee(annee)">
                 <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none">
                   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                   <line x1="16" y1="2" x2="16" y2="6"></line>
@@ -76,12 +76,12 @@
                 <div class="year-title-row">
                   <h4 class="year-label">{{ annee.libelle }}</h4>
 
-                  @if (currentWorkingAnnee()?.id === annee.id) {
+                  @if (isSelectedAnnee(annee)) {
                     <span class="badge-working-active">
                       <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="3" fill="none">
                         <polyline points="20 6 9 17 4 12"></polyline>
                       </svg>
-                      Année de travail en cours
+                      Année connectée
                     </span>
                   }
 
@@ -127,11 +127,14 @@
             </div>
 
             <div class="year-card-right">
-              @if (currentWorkingAnnee()?.id === annee.id) {
-                <div class="checked-circle">
-                  <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="3" fill="none">
-                    <polyline points="20 6 9 17 4 12"></polyline>
-                  </svg>
+              @if (isSelectedAnnee(annee)) {
+                <div class="connected-badge-box">
+                  <div class="checked-circle">
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="3" fill="none">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                  </div>
+                  <span class="connected-text">Connecté</span>
                 </div>
               } @else {
                 <button type="button" class="btn-select-year">

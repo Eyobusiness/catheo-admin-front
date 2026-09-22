@@ -4,7 +4,8 @@
       <thead>
         <tr>
           <th>Code & Catéchumène</th>
-          <th>Date Naissance</th>
+          <th>Classe</th>
+          <th>Niveau</th>
           <th>Contacts / Parents</th>
           <th>Sacrements Reçus</th>
           <th>Statut</th>
@@ -17,7 +18,11 @@
             <td>
               <div class="catechumene-cell">
                 <div class="avatar-box" [class.is-female]="item.sexe === 'F'">
-                  <span>{{ item.nom.charAt(0) }}{{ item.prenoms.charAt(0) }}</span>
+                  @if (item.photo_url) {
+                    <img [src]="item.photo_url" alt="Photo" class="avatar-img" />
+                  } @else {
+                    <span>{{ item.nom.charAt(0) }}{{ item.prenoms.charAt(0) }}</span>
+                  }
                 </div>
                 <div class="catechumene-meta">
                   <span class="catechumene-name">{{ item.nom }} {{ item.prenoms }}</span>
@@ -29,12 +34,27 @@
             </td>
 
             <td>
-              <div class="birth-cell">
-                <span>{{ item.date_naissance | date:'dd MMM yyyy' }}</span>
-                @if (item.lieu_naissance) {
-                  <span class="birth-place">à {{ item.lieu_naissance }}</span>
-                }
-              </div>
+              @if (getClasseDisplay(item); as classeName) {
+                <span class="class-pill">
+                  <i class="bi bi-mortarboard-fill"></i> {{ classeName }}
+                </span>
+              } @else {
+                <span class="unassigned-pill">
+                  <i class="bi bi-dash-circle"></i> Non affecté(e)
+                </span>
+              }
+            </td>
+
+            <td>
+              @if (getNiveauDisplay(item); as niveauName) {
+                <span class="level-pill">
+                  <i class="bi bi-layers-fill"></i> {{ niveauName }}
+                </span>
+              } @else {
+                <span class="unassigned-pill">
+                  <i class="bi bi-dash-circle"></i> Non défini
+                </span>
+              }
             </td>
 
             <td>
@@ -132,7 +152,7 @@
           </tr>
         } @empty {
           <tr>
-            <td colspan="6" class="empty-table-cell">
+            <td colspan="7" class="empty-table-cell">
               <div class="empty-state-box">
                 <i class="bi bi-people" style="font-size: 2.25rem;"></i>
                 <p class="empty-title">Aucun catéchumène enregistré</p>

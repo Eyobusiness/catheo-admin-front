@@ -25,9 +25,13 @@
             <th class="th-num" rowspan="2">N°</th>
             <th class="th-name" rowspan="2">NOMS ET PRÉNOMS</th>
             <th class="th-phone" rowspan="2">CONTACTS</th>
-            <th colspan="6" class="th-evals-header">DATES DES ÉVALUATIONS</th>
+            <th colspan="10" class="th-evals-header">DATES DES ÉVALUATIONS</th>
           </tr>
           <tr class="sub-headers-row">
+            <th class="th-cell"></th>
+            <th class="th-cell"></th>
+            <th class="th-cell"></th>
+            <th class="th-cell"></th>
             <th class="th-cell"></th>
             <th class="th-cell"></th>
             <th class="th-cell"></th>
@@ -48,6 +52,10 @@
               <td class="td-blank"></td>
               <td class="td-blank"></td>
               <td class="td-blank"></td>
+              <td class="td-blank"></td>
+              <td class="td-blank"></td>
+              <td class="td-blank"></td>
+              <td class="td-blank"></td>
             </tr>
           }
           @if (studentsList().length === 0) {
@@ -56,6 +64,10 @@
                 <td class="td-num">{{ i < 10 ? '0' + i : i }}</td>
                 <td class="td-name"></td>
                 <td class="td-phone"></td>
+                <td class="td-blank"></td>
+                <td class="td-blank"></td>
+                <td class="td-blank"></td>
+                <td class="td-blank"></td>
                 <td class="td-blank"></td>
                 <td class="td-blank"></td>
                 <td class="td-blank"></td>

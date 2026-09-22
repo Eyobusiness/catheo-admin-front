@@ -132,6 +132,8 @@
     <!-- Table Sub-component -->
     <app-catechumene-table
       [catechumenes]="filteredCatechumenes()"
+      [classes]="classes()"
+      [niveaux]="niveaux()"
       (createRequested)="openCreateModal()"
       (viewRequested)="openDetailModal($event)"
       (editRequested)="openEditModal($event)"

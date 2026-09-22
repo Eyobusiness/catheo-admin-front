@@ -15,6 +15,7 @@ export interface CampagnePreinscriptionDto {
   public_url?: string;
   qr_code_url?: string;
   annee_catechese?: AnneeCatecheseDto;
+  annee_libelle?: string;
   preinscriptions_count?: number;
   created_at?: string;
 }

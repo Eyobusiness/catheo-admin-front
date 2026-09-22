@@ -1,4 +1,10 @@
-<div class="entete-catechese-root" [class.with-border]="showBorder()">
+<div
+  class="entete-catechese-root"
+  [class.with-border]="showBorder()"
+  [class.size-sm]="logoSize() === 'sm'"
+  [class.size-md]="logoSize() === 'md'"
+  [class.size-lg]="logoSize() === 'lg'"
+>
   <!-- Ligne Supérieure : Logo Paroisse (Gauche) | Infos Paroisse (Centre) | Logo Catéchèse (Droite) -->
   <div class="entete-top-row">
     <!-- 1. Logo Paroisse (Haut à gauche) -->

@@ -27,6 +27,7 @@ export interface OperationPaiementDto {
   montant?: number; // legacy alias
   montant_paye: number;
   montant_restant: number;
+  remise?: number;
   statut: StatutOperation;
   annee_catechese_id?: string;
   annee_libelle?: string;
@@ -63,6 +64,7 @@ export interface CreateOperationPaiementDto {
   type_tarif?: string;
   montant_total?: number;
   montant?: number; // alias
+  remise?: number;
   annee_catechese_id?: string;
   echeance?: string;
 }
@@ -73,6 +75,7 @@ export interface UpdateOperationDto {
   libelle?: string;
   montant_total?: number;
   montant?: number;
+  remise?: number;
   echeance?: string;
   statut?: StatutOperation;
 }
@@ -80,6 +83,7 @@ export interface UpdateOperationDto {
 export interface PayerOperationDto {
   mode_paiement?: 'especes' | 'mobile_money' | string;
   reference_paiement?: string;
+  remise?: number;
   notes?: string;
 }
 
@@ -93,6 +97,8 @@ export interface PaiementDto {
   reference_transaction?: string;
   date_paiement: string;
   montant_total: number;
+  remise?: number;
+  montant_net?: number;
   mode_paiement: 'especes' | 'mobile_money' | string;
   statut: 'valide' | 'annule' | 'rembourse';
   notes?: string;
@@ -113,6 +119,7 @@ export interface CreatePaiementDto {
   inscription_annuelle_id?: string;
   mode_paiement: 'especes' | 'mobile_money' | string;
   reference_transaction?: string;
+  remise?: number;
   date_paiement?: string;
   notes?: string;
   lignes: {

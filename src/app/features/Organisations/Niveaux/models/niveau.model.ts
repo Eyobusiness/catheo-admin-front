@@ -4,6 +4,7 @@ export type NiveauStatut = 'actif' | 'inactif' | 'Actif' | 'Inactif';
 
 export interface Niveau {
   id: string;
+  uuid?: string;
   nom: string;
   description?: string;
   statut: 'Actif' | 'Inactif' | 'actif' | 'inactif';

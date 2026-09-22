@@ -352,10 +352,14 @@
                   <label class="form-label-modern" for="n_niv">
                     Niveau de Catéchèse Souhaité <span class="required-star">*</span>
                   </label>
-                  <select id="n_niv" formControlName="niveau_id" class="form-control-modern">
-                    <option value="">-- Sélectionnez le Niveau --</option>
-                    @for (n of filteredNiveauxNouvelle(); track n.id) {
-                      <option [value]="n.id">{{ n.nom }}</option>
+                  <select id="n_niv" formControlName="niveau_id" class="form-control-modern" [disabled]="!selectedSectionNouvelle()">
+                    @if (!selectedSectionNouvelle()) {
+                      <option value="">-- Choisissez d'abord une section ci-dessus --</option>
+                    } @else {
+                      <option value="">-- Sélectionnez le Niveau --</option>
+                      @for (n of filteredNiveauxNouvelle(); track n.id) {
+                        <option [value]="n.id">{{ n.nom }}</option>
+                      }
                     }
                   </select>
                   @if (nouvelleForm.controls.niveau_id.touched && nouvelleForm.controls.niveau_id.invalid) {
@@ -793,13 +797,16 @@
               </div>
             </div>
 
+            <!-- ============================================================== -->
+            <!-- CAS 1 : DOSSIER DÉJÀ ENREGISTRÉ (AUCUN CHAMP DE SAISIE AFFICHÉ) -->
+            <!-- ============================================================== -->
             @if (isDuplicateDetected()) {
-              <div class="duplicate-alert-banner animate-fade-in">
+              <div class="duplicate-alert-banner animate-fade-in mt-4">
                 <div class="duplicate-alert-icon">
                   <i class="bi bi-shield-exclamation"></i>
                 </div>
                 <div class="duplicate-alert-body">
-                  <h4 class="duplicate-alert-title">Dossier Déjà Existant pour cette Année</h4>
+                  <h4 class="duplicate-alert-title">Dossier Déjà Enregistré pour cette Année</h4>
                   <p class="duplicate-alert-message">{{ duplicateMessage() }}</p>
                   <div class="duplicate-office-chip">
                     <i class="bi bi-building"></i>
@@ -807,146 +814,192 @@
                   </div>
                 </div>
               </div>
-            }
 
-            <form [formGroup]="reinscriptionForm" (ngSubmit)="submitReinscription()" class="mt-4">
-              
-              <!-- Choix de la Section et Niveau pour la nouvelle année -->
-              <div class="section-banner">
-                <div class="section-banner-icon">
-                  <i class="bi bi-calendar2-check-fill"></i>
-                </div>
-                <div class="section-banner-content">
-                  <h4>Orientation pour la Nouvelle Année</h4>
-                  <p>Sélectionnez votre niveau de formation pour cette rentrée pastorale.</p>
-                </div>
-              </div>
-
-              <div class="form-fields-grid">
-                <div class="form-group-modern">
-                  <label class="form-label-modern" for="r_sec">
-                    Section Souhaitée <span class="required-star">*</span>
-                  </label>
-                  <select id="r_sec" formControlName="section_id" class="form-control-modern" (change)="onReinscriptionSectionChange()">
-                    <option value="">-- Sélectionnez la Section --</option>
-                    @for (s of sections(); track s.id) {
-                      <option [value]="s.id">{{ s.nom }}</option>
-                    }
-                  </select>
-                  @if (reinscriptionForm.controls.section_id.touched && reinscriptionForm.controls.section_id.invalid) {
-                    <span class="form-error-msg"><i class="bi bi-exclamation-circle"></i> La section est obligatoire.</span>
-                  }
-                </div>
-
-                <div class="form-group-modern">
-                  <label class="form-label-modern" for="r_niv">
-                    Niveau Souhaité <span class="required-star">*</span>
-                  </label>
-                  <select id="r_niv" formControlName="niveau_id" class="form-control-modern">
-                    <option value="">-- Sélectionnez le Niveau --</option>
-                    @for (n of filteredNiveauxReinscription(); track n.id) {
-                      <option [value]="n.id">{{ n.nom }}</option>
-                    }
-                  </select>
-                  @if (reinscriptionForm.controls.niveau_id.touched && reinscriptionForm.controls.niveau_id.invalid) {
-                    <span class="form-error-msg"><i class="bi bi-exclamation-circle"></i> Le niveau est obligatoire.</span>
-                  }
-                </div>
-              </div>
-
-              <!-- Coordonnées actualisées -->
-              <div class="section-banner mt-4">
-                <div class="section-banner-icon">
-                  <i class="bi bi-telephone-forward-fill"></i>
-                </div>
-                <div class="section-banner-content">
-                  <h4>Mise à Jour des Coordonnées & Contacts</h4>
-                  <p>Vérifiez ou actualisez vos numéros pour recevoir les notifications et convocations.</p>
-                </div>
-              </div>
-
-              <div class="form-fields-grid">
-                <div class="form-group-modern">
-                  <label class="form-label-modern" for="r_tel">
-                    Téléphone / WhatsApp <span class="required-star">*</span>
-                  </label>
-                  <input id="r_tel" type="tel" formControlName="telephone" class="form-control-modern" placeholder="Ex: 0700000000" />
-                  @if (reinscriptionForm.controls.telephone.touched && reinscriptionForm.controls.telephone.invalid) {
-                    <span class="form-error-msg"><i class="bi bi-exclamation-circle"></i> Le numéro de téléphone est obligatoire.</span>
-                  }
-                </div>
-
-                <div class="form-group-modern">
-                  <label class="form-label-modern" for="r_dom">Domicile / Quartier</label>
-                  <input id="r_dom" type="text" formControlName="domicile" class="form-control-modern" placeholder="Ex: Angré 8ème Tranche" />
-                </div>
-
-                <!-- CONDITION 1 : Classe scolaire (Enfants) -->
-                @if (showClasseScolaireReinscription()) {
-                  <div class="form-group-modern animate-fade-in">
-                    <label class="form-label-modern" for="r_scolaire">
-                      Classe à l'École / Collège
-                    </label>
-                    <input id="r_scolaire" type="text" formControlName="classe_scolaire" class="form-control-modern" placeholder="Ex: 5ème, CM1..." />
-                  </div>
-                }
-
-                <!-- CONDITION 2 : Fonction / Profession (Pour Adultes Uniquement) -->
-                @if (showProfessionReinscription()) {
-                  <div class="form-group-modern animate-fade-in">
-                    <label class="form-label-modern" for="r_prof">
-                      Fonction / Profession
-                    </label>
-                    <input id="r_prof" type="text" formControlName="profession" class="form-control-modern" placeholder="Ex: Fonctionnaire, Enseignant(e), Commerçant(e), Cadre..." />
-                  </div>
-                }
-
-                <!-- CONDITION 3 : Situation matrimoniale (Adultes) -->
-                @if (showSituationMatrimonialeReinscription()) {
-                  <div class="form-group-modern animate-fade-in">
-                    <label class="form-label-modern" for="r_matrimoniale">
-                      Situation Matrimoniale
-                    </label>
-                    <select id="r_matrimoniale" formControlName="situation_matrimoniale" class="form-control-modern">
-                      <option value="">-- Sélectionnez --</option>
-                      <option value="Célibataire">Célibataire</option>
-                      <option value="Marié(e) à l'Église">Marié(e) à l'Église</option>
-                      <option value="Marié(e) Coutumier / Civil">Marié(e) Coutumier / Civil</option>
-                      <option value="Veuf(ve)">Veuf(ve)</option>
-                      <option value="Divorcé(e)">Divorcé(e)</option>
-                      <option value="Autre">Autre</option>
-                    </select>
-                  </div>
-                }
-
-                <div class="form-group-modern">
-                  <label class="form-label-modern" for="r_tuteur">Nom du Tuteur / Contact d'urgence</label>
-                  <input id="r_tuteur" type="text" formControlName="nom_tuteur" class="form-control-modern" placeholder="Nom du responsable" />
-                </div>
-
-                <div class="form-group-modern">
-                  <label class="form-label-modern" for="r_tel_tut">Téléphone du Tuteur</label>
-                  <input id="r_tel_tut" type="tel" formControlName="telephone_tuteur" class="form-control-modern" placeholder="Ex: 0100000000" />
-                </div>
-              </div>
-
-              <!-- Soumission Réinscription -->
+              <!-- Actions uniquement informatives : aucun champ de saisie -->
               <div class="step-actions mt-4">
-                <button type="button" class="btn-step-action btn-prev" (click)="backToChoice()">
-                  <i class="bi bi-x-circle"></i>
-                  <span>Annuler</span>
+                <button type="button" class="btn-step-action btn-prev" (click)="resetSearchMatricule()">
+                  <i class="bi bi-arrow-left"></i>
+                  <span>Vérifier un autre matricule</span>
                 </button>
-                <button type="submit" class="btn-submit-glow" [disabled]="isLoading() || isDuplicateDetected()">
-                  @if (isLoading()) {
-                    <span class="btn-spinner"></span>
-                    <span>Validation de la réinscription...</span>
-                  } @else {
-                    <i class="bi bi-check-circle-fill"></i>
-                    <span>Confirmer ma Réinscription</span>
-                  }
+                <button type="button" class="btn-step-action" (click)="backToChoice()">
+                  <i class="bi bi-house-door"></i>
+                  <span>Retour à l'accueil</span>
                 </button>
               </div>
-            </form>
+            } @else if (isFinParcours()) {
+              <!-- ============================================================== -->
+              <!-- CAS 2 : FIN DE PARCOURS DU CYCLE (PAS DE PROGRESSION EN LIGNE) -->
+              <!-- ============================================================== -->
+              <div class="fin-parcours-banner animate-fade-in mt-4">
+                <div class="fin-parcours-icon">
+                  <i class="bi bi-mortarboard-fill"></i>
+                </div>
+                <div class="fin-parcours-body">
+                  <h4 class="fin-parcours-title">Fin de Cycle de Formation</h4>
+                  <p class="fin-parcours-message">
+                    {{ cat.progression_pastorale?.message || 'Félicitations, vous avez achevé le cycle de formation catéchétique pour cette section.' }}
+                  </p>
+                  
+                  <div class="fin-parcours-summary-chips">
+                    <span class="parcours-summary-chip">
+                      <span class="chip-label">Section terminée :</span>
+                      <strong class="chip-val">{{ cat.progression_pastorale?.parcours_actuel?.section_nom || cat.section_nom }}</strong>
+                    </span>
+                    <span class="parcours-summary-chip">
+                      <span class="chip-label">Dernier niveau atteint :</span>
+                      <strong class="chip-val">{{ cat.progression_pastorale?.parcours_actuel?.niveau_nom || cat.niveau_nom }}</strong>
+                    </span>
+                    <span class="parcours-summary-chip">
+                      <span class="chip-label">Bilan :</span>
+                      <strong class="chip-val text-success">
+                        <i class="bi bi-check-circle-fill"></i> {{ cat.progression_pastorale?.decision_bilan || 'Admis(e)' }}
+                      </strong>
+                    </span>
+                  </div>
+
+                  <div class="duplicate-office-chip mt-3">
+                    <i class="bi bi-building"></i>
+                    <span>Veuillez vous rendre au secrétariat paroissial pour toute orientation ou démarche ultérieure.</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Actions uniquement informatives -->
+              <div class="step-actions mt-4">
+                <button type="button" class="btn-step-action btn-prev" (click)="resetSearchMatricule()">
+                  <i class="bi bi-arrow-left"></i>
+                  <span>Vérifier un autre matricule</span>
+                </button>
+                <button type="button" class="btn-step-action" (click)="backToChoice()">
+                  <i class="bi bi-house-door"></i>
+                  <span>Retour à l'accueil</span>
+                </button>
+              </div>
+            } @else {
+              <!-- ========================================================================= -->
+              <!-- CAS 3 : VRAIE RÉINSCRIPTION AVEC PROGRESSION AUTOMATIQUE CALCULÉE        -->
+              <!-- ========================================================================= -->
+              <form [formGroup]="reinscriptionForm" (ngSubmit)="submitReinscription()" class="mt-4 animate-fade-in">
+                
+                @if (progressionPastorale(); as prog) {
+                  <div class="progression-cards-grid">
+                    
+                    <!-- -------------------------------- -->
+                    <!-- 1. VOTRE PARCOURS                -->
+                    <!-- -------------------------------- -->
+                    <div class="progression-card card-parcours-precedent">
+                      <div class="progression-card-header">
+                        <div class="progression-header-icon precedent-icon">
+                          <i class="bi bi-clock-history"></i>
+                        </div>
+                        <div class="progression-header-text">
+                          <h5 class="progression-card-title">VOTRE PARCOURS</h5>
+                          <span class="progression-card-subtitle">
+                            @if (prog.parcours_actuel?.annee_pastorale; as anneePastorale) {
+                              Année {{ anneePastorale }}
+                            } @else {
+                              Parcours précédent
+                            }
+                          </span>
+                        </div>
+                      </div>
+
+                      <div class="progression-card-body">
+                        <div class="progression-info-row">
+                          <span class="info-label">Parcours précédent :</span>
+                          <span class="info-value font-semibold">
+                            {{ prog.parcours_actuel?.section_nom || cat.section_nom || 'Section catéchèse' }}
+                          </span>
+                        </div>
+
+                        <div class="progression-info-row">
+                          <span class="info-label">Niveau :</span>
+                          <span class="info-value current-level-badge">
+                            {{ prog.parcours_actuel?.niveau_nom || cat.niveau_nom || 'Niveau actuel' }}
+                          </span>
+                        </div>
+
+                        <div class="progression-info-row">
+                          <span class="info-label">Décision du bilan :</span>
+                          <div class="info-value">
+                            @if (prog.est_admis) {
+                              <span class="decision-pill pill-admis">
+                                <i class="bi bi-check-lg"></i> {{ prog.decision_bilan || 'Admis' }}
+                              </span>
+                            } @else if (prog.decision_bilan) {
+                              <span class="decision-pill pill-maintien">
+                                <i class="bi bi-arrow-repeat"></i> {{ prog.decision_bilan }}
+                              </span>
+                            } @else {
+                              <span class="decision-pill pill-neutral">
+                                <i class="bi bi-dash-circle"></i> Non renseignée
+                              </span>
+                            }
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- -------------------------------- -->
+                    <!-- 2. VOTRE PROCHAINE ANNÉE         -->
+                    <!-- -------------------------------- -->
+                    <div class="progression-card card-parcours-prochain">
+                      <div class="progression-card-header">
+                        <div class="progression-header-icon prochain-icon">
+                          <i class="bi bi-arrow-right-circle-fill"></i>
+                        </div>
+                        <div class="progression-header-text">
+                          <h5 class="progression-card-title text-success">VOTRE PROCHAINE ANNÉE</h5>
+                          <span class="progression-card-subtitle">
+                            Campagne {{ currentCampagne()?.annee_catechese?.libelle || currentCampagne()?.annee_libelle || currentCampagne()?.titre || 'en cours' }}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div class="progression-card-body">
+                        <div class="progression-info-row">
+                          <span class="info-label">Section :</span>
+                          <span class="info-value font-bold text-primary next-section-text">
+                            {{ prog.parcours_suivant?.section_nom || cat.section_nom }}
+                          </span>
+                        </div>
+
+                        <div class="progression-info-row">
+                          <span class="info-label">Niveau proposé :</span>
+                          <span class="info-value next-level-badge">
+                            {{ prog.parcours_suivant?.niveau_nom || cat.niveau_nom }}
+                          </span>
+                        </div>
+
+                        <!-- Mention informative obligatoire -->
+                        <div class="progression-notice-box">
+                          <i class="bi bi-info-circle-fill"></i>
+                          <span>Votre niveau a été déterminé automatiquement selon votre parcours et la décision de votre bilan annuel.</span>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                }
+
+                <!-- Soumission Réinscription -->
+                <div class="step-actions mt-4">
+                  <button type="button" class="btn-step-action btn-prev" (click)="resetSearchMatricule()">
+                    <i class="bi bi-arrow-left"></i>
+                    <span>Changer de matricule</span>
+                  </button>
+                  <button type="submit" class="btn-submit-glow" [disabled]="isLoading() || reinscriptionForm.invalid">
+                    @if (isLoading()) {
+                      <span class="btn-spinner"></span>
+                      <span>Validation de la réinscription...</span>
+                    } @else {
+                      <i class="bi bi-check-circle-fill"></i>
+                      <span>Confirmer ma Réinscription</span>
+                    }
+                  </button>
+                </div>
+              </form>
+            }
           </div>
         }
       </div>

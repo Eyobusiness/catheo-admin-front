@@ -157,6 +157,8 @@
     <button
       type="button"
       class="working-annee-btn"
+      [class.is-official]="isOfficialActive()"
+      [class.is-archive]="!isOfficialActive()"
       (click)="workingAnneeService.openModal()"
       title="Cliquer pour changer l'année pastorale de travail"
       aria-label="Sélectionner l'année pastorale de travail"
@@ -185,15 +187,31 @@
       </svg>
     </button>
 
-    <!-- Quick Sync Action -->
-    <app-button
-      variant="ghost"
-      size="sm"
-      icon="refresh"
-      (clicked)="triggerQuickAction()"
+    <!-- Mobile Search Trigger Button -->
+    <button
+      type="button"
+      class="mobile-search-btn"
+      (click)="openMobileSearch()"
+      aria-label="Rechercher un catéchumène"
+      title="Rechercher"
     >
-      Synchroniser
-    </app-button>
+      <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+    </button>
+
+    <!-- Quick Sync Action (Desktop only) -->
+    <div class="desktop-only-action">
+      <app-button
+        variant="ghost"
+        size="sm"
+        icon="refresh"
+        (clicked)="triggerQuickAction()"
+      >
+        Synchroniser
+      </app-button>
+    </div>
 
     <!-- Notifications Menu -->
     <div class="header-dropdown-container notifications-menu-container">
@@ -326,4 +344,126 @@
       }
     </div>
   </div>
+
+  <!-- Mobile Full-Width Search Overlay -->
+  @if (isMobileSearchOpen()) {
+    <div class="mobile-search-overlay">
+      <div class="mobile-search-bar">
+        <button type="button" class="mobile-search-back-btn" (click)="closeMobileSearch()" aria-label="Fermer la recherche">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+        </button>
+
+        <div class="mobile-search-input-wrapper">
+          <svg class="search-icon" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input
+            type="search"
+            class="mobile-search-input"
+            placeholder="Rechercher catéchumène..."
+            [value]="searchQuery()"
+            (input)="onSearchInput($event)"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          @if (isSearching()) {
+            <span class="search-spinner-icon"></span>
+          } @else if (searchQuery()) {
+            <button type="button" class="search-clear-btn" (click)="clearSearch()" aria-label="Effacer">
+              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Mobile Search Results Dropdown -->
+      @if (showSearchResults() && searchQuery().trim().length >= 1) {
+        <div class="mobile-search-dropdown">
+          <div class="search-dropdown-header">
+            <div class="search-header-title">
+              <i class="bi bi-people-fill"></i>
+              <span>Catéchumènes trouvés</span>
+            </div>
+            <span class="search-annee-tag">
+              <i class="bi bi-calendar3"></i>
+              {{ workingAnneeLibelle() }}
+            </span>
+          </div>
+
+          <div class="search-dropdown-list">
+            @if (isSearching()) {
+              <div class="search-loading-state">
+                <span class="search-spinner-inline"></span>
+                <span>Recherche en cours...</span>
+              </div>
+            } @else {
+              @for (cat of searchResults(); track cat.id) {
+                <div
+                  class="search-result-item"
+                  (click)="goToCatechumeneDetail(cat, $event)"
+                  role="button"
+                  tabindex="0"
+                >
+                  <div class="result-avatar">
+                    @if (cat.photo_url) {
+                      <img [src]="cat.photo_url" [alt]="cat.nom_complet || cat.nom" class="avatar-img" />
+                    } @else {
+                      <span>{{ (cat.nom ? cat.nom[0] : 'C') + (cat.prenoms ? cat.prenoms[0] : '') }}</span>
+                    }
+                  </div>
+
+                  <div class="result-info">
+                    <div class="result-main-line">
+                      <span class="result-name">{{ cat.nom_complet || (cat.nom + ' ' + cat.prenoms) }}</span>
+                      @if (cat.matricule) {
+                        <span class="result-matricule-badge">{{ cat.matricule }}</span>
+                      }
+                    </div>
+                    <div class="result-sub-line">
+                      @if (cat.telephone) {
+                        <span class="result-phone">
+                          <i class="bi bi-telephone-fill"></i>
+                          {{ cat.telephone }}
+                        </span>
+                      }
+                      @if (cat.classe_nom || cat.niveau_nom) {
+                        <span class="result-classe">
+                          <i class="bi bi-mortarboard-fill"></i>
+                          {{ cat.classe_nom || cat.niveau_nom }}
+                        </span>
+                      }
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    class="btn-result-detail"
+                    (click)="goToCatechumeneDetail(cat, $event)"
+                  >
+                    <span>Voir</span>
+                    <i class="bi bi-chevron-right"></i>
+                  </button>
+                </div>
+              } @empty {
+                <div class="search-empty-box">
+                  <i class="bi bi-person-x" style="font-size: 1.5rem;"></i>
+                  <p class="empty-main">Aucun catéchumène trouvé</p>
+                  <p class="empty-sub">
+                    Aucun résultat pour « {{ searchQuery() }} » sur {{ workingAnneeLibelle() }}.
+                  </p>
+                </div>
+              }
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
 </header>

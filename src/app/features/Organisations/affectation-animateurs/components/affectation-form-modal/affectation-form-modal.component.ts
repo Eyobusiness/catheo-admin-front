@@ -33,20 +33,66 @@ export class AffectationFormModalComponent {
     classeLabel: string;
   }>();
 
+  private previousIsOpen = false;
+  private hasInitializedForCurrentOpen = false;
+
   protected readonly availableAnimateurs = computed(() => {
     const allAnim = this.animateurs();
     const existing = this.existingAffectations();
     const isEdit = this.isEditing();
     const currentEdit = this.affectationToEdit();
-    const currentEditAnimId = currentEdit?.animateur_id || currentEdit?.animateur?.id;
+    const currentEditAnimId = String(currentEdit?.animateur_id || currentEdit?.animateur?.id || '');
 
-    const assignedIds = new Set(
-      existing
-        .map(a => a.animateur_id || a.animateur?.id)
-        .filter((id): id is string => !!id && (!isEdit || id !== currentEditAnimId))
-    );
+    let list: Animateur[];
+    if (isEdit) {
+      // In edit mode: all registered animators are available so the user can change or keep
+      list = [...allAnim];
+      // Guarantee current animator is in the list
+      if (currentEdit?.animateur && currentEditAnimId) {
+        const found = list.some(a => String(a.id) === currentEditAnimId);
+        if (!found) {
+          list.unshift({
+            id: currentEditAnimId,
+            nom: currentEdit.animateur.nom || 'Catéchiste',
+            prenoms: currentEdit.animateur.prenoms || '',
+            sexe: currentEdit.animateur.sexe || 'M',
+            statut: 'actif'
+          } as Animateur);
+        }
+      }
+    } else {
+      // In create mode: exclude animators already assigned
+      const assignedIds = new Set(
+        existing
+          .map(a => String(a.animateur_id || a.animateur?.id || ''))
+          .filter(id => !!id)
+      );
+      list = allAnim.filter(anim => !assignedIds.has(String(anim.id)));
+    }
 
-    return allAnim.filter(anim => !assignedIds.has(anim.id));
+    return list;
+  });
+
+  protected readonly availableClasses = computed(() => {
+    const allClasses = this.classes();
+    const isEdit = this.isEditing();
+    const currentEdit = this.affectationToEdit();
+    const currentEditClsId = String(currentEdit?.classe_id || currentEdit?.classe?.id || '');
+
+    const list = [...allClasses];
+    if (isEdit && currentEdit?.classe && currentEditClsId) {
+      const found = list.some(c => String(c.id) === currentEditClsId);
+      if (!found) {
+        list.unshift({
+          id: currentEditClsId,
+          nom: currentEdit.classe.nom || 'Classe',
+          capacite_max: currentEdit.classe.capacite_max || 30,
+          statut: 'active',
+          niveau: currentEdit.classe.niveau
+        } as Classe);
+      }
+    }
+    return list;
   });
 
   protected readonly form = new FormGroup({
@@ -69,46 +115,70 @@ export class AffectationFormModalComponent {
       const open = this.isOpen();
       const item = this.affectationToEdit();
       const isEdit = this.isEditing();
-      const freeAnimateurs = this.availableAnimateurs();
-      const availableClasses = this.classes();
+      const anims = this.availableAnimateurs();
+      const clss = this.availableClasses();
 
       if (!open) {
+        this.previousIsOpen = false;
+        this.hasInitializedForCurrentOpen = false;
         return;
       }
 
-      if (isEdit && item) {
-        const animId =
-          item.animateur_id ||
-          item.animateur?.id ||
-          (typeof item.animateur === 'string' ? item.animateur : '') ||
-          (freeAnimateurs.length > 0 ? freeAnimateurs[0].id : '');
+      const justOpened = !this.previousIsOpen;
+      this.previousIsOpen = true;
 
-        const clsId =
-          item.classe_id ||
-          item.classe?.id ||
-          (typeof item.classe === 'string' ? item.classe : '') ||
-          (availableClasses.length > 0 ? availableClasses[0].id : '');
+      if (justOpened || !this.hasInitializedForCurrentOpen) {
+        if (isEdit && item) {
+          const rawAnimId = String(
+            item.animateur_id ||
+            item.animateur?.id ||
+            (typeof item.animateur === 'string' ? item.animateur : '') ||
+            ''
+          );
+          const foundAnim = anims.find(
+            a => String(a.id) === rawAnimId ||
+            (item.animateur && a.nom === item.animateur.nom && a.prenoms === item.animateur.prenoms)
+          );
+          const animId = foundAnim ? String(foundAnim.id) : (rawAnimId || (anims.length > 0 ? String(anims[0].id) : ''));
 
-        const roleVal = String(item.role || 'principal').toLowerCase().trim();
-        const finalRole = roleVal.includes('assist')
-          ? 'assistant'
-          : roleVal.includes('adj')
-          ? 'adjoint'
-          : 'principal';
+          const rawClsId = String(
+            item.classe_id ||
+            item.classe?.id ||
+            (typeof item.classe === 'string' ? item.classe : '') ||
+            ''
+          );
+          const foundCls = clss.find(
+            c => String(c.id) === rawClsId ||
+            (item.classe && c.nom === item.classe.nom)
+          );
+          const clsId = foundCls ? String(foundCls.id) : (rawClsId || (clss.length > 0 ? String(clss[0].id) : ''));
 
-        this.form.setValue({
-          animateur_id: animId,
-          classe_id: clsId,
-          role: finalRole
-        });
-      } else {
-        this.form.reset({
-          animateur_id: freeAnimateurs.length > 0 ? freeAnimateurs[0].id : '',
-          classe_id: availableClasses.length > 0 ? availableClasses[0].id : '',
-          role: 'principal'
-        });
+          const roleVal = String(item.role || (item as any).role_animateur || 'principal').toLowerCase().trim();
+          const finalRole = roleVal.includes('assist')
+            ? 'assistant'
+            : roleVal.includes('adj')
+            ? 'adjoint'
+            : 'principal';
+
+          this.form.patchValue({
+            animateur_id: animId,
+            classe_id: clsId,
+            role: finalRole
+          });
+
+          if (animId && clsId) {
+            this.hasInitializedForCurrentOpen = true;
+          }
+        } else if (!isEdit && justOpened) {
+          this.form.reset({
+            animateur_id: anims.length > 0 ? String(anims[0].id) : '',
+            classe_id: clss.length > 0 ? String(clss[0].id) : '',
+            role: 'principal'
+          });
+          this.hasInitializedForCurrentOpen = true;
+        }
       }
-    });
+    }, { allowSignalWrites: true });
   }
 
   protected onClose(): void {
@@ -118,8 +188,8 @@ export class AffectationFormModalComponent {
   protected onSubmit(): void {
     if (this.form.valid) {
       const val = this.form.getRawValue();
-      const anim = this.animateurs().find(a => a.id === val.animateur_id);
-      const cls = this.classes().find(c => c.id === val.classe_id);
+      const anim = this.availableAnimateurs().find(a => String(a.id) === String(val.animateur_id));
+      const cls = this.availableClasses().find(c => String(c.id) === String(val.classe_id));
       const animateurLabel = anim ? `${anim.nom} ${anim.prenoms}` : 'Catéchiste';
       const classeLabel = cls ? cls.nom : 'Classe';
 

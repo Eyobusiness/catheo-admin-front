@@ -9,7 +9,11 @@
       <!-- Profile Header Banner -->
       <div class="profile-header">
         <div class="avatar-xl" [class.is-female]="c.sexe === 'F'">
-          <span>{{ c.nom.charAt(0) }}{{ c.prenoms.charAt(0) }}</span>
+          @if (c.photo_url) {
+            <img [src]="c.photo_url" alt="Photo" class="avatar-img" />
+          } @else {
+            <span>{{ c.nom.charAt(0) }}{{ c.prenoms.charAt(0) }}</span>
+          }
         </div>
         <div class="profile-meta">
           <h3 class="name-title">{{ c.nom }} {{ c.prenoms }}</h3>

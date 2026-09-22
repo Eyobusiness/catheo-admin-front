@@ -119,16 +119,25 @@
           <span class="sac-label">Baptême</span>
           <span class="sac-number">{{ d.candidats_bapteme ?? '-' }}</span>
           <span class="sac-unit">Candidats inscrits</span>
+          @if (d.bapteme_realises !== undefined && d.bapteme_realises > 0) {
+            <span class="sac-sub-badge">{{ d.bapteme_realises }} célébré(s)</span>
+          }
         </div>
         <div class="sac-box">
           <span class="sac-label">Première Communion</span>
           <span class="sac-number">{{ d.candidats_communion ?? '-' }}</span>
           <span class="sac-unit">Candidats inscrits</span>
+          @if (d.communion_realises !== undefined && d.communion_realises > 0) {
+            <span class="sac-sub-badge">{{ d.communion_realises }} célébrée(s)</span>
+          }
         </div>
         <div class="sac-box">
           <span class="sac-label">Confirmation</span>
           <span class="sac-number">{{ d.candidats_confirmation ?? '-' }}</span>
           <span class="sac-unit">Candidats inscrits</span>
+          @if (d.confirmation_realises !== undefined && d.confirmation_realises > 0) {
+            <span class="sac-sub-badge">{{ d.confirmation_realises }} confirmé(s)</span>
+          }
         </div>
       </div>
     </section>

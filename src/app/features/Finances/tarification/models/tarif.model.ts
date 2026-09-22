@@ -37,8 +37,8 @@ export interface TarifDto {
   }[];
   niveaux_ids?: string[];
   niveau_ids?: string[];
-  niveau_id?: string;
-  niveau?: NiveauDto;
+  niveau_id?: string | null;
+  niveau?: NiveauDto | null;
   niveaux?: NiveauDto[];
   created_at?: string;
   updated_at?: string;
@@ -56,7 +56,7 @@ export interface CreateTarifDto {
   annee_catechese_id?: string;
   niveaux_ids?: string[];
   niveau_ids?: string[];
-  niveau_id?: string;
+  niveau_id?: string | null;
 }
 
 export interface UpdateTarifDto extends Partial<CreateTarifDto> {}

@@ -25,6 +25,7 @@ export interface CreateAnimateurDto {
   telephone?: string;
   email?: string;
   profession?: string;
+  statut?: AnimateurStatut;
   create_user_account?: boolean;
   password?: string;
 }

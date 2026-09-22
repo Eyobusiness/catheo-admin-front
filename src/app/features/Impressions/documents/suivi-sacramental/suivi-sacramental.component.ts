@@ -35,6 +35,32 @@ export class SuiviSacramentalComponent {
     return 'FICHE DE SUIVI SACRAMENTEL';
   });
 
+  public readonly sacramentType = computed<'bapteme' | 'communion' | 'confirmation'>(() => {
+    const d = this.data() as any;
+    const s = (d?.sacrement || '').toLowerCase();
+    const t = (d?.custom_title || '').toLowerCase();
+    if (s.includes('conf') || t.includes('conf')) return 'confirmation';
+    if (s.includes('com') || t.includes('com')) return 'communion';
+    if (s.includes('bap') || t.includes('bap')) return 'bapteme';
+    return 'bapteme';
+  });
+
+  public readonly emptyColsCount = computed(() => {
+    switch (this.sacramentType()) {
+      case 'confirmation':
+        return 10;
+      case 'bapteme':
+        return 11;
+      case 'communion':
+      default:
+        return 12;
+    }
+  });
+
+  public readonly emptyColsArray = computed(() => {
+    return Array.from({ length: this.emptyColsCount() });
+  });
+
   public readonly displaySubTitle = computed(() => {
     const d = this.data() as any;
     if (d?.custom_subtitle) return d.custom_subtitle;

@@ -73,9 +73,20 @@
       <!-- 4. Montants & Statut -->
       <div class="t-amounts-box">
         <div class="t-row t-total-row">
-          <span class="t-label">TOTAL DÛ :</span>
+          <span class="t-label">TOTAL :</span>
           <span class="t-val">{{ (d.montant_total || d.montant || 0) | number:'1.0-0' }} F CFA</span>
         </div>
+
+        @if (d.remise && d.remise > 0) {
+          <div class="t-row t-discount-row">
+            <span class="t-label">REMISE :</span>
+            <span class="t-val">-{{ d.remise | number:'1.0-0' }} F CFA</span>
+          </div>
+          <div class="t-row t-net-row">
+            <span class="t-label">NET À PAYER :</span>
+            <span class="t-val t-val-bold">{{ (d.montant_net || ((d.montant_total || d.montant || 0) - d.remise)) | number:'1.0-0' }} F CFA</span>
+          </div>
+        }
 
         <div class="t-row t-paid-row">
           <span class="t-label">MONTANT REÇU :</span>

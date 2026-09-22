@@ -23,6 +23,18 @@ export const routes: Routes = [
     pathMatch: 'full'
   },
 
+  // Espace Animateur / Catéchiste (Mobile-First, sessions & auth hermétiques)
+  {
+    path: 'animateur',
+    loadChildren: () =>
+      import('./features/espace-animateur/routes/animateur.routes').then(m => m.ANIMATEUR_ROUTES)
+  },
+  {
+    path: 'espace-animateur',
+    loadChildren: () =>
+      import('./features/espace-animateur/routes/animateur.routes').then(m => m.ANIMATEUR_ROUTES)
+  },
+
   // Portail public préinscription (sans guard)
   {
     path: 'preinscription-publique',
@@ -294,6 +306,11 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/UnderConstruction/under-construction.component').then(m => m.UnderConstructionComponent),
     data: { title: 'Groupes de Catéchèse' }
+  },
+  {
+    path: 'organisation/animateurs',
+    redirectTo: 'animateurs',
+    pathMatch: 'full'
   },
   {
     path: 'animateurs',

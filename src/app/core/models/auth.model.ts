@@ -7,10 +7,12 @@ export interface User {
   telephone?: string;
   role?: string;
   role_nom?: string;
+  user_type?: string;
   profil_id?: string | number;
   profil?: { id?: string | number; nom?: string; code?: string; libelle?: string };
   profil_nom?: string;
   paroisse_id?: string | number;
+  paroisse_configuration_id?: string | number;
   paroisse?: { id?: string | number; nom?: string; ville?: string; diocese?: string };
   paroisse_nom?: string;
   statut?: string;

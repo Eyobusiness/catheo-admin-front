@@ -189,6 +189,13 @@ export class BaptemePageComponent implements OnInit {
       list = list.filter(c => !c.isBaptise || !!c.baptemeRecord || c.exceptions?.some(e => e.sacrementType === 'Baptême'));
     }
 
+    // Condition pastorale absolue : 3ème Année OU exception pastorale autorisée
+    list = list.filter(c => {
+      const is3eme = this.is3emeAnnee(c.niveau) || this.is3emeAnnee(c.classe);
+      const hasException = c.exceptions && c.exceptions.some(e => e.sacrementType === 'Baptême');
+      return is3eme || hasException;
+    });
+
     return list;
   });
 
@@ -347,7 +354,7 @@ export class BaptemePageComponent implements OnInit {
   public confirmDelete(): void {
     const cat = this.selectedCatechumene();
     if (cat) {
-      this.service.removeCandidate(cat.id);
+      this.service.removeCandidate(cat.id, 'Baptême');
       this.toastService.info('Candidat retiré', `Candidat retiré du registre de préparation au baptême.`);
     }
     this.isDeleteModalOpen.set(false);

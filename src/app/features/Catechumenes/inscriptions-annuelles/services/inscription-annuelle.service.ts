@@ -60,12 +60,25 @@ export class InscriptionAnnuelleService {
           return {
             id: item.id,
             code_inscription: item.code_inscription || `INS-${item.id?.substring(0, 6)}`,
+            matricule: item.matricule || item.catechumene?.matricule || item.code_catechumene || item.catechumene?.code_catechumene,
+            code_catechumene: item.code_catechumene || item.catechumene?.code_catechumene || item.matricule || item.catechumene?.matricule,
             date_inscription: item.date_inscription || new Date().toISOString(),
             statut_inscription: item.statut_inscription || 'inscrit',
             frais_inscription_payes: isFraisPayes,
             observation: item.observation,
             catechumene_id: item.catechumene_id || item.catechumene?.id,
-            catechumene: item.catechumene,
+            catechumene: item.catechumene ? {
+              ...item.catechumene,
+              matricule: item.catechumene.matricule || item.catechumene.code_catechumene || item.matricule || item.code_catechumene,
+              code_catechumene: item.catechumene.matricule || item.catechumene.code_catechumene || item.matricule || item.code_catechumene,
+            } : (item.matricule || item.nom ? {
+              id: item.catechumene_id,
+              matricule: item.matricule || item.code_catechumene,
+              code_catechumene: item.matricule || item.code_catechumene,
+              nom: item.nom || '',
+              prenoms: item.prenom || item.prenoms || '',
+              sexe: item.sexe || 'M'
+            } as any : undefined),
             annee_catechese_id: item.annee_catechese_id || item.annee_catechese?.id,
             annee_catechese: item.annee_catechese,
             section_id: item.section_id || item.section?.id,
@@ -171,7 +184,7 @@ export class InscriptionAnnuelleService {
   public update(
     id: string,
     dto: UpdateInscriptionAnnuelleDto,
-    context?: { section?: any; niveau?: any; classe?: any; ceb?: any; mouvement?: any }
+    context?: { catechumene?: any; annee?: any; section?: any; niveau?: any; classe?: any; ceb?: any; mouvement?: any }
   ): Observable<InscriptionAnnuelleDto> {
     this.isLoading.set(true);
     return this.http.put<any>(`${this.baseUrl}/${id}`, dto).pipe(
@@ -183,6 +196,8 @@ export class InscriptionAnnuelleService {
           ...current!,
           ...item,
           ...dto,
+          catechumene: context?.catechumene || current?.catechumene,
+          annee_catechese: context?.annee || current?.annee_catechese,
           section: context?.section || current?.section,
           niveau: context?.niveau || current?.niveau,
           classe: context?.classe || current?.classe,
@@ -199,6 +214,8 @@ export class InscriptionAnnuelleService {
         const updatedLocal: InscriptionAnnuelleDto = {
           ...current!,
           ...dto,
+          catechumene: context?.catechumene || current?.catechumene,
+          annee_catechese: context?.annee || current?.annee_catechese,
           section: context?.section || current?.section,
           niveau: context?.niveau || current?.niveau,
           classe: context?.classe || current?.classe,

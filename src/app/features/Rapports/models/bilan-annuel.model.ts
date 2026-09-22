@@ -39,6 +39,7 @@ export interface BilanAnnuelData {
       section_nom: string;
       effectif: number;
       capacite_max?: number;
+      pourcentage?: number;
       taux_remplissage?: number;
     }>;
   };
@@ -68,6 +69,8 @@ export interface BilanAnnuelData {
     effectif_inscrit: number;
     admis: number;
     ajournes: number;
+    abandons?: number;
+    abandon?: number;
     en_attente: number;
     taux_reussite?: number;
   }>;

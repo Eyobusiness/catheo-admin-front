@@ -123,8 +123,8 @@ export class SacrementsService {
 
   private mapBackendCandidateToSacrement(item: any, type: TypeSacrement): CatechumeneSacrement {
     const isBapt = Boolean(item.est_baptise || item.date_bapteme || item.sacrements_status?.bapteme === 'valide');
-    const isCom = Boolean(item.sacrements_status?.premiere_communion === 'valide' || item.date_premiere_communion);
-    const isConf = Boolean(item.sacrements_status?.confirmation === 'valide' || item.date_confirmation);
+    const isCom = Boolean(item.est_communie || item.sacrements_status?.premiere_communion === 'valide' || item.date_premiere_communion);
+    const isConf = Boolean(item.est_confirme || item.sacrements_status?.confirmation === 'valide' || item.date_confirmation);
 
     return {
       id: String(item.id || item.uuid || ''),
@@ -147,15 +147,17 @@ export class SacrementsService {
         id: 'bap-' + item.id,
         type: 'Baptême',
         date: item.date_bapteme || '',
-        lieu: item.paroisse_bapteme || '',
+        lieu: item.paroisse_bapteme || item.lieu_bapteme || '',
         celebrant: item.celebrant_bapteme || item.ministre_bapteme || '',
+        parrain: item.nom_parrain || '',
+        numRegistre: item.num_carnet_bapteme || item.registre_bapteme || '',
         dateEnregistrement: item.created_at || ''
       } : undefined,
       premiereCommunionRecord: isCom ? {
         id: 'com-' + item.id,
         type: 'Première Communion',
         date: item.date_premiere_communion || '',
-        lieu: item.paroisse_premiere_communion || '',
+        lieu: item.paroisse_premiere_communion || item.lieu_premiere_communion || '',
         celebrant: item.celebrant_premiere_communion || item.celebrant_communion || '',
         dateEnregistrement: item.created_at || ''
       } : undefined,
@@ -163,8 +165,9 @@ export class SacrementsService {
         id: 'conf-' + item.id,
         type: 'Confirmation',
         date: item.date_confirmation || '',
-        lieu: item.paroisse_confirmation || '',
+        lieu: item.paroisse_confirmation || item.lieu_confirmation || '',
         celebrant: item.ministre_confirmation || item.celebrant_confirmation || '',
+        parrain: item.nom_parrain || '',
         dateEnregistrement: item.created_at || ''
       } : undefined,
       exceptions: []
@@ -626,48 +629,106 @@ export class SacrementsService {
     this.catechumenes.set(Array.from(resultMap.values()));
   }
 
+  // --- GESTION DE LA PERSISTANCE DES CANDIDATS RETIRÉS ---
+  private readonly REMOVED_CANDIDATES_STORAGE_KEY = 'catheo_sacrements_removed_candidates';
+  public readonly removedCandidateKeys = signal<Set<string>>(this.loadRemovedCandidateKeys());
+
+  private loadRemovedCandidateKeys(): Set<string> {
+    try {
+      const raw = localStorage.getItem(this.REMOVED_CANDIDATES_STORAGE_KEY);
+      if (raw) {
+        const arr = JSON.parse(raw);
+        if (Array.isArray(arr)) return new Set(arr);
+      }
+    } catch {}
+    return new Set<string>();
+  }
+
+  private saveRemovedCandidateKeys(): void {
+    try {
+      const arr = Array.from(this.removedCandidateKeys());
+      localStorage.setItem(this.REMOVED_CANDIDATES_STORAGE_KEY, JSON.stringify(arr));
+    } catch {}
+  }
+
+  public isCandidateRemoved(id?: string, sacrementType?: TypeSacrement): boolean {
+    if (!id) return false;
+    const keys = this.removedCandidateKeys();
+    if (keys.has(id)) return true;
+    if (sacrementType && (keys.has(`${sacrementType}_${id}`) || keys.has(`${sacrementType.toLowerCase()}_${id}`))) return true;
+    return false;
+  }
+
   // --- RÈGLES PASTORALES DYNAMIQUES (Computed Signals) ---
 
-  // 1. CANDIDATS BAPTÊME : 3ème Année + NON BAPTISÉ (ou exception)
+  // 1. CANDIDATS BAPTÊME : 3ème Année + NON BAPTISÉ (ou enregistrés/validés cette année)
   public readonly candidatsBapteme = computed<CatechumeneSacrement[]>(() => {
     const apiList = this.apiCandidatsBapteme();
-    const fallbackList = this.catechumenes().filter(c => {
-      const is3eme = this.is3emeAnnee(c.niveau, c.niveau_ordre) || this.is3emeAnnee(c.classe);
-      const nonBaptise = !c.isBaptise;
-      return is3eme && nonBaptise;
-    });
-    const baseList = apiList.length > 0 ? apiList : fallbackList;
+    const fallbackList = this.catechumenes();
+    const isFromApi = apiList.length > 0;
+    const combinedList = isFromApi ? apiList : fallbackList;
+
     const excCatIds = new Set(this.exceptions().filter(e => e.sacrementType === 'Baptême').map(e => e.catechumeneId));
-    const exceptions = this.catechumenes().filter(c =>
+    const exceptionsFromAll = this.catechumenes().filter(c =>
       excCatIds.has(c.id) ||
       (c.uuid && excCatIds.has(c.uuid)) ||
       c.exceptions?.some(e => e.sacrementType === 'Baptême')
     );
+
     const map = new Map<string, CatechumeneSacrement>();
-    baseList.forEach(c => map.set(c.id, c));
-    exceptions.forEach(c => map.set(c.id, c));
-    return Array.from(map.values());
+    combinedList.forEach(c => map.set(c.id, c));
+    exceptionsFromAll.forEach(c => map.set(c.id, c));
+
+    // Filtrer selon les conditions pastorales du Baptême :
+    // 1. Ne pas avoir été retiré manuellement
+    // 2. Si fallback local (hors API), exclure ceux déjà baptisés sauf s'ils ont été enregistrés/validés cette session
+    // 3. Être en 3ème Année OU bénéficier d'une exception pastorale pour le Baptême
+    return Array.from(map.values()).filter(c => {
+      if (this.isCandidateRemoved(c.id, 'Baptême') || (c.uuid && this.isCandidateRemoved(c.uuid, 'Baptême'))) {
+        return false;
+      }
+      if (!isFromApi && c.isBaptise && !c.baptemeRecord?.id?.startsWith('sac-')) {
+        return false;
+      }
+      const is3eme = this.is3emeAnnee(c.niveau, c.niveau_ordre) || this.is3emeAnnee(c.classe);
+      const hasException = excCatIds.has(c.id) ||
+        (c.uuid && excCatIds.has(c.uuid)) ||
+        c.exceptions?.some(e => e.sacrementType === 'Baptême');
+
+      return is3eme || hasException;
+    });
   });
 
   // 2. CANDIDATS PREMIÈRE COMMUNION : 3ème Année + DÉJÀ BAPTISÉ (ou exception)
   public readonly candidatsPremiereCommunion = computed<CatechumeneSacrement[]>(() => {
     const apiList = this.apiCandidatsCommunion();
-    const fallbackList = this.catechumenes().filter(c => {
-      const is3eme = this.is3emeAnnee(c.niveau, c.niveau_ordre) || this.is3emeAnnee(c.classe);
-      const dejaBaptise = c.isBaptise;
-      return is3eme && dejaBaptise;
-    });
-    const baseList = apiList.length > 0 ? apiList : fallbackList;
+    const fallbackList = this.catechumenes();
+
     const excCatIds = new Set(this.exceptions().filter(e => e.sacrementType === 'Première Communion').map(e => e.catechumeneId));
-    const exceptions = this.catechumenes().filter(c =>
+    const exceptionsFromAll = this.catechumenes().filter(c =>
       excCatIds.has(c.id) ||
       (c.uuid && excCatIds.has(c.uuid)) ||
       c.exceptions?.some(e => e.sacrementType === 'Première Communion')
     );
+
     const map = new Map<string, CatechumeneSacrement>();
-    baseList.forEach(c => map.set(c.id, c));
-    exceptions.forEach(c => map.set(c.id, c));
-    return Array.from(map.values());
+    fallbackList.forEach(c => {
+      if (c.isBaptise) map.set(c.id, c);
+    });
+    apiList.forEach(c => map.set(c.id, c));
+    exceptionsFromAll.forEach(c => map.set(c.id, c));
+
+    return Array.from(map.values()).filter(c => {
+      if (this.isCandidateRemoved(c.id, 'Première Communion') || (c.uuid && this.isCandidateRemoved(c.uuid, 'Première Communion'))) {
+        return false;
+      }
+      const is3eme = this.is3emeAnnee(c.niveau, c.niveau_ordre) || this.is3emeAnnee(c.classe);
+      const hasException = excCatIds.has(c.id) ||
+        (c.uuid && excCatIds.has(c.uuid)) ||
+        c.exceptions?.some(e => e.sacrementType === 'Première Communion');
+
+      return c.isBaptise && (is3eme || hasException);
+    });
   });
 
   // 3. CANDIDATS CONFIRMATION :
@@ -675,25 +736,37 @@ export class SacrementsService {
   // - Sinon : 5ème Année + BAPTISÉ (ou exception)
   public readonly candidatsConfirmation = computed<CatechumeneSacrement[]>(() => {
     const apiList = this.apiCandidatsConfirmation();
-    const fallbackList = this.catechumenes().filter(c => {
-      const isAdulte = this.isSectionAdulte(c.section_code, c.section, null, `${c.classe} ${c.niveau}`);
-      const is4eme = this.is4emeAnnee(c.niveau, c.niveau_ordre) || this.is4emeAnnee(c.classe);
-      const is5eme = this.is5emeAnnee(c.niveau, c.niveau_ordre) || this.is5emeAnnee(c.classe);
-      const isNiveauValide = isAdulte ? (is4eme || is5eme) : is5eme;
-      const dejaBaptise = c.isBaptise;
-      return isNiveauValide && dejaBaptise;
-    });
-    const baseList = apiList.length > 0 ? apiList : fallbackList;
+    const fallbackList = this.catechumenes();
+
     const excCatIds = new Set(this.exceptions().filter(e => e.sacrementType === 'Confirmation').map(e => e.catechumeneId));
-    const exceptions = this.catechumenes().filter(c =>
+    const exceptionsFromAll = this.catechumenes().filter(c =>
       excCatIds.has(c.id) ||
       (c.uuid && excCatIds.has(c.uuid)) ||
       c.exceptions?.some(e => e.sacrementType === 'Confirmation')
     );
+
     const map = new Map<string, CatechumeneSacrement>();
-    baseList.forEach(c => map.set(c.id, c));
-    exceptions.forEach(c => map.set(c.id, c));
-    return Array.from(map.values());
+    fallbackList.forEach(c => {
+      if (c.isBaptise) map.set(c.id, c);
+    });
+    apiList.forEach(c => map.set(c.id, c));
+    exceptionsFromAll.forEach(c => map.set(c.id, c));
+
+    return Array.from(map.values()).filter(c => {
+      if (this.isCandidateRemoved(c.id, 'Confirmation') || (c.uuid && this.isCandidateRemoved(c.uuid, 'Confirmation'))) {
+        return false;
+      }
+      const isAdulte = this.isSectionAdulte(c.section_code, c.section, null, `${c.classe} ${c.niveau}`);
+      const is4eme = this.is4emeAnnee(c.niveau, c.niveau_ordre) || this.is4emeAnnee(c.classe);
+      const is5eme = this.is5emeAnnee(c.niveau, c.niveau_ordre) || this.is5emeAnnee(c.classe);
+      const isNiveauValide = isAdulte ? (is4eme || is5eme) : is5eme;
+
+      const hasException = excCatIds.has(c.id) ||
+        (c.uuid && excCatIds.has(c.uuid)) ||
+        c.exceptions?.some(e => e.sacrementType === 'Confirmation');
+
+      return c.isBaptise && (isNiveauValide || hasException);
+    });
   });
 
   // 4. TOUTES LES EXCEPTIONS PASTORALES
@@ -871,6 +944,14 @@ export class SacrementsService {
           anneeCatecheseLibelle: item?.anneeCatecheseLibelle || item?.annee_catechese_libelle || activeAnnee?.libelle || ''
         };
 
+        // Si le candidat avait été précédemment retiré, le réhabiliter suite à sa dérogation
+        const keys = new Set(this.removedCandidateKeys());
+        keys.delete(catechumeneId);
+        keys.delete(`${sacrementType}_${catechumeneId}`);
+        keys.delete(`${sacrementType.toLowerCase()}_${catechumeneId}`);
+        this.removedCandidateKeys.set(keys);
+        this.saveRemovedCandidateKeys();
+
         this.exceptions.update(list => [newException, ...list]);
 
         this.catechumenes.update(list =>
@@ -972,16 +1053,57 @@ export class SacrementsService {
       dateEnregistrement: now
     };
 
-    // Mise à jour de l'état réactif local
-    this.catechumenes.update(list =>
+    // Mise à jour de tous les états réactifs locaux pour synchronisation immédiate de l'interface
+    const updateCandidate = (c: CatechumeneSacrement): CatechumeneSacrement => {
+      if (c.id === catechumeneId || (c.uuid && c.uuid === catechumeneId)) {
+        if (record.type === 'Baptême') {
+          return { ...c, isBaptise: true, baptemeRecord: fullRecord };
+        } else if (record.type === 'Première Communion') {
+          return { ...c, isPremiereCommunion: true, premiereCommunionRecord: fullRecord };
+        } else if (record.type === 'Confirmation') {
+          return { ...c, isConfirme: true, confirmationRecord: fullRecord };
+        }
+      }
+      return c;
+    };
+
+    this.catechumenes.update(list => list.map(updateCandidate));
+    this.apiCandidatsBapteme.update(list => list.map(updateCandidate));
+    this.apiCandidatsCommunion.update(list => list.map(updateCandidate));
+    this.apiCandidatsConfirmation.update(list => list.map(updateCandidate));
+
+    // Mettre à jour également le signal catechumenes dans CatechumeneService
+    this.catechumeneService.catechumenes.update(list =>
       list.map(c => {
-        if (c.id === catechumeneId) {
+        if (String(c.id) === catechumeneId || (c.uuid && String(c.uuid) === catechumeneId)) {
           if (record.type === 'Baptême') {
-            return { ...c, isBaptise: true, baptemeRecord: fullRecord };
+            return {
+              ...c,
+              est_baptise: true,
+              date_bapteme: record.date,
+              lieu_bapteme: record.lieu,
+              paroisse_bapteme: record.lieu,
+              celebrant_bapteme: record.celebrant,
+              nom_parrain: record.parrain || (c as any).nom_parrain,
+              num_carnet_bapteme: record.numRegistre || (c as any).num_carnet_bapteme
+            };
           } else if (record.type === 'Première Communion') {
-            return { ...c, isPremiereCommunion: true, premiereCommunionRecord: fullRecord };
+            return {
+              ...c,
+              est_communie: true,
+              date_premiere_communion: record.date,
+              paroisse_premiere_communion: record.lieu,
+              celebrant_premiere_communion: record.celebrant
+            };
           } else if (record.type === 'Confirmation') {
-            return { ...c, isConfirme: true, confirmationRecord: fullRecord };
+            return {
+              ...c,
+              est_confirme: true,
+              date_confirmation: record.date,
+              paroisse_confirmation: record.lieu,
+              ministre_confirmation: record.celebrant,
+              nom_parrain: record.parrain || (c as any).nom_parrain
+            };
           }
         }
         return c;
@@ -995,15 +1117,30 @@ export class SacrementsService {
       payload.date_bapteme = record.date;
       payload.lieu_bapteme = record.lieu;
       payload.paroisse_bapteme = record.lieu;
+      if (record.celebrant) {
+        payload.celebrant_bapteme = record.celebrant;
+        payload.ministre_bapteme = record.celebrant;
+      }
       if (record.parrain) payload.nom_parrain = record.parrain;
       if (record.numRegistre) payload.num_carnet_bapteme = record.numRegistre;
     } else if (record.type === 'Première Communion') {
+      payload.est_communie = true;
       payload.date_premiere_communion = record.date;
+      payload.lieu_premiere_communion = record.lieu;
       payload.paroisse_premiere_communion = record.lieu;
+      if (record.celebrant) {
+        payload.celebrant_premiere_communion = record.celebrant;
+        payload.celebrant_communion = record.celebrant;
+      }
     } else if (record.type === 'Confirmation') {
+      payload.est_confirme = true;
       payload.date_confirmation = record.date;
+      payload.lieu_confirmation = record.lieu;
       payload.paroisse_confirmation = record.lieu;
-      payload.ministre_confirmation = record.celebrant;
+      if (record.celebrant) {
+        payload.ministre_confirmation = record.celebrant;
+        payload.celebrant_confirmation = record.celebrant;
+      }
       if (record.parrain) payload.nom_parrain = record.parrain;
     }
 
@@ -1016,24 +1153,45 @@ export class SacrementsService {
     const now = new Date().toISOString().split('T')[0];
     const idsSet = new Set(ids);
 
-    this.catechumenes.update(list =>
-      list.map(c => {
-        if (idsSet.has(c.id)) {
-          const fullRecord: SacrementRecord = {
-            id: 'sac-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6),
-            type,
-            date: now,
-            lieu: '',
-            celebrant: '',
-            dateEnregistrement: now
-          };
+    const updateCandidate = (c: CatechumeneSacrement): CatechumeneSacrement => {
+      if (idsSet.has(c.id) || (c.uuid && idsSet.has(c.uuid))) {
+        const fullRecord: SacrementRecord = {
+          id: 'sac-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6),
+          type,
+          date: now,
+          lieu: '',
+          celebrant: '',
+          dateEnregistrement: now
+        };
 
+        if (type === 'Baptême') {
+          return { ...c, isBaptise: true, baptemeRecord: fullRecord };
+        } else if (type === 'Première Communion') {
+          return { ...c, isPremiereCommunion: true, premiereCommunionRecord: fullRecord };
+        } else if (type === 'Confirmation') {
+          return { ...c, isConfirme: true, confirmationRecord: fullRecord };
+        }
+      }
+      return c;
+    };
+
+    this.catechumenes.update(list => list.map(updateCandidate));
+    this.apiCandidatsBapteme.update(list => list.map(updateCandidate));
+    this.apiCandidatsCommunion.update(list => list.map(updateCandidate));
+    this.apiCandidatsConfirmation.update(list => list.map(updateCandidate));
+
+    // Mettre à jour également CatechumeneService
+    this.catechumeneService.catechumenes.update(list =>
+      list.map(c => {
+        const cId = String(c.id);
+        const cUuid = c.uuid ? String(c.uuid) : '';
+        if (idsSet.has(cId) || (cUuid && idsSet.has(cUuid))) {
           if (type === 'Baptême') {
-            return { ...c, isBaptise: true, baptemeRecord: fullRecord };
+            return { ...c, est_baptise: true, date_bapteme: now };
           } else if (type === 'Première Communion') {
-            return { ...c, isPremiereCommunion: true, premiereCommunionRecord: fullRecord };
+            return { ...c, est_communie: true, date_premiere_communion: now };
           } else if (type === 'Confirmation') {
-            return { ...c, isConfirme: true, confirmationRecord: fullRecord };
+            return { ...c, est_confirme: true, date_confirmation: now };
           }
         }
         return c;
@@ -1047,15 +1205,57 @@ export class SacrementsService {
         payload.est_baptise = true;
         payload.date_bapteme = now;
       } else if (type === 'Première Communion') {
+        payload.est_communie = true;
         payload.date_premiere_communion = now;
       } else if (type === 'Confirmation') {
+        payload.est_confirme = true;
         payload.date_confirmation = now;
       }
       this.http.put(`${this.catechumenesUrl}/${id}`, payload).pipe(catchError(() => of(null))).subscribe();
     });
   }
 
-  public removeCandidate(id: string): void {
-    this.catechumenes.update(list => list.filter(c => c.id !== id));
+  public removeCandidate(id: string, sacrementType?: TypeSacrement): void {
+    const keys = new Set(this.removedCandidateKeys());
+    keys.add(id);
+    if (sacrementType) {
+      keys.add(`${sacrementType}_${id}`);
+      keys.add(`${sacrementType.toLowerCase()}_${id}`);
+    }
+    this.removedCandidateKeys.set(keys);
+    this.saveRemovedCandidateKeys();
+
+    // Mettre à jour immédiatement tous les signaux réactifs locaux pour disparition instantanée de la vue
+    this.catechumenes.update(list => list.filter(c => c.id !== id && c.uuid !== id));
+    if (!sacrementType || sacrementType === 'Baptême') {
+      this.apiCandidatsBapteme.update(list => list.filter(c => c.id !== id && c.uuid !== id));
+    }
+    if (!sacrementType || sacrementType === 'Première Communion') {
+      this.apiCandidatsCommunion.update(list => list.filter(c => c.id !== id && c.uuid !== id));
+    }
+    if (!sacrementType || sacrementType === 'Confirmation') {
+      this.apiCandidatsConfirmation.update(list => list.filter(c => c.id !== id && c.uuid !== id));
+    }
+
+    // Supprimer l'éventuelle exception pastorale associée pour ce sacrement
+    const excToDelete = this.exceptions().find(e =>
+      (e.catechumeneId === id || (id.length > 20 && e.catechumeneId === id)) &&
+      (!sacrementType || e.sacrementType === sacrementType)
+    );
+    if (excToDelete) {
+      this.deleteException(excToDelete.id).subscribe({
+        next: () => {},
+        error: () => {}
+      });
+    }
+
+    // Appel API backend
+    if (sacrementType === 'Baptême') {
+      this.http.delete(`${this.baseUrl}/candidats/bapteme/${id}`).pipe(catchError(() => of(null))).subscribe();
+    } else if (sacrementType === 'Première Communion') {
+      this.http.delete(`${this.baseUrl}/candidats/premiere-communion/${id}`).pipe(catchError(() => of(null))).subscribe();
+    } else if (sacrementType === 'Confirmation') {
+      this.http.delete(`${this.baseUrl}/candidats/confirmation/${id}`).pipe(catchError(() => of(null))).subscribe();
+    }
   }
 }

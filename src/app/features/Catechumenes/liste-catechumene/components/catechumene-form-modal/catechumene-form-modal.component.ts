@@ -14,6 +14,14 @@ import { ClasseDto } from '../../../../Organisations/Classe/models/classe.model'
 import { AnneeCatecheseDto } from '../../../../Organisations/AnneesPastorales/models/annee-catechese.model';
 import { AppDialog } from '../../../../../shared/ui/components/dialogs/app-dialog/app-dialog.component';
 import { AppButton } from '../../../../../shared/ui/components/buttons/app-button/app-button.component';
+import { resolvePhotoUrl } from '../../services/catechumene.service';
+
+function findMatchId(list: any[], val?: string | number | null): string {
+  if (val === null || val === undefined || val === '') return '';
+  const s = String(val);
+  const found = list.find(x => String(x.id) === s || String(x.uuid) === s);
+  return found ? String(found.id) : s;
+}
 
 @Component({
   selector: 'app-catechumene-form-modal',
@@ -46,6 +54,7 @@ export class CatechumeneFormModalComponent {
   }>();
 
   protected readonly activeTab = signal<'identite' | 'parents' | 'sacrements' | 'paroisse'>('identite');
+  public readonly photoPreview = signal<string | null>(null);
 
   protected readonly form = new FormGroup({
     // Identité
@@ -118,6 +127,15 @@ export class CatechumeneFormModalComponent {
           ? item.parrains_marraines[0]
           : null;
 
+        const resolvedSection = findMatchId(this.sections(), lastIns?.section_id ?? (item as any).section_id ?? (item as any).section?.id);
+        const resolvedNiveau = findMatchId(this.niveaux(), lastIns?.niveau_id ?? (item as any).niveau_id ?? (item as any).niveau?.id);
+        const resolvedClasse = findMatchId(this.classes(), lastIns?.classe_id ?? (item as any).classe_id ?? (item as any).classe?.id);
+        const resolvedAnnee = findMatchId(this.annees(), lastIns?.annee_catechese_id ?? (item as any).annee_catechese_id ?? (activeAnnee ? activeAnnee.id : ''));
+        const resolvedCeb = findMatchId(this.cebs(), item.ceb_id ?? item.ceb?.id);
+
+        const currentPhoto = item.photo_url || item.photo_path || '';
+        this.photoPreview.set(resolvePhotoUrl(currentPhoto) || null);
+
         this.form.setValue({
           nom: item.nom || '',
           prenoms: item.prenoms || '',
@@ -130,14 +148,14 @@ export class CatechumeneFormModalComponent {
           classe_scolaire: item.classe_scolaire || '',
           situation_matrimoniale: item.situation_matrimoniale || 'celibataire',
           telephone: item.telephone || '',
-          photo_url: item.photo_url || item.photo_path || '',
+          photo_url: currentPhoto,
           statut: item.statut || 'actif',
 
-          ceb_id: item.ceb_id || item.ceb?.id || '',
-          annee_catechese_id: lastIns?.annee_catechese_id || (item as any).annee_catechese_id || (activeAnnee ? activeAnnee.id : ''),
-          section_id: lastIns?.section_id || (item as any).section_id || (item as any).section?.id || '',
-          niveau_id: lastIns?.niveau_id || (item as any).niveau_id || (item as any).niveau?.id || '',
-          classe_id: lastIns?.classe_id || (item as any).classe_id || (item as any).classe?.id || '',
+          ceb_id: resolvedCeb,
+          annee_catechese_id: resolvedAnnee,
+          section_id: resolvedSection,
+          niveau_id: resolvedNiveau,
+          classe_id: resolvedClasse,
 
           nom_pere: item.nom_pere || '',
           origine_pere: item.origine_pere || '',
@@ -168,6 +186,7 @@ export class CatechumeneFormModalComponent {
           telephone_parrain: item.telephone_parrain || (mainParrain ? mainParrain.telephone || '' : '')
         });
       } else if (this.isOpen()) {
+        this.photoPreview.set(null);
         this.form.reset({
           nom: '',
           prenoms: '',
@@ -184,7 +203,7 @@ export class CatechumeneFormModalComponent {
           statut: 'actif',
 
           ceb_id: '',
-          annee_catechese_id: activeAnnee ? activeAnnee.id : '',
+          annee_catechese_id: activeAnnee ? String(activeAnnee.id) : '',
           section_id: '',
           niveau_id: '',
           classe_id: '',
@@ -221,6 +240,29 @@ export class CatechumeneFormModalComponent {
     });
   }
 
+  public onPhotoFileChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      if (file.size > 2 * 1024 * 1024) {
+        alert('La taille de la photo dépasse 2 Mo.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        this.photoPreview.set(result);
+        this.form.controls.photo_url.setValue(result);
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  public removePhoto(): void {
+    this.photoPreview.set(null);
+    this.form.controls.photo_url.setValue('');
+  }
+
   protected setTab(tab: 'identite' | 'parents' | 'sacrements' | 'paroisse'): void {
     this.activeTab.set(tab);
   }
@@ -228,13 +270,21 @@ export class CatechumeneFormModalComponent {
   protected getFilteredNiveaux(): NiveauDto[] {
     const secId = this.form.controls.section_id.value;
     if (!secId) return this.niveaux();
-    return this.niveaux().filter(n => n.section_id === secId || n.section?.id === secId);
+    return this.niveaux().filter(n =>
+      String(n.section_id) === String(secId) ||
+      String(n.section?.id) === String(secId) ||
+      String((n as any).section_uuid) === String(secId)
+    );
   }
 
   protected getFilteredClasses(): ClasseDto[] {
     const nivId = this.form.controls.niveau_id.value;
     if (!nivId) return this.classes();
-    return this.classes().filter(c => c.niveau_id === nivId || c.niveau?.id === nivId);
+    return this.classes().filter(c =>
+      String(c.niveau_id) === String(nivId) ||
+      String(c.niveau?.id) === String(nivId) ||
+      String((c as any).niveau_uuid) === String(nivId)
+    );
   }
 
   protected onClose(): void {
@@ -244,9 +294,14 @@ export class CatechumeneFormModalComponent {
   protected onSubmit(): void {
     if (this.form.valid) {
       const val = this.form.getRawValue();
-      const selectedCeb = this.cebs().find(c => c.id === val.ceb_id);
+      const selectedCeb = this.cebs().find(c => String(c.id) === String(val.ceb_id));
 
       const dto: CreateCatechumeneDto | UpdateCatechumeneDto = {
+        section_id: val.section_id || undefined,
+        niveau_id: val.niveau_id || undefined,
+        classe_id: val.classe_id || undefined,
+        annee_catechese_id: val.annee_catechese_id || undefined,
+
         nom: val.nom,
         prenoms: val.prenoms,
         sexe: val.sexe,

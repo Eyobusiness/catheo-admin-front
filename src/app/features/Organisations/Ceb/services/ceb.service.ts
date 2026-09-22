@@ -40,24 +40,22 @@ export class CebService {
     return this.http.get<any>(this.baseUrl).pipe(
       tap(res => {
         const raw = extractArrayData(res);
-        if (raw.length > 0) {
-          const normalized: Ceb[] = raw.map((item: any) => {
-            const isInactive = item.statut_code === 'inactive' || item.statut === 'Inactive' || item.statut === 'inactif' || item.est_actif === false;
-            return {
-              id: item.id,
-              nom: item.nom,
-              responsable: item.responsable,
-              telephone: item.telephone,
-              adresse: item.adresse,
-              description: item.description,
-              statut: (isInactive ? 'Inactive' : 'Active') as CebStatut,
-              statut_code: (isInactive ? 'inactive' : 'active') as CebStatutCode,
-              total_inscriptions: item.total_inscriptions || 0,
-              created_at: item.created_at
-            };
-          });
-          this.cebs.set(normalized);
-        }
+        const normalized: Ceb[] = raw.map((item: any) => {
+          const isInactive = item.statut_code === 'inactive' || item.statut === 'Inactive' || item.statut === 'inactif' || item.est_actif === false;
+          return {
+            id: item.id,
+            nom: item.nom,
+            responsable: item.responsable,
+            telephone: item.telephone,
+            adresse: item.adresse,
+            description: item.description,
+            statut: (isInactive ? 'Inactive' : 'Active') as CebStatut,
+            statut_code: (isInactive ? 'inactive' : 'active') as CebStatutCode,
+            total_inscriptions: item.total_inscriptions || 0,
+            created_at: item.created_at
+          };
+        });
+        this.cebs.set(normalized);
         this.isLoading.set(false);
       }),
       catchError(() => {

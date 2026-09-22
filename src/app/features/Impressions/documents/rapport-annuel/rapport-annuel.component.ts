@@ -17,9 +17,13 @@ export interface RapportAnnuelData {
   taux_recouvrement?: number;
   taux_reussite?: number;
   candidats_bapteme?: number;
+  bapteme_realises?: number;
   candidats_communion?: number;
+  communion_realises?: number;
   candidats_confirmation?: number;
-  sections?: { nom: string; effectif: number; garcons: number; filles: number }[];
+  confirmation_realises?: number;
+  abandons?: number;
+  sections?: { nom: string; effectif: number; garcons?: number; filles?: number }[];
   repartition_sacrements?: { nom: string; total: number; admis: number }[];
 }
 

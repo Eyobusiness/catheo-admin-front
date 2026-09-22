@@ -121,10 +121,12 @@ export class TarifsPageComponent implements OnInit {
     if (this.isEditing() && this.selectedTarif()) {
       this.tarifService.update(this.selectedTarif()!.id, dto as UpdateTarifDto).subscribe(() => {
         this.closeModals();
+        this.tarifService.getAll().subscribe();
       });
     } else {
       this.tarifService.create(dto as CreateTarifDto).subscribe(() => {
         this.closeModals();
+        this.tarifService.getAll().subscribe();
       });
     }
   }

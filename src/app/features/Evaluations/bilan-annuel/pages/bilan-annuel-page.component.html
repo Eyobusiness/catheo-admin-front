@@ -96,6 +96,16 @@
         <span class="kpi-label">Non Admis</span>
       </div>
     </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon icon-abandon">
+        <i class="bi bi-slash-circle"></i>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-value">{{ statsBilan().abandons }}</span>
+        <span class="kpi-label">Abandons</span>
+      </div>
+    </div>
   </div>
 
   <!-- 3. Barre de Filtres (positionnée en dessous des statistiques) -->
@@ -282,6 +292,7 @@
                     [class.decision-admis]="b.decision === 'Admis'"
                     [class.decision-non-admis]="b.decision === 'Non admis'"
                     [class.decision-ajourne]="b.decision === 'Ajourné'"
+                    [class.decision-abandon]="b.decision === 'Abandon'"
                     [disabled]="isValide()"
                     [ngModel]="b.decision"
                     (ngModelChange)="updateField(b.catechumeneId, 'decision', $event)"

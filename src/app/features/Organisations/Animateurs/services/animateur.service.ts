@@ -42,8 +42,8 @@ export class AnimateurService {
         const raw = extractArrayData(res);
         if (raw.length > 0) {
           const normalized: Animateur[] = raw.map((item: any) => ({
-            id: item.id,
-            matricule: item.matricule,
+            id: item.id || item.uuid,
+            matricule: item.matricule || item.numero,
             nom: item.nom,
             prenoms: item.prenoms,
             sexe: item.sexe || 'M',
@@ -54,6 +54,8 @@ export class AnimateurService {
             user: item.user || undefined
           }));
           this.animateurs.set(normalized);
+        } else {
+          this.animateurs.set([]);
         }
         this.isLoading.set(false);
       }),
@@ -85,8 +87,8 @@ export class AnimateurService {
         this.isLoading.set(false);
         const item: any = res.data || res;
         const created: Animateur = {
-          id: item.id || `uuid-${Date.now()}`,
-          matricule: item.matricule || `CAT-${new Date().getFullYear()}-${Math.floor(Math.random() * 900 + 100)}`,
+          id: item.id || item.uuid || `uuid-${Date.now()}`,
+          matricule: item.matricule || item.numero || `CAT-${new Date().getFullYear()}-${Math.floor(Math.random() * 900 + 100)}`,
           nom: item.nom || dto.nom,
           prenoms: item.prenoms || dto.prenoms,
           sexe: item.sexe || dto.sexe,
@@ -181,7 +183,7 @@ export class AnimateurService {
 
   public toggleStatus(animateur: Animateur): Observable<Animateur> {
     const nextStatus: AnimateurStatut = animateur.statut === 'actif' ? 'inactif' : 'actif';
-    return this.http.patch<any>(`${this.baseUrl}/${animateur.id}`, { statut: nextStatus }).pipe(
+    return this.http.patch<any>(`${this.baseUrl}/${animateur.id}/status`, { statut: nextStatus }).pipe(
       tap(res => {
         const item = res.data || res;
         const updated: Animateur = {
@@ -193,13 +195,28 @@ export class AnimateurService {
         this.toastService.info('Statut Mis à Jour', `Le statut est maintenant : ${nextStatus}`);
       }),
       catchError(() => {
-        const updatedLocal: Animateur = {
-          ...animateur,
-          statut: nextStatus
-        };
-        this.addOrUpdateLocal(updatedLocal);
-        this.toastService.info('Statut Mis à Jour', `Le statut est maintenant : ${nextStatus}`);
-        return of(updatedLocal);
+        // Fallback standard patch
+        return this.http.patch<any>(`${this.baseUrl}/${animateur.id}`, { statut: nextStatus }).pipe(
+          tap(res => {
+            const item = res.data || res;
+            const updated: Animateur = {
+              ...animateur,
+              ...item,
+              statut: nextStatus
+            };
+            this.addOrUpdateLocal(updated);
+            this.toastService.info('Statut Mis à Jour', `Le statut est maintenant : ${nextStatus}`);
+          }),
+          catchError(() => {
+            const updatedLocal: Animateur = {
+              ...animateur,
+              statut: nextStatus
+            };
+            this.addOrUpdateLocal(updatedLocal);
+            this.toastService.info('Statut Mis à Jour', `Le statut est maintenant : ${nextStatus}`);
+            return of(updatedLocal);
+          })
+        );
       })
     );
   }

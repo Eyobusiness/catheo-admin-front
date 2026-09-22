@@ -3,8 +3,8 @@ import { Router } from '@angular/router';
 import { ToastService } from './toast.service';
 
 const LAST_ACTIVITY_KEY = 'catheo_last_activity';
-// 10 minutes en millisecondes : 10 * 60 * 1000 = 600 000 ms
-export const INACTIVITY_TIMEOUT_MS = 10 * 60 * 1000;
+// 30 minutes en millisecondes : 30 * 60 * 1000 = 1 800 000 ms
+export const INACTIVITY_TIMEOUT_MS = 30 * 60 * 1000;
 // Intervalle de verification : toutes les 5 secondes
 const CHECK_INTERVAL_MS = 5 * 1000;
 // Seuil minimal pour limiter les ecritures disque/localStorage (2 secondes)
@@ -20,13 +20,17 @@ export class InactivityService {
 
   private checkTimer: any = null;
   private isTracking = false;
+  private isHandlingTimeout = false;
   private lastRecordedTime = 0;
   private eventListeners: Array<{ target: EventTarget; type: string; listener: EventListenerOrEventListenerObject }> = [];
 
   /**
-   * Verifie si la session enregistree est deja expiree (plus de 10 minutes d'inactivite).
+   * Verifie si la session enregistree est deja expiree (plus de 30 minutes d'inactivite).
    */
   public isExpired(): boolean {
+    if (this.isHandlingTimeout) {
+      return true;
+    }
     const last = this.getLastActivity();
     if (!last) {
       return false;
@@ -38,6 +42,7 @@ export class InactivityService {
    * Demarre la surveillance de l'inactivite de l'utilisateur.
    */
   public startTracking(): void {
+    this.isHandlingTimeout = false;
     if (this.isTracking || typeof window === 'undefined') {
       return;
     }
@@ -135,7 +140,7 @@ export class InactivityService {
   }
 
   /**
-   * Verifie si le delai maximal d'inactivite de 10 minutes a ete depasse.
+   * Verifie si le delai maximal d'inactivite de 30 minutes a ete depasse.
    */
   private checkInactivity(): void {
     if (!this.isTracking) {
@@ -159,6 +164,10 @@ export class InactivityService {
    * Deconnecte l'utilisateur et le redirige avec notification d'expiration.
    */
   public handleTimeout(onSessionExpiredCallback?: () => void): void {
+    if (this.isHandlingTimeout) {
+      return;
+    }
+    this.isHandlingTimeout = true;
     this.stopTracking();
 
     if (onSessionExpiredCallback) {
@@ -174,14 +183,19 @@ export class InactivityService {
       } catch {}
     }
 
+    // Une seule notification claire
     this.toastService.warning(
-      'Session expiree',
-      "Vous avez ete deconnecte apres 10 minutes d'inactivite pour des raisons de securite.",
-      7000
+      'Session expirée',
+      "Vous avez été déconnecté après 30 minutes d'inactivité pour des raisons de sécurité.",
+      6000
     );
 
     this.router.navigate(['/auth/login'], {
       queryParams: { reason: 'inactivity' }
+    }).finally(() => {
+      setTimeout(() => {
+        this.isHandlingTimeout = false;
+      }, 2000);
     });
   }
 }

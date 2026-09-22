@@ -116,6 +116,24 @@
   color: var(--primary-800);
 }
 
+.sacrement-info-note {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.775rem;
+  color: #0369a1;
+  background-color: #f0f9ff;
+  border: 1px solid #bae6fd;
+  padding: 0.45rem 0.75rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 0.5rem;
+}
+
+.sacrement-info-note i {
+  color: #0284c7;
+  font-size: 0.875rem;
+}
+
 /* Niveaux Grid of Checkboxes */
 .niveaux-checkbox-grid {
   display: grid;
@@ -175,6 +193,13 @@
 .niveau-name-label i {
   color: var(--primary-600);
   font-size: 0.75rem;
+}
+
+.niveau-section-tag {
+  font-size: 0.6875rem;
+  color: var(--neutral-500);
+  font-weight: 500;
+  margin-left: 0.25rem;
 }
 
 .no-niveaux-hint {

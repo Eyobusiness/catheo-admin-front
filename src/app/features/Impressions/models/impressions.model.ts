@@ -33,6 +33,7 @@ export interface ImpressionFilterDto {
   classe?: string;
   catechumene_id?: string;
   sacrament?: 'bapteme' | 'communion' | 'confirmation' | string;
+  sacrement?: 'bapteme' | 'communion' | 'confirmation' | string;
   orientation?: 'portrait' | 'landscape';
 }
 
@@ -185,7 +186,7 @@ export interface SuiviSacramentalStudentDto {
   certificat_bapteme_fourni?: boolean;
   casuel_paye: boolean;
   retraite_effectuee: boolean;
-  statut_admissibilite: 'admis' | 'en_attente' | 'refuse' | string;
+  statut_admissibilite: 'admis' | 'en_attente' | 'refuse' | 'abandon' | string;
   observation?: string;
 }
 
@@ -220,7 +221,7 @@ export interface BilanAnnuelStudentDto {
   note_messe?: number | null;
   moyenne_annuelle?: number | null;
   rang?: number | string | null;
-  decision_finale: 'admis' | 'ajourne' | 'redoublant' | 'admis_avec_reserve' | string;
+  decision_finale: 'admis' | 'ajourne' | 'redoublant' | 'abandon' | string;
   observation?: string;
 }
 

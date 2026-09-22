@@ -102,8 +102,8 @@ app-footer-paroisse-print {
 
 .th-num,
 .td-num {
-  width: 36px;
-  min-width: 36px;
+  width: 30px;
+  min-width: 30px;
   text-align: center;
   font-weight: 700;
   white-space: nowrap !important;
@@ -125,8 +125,8 @@ app-footer-paroisse-print {
 
 .th-phone,
 .td-phone {
-  width: 110px;
-  min-width: 110px;
+  width: 95px;
+  min-width: 95px;
   text-align: center;
   white-space: nowrap !important;
   font-size: 0.78rem;
@@ -142,16 +142,16 @@ app-footer-paroisse-print {
 
 .sub-headers-row th {
   height: 22px;
-  width: 44px;
-  min-width: 44px;
+  width: 36px;
+  min-width: 34px;
   background-color: #f8fafc;
   border: 1px solid #334155;
 }
 
 .td-blank {
   height: 24px;
-  width: 44px;
-  min-width: 44px;
+  width: 36px;
+  min-width: 34px;
 }
 
 .notes-empty-state {

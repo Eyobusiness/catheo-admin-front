@@ -30,6 +30,7 @@ import { ToastService } from '../../../../core/services/toast.service';
 import { PdfService } from '../../../../core/services/pdf.service';
 import { PdfPreviewService } from '../../../../core/services/pdf-preview.service';
 import { AnneeCatecheseService } from '../../../../core/services/annee-catechese.service';
+import { CloturePeriodeService } from '../../../../core/services/cloture-periode.service';
 import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 
 interface NoteDraftItem {
@@ -58,6 +59,7 @@ export class NotesPageComponent implements OnInit {
   public readonly classeService = inject(ClasseService);
   public readonly moduleService = inject(ModuleTrimestrielService);
   public readonly anneeService = inject(AnneeCatecheseService);
+  public readonly clotureService = inject(CloturePeriodeService);
   private readonly toastService = inject(ToastService);
   private readonly pdfService = inject(PdfService);
   private readonly pdfPreviewService = inject(PdfPreviewService);
@@ -181,6 +183,33 @@ export class NotesPageComponent implements OnInit {
     const cls = this.classes().find(c => c.id === cid);
     return cls ? cls.nom : '';
   });
+
+  // Verrouillage période / trimestre terminé / bilan validé
+  public readonly isCurrentEvalLocked = computed<boolean>(() => {
+    const ev = this.currentEvaluation();
+    if (!ev) return false;
+    return this.clotureService.isLocked({
+      moduleId: ev.module_trimestriel_id,
+      periode: ev.periode,
+      date: ev.date_evaluation || ev.date,
+      annee: this.activeAnnee()?.libelle,
+      classe: this.selectedClasseName(),
+      classeId: this.selectedClasseId()
+    });
+  });
+
+  public readonly isCreateEvalLocked = computed<boolean>(() => {
+    return this.clotureService.isLocked({
+      moduleId: this.evalFormModuleId() || undefined,
+      periode: this.evalFormPeriode() || undefined,
+      date: this.evalFormDate(),
+      annee: this.activeAnnee()?.libelle,
+      classe: this.selectedClasseName(),
+      classeId: this.evalFormClasseId() || this.selectedClasseId()
+    });
+  });
+
+  public readonly lockMessage = this.clotureService.LOCK_MESSAGE;
 
   // Statistiques issues strictement du backend
   public readonly classeMoyenne = computed<string>(() => {
@@ -438,6 +467,11 @@ export class NotesPageComponent implements OnInit {
   }
 
   public validateAndCreateEvaluation(): void {
+    if (this.isCreateEvalLocked()) {
+      this.toastService.error('Action refusée', this.clotureService.getLockMessage());
+      return;
+    }
+
     const titre = this.evalFormTitre().trim();
     const classeId = this.evalFormClasseId();
 
@@ -501,6 +535,7 @@ export class NotesPageComponent implements OnInit {
   // --- Saisie, navigation et validation des notes ---
 
   public onNoteInput(catechumeneId: string, event: Event): void {
+    if (this.isCurrentEvalLocked()) return;
     const input = event.target as HTMLInputElement;
     const raw = input.value.trim();
     const bareme = Number(this.currentEvaluation()?.note_max || this.currentEvaluation()?.bareme || 20);
@@ -526,6 +561,7 @@ export class NotesPageComponent implements OnInit {
   }
 
   public onNoteKeyDown(event: KeyboardEvent, index: number): void {
+    if (this.isCurrentEvalLocked()) return;
     const inputs = this.noteInputs();
     if (!inputs || inputs.length === 0) return;
 
@@ -547,6 +583,7 @@ export class NotesPageComponent implements OnInit {
   }
 
   public onAppreciationInput(catechumeneId: string, event: Event): void {
+    if (this.isCurrentEvalLocked()) return;
     const input = event.target as HTMLInputElement;
     const val = input.value;
     this.notesDraft.update(list =>
@@ -555,6 +592,10 @@ export class NotesPageComponent implements OnInit {
   }
 
   public submitNotes(): void {
+    if (this.isCurrentEvalLocked()) {
+      this.toastService.error('Action refusée', this.clotureService.getLockMessage());
+      return;
+    }
     const evalId = this.selectedEvaluationId();
     if (!evalId) {
       this.toastService.warning('Attention', 'Veuillez sélectionner une évaluation avant d\'enregistrer.');

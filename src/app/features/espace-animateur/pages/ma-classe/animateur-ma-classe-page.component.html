@@ -1,0 +1,102 @@
+<div class="ma-classe-viewport">
+  <div class="page-top-nav">
+    <a routerLink="/animateur/dashboard" class="back-link-btn">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+      <span>Accueil</span>
+    </a>
+    <h1 class="page-title">Ma Classe</h1>
+  </div>
+
+  @if (isLoading()) {
+    <div class="loading-box">
+      <div class="spinner-primary"></div>
+      
+    </div>
+  }
+
+  @else if (hasNoAffectation()) {
+    <div class="no-affectation-box">
+      <div class="warning-icon-circle">⚠️</div>
+      <h2>Aucune affectation active</h2>
+      <p>Vous n'avez pas encore d'affectation active pour l'année catéchétique en cours. Veuillez contacter la coordination.</p>
+    </div>
+  }
+
+  @else if (classe()) {
+    <!-- Carte récapitulative -->
+    <div class="classe-summary-card">
+      <div class="badge-row">
+        <span class="annee-pill">{{ anneePastorale()?.libelle }}</span>
+        <span class="role-pill">{{ affectation()?.role || 'Animateur principal' }}</span>
+      </div>
+
+      <h2 class="class-hero-title">{{ classe()?.nom }}</h2>
+      <p class="hierarchy-text">{{ section()?.nom }} • {{ niveau()?.nom }}</p>
+
+      <div class="stats-grid">
+        <div class="stat-item">
+          <span class="stat-val">{{ effectif() }}</span>
+          <span class="stat-lbl">Inscrits</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-val">{{ classe()?.capacite_max || '—' }}</span>
+          <span class="stat-lbl">Capacité max</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-val">{{ catechumenes().length }}</span>
+          <span class="stat-lbl">Actifs</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions directes -->
+    <div class="fast-action-bar">
+      <a routerLink="/animateur/catechumenes" class="fast-btn btn-primary">
+        <span>👥 Mes Catéchumènes </span>
+      </a>
+      <a routerLink="/animateur/presences" class="fast-btn btn-outline">
+        <span>✓ Faire l'appel</span>
+      </a>
+    </div>
+
+    <!-- Aperçu des catéchumènes -->
+    <div class="catechumenes-section">
+      <div class="section-bar">
+        <h3>Catéchumènes inscrits ({{ catechumenes().length }})</h3>
+        <a routerLink="/animateur/catechumenes" class="view-all-link">Tout afficher</a>
+      </div>
+
+      <div class="cards-list">
+        @for (cat of catechumenes().slice(0, 10); track cat.id) {
+          <div class="cat-card">
+            <div class="cat-avatar" [class.avatar-f]="cat.sexe === 'F'">
+              {{ (cat.nom.charAt(0) + (cat.prenoms ? cat.prenoms.charAt(0) : '')).toUpperCase() }}
+            </div>
+            <div class="cat-details">
+              <div class="cat-name">{{ cat.nom }} {{ cat.prenoms }}</div>
+              <div class="cat-sub">
+                <span class="cat-mat">{{ cat.matricule || '-' }}</span>
+                @if (cat.telephone) {
+                  <a [href]="'tel:' + cat.telephone" class="cat-tel-link tel-eleve" title="Appeler l'élève">
+                    <span>📱 {{ cat.telephone }}</span>
+                  </a>
+                }
+                @if (cat.telephone_parent) {
+                  <a [href]="'tel:' + cat.telephone_parent" class="cat-tel-link tel-parent" title="Appeler le parent">
+                    <span>👨‍👩‍👧 {{ cat.telephone_parent }}</span>
+                  </a>
+                }
+              </div>
+            </div>
+          </div>
+        } @empty {
+          <div class="empty-list-box">
+            <p>Aucun catéchumène inscrit pour l'instant dans cette classe.</p>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

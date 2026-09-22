@@ -160,18 +160,45 @@ export class ClassesPageComponent implements OnInit {
 
   protected handleFormSubmit(dto: CreateClasseDto | UpdateClasseDto): void {
     if (this.isEditing() && this.selectedClasse()) {
-      this.classeService.update(this.selectedClasse()!.id, dto as UpdateClasseDto).subscribe(() => {
-        this.closeFormModal();
+      const currentId = this.selectedClasse()!.id;
+      const targetNivId = dto.niveau_id || this.selectedClasse()!.niveau_id;
+      const targetNom = (dto.nom || '').trim().toLowerCase();
+
+      const duplicate = this.classes().some(
+        c => c.id !== currentId && c.niveau_id === targetNivId && c.nom.trim().toLowerCase() === targetNom
+      );
+      if (duplicate) {
+        this.toastService.warning('Attention', 'Cette classe existe déjà.');
+        return;
+      }
+
+      this.classeService.update(currentId, dto as UpdateClasseDto).subscribe({
+        next: () => this.closeFormModal(),
+        error: () => {}
       });
     } else {
-      this.classeService.create(dto as CreateClasseDto).subscribe(() => {
-        this.closeFormModal();
+      const createDto = dto as CreateClasseDto;
+      const targetNom = (createDto.nom || '').trim().toLowerCase();
+
+      const duplicate = this.classes().some(
+        c => c.niveau_id === createDto.niveau_id && c.nom.trim().toLowerCase() === targetNom
+      );
+      if (duplicate) {
+        this.toastService.warning('Attention', 'Cette classe existe déjà.');
+        return;
+      }
+
+      this.classeService.create(createDto).subscribe({
+        next: () => this.closeFormModal(),
+        error: () => {}
       });
     }
   }
 
   protected handleToggleStatus(classe: Classe): void {
-    this.classeService.toggleStatus(classe).subscribe();
+    this.classeService.toggleStatus(classe).subscribe({
+      error: () => {}
+    });
   }
 
   protected openDeleteModal(classe: Classe): void {
@@ -187,8 +214,9 @@ export class ClassesPageComponent implements OnInit {
   protected handleDeleteConfirm(): void {
     const target = this.itemToDelete();
     if (target) {
-      this.classeService.delete(target.id).subscribe(() => {
-        this.closeDeleteModal();
+      this.classeService.delete(target.id).subscribe({
+        next: () => this.closeDeleteModal(),
+        error: () => {}
       });
     }
   }

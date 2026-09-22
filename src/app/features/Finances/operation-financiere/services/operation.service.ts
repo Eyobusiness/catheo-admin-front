@@ -315,6 +315,9 @@ export class OperationFinanciereService {
     const rawLibelle = this.pickString(item['libelle'], fb['libelle']) || 'Frais de catéchèse';
     const libelle = this.cleanLibelle(rawLibelle, catechumene);
 
+    const rawRemise = item['remise'] ?? fb['remise'];
+    const remise = this.parseNumber(rawRemise, 0);
+
     return {
       id: this.pickString(item['id'], item['uuid'], fb['id']) || '',
       uuid: this.pickString(item['uuid'], item['id']),
@@ -325,6 +328,7 @@ export class OperationFinanciereService {
       montant: montantTotal,
       montant_paye: montantPaye,
       montant_restant: montantRestant,
+      remise,
       echeance: this.optionalString(item['echeance']) ?? (fb['echeance'] as string | undefined),
       statut,
       annee_catechese_id: this.pickString(

@@ -25,6 +25,17 @@ function extractArrayData(res: any): any[] {
   return [];
 }
 
+export function resolvePhotoUrl(raw?: string): string | undefined {
+  if (!raw) return undefined;
+  if (raw.startsWith('http://') || raw.startsWith('https://') || raw.startsWith('data:')) {
+    return raw;
+  }
+  const base = environment.apiUrl.replace(/\/api\/v1\/?$/, '').replace(/\/api\/?$/, '');
+  if (raw.startsWith('/storage/')) return `${base}${raw}`;
+  if (raw.startsWith('storage/')) return `${base}/${raw}`;
+  return `${base}/storage/${raw.replace(/^\/+/, '')}`;
+}
+
 function normalizeCatechumene(item: any): CatechumeneDto {
   const cat = item.catechumene || {};
   const nom = item.nom || cat.nom || '';
@@ -33,6 +44,27 @@ function normalizeCatechumene(item: any): CatechumeneDto {
   const phone = item.telephone || cat.telephone || item.telephone_pere || item.telephone_mere || item.telephone_tuteur || '';
   const matricule = item.matricule || cat.matricule || item.code_catechumene || cat.code_catechumene || '';
   const targetId = item.catechumene_id || item.catechumeneId || cat.id || cat.uuid || item.id || item.uuid;
+
+  const rawInscriptions = item.inscriptions_annuelles || cat.inscriptions_annuelles || item.inscriptions || cat.inscriptions || [];
+  const inscriptionsList = Array.isArray(rawInscriptions) ? rawInscriptions : [];
+  const activeOrFirstIns = inscriptionsList.length > 0
+    ? (inscriptionsList.find((i: any) => i.statut === 'actif' || i.statut_inscription === 'actif') || inscriptionsList[0])
+    : (item.inscription || cat.inscription || null);
+
+  const resolvedClasseId = item.classe_id || cat.classe_id || activeOrFirstIns?.classe_id || activeOrFirstIns?.classe?.id;
+  const resolvedClasseNom = item.classe?.nom || item.classe_nom || cat.classe_nom || cat.classe?.nom || activeOrFirstIns?.classe?.nom || activeOrFirstIns?.classe_nom || '';
+
+  const resolvedNiveauId = item.niveau_id || cat.niveau_id || activeOrFirstIns?.niveau_id || activeOrFirstIns?.niveau?.id || activeOrFirstIns?.classe?.niveau_id || activeOrFirstIns?.classe?.niveau?.id;
+  const resolvedNiveauNom = item.niveau?.nom || item.niveau_nom || cat.niveau_nom || cat.niveau?.nom || activeOrFirstIns?.niveau?.nom || activeOrFirstIns?.niveau_nom || activeOrFirstIns?.classe?.niveau?.nom || '';
+
+  const resolvedSectionId = item.section_id || cat.section_id || activeOrFirstIns?.section_id || activeOrFirstIns?.section?.id || activeOrFirstIns?.niveau?.section_id || activeOrFirstIns?.classe?.niveau?.section_id;
+  const resolvedSectionNom = item.section?.nom || item.section_nom || cat.section_nom || cat.section?.nom || activeOrFirstIns?.section?.nom || activeOrFirstIns?.section_nom || activeOrFirstIns?.niveau?.section?.nom || activeOrFirstIns?.classe?.niveau?.section?.nom || '';
+
+  const resolvedAnneeId = item.annee_catechese_id || cat.annee_catechese_id || activeOrFirstIns?.annee_catechese_id || activeOrFirstIns?.annee_catechese?.id;
+  const resolvedAnneeLibelle = item.annee_catechese?.libelle || item.annee_libelle || cat.annee_libelle || cat.annee_catechese?.libelle || activeOrFirstIns?.annee_catechese?.libelle || activeOrFirstIns?.annee_libelle || '';
+
+  const rawPhoto = item.photo_url || item.photo_path || cat.photo_url || cat.photo_path;
+  const resolvedPhoto = resolvePhotoUrl(rawPhoto);
 
   return {
     id: String(targetId || ''),
@@ -50,8 +82,8 @@ function normalizeCatechumene(item: any): CatechumeneDto {
     classe_scolaire: item.classe_scolaire || cat.classe_scolaire,
     situation_matrimoniale: item.situation_matrimoniale || cat.situation_matrimoniale,
     telephone: phone,
-    photo_path: item.photo_path || item.photo_url || cat.photo_path || cat.photo_url,
-    photo_url: item.photo_url || item.photo_path || cat.photo_url || cat.photo_path,
+    photo_path: item.photo_path || cat.photo_path || rawPhoto,
+    photo_url: resolvedPhoto,
     nom_pere: item.nom_pere || cat.nom_pere,
     origine_pere: item.origine_pere || cat.origine_pere,
     telephone_pere: item.telephone_pere || cat.telephone_pere,
@@ -75,15 +107,15 @@ function normalizeCatechumene(item: any): CatechumeneDto {
     statut: item.statut || item.statut_inscription || cat.statut || 'actif',
     ceb_id: item.ceb_id || item.ceb?.id || cat.ceb_id,
     ceb: item.ceb || cat.ceb,
-    classe_id: item.classe_id || cat.classe_id,
-    classe_nom: item.classe?.nom || item.classe_nom || cat.classe_nom,
-    niveau_id: item.niveau_id || cat.niveau_id,
-    niveau_nom: item.niveau?.nom || item.niveau_nom || cat.niveau_nom,
-    section_id: item.section_id || cat.section_id,
-    section_nom: item.section?.nom || item.section_nom || cat.section_nom,
-    annee_catechese_id: item.annee_catechese_id || cat.annee_catechese_id,
-    annee_libelle: item.annee_catechese?.libelle || item.annee_libelle || cat.annee_libelle,
-    inscriptions_annuelles: item.inscriptions_annuelles || cat.inscriptions_annuelles || [],
+    classe_id: resolvedClasseId,
+    classe_nom: resolvedClasseNom,
+    niveau_id: resolvedNiveauId,
+    niveau_nom: resolvedNiveauNom,
+    section_id: resolvedSectionId,
+    section_nom: resolvedSectionNom,
+    annee_catechese_id: resolvedAnneeId,
+    annee_libelle: resolvedAnneeLibelle,
+    inscriptions_annuelles: inscriptionsList,
     parrains_marraines: item.parrains_marraines || cat.parrains_marraines || [],
     created_at: item.created_at || new Date().toISOString()
   };
@@ -173,9 +205,13 @@ export class CatechumeneService {
     );
   }
 
-  public getByMatricule(matricule: string): Observable<CatechumeneDto> {
+  public getByMatricule(matricule: string, params?: { campagne_id?: string; paroisse_id?: string }): Observable<CatechumeneDto> {
     const cleanMat = matricule.trim();
-    return this.http.get<any>(`${this.baseUrl}/matricule/${encodeURIComponent(cleanMat)}`).pipe(
+    let queryParams: Record<string, string> = {};
+    if (params?.campagne_id) queryParams['campagne_id'] = params.campagne_id;
+    if (params?.paroisse_id) queryParams['paroisse_id'] = params.paroisse_id;
+
+    return this.http.get<any>(`${this.baseUrl}/matricule/${encodeURIComponent(cleanMat)}`, { params: queryParams }).pipe(
       map(res => {
         const item = res.data || res;
         if (!item || (!item.id && !item.nom)) {
@@ -224,8 +260,17 @@ export class CatechumeneService {
           statut: item.statut || 'actif',
           ceb_id: item.ceb_id || item.ceb?.id,
           ceb: item.ceb,
+          classe_id: item.classe_id,
+          classe_nom: item.classe_nom,
+          niveau_id: item.niveau_id,
+          niveau_nom: item.niveau_nom,
+          section_id: item.section_id,
+          section_nom: item.section_nom,
+          annee_catechese_id: item.annee_catechese_id,
+          annee_libelle: item.annee_libelle,
           inscriptions_annuelles: item.inscriptions_annuelles || [],
           parrains_marraines: item.parrains_marraines || [],
+          progression_pastorale: item.progression_pastorale,
           created_at: item.created_at || new Date().toISOString()
         } as CatechumeneDto;
       }),
@@ -317,13 +362,13 @@ export class CatechumeneService {
       tap(res => {
         this.isLoading.set(false);
         const item: any = res.data || res;
+        const normalized = normalizeCatechumene(item);
         const current = this.catechumenes().find(c => c.id === id);
         const updated: CatechumeneDto = {
           ...current!,
-          ...item,
-          ...dto,
+          ...normalized,
           id,
-          ceb: cebObj || current?.ceb
+          ceb: cebObj || normalized.ceb || current?.ceb
         };
         this.addOrUpdateCatechumeneLocal(updated);
         this.toastService.success('Fiche Mise à Jour', `La fiche de ${updated.nom} ${updated.prenoms} a été modifiée.`);

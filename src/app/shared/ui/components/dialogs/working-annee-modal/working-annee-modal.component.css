@@ -132,12 +132,27 @@
 
 .year-card.is-selected {
   border-color: #10b981;
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(5, 150, 105, 0.02));
-  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.12);
+  background-color: #ecfdf5;
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.18), 0 1px 3px rgba(0, 0, 0, 0.04);
+  position: relative;
 }
 
 .year-card.is-selected:hover {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(5, 150, 105, 0.04));
+  border-color: #059669;
+  background: linear-gradient(135deg, #e6fcf1 0%, #d1fae5 100%);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.25);
+}
+
+.year-card.is-selected::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.5rem;
+  bottom: 0.5rem;
+  width: 5px;
+  background-color: #10b981;
+  border-radius: 0 4px 4px 0;
 }
 
 .year-card-left {
@@ -317,16 +332,35 @@
   flex-shrink: 0;
 }
 
+.connected-badge-box {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #ffffff;
+  padding: 0.35rem 0.85rem 0.35rem 0.45rem;
+  border-radius: 9999px;
+  border: 1.5px solid #a7f3d0;
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.15);
+}
+
+.connected-text {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #065f46;
+  white-space: nowrap;
+}
+
 .checked-circle {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   background: #10b981;
   color: #ffffff;
-  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.4);
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.35);
+  flex-shrink: 0;
 }
 
 .btn-select-year {
@@ -401,4 +435,33 @@
   display: flex;
   justify-content: flex-end;
   width: 100%;
+}
+
+@media (max-width: 640px) {
+  .year-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+  }
+
+  .year-card-right {
+    justify-content: flex-end;
+    padding-top: 0.5rem;
+    border-top: 1px dashed var(--border-color, #e2e8f0);
+  }
+
+  .year-card.is-selected .year-card-right {
+    border-top-color: #a7f3d0;
+  }
+
+  .btn-select-year {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .connected-badge-box {
+    width: 100%;
+    justify-content: center;
+  }
 }

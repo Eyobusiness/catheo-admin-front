@@ -68,6 +68,13 @@ export class CampagnePreinscriptionService {
     );
   }
 
+  public getPublicCampagne(idOrUuid?: string): Observable<any> {
+    const endpoint = idOrUuid && idOrUuid !== 'active' && idOrUuid !== 'latest'
+      ? `${this.baseUrl}/public/${idOrUuid}`
+      : `${this.baseUrl}/public`;
+    return this.http.get<any>(endpoint);
+  }
+
   public getById(id: string): Observable<CampagnePreinscriptionDto> {
     return this.http.get<any>(`${this.baseUrl}/${id}`).pipe(
       map(res => {

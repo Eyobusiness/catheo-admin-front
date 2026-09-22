@@ -42,10 +42,10 @@
           </div>
         </div>
 
-        <!-- Montant à Imputer / Payer -->
+        <!-- Montant de base -->
         <div class="form-group">
           <label class="form-label" for="enc_montant">
-            Montant à Payer <span class="required">*</span>
+            Montant Total (FCFA) <span class="required">*</span>
           </label>
           <input
             id="enc_montant"
@@ -55,16 +55,53 @@
             class="form-control"
           />
           @if (form.controls.montant.touched && form.controls.montant.errors?.['required']) {
-            <span class="field-error">Le montant à imputer est requis.</span>
+            <span class="field-error">Le montant est requis.</span>
           }
         </div>
       </div>
+
+      <!-- Remise & Net à Payer (Accessible uniquement pour les Administrateurs) -->
+      @if (isAdmin()) {
+        <div class="form-row-2">
+          <!-- Remise accordée (par défaut 0) -->
+          <div class="form-group">
+            <label class="form-label" for="enc_remise">
+              Remise (FCFA)
+            </label>
+            <input
+              id="enc_remise"
+              type="number"
+              min="0"
+              formControlName="remise"
+              class="form-control"
+              placeholder="0"
+              (input)="onRemiseInput($event)"
+            />
+            @if (form.controls.remise.touched && form.controls.remise.errors?.['min']) {
+              <span class="field-error">La remise ne peut pas être négative.</span>
+            }
+          </div>
+
+          <!-- Net à Payer calculé -->
+          <div class="form-group">
+            <label class="form-label">
+              Net à Payer
+            </label>
+            <div class="net-a-payer-box">
+              <span class="net-val">{{ netAPayer() | number:'1.0-0' }} FCFA</span>
+              @if (liveRemise() > 0) {
+                <span class="discount-badge">-{{ liveRemise() | number:'1.0-0' }} FCFA</span>
+              }
+            </div>
+          </div>
+        </div>
+      }
 
       <!-- Billets remis / Montant Reçu & Monnaie à rendre -->
       <div class="form-row-2">
         <div class="form-group">
           <label class="form-label" for="enc_montant_recu">
-            Montant Reçu
+            Montant Reçu (FCFA)
           </label>
           <input
             id="enc_montant_recu"
@@ -82,7 +119,6 @@
             Monnaie à Rendre
           </label>
           <div class="change-return-box" [class.has-change]="monnaieRendue() > 0">
-            
             <span class="change-val">{{ monnaieRendue() | number:'1.0-0' }} FCFA</span>
           </div>
         </div>

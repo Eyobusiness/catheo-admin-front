@@ -22,16 +22,16 @@
 /* Ligne Supérieure : Logos et Bloc Central */
 .entete-top-row {
   display: grid;
-  grid-template-columns: 90px 1fr 90px;
+  grid-template-columns: 110px 1fr 110px;
   align-items: center;
-  gap: 1rem;
+  gap: 1.25rem;
   width: 100%;
 }
 
 /* Boîte Logos (Gauche & Droite) */
 .logo-side {
-  width: 85px;
-  height: 85px;
+  width: 105px;
+  height: 105px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -46,22 +46,82 @@
 }
 
 .logo-img {
-  max-width: 85px;
-  max-height: 85px;
+  max-width: 105px;
+  max-height: 105px;
+  width: auto;
+  height: auto;
   object-fit: contain;
 }
 
 .logo-fallback {
-  width: 75px;
-  height: 75px;
+  width: 90px;
+  height: 90px;
   border-radius: 50%;
   border: 1.5px dashed #94a3b8;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #64748b;
-  font-size: 1.8rem;
+  font-size: 2.2rem;
   background: #f8fafc;
+}
+
+/* Variantes de taille configurables */
+/* 1. Taille Compacte (sm) - IDÉAL pour fiches denses */
+.entete-catechese-root.size-sm .entete-top-row {
+  grid-template-columns: 75px 1fr 75px;
+  gap: 0.75rem;
+}
+.entete-catechese-root.size-sm .logo-side {
+  width: 70px;
+  height: 70px;
+}
+.entete-catechese-root.size-sm .logo-img {
+  max-width: 70px;
+  max-height: 70px;
+}
+.entete-catechese-root.size-sm .logo-fallback {
+  width: 60px;
+  height: 60px;
+  font-size: 1.5rem;
+}
+
+/* 2. Taille Moyenne Standard (md) */
+.entete-catechese-root.size-md .entete-top-row {
+  grid-template-columns: 90px 1fr 90px;
+  gap: 1rem;
+}
+.entete-catechese-root.size-md .logo-side {
+  width: 85px;
+  height: 85px;
+}
+.entete-catechese-root.size-md .logo-img {
+  max-width: 85px;
+  max-height: 85px;
+}
+.entete-catechese-root.size-md .logo-fallback {
+  width: 75px;
+  height: 75px;
+  font-size: 1.8rem;
+}
+
+/* 3. Taille Agrandie (lg) - Par défaut */
+.entete-catechese-root.size-lg .entete-top-row {
+  grid-template-columns: 110px 1fr 110px;
+  gap: 1.25rem;
+}
+.entete-catechese-root.size-lg .logo-side {
+  width: 105px;
+  height: 105px;
+}
+.entete-catechese-root.size-lg .logo-img {
+  max-width: 105px;
+  max-height: 105px;
+}
+.entete-catechese-root.size-lg .logo-fallback {
+  width: 90px;
+  height: 90px;
+  font-size: 2.2rem;
 }
 
 /* Bloc d'informations centré (l'un en dessous de l'autre) */

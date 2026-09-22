@@ -25,7 +25,7 @@ import { CatechumeneService } from '../../../liste-catechumene/services/catechum
 import { ToastService } from '../../../../../core/services/toast.service';
 import { PdfService } from '../../../../../core/services/pdf.service';
 import { CampagnePreinscriptionDto } from '../../../campagnes/models/campagne.model';
-import { CatechumeneDto } from '../../../liste-catechumene/models/catechumene.model';
+import { CatechumeneDto, ProgressionPastoraleDto } from '../../../liste-catechumene/models/catechumene.model';
 import {
   PreinscriptionDto,
   SubmitPreinscriptionDto
@@ -144,6 +144,16 @@ export class PublicPreinscriptionPageComponent implements OnInit {
   public readonly isDuplicateDetected = signal<boolean>(false);
   public readonly duplicateMessage = signal<string>('');
 
+  // Progression pastorale calculée automatiquement pour la réinscription
+  public readonly progressionPastorale = computed<ProgressionPastoraleDto | null>(() => {
+    return this.foundCatechumene()?.progression_pastorale ?? null;
+  });
+
+  // Fin de parcours catéchétique calculée automatiquement
+  public readonly isFinParcours = computed<boolean>(() => {
+    return this.foundCatechumene()?.progression_pastorale?.est_fin_parcours ?? false;
+  });
+
   // Résultat de la soumission réussie
   public readonly submittedDossier = signal<PreinscriptionDto | null>(null);
 
@@ -185,13 +195,13 @@ export class PublicPreinscriptionPageComponent implements OnInit {
     mouvement_id: new FormControl('', { nonNullable: true })
   });
 
-  // Formulaire pour RÉINSCRIPTION
+  // Formulaire pour RÉINSCRIPTION (Uniquement Section et Niveau choisis par le fidèle)
   public readonly reinscriptionForm = new FormGroup({
     section_id: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     niveau_id: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-    nom: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-    prenoms: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-    telephone: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    nom: new FormControl('', { nonNullable: true }),
+    prenoms: new FormControl('', { nonNullable: true }),
+    telephone: new FormControl('', { nonNullable: true }),
     domicile: new FormControl('', { nonNullable: true }),
     situation_matrimoniale: new FormControl('', { nonNullable: true }),
     profession: new FormControl('', { nonNullable: true }),
@@ -242,6 +252,13 @@ export class PublicPreinscriptionPageComponent implements OnInit {
     const secId = this.selectedSectionIdNouvelle().trim();
     if (!secId) return [];
     const sec = this.selectedSectionNouvelle();
+
+    // 1. Si la section possède directement ses niveaux attachés (eager-loaded de l'API)
+    if (sec && Array.isArray((sec as any).niveaux) && (sec as any).niveaux.length > 0) {
+      return (sec as any).niveaux;
+    }
+
+    // 2. Filtrage dans la liste globale des niveaux
     const secNom = String(sec?.nom || '').trim().toLowerCase();
     const secCode = String(sec?.code || '').trim().toUpperCase();
     const secRealId = sec ? String(sec.id) : secId;
@@ -253,9 +270,10 @@ export class PublicPreinscriptionPageComponent implements OnInit {
       const nSecNom = String(n.section?.nom || '').trim().toLowerCase();
       const nSecCode = String((n as any).section?.code || '').trim().toUpperCase();
 
-      const matchId = nSecId === secId || nSecId === secRealId;
+      const matchId = (nSecId && (nSecId === secId || nSecId === secRealId));
       const matchUuid = (secRealUuid && nSecUuid === secRealUuid) || (secId && nSecUuid === secId);
-      const matchNom = (secNom && nSecNom === secNom) || (secCode && nSecCode === secCode);
+      const matchNom = (secNom && nSecNom && (nSecNom === secNom || nSecNom.includes(secNom) || secNom.includes(nSecNom))) || 
+                       (secCode && nSecCode && nSecCode === secCode);
 
       return matchId || matchUuid || matchNom;
     });
@@ -266,6 +284,13 @@ export class PublicPreinscriptionPageComponent implements OnInit {
     const secId = this.selectedSectionIdReinscription().trim();
     if (!secId) return [];
     const sec = this.selectedSectionReinscription();
+
+    // 1. Si la section possède directement ses niveaux attachés (eager-loaded de l'API)
+    if (sec && Array.isArray((sec as any).niveaux) && (sec as any).niveaux.length > 0) {
+      return (sec as any).niveaux;
+    }
+
+    // 2. Filtrage dans la liste globale des niveaux
     const secNom = String(sec?.nom || '').trim().toLowerCase();
     const secCode = String(sec?.code || '').trim().toUpperCase();
     const secRealId = sec ? String(sec.id) : secId;
@@ -277,9 +302,10 @@ export class PublicPreinscriptionPageComponent implements OnInit {
       const nSecNom = String(n.section?.nom || '').trim().toLowerCase();
       const nSecCode = String((n as any).section?.code || '').trim().toUpperCase();
 
-      const matchId = nSecId === secId || nSecId === secRealId;
+      const matchId = (nSecId && (nSecId === secId || nSecId === secRealId));
       const matchUuid = (secRealUuid && nSecUuid === secRealUuid) || (secId && nSecUuid === secId);
-      const matchNom = (secNom && nSecNom === secNom) || (secCode && nSecCode === secCode);
+      const matchNom = (secNom && nSecNom && (nSecNom === secNom || nSecNom.includes(secNom) || secNom.includes(nSecNom))) || 
+                       (secCode && nSecCode && nSecCode === secCode);
 
       return matchId || matchUuid || matchNom;
     });
@@ -326,32 +352,52 @@ export class PublicPreinscriptionPageComponent implements OnInit {
   });
 
   public ngOnInit(): void {
-    // 1. Charger la configuration de la paroisse et les listes de la BD (Sections, Niveaux, CEBs, Mouvements, Catéchumènes)
+    this.isInitialLoading.set(true);
+    const paramCampagneId = this.route.snapshot.paramMap.get('campagneId');
+
+    // 1. Appel public unifié : récupère la campagne, la paroisse, les sections, niveaux, CEBs et mouvements
+    this.campagneService.getPublicCampagne(paramCampagneId || '').subscribe({
+      next: (res: any) => {
+        const data = res?.data || res;
+        if (data?.campagne) {
+          const c = data.campagne;
+          const statut = c.statut || (c.est_ouverte ? 'ouverte' : 'fermee');
+          this.currentCampagne.set({
+            ...c,
+            id: c.id || c.uuid || paramCampagneId,
+            statut,
+            est_ouverte: statut === 'ouverte',
+          });
+        }
+        if (data?.paroisse) {
+          this.configService.paroisseConfig.set(data.paroisse);
+        }
+        if (Array.isArray(data?.sections) && data.sections.length > 0) {
+          this.sectionService.sections.set(data.sections);
+        }
+        if (Array.isArray(data?.niveaux) && data.niveaux.length > 0) {
+          this.niveauService.niveaux.set(data.niveaux);
+        }
+        if (Array.isArray(data?.cebs) && data.cebs.length > 0) {
+          this.cebService.cebs.set(data.cebs);
+        }
+        if (Array.isArray(data?.mouvements) && data.mouvements.length > 0) {
+          this.mouvementService.mouvements.set(data.mouvements);
+        }
+        this.isInitialLoading.set(false);
+      },
+      error: () => {
+        this.isInitialLoading.set(false);
+        this.loadFallbackCampagne();
+      }
+    });
+
+    // 2. Chargements de secours indépendants sur les services publics
     this.configService.getParoisseConfig().subscribe();
     this.sectionService.getAll().subscribe();
     this.niveauService.getAll().subscribe();
     this.cebService.getAll().subscribe();
     this.mouvementService.getAll().subscribe();
-    this.catechumeneService.getAll().subscribe();
-
-    // 2. Charger les détails de la Campagne réelle depuis la BD
-    this.isInitialLoading.set(true);
-    const paramCampagneId = this.route.snapshot.paramMap.get('campagneId');
-    if (paramCampagneId) {
-      this.campagneService.getById(paramCampagneId).subscribe({
-        next: camp => {
-          if (camp && (camp.id || (camp as any).uuid)) {
-            this.currentCampagne.set(camp);
-          }
-          this.isInitialLoading.set(false);
-        },
-        error: () => {
-          this.isInitialLoading.set(false);
-        }
-      });
-    } else {
-      this.loadFallbackCampagne();
-    }
   }
 
   private loadFallbackCampagne(): void {
@@ -378,6 +424,8 @@ export class PublicPreinscriptionPageComponent implements OnInit {
 
   // --- GESTION DES SECTIONS & NIVEAUX ---
   public onNouvelleSectionChange(): void {
+    const secVal = this.nouvelleForm.controls.section_id.value || '';
+    this.selectedSectionIdNouvelle.set(secVal);
     this.nouvelleForm.controls.niveau_id.setValue('');
     if (this.isAdulteNouvelle()) {
       this.nouvelleForm.controls.classe_scolaire.setValue('');
@@ -393,6 +441,8 @@ export class PublicPreinscriptionPageComponent implements OnInit {
   }
 
   public onReinscriptionSectionChange(): void {
+    const secVal = this.reinscriptionForm.controls.section_id.value || '';
+    this.selectedSectionIdReinscription.set(secVal);
     this.reinscriptionForm.controls.niveau_id.setValue('');
     if (this.isAdulteReinscription()) {
       this.reinscriptionForm.controls.classe_scolaire.setValue('');
@@ -473,7 +523,7 @@ export class PublicPreinscriptionPageComponent implements OnInit {
     this.isSearchingMatricule.set(true);
     this.searchMatriculeError.set(null);
 
-    // 1. Recherche dans la liste déjà chargée
+    // 1. Recherche dans la liste déjà chargée (si disponible)
     const matLower = mat.toLowerCase();
     const foundLocal = this.catechumeneService.catechumenes().find(
       c => (c.matricule && c.matricule.toLowerCase() === matLower) ||
@@ -488,36 +538,15 @@ export class PublicPreinscriptionPageComponent implements OnInit {
       return;
     }
 
-    // 2. Recherche directe par API
-    this.catechumeneService.getByMatricule(mat).subscribe({
+    // 2. Recherche directe par API (ouverte publiquement avec le contexte campagne)
+    const paramCampagneId = this.route.snapshot.paramMap.get('campagneId');
+    const campagneId = this.currentCampagne()?.id || paramCampagneId || '';
+
+    this.catechumeneService.getByMatricule(mat, { campagne_id: campagneId }).subscribe({
       next: cat => {
         this.isSearchingMatricule.set(false);
         if (cat && (cat.id || cat.nom)) {
           this.applyFoundCatechumene(cat);
-        } else {
-          this.tryFallbackSearchInAll(mat);
-        }
-      },
-      error: () => {
-        this.tryFallbackSearchInAll(mat);
-      }
-    });
-  }
-
-  private tryFallbackSearchInAll(mat: string): void {
-    this.catechumeneService.getAll().subscribe({
-      next: list => {
-        this.isSearchingMatricule.set(false);
-        const matLower = mat.toLowerCase();
-        const found = list.find(
-          c => (c.matricule && c.matricule.toLowerCase() === matLower) ||
-               (c.code_catechumene && c.code_catechumene.toLowerCase() === matLower) ||
-               (c.nom_complet && c.nom_complet.toLowerCase().includes(matLower)) ||
-               (`${c.nom} ${c.prenoms}`.toLowerCase().includes(matLower))
-        );
-
-        if (found) {
-          this.applyFoundCatechumene(found);
         } else {
           this.searchMatriculeError.set(`Aucun catéchumène trouvé avec le matricule « ${mat} ».`);
           this.foundCatechumene.set(null);
@@ -525,7 +554,7 @@ export class PublicPreinscriptionPageComponent implements OnInit {
       },
       error: () => {
         this.isSearchingMatricule.set(false);
-        this.searchMatriculeError.set(`Aucun dossier trouvé pour le matricule « ${mat} ».`);
+        this.searchMatriculeError.set(`Aucun dossier trouvé pour le matricule « ${mat} ». Veuillez vérifier le numéro de matricule.`);
         this.foundCatechumene.set(null);
       }
     });
@@ -550,6 +579,31 @@ export class PublicPreinscriptionPageComponent implements OnInit {
       ceb_id: cat.ceb_id || cat.ceb?.id || ''
     });
 
+    // Progression pastorale calculée automatiquement (Portail public en ligne)
+    const progression = cat.progression_pastorale;
+    if (progression && progression.parcours_suivant && !progression.est_fin_parcours) {
+      const destSecId = String(progression.parcours_suivant.section_id || progression.parcours_suivant.section_uuid || '');
+      const destNivId = String(progression.parcours_suivant.niveau_id || progression.parcours_suivant.niveau_uuid || '');
+      this.reinscriptionForm.patchValue({
+        section_id: destSecId,
+        niveau_id: destNivId
+      });
+      this.selectedSectionIdReinscription.set(destSecId);
+    } else if (progression && progression.est_fin_parcours) {
+      this.reinscriptionForm.patchValue({
+        section_id: '',
+        niveau_id: ''
+      });
+    } else {
+      // Fallback si progression non encore calculée
+      const prevSecId = cat.section_id || cat.inscriptions_annuelles?.[0]?.section_id;
+      const prevNivId = cat.niveau_id || cat.inscriptions_annuelles?.[0]?.niveau_id;
+      if (prevSecId) {
+        this.reinscriptionForm.patchValue({ section_id: String(prevSecId), niveau_id: prevNivId ? String(prevNivId) : '' });
+        this.selectedSectionIdReinscription.set(String(prevSecId));
+      }
+    }
+
     if (cat.photo_url || cat.photo_path) {
       this.photoPreview.set(cat.photo_url || cat.photo_path || '');
     }
@@ -573,7 +627,11 @@ export class PublicPreinscriptionPageComponent implements OnInit {
       });
     }
 
-    this.toastService.success('Dossier Retrouvé', `Bienvenue ${cat.nom} ${cat.prenoms} !`);
+    if (progression?.est_fin_parcours) {
+      this.toastService.info('Fin de cycle', progression.message || 'Félicitations, vous avez achevé le parcours catéchétique.');
+    } else {
+      this.toastService.success('Dossier Retrouvé', `Bienvenue ${cat.nom} ${cat.prenoms} !`);
+    }
   }
 
   // --- PHOTO ---
@@ -689,6 +747,14 @@ export class PublicPreinscriptionPageComponent implements OnInit {
 
     if (this.isDuplicateDetected()) {
       this.toastService.warning('Démarche Impossible', this.duplicateMessage());
+      return;
+    }
+
+    if (this.isFinParcours()) {
+      this.toastService.warning(
+        'Fin de Parcours',
+        'Votre parcours catéchétique pour cette section est achevé. Veuillez vous rendre au bureau de la catéchèse.'
+      );
       return;
     }
 
@@ -820,6 +886,15 @@ export class PublicPreinscriptionPageComponent implements OnInit {
     const dossier = this.submittedDossier();
     if (!dossier) return;
     this.openRecuThermal(dossier);
+  }
+
+  public resetSearchMatricule(): void {
+    this.foundCatechumene.set(null);
+    this.searchMatricule.set('');
+    this.searchMatriculeError.set(null);
+    this.isDuplicateDetected.set(false);
+    this.duplicateMessage.set('');
+    this.reinscriptionForm.reset();
   }
 
   public resetForm(): void {

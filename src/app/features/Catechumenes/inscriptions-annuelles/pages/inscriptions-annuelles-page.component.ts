@@ -252,12 +252,20 @@ export class InscriptionsAnnuellesPageComponent implements OnInit {
   protected openCreateModal(): void {
     this.isEditing.set(false);
     this.selectedItem.set(null);
+    this.cebService.getAll().subscribe();
+    this.mouvementService.getAll().subscribe();
+    this.sectionService.getAll().subscribe();
+    this.niveauService.getAll().subscribe();
+    this.classeService.getAll().subscribe();
+    this.anneeService.getAll().subscribe();
     this.isFormModalOpen.set(true);
   }
 
   protected openEditModal(item: InscriptionAnnuelleDto): void {
     this.isEditing.set(true);
     this.selectedItem.set(item);
+    this.cebService.getAll().subscribe();
+    this.mouvementService.getAll().subscribe();
     this.isFormModalOpen.set(true);
     this.isDetailModalOpen.set(false);
   }
@@ -364,11 +372,24 @@ export class InscriptionsAnnuellesPageComponent implements OnInit {
     mouvement?: Mouvement;
   }): void {
     this.isSaving.set(true);
+    if (!event.catechumeneData.section_id && event.section?.id) {
+      event.catechumeneData.section_id = event.section.id;
+    }
+    if (!event.catechumeneData.niveau_id && event.niveau?.id) {
+      event.catechumeneData.niveau_id = event.niveau.id;
+    }
+    if (!event.catechumeneData.classe_id && event.classe?.id) {
+      event.catechumeneData.classe_id = event.classe.id;
+    }
     this.catechumeneService.create(event.catechumeneData, event.ceb).subscribe({
       next: (createdCat) => {
-        const currentAnnee = this.annees().find(a => a.est_active) || (this.annees().length > 0 ? this.annees()[0] : undefined);
+        const workingAnneeId = typeof window !== 'undefined' ? localStorage.getItem('catheo_working_annee_id') : null;
+        const currentAnnee = (workingAnneeId ? this.annees().find(a => a.id === workingAnneeId) : null)
+          || this.annees().find(a => a.est_active || a.statut === 'active')
+          || (this.annees().length > 0 ? this.annees()[0] : undefined);
+
         event.inscriptionData.catechumene_id = createdCat.id;
-        event.inscriptionData.annee_catechese_id = currentAnnee ? currentAnnee.id : '';
+        event.inscriptionData.annee_catechese_id = currentAnnee ? currentAnnee.id : (workingAnneeId || '');
 
         this.inscriptionService.create(event.inscriptionData, {
           catechumene: createdCat,
@@ -381,6 +402,7 @@ export class InscriptionsAnnuellesPageComponent implements OnInit {
         }).subscribe({
           next: () => {
             this.isSaving.set(false);
+            this.operationService.getAll().subscribe();
             this.closeModals();
           },
           error: () => {
@@ -406,8 +428,12 @@ export class InscriptionsAnnuellesPageComponent implements OnInit {
     mouvement?: Mouvement;
   }): void {
     this.isSaving.set(true);
-    const currentAnnee = this.annees().find(a => a.est_active) || (this.annees().length > 0 ? this.annees()[0] : undefined);
-    event.inscriptionData.annee_catechese_id = currentAnnee ? currentAnnee.id : '';
+    const workingAnneeId = typeof window !== 'undefined' ? localStorage.getItem('catheo_working_annee_id') : null;
+    const currentAnnee = (workingAnneeId ? this.annees().find(a => a.id === workingAnneeId) : null)
+      || this.annees().find(a => a.est_active || a.statut === 'active')
+      || (this.annees().length > 0 ? this.annees()[0] : undefined);
+
+    event.inscriptionData.annee_catechese_id = currentAnnee ? currentAnnee.id : (workingAnneeId || '');
 
     if (event.updateCatechumeneData) {
       this.catechumeneService.update(event.catechumeneId, event.updateCatechumeneData, event.ceb).subscribe();
@@ -424,6 +450,7 @@ export class InscriptionsAnnuellesPageComponent implements OnInit {
     }).subscribe({
       next: () => {
         this.isSaving.set(false);
+        this.operationService.getAll().subscribe();
         this.closeModals();
       },
       error: () => {
@@ -443,10 +470,21 @@ export class InscriptionsAnnuellesPageComponent implements OnInit {
     mouvement?: Mouvement;
   }): void {
     this.isSaving.set(true);
+
     if (this.isEditing() && this.selectedItem()) {
-      this.inscriptionService.update(this.selectedItem()!.id, event.dto as UpdateInscriptionAnnuelleDto, event).subscribe({
+      const targetId = this.selectedItem()!.id;
+      this.inscriptionService.update(targetId, event.dto as UpdateInscriptionAnnuelleDto, {
+        catechumene: event.catechumene,
+        annee: event.annee,
+        section: event.section,
+        niveau: event.niveau,
+        classe: event.classe,
+        ceb: event.ceb,
+        mouvement: event.mouvement
+      }).subscribe({
         next: () => {
           this.isSaving.set(false);
+          this.operationService.getAll().subscribe();
           this.closeModals();
         },
         error: () => {
@@ -454,9 +492,18 @@ export class InscriptionsAnnuellesPageComponent implements OnInit {
         }
       });
     } else {
-      this.inscriptionService.create(event.dto as CreateInscriptionAnnuelleDto, event).subscribe({
+      this.inscriptionService.create(event.dto as CreateInscriptionAnnuelleDto, {
+        catechumene: event.catechumene,
+        annee: event.annee,
+        section: event.section,
+        niveau: event.niveau,
+        classe: event.classe,
+        ceb: event.ceb,
+        mouvement: event.mouvement
+      }).subscribe({
         next: () => {
           this.isSaving.set(false);
+          this.operationService.getAll().subscribe();
           this.closeModals();
         },
         error: () => {

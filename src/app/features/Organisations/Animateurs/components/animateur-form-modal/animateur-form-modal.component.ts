@@ -122,7 +122,7 @@ export class AnimateurFormModalComponent {
           statut: val.statut
         };
         if (val.password && val.password.trim().length > 0) {
-          payload.password = val.password;
+          payload.password = val.password.trim();
         }
         this.formSubmitted.emit(payload);
       } else {
@@ -133,8 +133,9 @@ export class AnimateurFormModalComponent {
           telephone: val.telephone?.trim() || undefined,
           email: val.email?.trim() || undefined,
           profession: val.profession?.trim() || undefined,
+          statut: val.statut,
           create_user_account: val.create_user_account,
-          password: val.password || undefined
+          password: val.password?.trim() || undefined
         });
       }
     } else {

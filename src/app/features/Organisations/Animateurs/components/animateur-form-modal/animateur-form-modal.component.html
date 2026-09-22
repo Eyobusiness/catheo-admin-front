@@ -91,7 +91,7 @@
     @if (!isEditing()) {
       <div class="form-group">
         <label class="form-label" for="password">
-          Mot de passe <span class="required">*</span>
+          Mot de passe initial <span class="required">*</span>
         </label>
         <div class="password-input-wrapper">
           <input
@@ -99,7 +99,7 @@
             [type]="showPassword() ? 'text' : 'password'"
             formControlName="password"
             class="form-control password-input"
-            placeholder="Mot de passe"
+            placeholder="Mot de passe (min. 6 caractères)"
             autocomplete="new-password"
           />
           <button
@@ -113,14 +113,18 @@
           </button>
         </div>
         @if (form.controls.password.touched && form.controls.password.invalid) {
-          <span class="field-error">Le mot de passe est obligatoire (min. 6 caractères).</span>
+          <span class="field-error">Le mot de passe initial est obligatoire (min. 6 caractères).</span>
         }
+        <small class="field-hint">
+          <i class="bi bi-shield-lock"></i>
+          Ce mot de passe permettra à l'animateur de se connecter à son Espace Animateur.
+        </small>
       </div>
 
     } @else {
       <div class="form-group">
         <label class="form-label" for="editPassword">
-          Nouveau mot de passe <span class="optional-label">(Optionnel)</span>
+          Modifier le mot de passe <span class="optional-label">(Optionnel)</span>
         </label>
         <div class="password-input-wrapper">
           <input
@@ -128,7 +132,7 @@
             [type]="showPassword() ? 'text' : 'password'"
             formControlName="password"
             class="form-control password-input"
-            placeholder="Laisser vide pour ne pas modifier"
+            placeholder="Laisser vide pour conserver le mot de passe actuel"
             autocomplete="new-password"
           />
           <button
@@ -142,18 +146,38 @@
           </button>
         </div>
         @if (form.controls.password.touched && form.controls.password.invalid) {
-          <span class="field-error">Le mot de passe doit comporter au moins 6 caractères.</span>
+          <span class="field-error">Le nouveau mot de passe doit comporter au moins 6 caractères.</span>
         }
-      </div>
-
-      <div class="form-group">
-        <label class="form-label" for="statut">Statut du Catéchiste</label>
-        <select id="statut" formControlName="statut" class="form-control">
-          <option value="actif">Actif</option>
-          <option value="inactif">Inactif</option>
-        </select>
+        <small class="field-hint">
+          <i class="bi bi-info-circle"></i>
+          L'animateur pourra se connecter à son espace avec ce nouveau mot de passe.
+        </small>
       </div>
     }
+
+    <!-- Statut Row (Disponible en création ET en modification) -->
+    <div class="form-group">
+      <label class="form-label" for="statut">
+        Statut de connexion <span class="required">*</span>
+      </label>
+      <select id="statut" formControlName="statut" class="form-control">
+        <option value="actif">Actif (Peut se connecter avec ses identifiants)</option>
+        <option value="inactif">Inactif (Ne pourra pas se connecter)</option>
+      </select>
+      <small
+        class="field-hint"
+        [class.hint-danger]="form.controls.statut.value === 'inactif'"
+        [class.hint-success]="form.controls.statut.value === 'actif'"
+      >
+        @if (form.controls.statut.value === 'actif') {
+          <i class="bi bi-check-circle-fill"></i>
+          <span><strong>Compte actif :</strong> L'animateur est autorisé à se connecter à l'Espace Animateur.</span>
+        } @else {
+          <i class="bi bi-dash-circle-fill"></i>
+          <span><strong>Compte inactif :</strong> L'animateur ne pourra pas se connecter à l'Espace Animateur.</span>
+        }
+      </small>
+    </div>
   </form>
 
   <div dialog-footer>

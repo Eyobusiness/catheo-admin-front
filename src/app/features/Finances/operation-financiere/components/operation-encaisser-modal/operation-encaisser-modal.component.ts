@@ -5,6 +5,7 @@ import { OperationPaiementDto, StorePaiementDto, ModePaiement } from '../../mode
 import { AnneeCatecheseService } from '../../../../../core/services/annee-catechese.service';
 import { CatechumeneService } from '../../../../Catechumenes/liste-catechumene/services/catechumene.service';
 import { TarifService } from '../../../tarification/services/tarif.service';
+import { AuthService } from '../../../../../core/services/auth.service';
 import { AppDialog } from '../../../../../shared/ui/components/dialogs/app-dialog/app-dialog.component';
 import { AppButton } from '../../../../../shared/ui/components/buttons/app-button/app-button.component';
 
@@ -19,6 +20,7 @@ export class OperationEncaisserModalComponent {
   private readonly anneeService = inject(AnneeCatecheseService);
   private readonly catechumeneService = inject(CatechumeneService);
   private readonly tarifService = inject(TarifService);
+  private readonly authService = inject(AuthService);
 
   public readonly isOpen = input<boolean>(false);
   public readonly operation = input<OperationPaiementDto | null>(null);
@@ -36,6 +38,15 @@ export class OperationEncaisserModalComponent {
   public readonly activeAnnee = this.anneeService.activeAnnee;
   public readonly catechumenes = this.catechumeneService.catechumenes;
   public readonly tarifs = this.tarifService.tarifs;
+
+  // Seul un utilisateur avec le code profil ADMIN ou super admin a le droit d'accorder une remise
+  public readonly isAdmin = computed(() => {
+    const u = this.authService.currentUser();
+    if (!u) return false;
+    const profilCode = String(u.profil?.code || u.role || (u as any)['user_type'] || u.user_type || '').toUpperCase().trim();
+    const profilNom = String(u.profil?.nom || u.profil?.libelle || u.role_nom || '').toUpperCase().trim();
+    return profilCode === 'ADMIN' || profilCode === 'SUPER_ADMIN' || profilCode.includes('ADMIN') || profilNom.includes('ADMIN');
+  });
 
   protected readonly form = new FormGroup({
     annee_catechese_id: new FormControl<string>('', {
@@ -55,14 +66,25 @@ export class OperationEncaisserModalComponent {
       nonNullable: true,
       validators: [Validators.required, Validators.min(1)]
     }),
+    remise: new FormControl<number>(0, {
+      nonNullable: true,
+      validators: [Validators.min(0)]
+    }),
     montant_recu: new FormControl<number | null>(null),
     notes: new FormControl<string | null>(null)
   });
 
   protected readonly liveMontantRecu = signal<number>(0);
+  protected readonly liveRemise = signal<number>(0);
+
+  protected readonly netAPayer = computed(() => {
+    const total = this.form.controls.montant.value || 0;
+    const remise = this.isAdmin() ? this.liveRemise() : 0;
+    return Math.max(0, total - remise);
+  });
 
   protected readonly monnaieRendue = computed(() => {
-    const du = this.form.controls.montant.value || 0;
+    const du = this.netAPayer();
     const recu = this.liveMontantRecu();
     if (recu > du) {
       return recu - du;
@@ -97,18 +119,28 @@ export class OperationEncaisserModalComponent {
           this.activeAnnee()?.id ||
           (this.annees().length > 0 ? this.annees()[0].id : '');
 
+        const initialRemise = this.isAdmin() ? (item.remise || 0) : 0;
+
         this.form.reset({
           annee_catechese_id: initialAnneeId,
           mode_paiement: 'especes',
           reference_transaction: null,
           date_paiement: today,
           montant: remaining,
-          montant_recu: remaining,
+          remise: initialRemise,
+          montant_recu: Math.max(0, remaining - initialRemise),
           notes: null
         });
-        this.liveMontantRecu.set(remaining);
+        this.liveRemise.set(initialRemise);
+        this.liveMontantRecu.set(Math.max(0, remaining - initialRemise));
       }
     }, { allowSignalWrites: true });
+  }
+
+  protected onRemiseInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const val = Math.max(0, parseFloat(input.value) || 0);
+    this.liveRemise.set(val);
   }
 
   protected onMontantRecuInput(event: Event): void {
@@ -173,8 +205,10 @@ export class OperationEncaisserModalComponent {
         }
       }
 
-      const recu = raw.montant_recu || raw.montant;
-      const rendu = recu > raw.montant ? recu - raw.montant : 0;
+      const remise = this.isAdmin() ? Math.max(0, raw.remise || 0) : 0;
+      const netDu = Math.max(0, raw.montant - remise);
+      const recu = raw.montant_recu !== null && raw.montant_recu !== undefined ? raw.montant_recu : netDu;
+      const rendu = recu > netDu ? recu - netDu : 0;
 
       const ligne: any = {
         designation: currentOp.libelle,
@@ -195,6 +229,7 @@ export class OperationEncaisserModalComponent {
         inscription_annuelle_id: currentOp.inscription_annuelle_id || (currentOp as any).inscription_annuelle?.id || undefined,
         mode_paiement: raw.mode_paiement,
         reference_transaction: raw.reference_transaction || undefined,
+        remise: remise,
         date_paiement: raw.date_paiement,
         notes: raw.notes || undefined,
         lignes: [ligne]

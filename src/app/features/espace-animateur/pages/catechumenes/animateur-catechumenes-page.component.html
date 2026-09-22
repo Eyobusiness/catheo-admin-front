@@ -1,0 +1,159 @@
+<div class="catechumenes-viewport">
+  <!-- En-tête -->
+  <div class="page-top-nav">
+    <a routerLink="/animateur/dashboard" class="back-link-btn">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+      <span>Accueil</span>
+    </a>
+    <div class="title-wrap">
+      <h1 class="page-title">Mes Catéchumènes</h1>
+      <span class="count-badge">{{ filteredCatechumenes().length }} élève(s)</span>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="loading-state-card">
+      <div class="spinner-primary"></div>
+      <!-- <p>Chargement de vos catéchumènes...</p> -->
+    </div>
+  }
+
+  @else if (hasNoAffectation()) {
+    <div class="no-affectation-card">
+      <p>Vous n'avez pas encore d'affectation active pour l'année catéchétique en cours.</p>
+    </div>
+  }
+
+  @else {
+    <!-- Barre de Recherche & Filtres Mobiles -->
+    <div class="filters-container">
+      <div class="search-input-wrap">
+        <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input
+          type="search"
+          [value]="searchQuery()"
+          (input)="onSearchInput($event)"
+          placeholder="Rechercher par nom, prénom, matricule..."
+          class="search-input"
+        />
+      </div>
+
+      <div class="pills-filter">
+        <button
+          type="button"
+          class="pill-btn"
+          [class.active]="selectedSexeFilter() === 'all'"
+          (click)="setSexeFilter('all')"
+        >
+          Tous ({{ allCatechumenes().length }})
+        </button>
+        <button
+          type="button"
+          class="pill-btn"
+          [class.active]="selectedSexeFilter() === 'M'"
+          (click)="setSexeFilter('M')"
+        >
+          Garçons
+        </button>
+        <button
+          type="button"
+          class="pill-btn"
+          [class.active]="selectedSexeFilter() === 'F'"
+          (click)="setSexeFilter('F')"
+        >
+          Filles
+        </button>
+      </div>
+    </div>
+
+    <!-- Liste des Cartes d'Élèves Mobile -->
+    <div class="students-list">
+      @for (cat of filteredCatechumenes(); track cat.id) {
+        <article class="student-card">
+          <div class="student-main">
+            <div class="student-avatar" [class.avatar-f]="cat.sexe === 'F'">
+              {{ (cat.nom.charAt(0) + (cat.prenoms ? cat.prenoms.charAt(0) : '')).toUpperCase() }}
+            </div>
+
+            <div class="student-info">
+              <h2 class="student-name">{{ cat.nom }} {{ cat.prenoms }}</h2>
+              <div class="student-meta">
+                <span class="meta-tag matricule-tag">{{ cat.matricule || '-' }}</span>
+                <span class="meta-tag sexe-tag" [class.tag-f]="cat.sexe === 'F'">
+                  {{ cat.sexe === 'F' ? 'Fille' : 'Garçon' }}
+                </span>
+              </div>
+
+              <!-- Numéros de téléphone -->
+              <div class="student-phones-list">
+                @if (cat.telephone) {
+                  <div class="phone-row phone-eleve">
+                    <!-- <span class="phone-role-badge badge-eleve">Élève</span> -->
+                    <a [href]="'tel:' + cat.telephone" class="phone-link" title="Appeler le catéchumène">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                      </svg>
+                      <span class="phone-text">{{ cat.telephone }}</span>
+                    </a>
+                  </div>
+                }
+
+                @if (cat.telephone_parent) {
+                  <div class="phone-row phone-parent">
+                    <span class="phone-role-badge badge-parent">{{ cat.nom_parent || 'Parent' }}</span>
+                    <a [href]="'tel:' + cat.telephone_parent" class="phone-link" title="Appeler le parent">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                      </svg>
+                      <span class="phone-text">{{ cat.telephone_parent }}</span>
+                    </a>
+                  </div>
+                }
+
+                @if (!cat.telephone && !cat.telephone_parent) {
+                  <div class="no-phone-hint">
+                    <span>Aucun contact téléphonique</span>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- Contact direct / actions pastorales -->
+          @if (cat.telephone || cat.telephone_parent) {
+            <div class="student-footer">
+              @if (cat.telephone) {
+                <a [href]="'tel:' + cat.telephone" class="call-btn btn-call-eleve" title="Appeler le catéchumène">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                  </svg>
+                  <span>Appeler élève</span>
+                </a>
+              }
+              @if (cat.telephone_parent) {
+                <a [href]="'tel:' + cat.telephone_parent" class="call-btn btn-call-parent" title="Appeler le parent">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                  </svg>
+                  <span>Appeler parent</span>
+                </a>
+              }
+            </div>
+          }
+        </article>
+      } @empty {
+        <div class="empty-search-box">
+          <p>Aucun catéchumène ne correspond à votre recherche.</p>
+        </div>
+      }
+    </div>
+  }
+</div>

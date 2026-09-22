@@ -5,6 +5,7 @@ export type TypeParrain = 'parrain' | 'marraine';
 
 export interface CatechumeneDto {
   id: string;
+  uuid?: string;
   code_catechumene: string;
   matricule?: string;
   nom: string;
@@ -49,19 +50,49 @@ export interface CatechumeneDto {
   ceb?: Ceb;
   classe_id?: string;
   classe_nom?: string;
+  classe?: any;
   niveau_id?: string;
   niveau_nom?: string;
+  niveau?: any;
   section_id?: string;
   section_nom?: string;
   annee_catechese_id?: string;
   annee_libelle?: string;
   inscriptions_annuelles?: any[];
   parrains_marraines?: ParrainMarraineDto[];
+  progression_pastorale?: ProgressionPastoraleDto;
   created_at: string;
+}
+
+export interface ParcoursInfo {
+  section_id?: number | string;
+  section_uuid?: string;
+  section_nom?: string;
+  section_code?: string;
+  section_code_normalise?: string;
+  niveau_id?: number | string;
+  niveau_uuid?: string;
+  niveau_nom?: string;
+  annee_pastorale?: string;
+}
+
+export interface ProgressionPastoraleDto {
+  eligible: boolean;
+  est_fin_parcours: boolean;
+  est_admis: boolean;
+  decision_bilan?: string | null;
+  decision_normalisee?: string | null;
+  parcours_actuel?: ParcoursInfo | null;
+  parcours_suivant?: ParcoursInfo | null;
+  message?: string;
 }
 
 export interface CreateCatechumeneDto {
   ceb_id?: string;
+  section_id?: string;
+  niveau_id?: string;
+  classe_id?: string;
+  annee_catechese_id?: string;
   nom: string;
   prenoms: string;
   sexe: 'M' | 'F';

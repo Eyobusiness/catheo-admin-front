@@ -110,3 +110,21 @@
   background-color: var(--neutral-100);
 }
 
+.field-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  color: var(--neutral-500);
+  margin-top: 0.25rem;
+}
+
+.field-hint.hint-danger {
+  color: var(--danger-600);
+}
+
+.field-hint.hint-success {
+  color: var(--success-600);
+}
+
+

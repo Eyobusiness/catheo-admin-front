@@ -1,10 +1,12 @@
-import { ChangeDetectionStrategy, Component, computed, effect, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SeanceDto, RecordPresencesBatchDto, PresenceItemDto } from '../../models/seance.model';
 import { InscriptionAnnuelleDto } from '../../../Catechumenes/inscriptions-annuelles/models/inscription-annuelle.model';
 import { AppDialog } from '../../../../shared/ui/components/dialogs/app-dialog/app-dialog.component';
 import { AppButton } from '../../../../shared/ui/components/buttons/app-button/app-button.component';
+import { CloturePeriodeService } from '../../../../core/services/cloture-periode.service';
+import { ToastService } from '../../../../core/services/toast.service';
 
 export interface PresenceEntry {
   catechumene_id: string;
@@ -23,6 +25,11 @@ export interface PresenceEntry {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SeancePresencesModalComponent {
+  private readonly clotureService = inject(CloturePeriodeService);
+  private readonly toastService = inject(ToastService);
+
+  public readonly lockMessage = CloturePeriodeService.LOCK_MESSAGE;
+
   public readonly isOpen = input<boolean>(false);
   public readonly seance = input<SeanceDto | null>(null);
   public readonly inscriptions = input<InscriptionAnnuelleDto[]>([]);
@@ -33,6 +40,16 @@ export class SeancePresencesModalComponent {
     seanceId: string;
     dto: RecordPresencesBatchDto;
   }>();
+
+  public readonly isLocked = computed(() => {
+    const s = this.seance();
+    if (!s) return false;
+    const classeId = s.classe_id || s.classe?.id;
+    return this.clotureService.isLocked({
+      date: s.date_seance || (s as any).date,
+      classeId: classeId ? Number(classeId) : undefined
+    });
+  });
 
   protected readonly entries = signal<PresenceEntry[]>([]);
   protected readonly searchQuery = signal<string>('');
@@ -125,6 +142,11 @@ export class SeancePresencesModalComponent {
   }
 
   protected setAllStatus(present: boolean): void {
+    if (this.isLocked()) {
+      this.toastService.warning('Période clôturée', CloturePeriodeService.LOCK_MESSAGE);
+      return;
+    }
+
     this.entries.update(list =>
       list.map(e => ({
         ...e,
@@ -135,6 +157,11 @@ export class SeancePresencesModalComponent {
   }
 
   protected togglePresence(entry: PresenceEntry): void {
+    if (this.isLocked()) {
+      this.toastService.warning('Période clôturée', CloturePeriodeService.LOCK_MESSAGE);
+      return;
+    }
+
     this.entries.update(list =>
       list.map(e => {
         if (e.catechumene_id === entry.catechumene_id) {
@@ -151,6 +178,7 @@ export class SeancePresencesModalComponent {
   }
 
   protected updateMotif(entry: PresenceEntry, motif: string): void {
+    if (this.isLocked()) return;
     this.entries.update(list =>
       list.map(e => (e.catechumene_id === entry.catechumene_id ? { ...e, motif_absence: motif } : e))
     );
@@ -170,6 +198,11 @@ export class SeancePresencesModalComponent {
   }
 
   protected onSubmit(): void {
+    if (this.isLocked()) {
+      this.toastService.warning('Période clôturée', CloturePeriodeService.LOCK_MESSAGE);
+      return;
+    }
+
     const currentSeance = this.seance();
     if (!currentSeance) return;
 

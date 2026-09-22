@@ -15,6 +15,7 @@ import { FormsModule } from '@angular/forms';
 import { EvaluationDto, NotesGridItemDto } from '../../models/evaluation.model';
 import { EvaluationService } from '../../services/evaluation.service';
 import { ToastService } from '../../../../../core/services/toast.service';
+import { CloturePeriodeService } from '../../../../../core/services/cloture-periode.service';
 
 interface LocalGridRow {
   catechumene_id: string;
@@ -37,10 +38,23 @@ interface LocalGridRow {
 export class EvaluationNotesGridModalComponent implements OnInit {
   private readonly evaluationService = inject(EvaluationService);
   private readonly toastService = inject(ToastService);
+  private readonly clotureService = inject(CloturePeriodeService);
+
+  public readonly lockMessage = CloturePeriodeService.LOCK_MESSAGE;
 
   public readonly evaluation = input.required<EvaluationDto>();
   public readonly close = output<void>();
   public readonly notesSaved = output<void>();
+
+  public readonly isLocked = computed(() => {
+    const ev = this.evaluation();
+    if (!ev) return false;
+    return this.clotureService.isLocked({
+      moduleId: (ev as any).module_trimestriel_id,
+      date: ev.date_evaluation || (ev as any).date,
+      classeId: ev.classe_id
+    });
+  });
 
   public readonly isLoading = signal<boolean>(true);
   public readonly isSubmitting = signal<boolean>(false);
@@ -187,6 +201,11 @@ export class EvaluationNotesGridModalComponent implements OnInit {
   }
 
   public submitNotes(): void {
+    if (this.isLocked()) {
+      this.toastService.warning('Période clôturée', CloturePeriodeService.LOCK_MESSAGE);
+      return;
+    }
+
     if (this.hasValidationErrors()) {
       this.toastService.warning('Validation', 'Veuillez corriger les notes invalides avant d\'enregistrer.');
       return;
@@ -215,7 +234,8 @@ export class EvaluationNotesGridModalComponent implements OnInit {
           const errList = Object.values(err.error.errors).flat().join(' ');
           this.toastService.error('Erreur de validation (422)', errList);
         } else if (err?.status === 403) {
-          this.toastService.error('Accès refusé (403)', 'Vous n\'êtes pas autorisé à modifier les notes de cette classe.');
+          const msg = err?.error?.message || CloturePeriodeService.LOCK_MESSAGE;
+          this.toastService.error('Action non autorisée', msg);
         }
       }
     });

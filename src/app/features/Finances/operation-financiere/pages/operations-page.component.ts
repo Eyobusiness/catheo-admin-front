@@ -185,6 +185,9 @@ export class OperationsPageComponent implements OnInit {
           montant: montantTotal
         }];
 
+    const remise = item.remise || raw.remise || 0;
+    const montantNet = Math.max(0, montantTotal - remise);
+
     this.selectedRecuData.set({
       reference: item.reference || raw.numero_recu || `REC-${item.id}`,
       date: item.updated_at || item.created_at || raw.date_paiement || new Date().toISOString(),
@@ -197,6 +200,8 @@ export class OperationsPageComponent implements OnInit {
       libelle: item.libelle || 'Reçu de paiement',
       type_operation: item.type_tarif || 'paiement',
       montant_total: montantTotal,
+      remise,
+      montant_net: montantNet,
       montant_recu: montantRecu,
       montant_paye: montantPaye,
       montant_restant: montantRestant,

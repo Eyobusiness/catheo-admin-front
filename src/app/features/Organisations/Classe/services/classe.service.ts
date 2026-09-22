@@ -3,6 +3,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, catchError, of, tap, throwError } from 'rxjs';
 import { Classe, ClasseStatut, CreateClasseDto, UpdateClasseDto } from '../models/classe.model';
 import { ToastService } from '../../../../core/services/toast.service';
+import { AnneeCatecheseService } from '../../AnneesPastorales/services/annee-catechese.service';
 import { environment } from '../../../../environments/environment';
 
 function extractArrayData(res: any): any[] {
@@ -23,6 +24,7 @@ function extractArrayData(res: any): any[] {
 export class ClasseService {
   private readonly http = inject(HttpClient);
   private readonly toastService = inject(ToastService);
+  private readonly anneeService = inject(AnneeCatecheseService);
 
   private readonly baseUrl = `${environment.apiUrl}/classes`;
 
@@ -35,25 +37,37 @@ export class ClasseService {
     this.getAll().subscribe();
   }
 
-  public getAll(): Observable<Classe[]> {
+  public getAll(params?: { annee_catechese_id?: string; all?: boolean; search?: string; per_page?: number }): Observable<Classe[]> {
     this.isLoading.set(true);
-    return this.http.get<any>(this.baseUrl).pipe(
+
+    let queryParams: Record<string, string> = {
+      all: 'true',
+      per_page: '500'
+    };
+
+    if (params) {
+      if (params.annee_catechese_id) queryParams['annee_catechese_id'] = params.annee_catechese_id;
+      if (params.all !== undefined) queryParams['all'] = String(params.all);
+      if (params.search) queryParams['search'] = params.search;
+      if (params.per_page) queryParams['per_page'] = String(params.per_page);
+    }
+
+    return this.http.get<any>(this.baseUrl, { params: queryParams }).pipe(
       tap(res => {
         const raw = extractArrayData(res);
-        if (raw.length > 0) {
-          const normalized: Classe[] = raw.map((item: any) => ({
-            id: item.id,
-            nom: item.nom,
-            capacite_max: Number(item.capacite_max) || 30,
-            statut: (item.statut || (item.est_actif === false ? 'inactive' : 'active')) as ClasseStatut,
-            niveau_id: item.niveau_id || item.niveau?.id || '',
-            niveau: item.niveau || undefined,
-            annee_catechese_id: item.annee_catechese_id || item.annee_catechese?.id || '',
-            annee_catechese: item.annee_catechese || undefined,
-            effectif_actuel: item.effectif_actuel ?? item.total_inscrits ?? 0
-          }));
-          this.classes.set(normalized);
-        }
+        const normalized: Classe[] = raw.map((item: any) => ({
+          id: item.id,
+          nom: item.nom,
+          capacite_max: Number(item.capacite_max) || 30,
+          statut: (item.statut || (item.est_actif === false ? 'inactive' : 'active')) as ClasseStatut,
+          niveau_id: item.niveau_id || item.niveau?.id || '',
+          niveau: item.niveau || undefined,
+          niveau_nom: item.niveau?.nom || '',
+          annee_catechese_id: item.annee_catechese_id || item.annee_catechese?.id || '',
+          annee_catechese: item.annee_catechese || undefined,
+          effectif_actuel: item.effectif_actuel ?? item.total_inscrits ?? 0
+        }));
+        this.classes.set(normalized);
         this.isLoading.set(false);
       }),
       catchError(() => {
@@ -79,17 +93,30 @@ export class ClasseService {
 
   public create(dto: CreateClasseDto): Observable<Classe> {
     this.isLoading.set(true);
-    return this.http.post<any>(this.baseUrl, dto).pipe(
+
+    const activeAnneeId = dto.annee_catechese_id 
+      || this.anneeService.activeAnnee()?.id 
+      || (typeof window !== 'undefined' ? localStorage.getItem('catheo_working_annee_id') : undefined);
+
+    const payload: CreateClasseDto = {
+      ...dto,
+      ...(activeAnneeId ? { annee_catechese_id: activeAnneeId } : {})
+    };
+
+    return this.http.post<any>(this.baseUrl, payload).pipe(
       tap(res => {
         this.isLoading.set(false);
         const item: any = res.data || res;
         const created: Classe = {
           id: item.id || `uuid-${Date.now()}`,
           nom: item.nom || dto.nom,
-          capacite_max: item.capacite_max ?? dto.capacite_max ?? 30,
+          capacite_max: Number(item.capacite_max) || Number(dto.capacite_max) || 30,
           statut: item.statut || dto.statut || 'active',
-          niveau_id: item.niveau_id || dto.niveau_id,
-          annee_catechese_id: item.annee_catechese_id || dto.annee_catechese_id,
+          niveau_id: item.niveau_id || item.niveau?.id || dto.niveau_id,
+          niveau: item.niveau,
+          niveau_nom: item.niveau?.nom || '',
+          annee_catechese_id: item.annee_catechese_id || item.annee_catechese?.id || payload.annee_catechese_id,
+          annee_catechese: item.annee_catechese,
           effectif_actuel: item.effectif_actuel || 0
         };
         this.addOrUpdateLocal(created);
@@ -97,18 +124,32 @@ export class ClasseService {
       }),
       catchError((err: HttpErrorResponse) => {
         this.isLoading.set(false);
-        const newLocal: Classe = {
-          id: `uuid-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-          nom: dto.nom,
-          capacite_max: dto.capacite_max ?? 30,
-          statut: dto.statut || 'active',
-          niveau_id: dto.niveau_id,
-          annee_catechese_id: dto.annee_catechese_id,
-          effectif_actuel: 0
-        };
-        this.addOrUpdateLocal(newLocal);
-        this.toastService.success('Classe Enregistrée', `La classe "${newLocal.nom}" a été ajoutée.`);
-        return of(newLocal);
+        const serverRaw = (
+          err.error?.message ||
+          err.error?.error ||
+          (err.error?.errors ? Object.values(err.error.errors).flat().join(' ') : '') ||
+          ''
+        ).toLowerCase();
+
+        const isDuplicate =
+          serverRaw.includes('existe déjà') ||
+          serverRaw.includes('already exists') ||
+          serverRaw.includes('classes_paroisse_annee_niveau_nom_unique') ||
+          serverRaw.includes('duplicate entry') ||
+          serverRaw.includes('1062 duplicate') ||
+          err.status === 409;
+
+        if (isDuplicate) {
+          this.toastService.warning('Attention', 'Cette classe existe déjà.');
+        } else {
+          const errorMsg =
+            err.error?.message ||
+            err.error?.error ||
+            (err.error?.errors ? Object.values(err.error.errors).flat().join(' ') : null) ||
+            'Impossible d\'enregistrer la classe.';
+          this.toastService.error('Erreur', errorMsg);
+        }
+        return throwError(() => err);
       })
     );
   }
@@ -125,30 +166,45 @@ export class ClasseService {
           ...item,
           id,
           nom: item.nom || dto.nom || current?.nom || '',
-          capacite_max: item.capacite_max ?? dto.capacite_max ?? current?.capacite_max ?? 30,
+          capacite_max: Number(item.capacite_max) || Number(dto.capacite_max) || current?.capacite_max || 30,
           statut: item.statut || dto.statut || current?.statut || 'active',
-          niveau_id: item.niveau_id || dto.niveau_id || current?.niveau_id,
-          annee_catechese_id: item.annee_catechese_id || dto.annee_catechese_id || current?.annee_catechese_id
+          niveau_id: item.niveau_id || item.niveau?.id || dto.niveau_id || current?.niveau_id,
+          niveau: item.niveau || current?.niveau,
+          niveau_nom: item.niveau?.nom || current?.niveau_nom || '',
+          annee_catechese_id: item.annee_catechese_id || item.annee_catechese?.id || dto.annee_catechese_id || current?.annee_catechese_id,
+          annee_catechese: item.annee_catechese || current?.annee_catechese
         };
         this.addOrUpdateLocal(updated);
         this.toastService.success('Classe Modifiée', `La classe "${updated.nom}" a été mise à jour.`);
       }),
       catchError((err: HttpErrorResponse) => {
         this.isLoading.set(false);
-        const current = this.classes().find(c => c.id === id);
-        const updatedLocal: Classe = {
-          ...current,
-          id,
-          nom: dto.nom || current?.nom || '',
-          capacite_max: dto.capacite_max ?? current?.capacite_max ?? 30,
-          statut: dto.statut || current?.statut || 'active',
-          niveau_id: dto.niveau_id || current?.niveau_id,
-          annee_catechese_id: dto.annee_catechese_id || current?.annee_catechese_id,
-          effectif_actuel: current?.effectif_actuel || 0
-        };
-        this.addOrUpdateLocal(updatedLocal);
-        this.toastService.success('Classe Modifiée', `La classe "${updatedLocal.nom}" a été mise à jour.`);
-        return of(updatedLocal);
+        const serverRaw = (
+          err.error?.message ||
+          err.error?.error ||
+          (err.error?.errors ? Object.values(err.error.errors).flat().join(' ') : '') ||
+          ''
+        ).toLowerCase();
+
+        const isDuplicate =
+          serverRaw.includes('existe déjà') ||
+          serverRaw.includes('already exists') ||
+          serverRaw.includes('classes_paroisse_annee_niveau_nom_unique') ||
+          serverRaw.includes('duplicate entry') ||
+          serverRaw.includes('1062 duplicate') ||
+          err.status === 409;
+
+        if (isDuplicate) {
+          this.toastService.warning('Attention', 'Cette classe existe déjà.');
+        } else {
+          const errorMsg =
+            err.error?.message ||
+            err.error?.error ||
+            (err.error?.errors ? Object.values(err.error.errors).flat().join(' ') : null) ||
+            'Impossible de modifier la classe.';
+          this.toastService.error('Erreur', errorMsg);
+        }
+        return throwError(() => err);
       })
     );
   }
@@ -161,18 +217,21 @@ export class ClasseService {
         this.removeLocal(id);
         this.toastService.success('Classe Supprimée', 'La classe a été supprimée.');
       }),
-      catchError(() => {
+      catchError((err: HttpErrorResponse) => {
         this.isLoading.set(false);
-        this.removeLocal(id);
-        this.toastService.success('Classe Supprimée', 'La classe a été supprimée.');
-        return of(void 0);
+        const errorMsg =
+          err.error?.message ||
+          err.error?.error ||
+          'Impossible de supprimer la classe.';
+        this.toastService.error('Erreur', errorMsg);
+        return throwError(() => err);
       })
     );
   }
 
   public toggleStatus(classe: Classe): Observable<Classe> {
     const nextStatus: ClasseStatut = classe.statut === 'active' ? 'inactive' : 'active';
-    return this.http.patch<any>(`${this.baseUrl}/${classe.id}`, { statut: nextStatus }).pipe(
+    return this.http.patch<any>(`${this.baseUrl}/${classe.id}/status`, { statut: nextStatus }).pipe(
       tap(res => {
         const item = res.data || res;
         const updated: Classe = {
@@ -183,14 +242,13 @@ export class ClasseService {
         this.addOrUpdateLocal(updated);
         this.toastService.info('Statut Mis à Jour', `La classe est maintenant : ${nextStatus}`);
       }),
-      catchError(() => {
-        const updatedLocal: Classe = {
-          ...classe,
-          statut: nextStatus
-        };
-        this.addOrUpdateLocal(updatedLocal);
-        this.toastService.info('Statut Mis à Jour', `La classe est maintenant : ${nextStatus}`);
-        return of(updatedLocal);
+      catchError((err: HttpErrorResponse) => {
+        const errorMsg =
+          err.error?.message ||
+          err.error?.error ||
+          'Impossible de modifier le statut de la classe.';
+        this.toastService.error('Erreur', errorMsg);
+        return throwError(() => err);
       })
     );
   }

@@ -227,10 +227,72 @@ export class BilanAnnuelPrintComponent implements OnInit {
     // Tri alphabétique strict pour le bilan
     matchedCats.sort((a, b) => a.nomPrenoms.trim().localeCompare(b.nomPrenoms.trim(), 'fr', { sensitivity: 'base' }));
 
-    return matchedCats.map((st, idx) => ({
-      ...st,
-      num: String(idx + 1).padStart(2, '0')
-    }));
+    const allSeances = this.seanceService.seances();
+    const savedBilan = (clId && clId !== 'tous') ? this.bilanService.getBilanData(this.anneePastorale(), clId) : null;
+    const averages = this.classAverages();
+
+    return matchedCats.map((s, idx) => {
+      const saved = savedBilan?.find(b =>
+        (b.matricule && s.matricule && b.matricule.trim().toLowerCase() === s.matricule.trim().toLowerCase()) ||
+        b.catechumeneId === s.id
+      );
+
+      const eleveAvg = averages?.eleves?.find((e: any) =>
+        (s.matricule && e.matricule && String(e.matricule).toLowerCase().trim() === String(s.matricule).toLowerCase().trim()) ||
+        String(e.catechumene_id) === String(s.id)
+      );
+
+      let presCours = '';
+      if (saved?.presenceCoursNb !== undefined && saved?.presenceCoursNb !== null) {
+        presCours = String(saved.presenceCoursNb);
+      } else if (clId && clId !== 'tous') {
+        const nb = allSeances.filter(seance =>
+          (seance.classe_id === clId || seance.classe?.id === clId) &&
+          seance.presences?.some(p =>
+            (p.catechumene_id === s.id || (p.catechumene && p.catechumene.id === s.id)) &&
+            (p.statut_presence === 'present' || p.statut_presence === 'retard' || p.est_present === true)
+          )
+        ).length;
+        presCours = String(nb);
+      }
+
+      const presMesse = saved?.presenceMesse !== undefined && saved?.presenceMesse !== null ? saved.presenceMesse : 0;
+      const presMouv = saved?.presenceMouvement !== undefined && saved?.presenceMouvement !== null ? saved.presenceMouvement : 0;
+      const presCeb = saved?.presenceCEB !== undefined && saved?.presenceCEB !== null ? saved.presenceCEB : 0;
+
+      const evalMoy = eleveAvg?.moyenne ?? eleveAvg?.moyenne_generale ?? eleveAvg?.moyenne_annuelle;
+      const realMoyenne = saved?.moyenneGenerale !== undefined && saved?.moyenneGenerale !== null
+        ? saved.moyenneGenerale
+        : (evalMoy !== undefined && evalMoy !== null && evalMoy !== '' ? Number(evalMoy) : null);
+
+      const moy = realMoyenne !== null ? `${realMoyenne} / 20` : '-';
+
+      let dec = saved?.decision || '';
+      if (!dec && realMoyenne !== null) {
+        if (realMoyenne >= 10) dec = 'Admis';
+        else if (realMoyenne >= 8.5) dec = 'Ajourné';
+        else dec = 'Non admis';
+      }
+      if (typeof dec === 'string' && dec.trim().toLowerCase() === 'abandon') {
+        dec = 'Abandon';
+      }
+
+      return {
+        ...s,
+        num: String(idx + 1).padStart(2, '0'),
+        numero: String(idx + 1).padStart(2, '0'),
+        nom_complet: s.nomPrenoms,
+        contact: s.telephone,
+        moyenne: moy,
+        moyenne_generale: realMoyenne,
+        moyenne_annuelle: realMoyenne,
+        presences_cours: presCours || '-',
+        presences_messe: presMesse,
+        presences_mouvement: presMouv,
+        presences_ceb: presCeb,
+        decision: dec || '-'
+      };
+    });
   });
 
   public readonly emptyPaddingRows = computed(() => {
@@ -292,11 +354,6 @@ export class BilanAnnuelPrintComponent implements OnInit {
     if (this.selectedNiveauId() !== 'tous') filters.niveau_id = this.selectedNiveauId();
     if (this.selectedClasseId() !== 'tous') filters.classe_id = this.selectedClasseId();
 
-    const clId = this.selectedClasseId();
-    const allSeances = this.seanceService.seances();
-    const savedBilan = (clId && clId !== 'tous') ? this.bilanService.getBilanData(this.anneePastorale(), clId) : null;
-    const averages = this.classAverages();
-
     this.pdfService.previewBilanAnnuelPdf(filters, {
       title: "Bilan Annuel de Fin d'Année",
       subtitle: this.displaySubTitle(),
@@ -306,68 +363,7 @@ export class BilanAnnuelPrintComponent implements OnInit {
       niveauNom: this.selectedNiveauNom(),
       classeNom: this.selectedClasseNom(),
       animateursNom: this.animateursClasse(),
-      students: this.studentsList().map(s => {
-        const saved = savedBilan?.find(b =>
-          (b.matricule && s.matricule && b.matricule.trim().toLowerCase() === s.matricule.trim().toLowerCase()) ||
-          b.catechumeneId === s.id
-        );
-
-        const eleveAvg = averages?.eleves?.find((e: any) =>
-          (s.matricule && e.matricule && String(e.matricule).toLowerCase().trim() === String(s.matricule).toLowerCase().trim()) ||
-          String(e.catechumene_id) === String(s.id)
-        );
-
-        let presCours = '';
-        if (saved?.presenceCoursNb !== undefined && saved?.presenceCoursNb !== null) {
-          presCours = String(saved.presenceCoursNb);
-        } else if (clId && clId !== 'tous') {
-          const nb = allSeances.filter(seance =>
-            (seance.classe_id === clId || seance.classe?.id === clId) &&
-            seance.presences?.some(p =>
-              (p.catechumene_id === s.id || (p.catechumene && p.catechumene.id === s.id)) &&
-              (p.statut_presence === 'present' || p.statut_presence === 'retard' || p.est_present === true)
-            )
-          ).length;
-          presCours = String(nb);
-        }
-
-        const presMesse = saved?.presenceMesse !== undefined && saved?.presenceMesse !== null ? saved.presenceMesse : 0;
-        const presMouv = saved?.presenceMouvement !== undefined && saved?.presenceMouvement !== null ? saved.presenceMouvement : 0;
-        const presCeb = saved?.presenceCEB !== undefined && saved?.presenceCEB !== null ? saved.presenceCEB : 0;
-
-        const evalMoy = eleveAvg?.moyenne ?? eleveAvg?.moyenne_generale ?? eleveAvg?.moyenne_annuelle;
-        const realMoyenne = saved?.moyenneGenerale !== undefined && saved?.moyenneGenerale !== null
-          ? saved.moyenneGenerale
-          : (evalMoy !== undefined && evalMoy !== null && evalMoy !== '' ? Number(evalMoy) : null);
-
-        const moy = realMoyenne !== null ? `${realMoyenne} / 20` : '';
-
-        let dec = saved?.decision || '';
-        if (!dec && realMoyenne !== null) {
-          if (realMoyenne >= 10) dec = 'Admis';
-          else if (realMoyenne >= 8.5) dec = 'Ajourné';
-          else dec = 'Non admis';
-        }
-
-        return {
-          id: s.id,
-          num: s.num,
-          numero: s.num,
-          matricule: s.matricule,
-          nom_complet: s.nomPrenoms,
-          nomPrenoms: s.nomPrenoms,
-          telephone: s.telephone,
-          contact: s.telephone,
-          moyenne: moy,
-          moyenne_generale: realMoyenne,
-          moyenne_annuelle: realMoyenne,
-          presences_cours: presCours,
-          presences_messe: presMesse,
-          presences_mouvement: presMouv,
-          presences_ceb: presCeb,
-          decision: dec
-        };
-      })
+      students: this.studentsList()
     });
   }
 

@@ -1,7 +1,7 @@
 <footer class="app-footer">
   <div class="footer-left">
     <span class="footer-copyright">
-      &copy; {{ currentYear() }} <strong>Cathéo CIM</strong> &bull; Paroisse Cœur Immaculé de Marie. Tous droits réservés.
+      &copy; {{ currentYear() }} <strong>Cathéo </strong> &bull; {{ nomParoisse() }}. Tous droits réservés.
     </span>
   </div>
 
@@ -12,7 +12,7 @@
   <div class="footer-right">
     <div class="footer-status-pill">
       <span class="pulse-dot"></span>
-      <span>Année 2026-2027 &bull; v1.0.0</span>
+      <span>{{ anneeLibelle() }} &bull; v1.0.0</span>
     </div>
   </div>
 </footer>

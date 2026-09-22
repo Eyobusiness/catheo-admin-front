@@ -9,6 +9,7 @@ import { PdfPreviewModalComponent } from './shared/ui/components/dialogs/pdf-pre
 import { WorkingAnneeModalComponent } from './shared/ui/components/dialogs/working-annee-modal/working-annee-modal.component';
 import { AuthService } from './core/services/auth.service';
 import { ThemeService } from './core/services/theme.service';
+import { PwaInstallService } from './core/services/pwa-install.service';
 
 const FAVICON_STORAGE_KEY = 'catheo_paroisse_favicon';
 
@@ -19,12 +20,22 @@ function getInitialUrl(): string {
   return '/';
 }
 
+function isAnimateurPortalRoute(url: string): boolean {
+  return (
+    url === '/animateur' ||
+    url.startsWith('/animateur/') ||
+    url === '/espace-animateur' ||
+    url.startsWith('/espace-animateur/')
+  );
+}
+
 function isPublicRoute(url: string): boolean {
   return (
     url === '/' ||
     url === '' ||
     url.startsWith('/auth') ||
     url.startsWith('/login') ||
+    isAnimateurPortalRoute(url) ||
     url.startsWith('/preinscription-publique') ||
     url.startsWith('/preinscriptions/campagne')
   );
@@ -46,6 +57,7 @@ function isPublicRoute(url: string): boolean {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class App {
+  private readonly pwaInstallService = inject(PwaInstallService);
   private readonly themeService = inject(ThemeService);
   private readonly router = inject(Router);
   private readonly authService = inject(AuthService);

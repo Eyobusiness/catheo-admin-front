@@ -92,7 +92,10 @@ export class BilanAnnuelComponent {
       const pMesse = st.presences_messe ?? st.presenceMesse ?? st.messe ?? st.presence_messe ?? '-';
       const pMouv = st.presences_mouvement ?? st.presenceMouvement ?? st.mouvement ?? st.mouvt ?? st.presence_mouvement ?? '-';
       const pCeb = st.presences_ceb ?? st.presenceCEB ?? st.ceb ?? st.presence_ceb ?? '-';
-      const dec = st.decision || st.decision_pastorale || '-';
+      let dec = st.decision || st.decision_pastorale || st.decision_finale || '-';
+      if (typeof dec === 'string' && dec.trim().toLowerCase() === 'abandon') {
+        dec = 'Abandon';
+      }
 
       return {
         ...st,

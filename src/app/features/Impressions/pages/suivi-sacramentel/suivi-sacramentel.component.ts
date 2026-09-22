@@ -142,6 +142,22 @@ export class SuiviSacramentelPrintComponent implements OnInit {
     }
   });
 
+  public readonly emptyColsCount = computed(() => {
+    switch (this.selectedSacrament()) {
+      case 'confirmation':
+        return 10;
+      case 'bapteme':
+        return 11;
+      case 'communion':
+      default:
+        return 12;
+    }
+  });
+
+  public readonly emptyColsArray = computed(() => {
+    return Array.from({ length: this.emptyColsCount() });
+  });
+
   // Liste des candidats réels depuis la BD : Uniquement si une classe est sélectionnée
   public readonly studentsList = computed(() => {
     const clId = this.selectedClasseId();

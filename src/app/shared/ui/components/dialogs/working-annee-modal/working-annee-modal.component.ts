@@ -39,6 +39,12 @@ export class WorkingAnneeModalComponent {
     this.searchQuery.set(target.value);
   }
 
+  protected isSelectedAnnee(annee: AnneeCatechese): boolean {
+    const current = this.currentWorkingAnnee() || this.workingAnneeService.activeAnnee();
+    if (!current) return false;
+    return String(current.id) === String(annee.id);
+  }
+
   protected selectAnnee(annee: AnneeCatechese): void {
     this.workingAnneeService.setWorkingAnnee(annee);
   }

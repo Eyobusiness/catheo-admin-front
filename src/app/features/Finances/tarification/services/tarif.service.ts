@@ -107,9 +107,8 @@ export class TarifService {
     return this.http.put<unknown>(`${this.baseUrl}/${id}`, dto).pipe(
       map(res =>
         this.normalizeTarif(extractItemData(res), {
-          ...dto,
           id,
-          ...this.tarifs().find(t => t.id === id)
+          ...dto
         })
       ),
       tap(updated => {
@@ -191,8 +190,18 @@ export class TarifService {
     const fb = fallback as Record<string, unknown>;
 
     const typeTarif = (this.pickString(item['type_tarif'], fb['type_tarif']) as TypeTarif) || 'autre';
-    const rawNiveaux = (item['niveaux'] as any[]) || (fb['niveaux'] as any[]) || [];
-    const niveauIds = Array.isArray(rawNiveaux) ? rawNiveaux.map(n => n.id || n.uuid).filter(Boolean) : (fb['niveau_ids'] as string[]) || [];
+    const rawNiveaux = Array.isArray(item['niveaux']) ? (item['niveaux'] as any[]) : (Array.isArray(fb['niveaux']) ? (fb['niveaux'] as any[]) : []);
+    const niveauIds = Array.isArray(rawNiveaux) && rawNiveaux.length > 0
+      ? rawNiveaux.map(n => n.id || n.uuid).filter(Boolean)
+      : (Array.isArray(item['niveau_ids']) ? (item['niveau_ids'] as string[]) : (Array.isArray(fb['niveau_ids']) ? (fb['niveau_ids'] as string[]) : []));
+
+    let niveau = item['niveau'] !== undefined ? (item['niveau'] as any) : (fb['niveau'] as any);
+    let niveauId = item['niveau_id'] !== undefined ? this.optionalString(item['niveau_id']) : this.optionalString(fb['niveau_id']);
+
+    if (Array.isArray(item['niveaux']) && item['niveaux'].length === 0 && (item['niveau_id'] === null || item['niveau_id'] === undefined)) {
+      niveau = null;
+      niveauId = undefined;
+    }
 
     return {
       id: this.pickString(item['id'], item['uuid'], fb['id']) || '',
@@ -200,12 +209,15 @@ export class TarifService {
       montant: typeof item['montant'] === 'number' ? item['montant'] : (typeof fb['montant'] === 'number' ? fb['montant'] : 0),
       type_tarif: typeTarif,
       description: this.optionalString(item['description']) ?? (fb['description'] as string | undefined),
-      est_obligatoire: this.coerceBoolean(item['est_obligatoire'] ?? item['paiement_obligatoire'], (fb['est_obligatoire'] as boolean | undefined) ?? false),
+      est_obligatoire: this.coerceBoolean(
+        item['est_obligatoire'] !== undefined ? item['est_obligatoire'] : (item['paiement_obligatoire'] !== undefined ? item['paiement_obligatoire'] : fb['est_obligatoire']),
+        false
+      ),
       statut: (item['statut'] as TarifDto['statut']) || (fb['statut'] as TarifDto['statut']) || 'actif',
       annee_catechese_id: this.pickString(item['annee_catechese_id'], fb['annee_catechese_id']),
       annee_catechese: (item['annee_catechese'] as any) || (fb['annee_catechese'] as any),
-      niveau_id: this.pickString(item['niveau_id'], fb['niveau_id']),
-      niveau: (item['niveau'] as any) || (fb['niveau'] as any),
+      niveau_id: niveauId,
+      niveau: niveau,
       niveaux: rawNiveaux,
       niveau_ids: niveauIds,
       created_at: this.optionalString(item['created_at']) ?? (fb['created_at'] as string | undefined),

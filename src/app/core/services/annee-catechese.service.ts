@@ -1,6 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, catchError, of, tap, throwError } from 'rxjs';
+import { Observable, catchError, map, of, tap, throwError } from 'rxjs';
 import { AnneeCatechese, CreateAnneeCatecheseDto, UpdateAnneeCatecheseDto } from '../models/annee-catechese.model';
 import { ToastService } from './toast.service';
 import { environment } from '../../environments/environment';
@@ -61,14 +61,13 @@ export class AnneeCatecheseService {
   public getAll(): Observable<AnneeCatechese[]> {
     this.isLoading.set(true);
     return this.http.get<any>(this.baseUrl).pipe(
-      tap(res => {
+      map(res => {
         const rawList = extractArray(res);
-        if (rawList.length > 0) {
-          const list = rawList.map(normalizeAnnee);
-          this.annees.set(list);
-          this.activeAnnee.set(list.find(a => a.est_active || a.statut === 'active') || null);
-        }
+        const list = rawList.map(normalizeAnnee);
+        this.annees.set(list);
+        this.activeAnnee.set(list.find(a => a.est_active || a.statut === 'active') || null);
         this.isLoading.set(false);
+        return list;
       }),
       catchError(() => {
         this.isLoading.set(false);

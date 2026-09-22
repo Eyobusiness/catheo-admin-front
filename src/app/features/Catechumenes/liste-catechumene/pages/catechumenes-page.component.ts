@@ -289,12 +289,14 @@ export class CatechumenesPageComponent implements OnInit {
       this.catechumeneService.update(target.id, event.dto as UpdateCatechumeneDto, event.ceb).subscribe({
         next: () => {
           this.closeModals();
+          this.catechumeneService.getAll().subscribe();
         }
       });
     } else {
       this.catechumeneService.create(event.dto as CreateCatechumeneDto, event.ceb).subscribe({
         next: () => {
           this.closeModals();
+          this.catechumeneService.getAll().subscribe();
         }
       });
     }

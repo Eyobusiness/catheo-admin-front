@@ -98,7 +98,7 @@
             <th class="th-phone" rowspan="2">CONTACTS</th>
             <th class="th-moy" rowspan="2">MOYENNE</th>
             <th colspan="4" class="th-presences-group">NOMBRE DE PRÉSENCES</th>
-            <th class="th-decision" rowspan="2">DÉCISION DU CONSEIL</th>
+            <th class="th-decision" rowspan="2">DÉCISION</th>
           </tr>
           <tr class="sub-cols-row">
             <th class="th-sub-col">Cours</th>
@@ -113,12 +113,12 @@
               <td class="td-num">{{ st.num }}</td>
               <td class="td-name font-bold">{{ st.nomPrenoms }}</td>
               <td class="td-phone">{{ st.telephone }}</td>
-              <td class="td-moy"></td>
-              <td class="td-pres"></td>
-              <td class="td-pres"></td>
-              <td class="td-pres"></td>
-              <td class="td-pres"></td>
-              <td class="td-decision"></td>
+              <td class="td-moy">{{ st.moyenne }}</td>
+              <td class="td-pres">{{ st.presences_cours }}</td>
+              <td class="td-pres">{{ st.presences_messe }}</td>
+              <td class="td-pres">{{ st.presences_mouvement }}</td>
+              <td class="td-pres">{{ st.presences_ceb }}</td>
+              <td class="td-decision">{{ st.decision }}</td>
             </tr>
           }
           @if (emptyPaddingRows().length > 0) {

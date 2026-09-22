@@ -37,7 +37,7 @@
                 </div>
                 <div class="student-meta">
                   <span class="student-name">{{ item.catechumene?.nom }} {{ item.catechumene?.prenoms }}</span>
-                  <span class="student-sub">Matricule: {{ item.catechumene?.code_catechumene }}</span>
+                  <span class="student-sub">Matricule : {{ item.catechumene?.matricule || item.matricule || item.catechumene?.code_catechumene || item.code_catechumene || 'N/A' }}</span>
                 </div>
               </div>
             </td>

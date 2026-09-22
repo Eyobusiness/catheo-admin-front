@@ -342,7 +342,7 @@ export class PremiereCommunionPageComponent implements OnInit {
   public confirmDelete(): void {
     const cat = this.selectedCatechumene();
     if (cat) {
-      this.service.removeCandidate(cat.id);
+      this.service.removeCandidate(cat.id, 'Première Communion');
       this.toastService.info('Candidat retiré', `Candidat retiré du registre de préparation à la Première Communion.`);
     }
     this.isDeleteModalOpen.set(false);

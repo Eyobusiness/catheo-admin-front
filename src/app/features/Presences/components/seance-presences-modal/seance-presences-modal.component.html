@@ -31,6 +31,16 @@
       </div>
     </div>
 
+    @if (isLocked()) {
+      <div class="alert alert-warning d-flex align-items-center gap-2 mb-3" role="alert" style="background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 12px 16px; border-radius: 8px;">
+        <i class="bi bi-lock-fill fs-5" style="color: #dc2626;"></i>
+        <div>
+          <strong>PÉRIODE CLÔTURÉE / BILAN VALIDÉ :</strong>
+          <span> {{ lockMessage }}</span>
+        </div>
+      </div>
+    }
+
     <!-- Quick Actions Toolbar -->
     <div class="presences-toolbar">
       <!-- Search Input -->
@@ -50,6 +60,7 @@
         <button
           type="button"
           class="btn-quick-check all-present"
+          [disabled]="isLocked()"
           (click)="setAllStatus(true)"
           title="Marquer tous les élèves comme présents"
         >
@@ -60,6 +71,7 @@
         <button
           type="button"
           class="btn-quick-check all-absent"
+          [disabled]="isLocked()"
           (click)="setAllStatus(false)"
           title="Marquer tous les élèves comme absents"
         >
@@ -109,8 +121,9 @@
                     class="status-toggle-btn"
                     [class.is-present]="entry.est_present"
                     [class.is-absent]="!entry.est_present"
+                    [disabled]="isLocked()"
                     (click)="togglePresence(entry)"
-                    [title]="entry.est_present ? 'Cliquer pour marquer Absent' : 'Cliquer pour marquer Présent'"
+                    [title]="isLocked() ? lockMessage : (entry.est_present ? 'Cliquer pour marquer Absent' : 'Cliquer pour marquer Présent')"
                   >
                     @if (entry.est_present) {
                       <i class="bi bi-check-circle-fill"></i>
@@ -131,6 +144,7 @@
                         class="motif-control"
                         placeholder="Motif (ex: Maladie, Voyage...)"
                         [value]="entry.motif_absence"
+                        [disabled]="isLocked()"
                         (input)="updateMotif(entry, $any($event.target).value)"
                       />
                     </div>
@@ -167,7 +181,7 @@
         type="button"
         variant="primary"
         [loading]="isLoading()"
-        [disabled]="entries().length === 0 || isLoading()"
+        [disabled]="entries().length === 0 || isLoading() || isLocked()"
         (clicked)="onSubmit()"
       >
         <i class="bi bi-cloud-check-fill"></i>

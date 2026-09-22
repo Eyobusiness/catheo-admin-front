@@ -1,4 +1,4 @@
-export type DecisionStatus = 'Admis' | 'Non admis' | 'Ajourné';
+export type DecisionStatus = 'Admis' | 'Non admis' | 'Ajourné' | 'Abandon';
 
 export interface BilanAnnuelItem {
   catechumeneId: string;

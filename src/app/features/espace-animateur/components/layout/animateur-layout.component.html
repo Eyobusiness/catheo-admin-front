@@ -1,0 +1,203 @@
+<div class="mobile-app-container">
+  <!-- 1. En-tête Mobile Compact -->
+  <header class="mobile-top-header">
+    <div class="header-left">
+      <button
+        type="button"
+        class="icon-btn menu-toggle-btn"
+        (click)="toggleDrawer($event)"
+        aria-label="Ouvrir le menu de navigation"
+      >
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
+
+      <a routerLink="/animateur/dashboard" class="brand-link">
+        <img [src]="brandLogoUrl" alt="Logo Catheo" class="brand-logo" />
+        <div class="brand-text-wrap">
+          <span class="brand-title">CATHÉO</span>
+          <span class="brand-badge">CATÉCHISTE</span>
+        </div>
+      </a>
+    </div>
+
+    <div class="header-right">
+      @if (anneePastorale()) {
+        <span class="annee-pill">
+          {{ anneePastorale()?.libelle }}
+        </span>
+      }
+
+      <a routerLink="/animateur/profil" class="profile-avatar-btn" aria-label="Mon Profil">
+        <span class="avatar-initials">{{ userInitials() }}</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- 2. Menu Tiroir Coulissant (Drawer) -->
+  @if (isDrawerOpen()) {
+    <div class="drawer-backdrop" (click)="closeDrawer()"></div>
+    <aside class="drawer-content" role="dialog" aria-label="Menu principal">
+      <div class="drawer-header">
+        <div class="drawer-user-info">
+          <div class="drawer-avatar">{{ userInitials() }}</div>
+          <div class="drawer-user-text">
+            <div class="drawer-user-name">{{ displayName() }}</div>
+            <div class="drawer-user-num">{{ profile()?.telephone }}</div>
+          </div>
+        </div>
+        <button type="button" class="drawer-close-btn" (click)="closeDrawer()" aria-label="Fermer le menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <nav class="drawer-nav">
+        <div class="drawer-nav-section">ESPACE PASTORAL</div>
+
+        <a routerLink="/animateur/dashboard" routerLinkActive="active" (click)="closeDrawer()" class="drawer-item">
+          <span class="item-icon">🏠</span>
+          <span class="item-label">Tableau de bord</span>
+        </a>
+
+        <a routerLink="/animateur/ma-classe" routerLinkActive="active" (click)="closeDrawer()" class="drawer-item">
+          <span class="item-icon">🏫</span>
+          <span class="item-label">Ma classe</span>
+        </a>
+
+        <!-- <a routerLink="/animateur/catechumenes" routerLinkActive="active" (click)="closeDrawer()" class="drawer-item">
+          <span class="item-icon">👥</span>
+          <span class="item-label">Mes catéchumènes</span>
+        </a> -->
+
+        <!-- <a routerLink="/animateur/presences" routerLinkActive="active" (click)="closeDrawer()" class="drawer-item">
+          <span class="item-icon">✓</span>
+          <span class="item-label">Appel & Présences</span>
+        </a> -->
+
+        <a routerLink="/animateur/evaluations" routerLinkActive="active" (click)="closeDrawer()" class="drawer-item">
+          <span class="item-icon">📝</span>
+          <span class="item-label">Évaluations & Notes</span>
+        </a>
+
+        <a routerLink="/animateur/seances" routerLinkActive="active" (click)="closeDrawer()" class="drawer-item">
+          <span class="item-icon">📅</span>
+          <span class="item-label">Séances & Présences</span>
+        </a>
+
+        <a routerLink="/animateur/bilan" routerLinkActive="active" (click)="closeDrawer()" class="drawer-item">
+          <span class="item-icon">📊</span>
+          <span class="item-label">Bilan Annuel</span>
+        </a>
+
+        <div class="drawer-nav-section">COMPTE & SÉCURITÉ</div>
+
+        <a routerLink="/animateur/profil" routerLinkActive="active" (click)="closeDrawer()" class="drawer-item">
+          <span class="item-icon">👤</span>
+          <span class="item-label">Mon profil</span>
+        </a>
+
+        <a routerLink="/animateur/profil/mot-de-passe" routerLinkActive="active" (click)="closeDrawer()" class="drawer-item">
+          <span class="item-icon">🔒</span>
+          <span class="item-label">Changer de mot de passe</span>
+        </a>
+
+        <!-- Installation PWA Mobile -->
+        <app-pwa-install-button displayMode="drawer-item" />
+
+        <button type="button" class="drawer-item logout-item" (click)="onLogout()">
+          <span class="item-icon">🚪</span>
+          <span class="item-label">Déconnexion</span>
+        </button>
+      </nav>
+    </aside>
+  }
+
+  <!-- 3. Contenu Principal Défilable -->
+  <main class="mobile-main-viewport">
+    <router-outlet />
+  </main>
+
+  <!-- 4. Navigation Basse Fixe (Bottom Navigation Bar) -->
+  <nav class="mobile-bottom-nav">
+    <a
+      routerLink="/animateur/dashboard"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="bottom-nav-item"
+    >
+      <span class="b-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+      </span>
+      <span class="b-label">Accueil</span>
+    </a>
+
+    <a
+      routerLink="/animateur/catechumenes"
+      routerLinkActive="active"
+      class="bottom-nav-item"
+    >
+      <span class="b-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+      </span>
+      <span class="b-label">Élèves</span>
+    </a>
+
+    <a
+      routerLink="/animateur/seances"
+      routerLinkActive="active"
+      class="bottom-nav-item"
+    >
+      <span class="b-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      </span>
+      <span class="b-label">Séances</span>
+    </a>
+
+    <a
+      routerLink="/animateur/evaluations"
+      routerLinkActive="active"
+      class="bottom-nav-item"
+    >
+      <span class="b-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+          <polyline points="10 9 9 9 8 9"></polyline>
+        </svg>
+      </span>
+      <span class="b-label">Notes</span>
+    </a>
+
+    <a
+      routerLink="/animateur/profil"
+      routerLinkActive="active"
+      class="bottom-nav-item"
+    >
+      <span class="b-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+      </span>
+      <span class="b-label">Profil</span>
+    </a>
+  </nav>
+</div>

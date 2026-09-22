@@ -83,7 +83,7 @@ export class BilanAnnuelPageComponent implements OnInit {
   public readonly isValidateModalOpen = signal(false);
   public readonly isUnlockModalOpen = signal(false);
 
-  public readonly optionsDecision: DecisionStatus[] = ['Admis', 'Non admis', 'Ajourné'];
+  public readonly optionsDecision: DecisionStatus[] = ['Admis', 'Non admis', 'Ajourné', 'Abandon'];
 
   // Listes en cascade
   public readonly filteredNiveaux = computed(() => {
@@ -281,9 +281,11 @@ export class BilanAnnuelPageComponent implements OnInit {
     const admis = list.filter(b => b.decision === 'Admis').length;
     const nonAdmis = list.filter(b => b.decision === 'Non admis').length;
     const ajournes = list.filter(b => b.decision === 'Ajourné').length;
-    const tauxReussite = total > 0 ? parseFloat(((admis / total) * 100).toFixed(1)) : 0;
+    const abandons = list.filter(b => b.decision === 'Abandon').length;
+    const presents = total - abandons;
+    const tauxReussite = presents > 0 ? parseFloat(((admis / presents) * 100).toFixed(1)) : 0;
 
-    return { total, admis, nonAdmis, ajournes, tauxReussite };
+    return { total, admis, nonAdmis, ajournes, abandons, tauxReussite };
   });
 
   public ngOnInit(): void {

@@ -37,14 +37,22 @@
               @if (item.niveaux && item.niveaux.length > 0) {
                 <div class="niveaux-badges-flex">
                   @for (niv of item.niveaux; track niv.id) {
-                    <span class="niveau-badge">
-                      <i class="bi bi-layers-fill"></i> {{ niv.nom }}
+                    <span class="niveau-badge" [title]="niv.section ? (niv.nom + ' - ' + niv.section.nom) : niv.nom">
+                      <i class="bi bi-layers-fill"></i>
+                      <span>{{ niv.nom }}</span>
+                      @if (niv.section; as sec) {
+                        <small class="niveau-badge-sec">({{ sec.nom }})</small>
+                      }
                     </span>
                   }
                 </div>
               } @else if (item.niveau; as niv) {
-                <span class="niveau-badge">
-                  <i class="bi bi-layers-fill"></i> {{ niv.nom }}
+                <span class="niveau-badge" [title]="niv.section ? (niv.nom + ' - ' + niv.section.nom) : niv.nom">
+                  <i class="bi bi-layers-fill"></i>
+                  <span>{{ niv.nom }}</span>
+                  @if (niv.section; as sec) {
+                    <small class="niveau-badge-sec">({{ sec.nom }})</small>
+                  }
                 </span>
               } @else {
                 <span class="niveau-badge all">

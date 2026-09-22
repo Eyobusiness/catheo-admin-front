@@ -10,6 +10,7 @@ export interface Classe {
   statut: ClasseStatut;
   niveau_id?: string;
   niveau?: NiveauDto;
+  niveau_nom?: string;
   annee_catechese_id?: string;
   annee_catechese?: AnneeCatechese;
   effectif_actuel?: number;

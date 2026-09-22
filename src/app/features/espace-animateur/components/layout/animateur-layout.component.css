@@ -1,0 +1,365 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  background-color: var(--bg-app, #f8fafc);
+  color: var(--text-primary, #0f172a);
+}
+
+.mobile-app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* ==========================================================================
+   1. TOP HEADER MOBILE
+   ========================================================================== */
+.mobile-top-header {
+  position: sticky;
+  top: 0;
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 60px;
+  padding: 0 1rem;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.menu-toggle-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md, 10px);
+  color: var(--neutral-700, #334155);
+  background: var(--neutral-100, #f1f5f9);
+  transition: all var(--transition-fast, 150ms);
+}
+
+.menu-toggle-btn:active {
+  background: var(--neutral-200, #e2e8f0);
+  transform: scale(0.95);
+}
+
+.brand-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+}
+
+.brand-logo {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.brand-text-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.brand-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--primary-700, #0369a1);
+  line-height: 1.1;
+}
+
+.brand-badge {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--primary-600, #0284c7);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.annee-pill {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 0.25rem 0.5rem;
+  background: var(--primary-50, #eff6ff);
+  color: var(--primary-700, #0369a1);
+  border: 1px solid var(--primary-200, #bfdbfe);
+  border-radius: var(--radius-full, 9999px);
+  white-space: nowrap;
+}
+
+.profile-avatar-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary-600, #0284c7), var(--accent-600, #4f46e5));
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
+  text-decoration: none;
+}
+
+/* ==========================================================================
+   2. TIROIR LATÉRAL (DRAWER)
+   ========================================================================== */
+.drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(4px);
+  animation: fadeIn 200ms ease;
+}
+
+.drawer-content {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: min(82vw, 320px);
+  z-index: 1060;
+  background: #ffffff;
+  box-shadow: var(--shadow-xl);
+  display: flex;
+  flex-direction: column;
+  animation: slideIn 250ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideIn {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.drawer-header {
+  padding: 1.25rem 1rem;
+  background: linear-gradient(135deg, var(--primary-700, #0369a1), var(--primary-900, #0c4a6e));
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.drawer-user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  overflow: hidden;
+}
+
+.drawer-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.drawer-user-text {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.drawer-user-name {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.drawer-user-num {
+  font-size: 0.75rem;
+  opacity: 0.85;
+  font-family: var(--font-family-mono);
+}
+
+.drawer-close-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.drawer-nav {
+  padding: 1rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.drawer-nav-section {
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--neutral-400, #94a3b8);
+  padding: 0.75rem 0.75rem 0.25rem;
+}
+
+.drawer-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: var(--radius-md, 10px);
+  color: var(--neutral-700, #334155);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all var(--transition-fast, 150ms);
+}
+
+.drawer-item:hover, .drawer-item:active {
+  background: var(--neutral-100, #f1f5f9);
+}
+
+.drawer-item.active {
+  background: var(--primary-50, #eff6ff);
+  color: var(--primary-700, #0369a1);
+}
+
+.item-icon {
+  font-size: 1.15rem;
+  width: 24px;
+  text-align: center;
+}
+
+.logout-item {
+  width: 100%;
+  text-align: left;
+  color: var(--danger-600, #dc2626);
+  margin-top: auto;
+}
+
+.logout-item:hover {
+  background: var(--danger-50, #fef2f2);
+}
+
+/* ==========================================================================
+   3. VIEWPORT PRINCIPAL
+   ========================================================================== */
+.mobile-main-viewport {
+  flex: 1;
+  width: 100%;
+  max-width: 768px;
+  margin: 0 auto;
+  padding: 1rem 1rem calc(68px + env(safe-area-inset-bottom, 0px) + 1.25rem) 1rem;
+}
+
+/* ==========================================================================
+   4. NAVIGATION BASSE FIXE (BOTTOM NAV)
+   ========================================================================== */
+.mobile-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 950;
+  height: calc(64px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid var(--border-color, #e2e8f0);
+  box-shadow: 0 -4px 12px rgba(15, 23, 42, 0.04);
+  display: flex;
+  align-items: stretch;
+  justify-content: space-around;
+  max-width: 768px;
+  margin: 0 auto;
+}
+
+.bottom-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  color: var(--neutral-500, #64748b);
+  text-decoration: none;
+  padding: 0.375rem 0;
+  transition: all var(--transition-fast, 150ms);
+  position: relative;
+}
+
+.bottom-nav-item .b-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--transition-fast, 150ms);
+}
+
+.bottom-nav-item .b-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.bottom-nav-item.active {
+  color: var(--primary-600, #0284c7);
+}
+
+.bottom-nav-item.active .b-icon {
+  transform: translateY(-2px);
+}
+
+.bottom-nav-item.active .b-label {
+  font-weight: 700;
+}
+
+.bottom-nav-item.active::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  width: 28px;
+  height: 3px;
+  background: var(--primary-600, #0284c7);
+  border-radius: 0 0 var(--radius-full, 9999px) var(--radius-full, 9999px);
+}
+
+@media (min-width: 769px) {
+  .mobile-bottom-nav {
+    left: 50%;
+    transform: translateX(-50%);
+    border-left: 1px solid var(--border-color, #e2e8f0);
+    border-right: 1px solid var(--border-color, #e2e8f0);
+    border-radius: var(--radius-lg, 14px) var(--radius-lg, 14px) 0 0;
+  }
+}

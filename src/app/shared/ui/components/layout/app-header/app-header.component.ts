@@ -38,6 +38,7 @@ export class AppHeader implements OnInit {
   public readonly searchResults = signal<CatechumeneDto[]>([]);
   public readonly isSearching = signal<boolean>(false);
   public readonly showSearchResults = signal<boolean>(false);
+  public readonly isMobileSearchOpen = signal<boolean>(false);
   private readonly searchSubject = new Subject<string>();
 
   // Année pastorale de travail
@@ -142,6 +143,7 @@ export class AppHeader implements OnInit {
       }
     } else if (event.key === 'Escape') {
       this.showSearchResults.set(false);
+      this.isMobileSearchOpen.set(false);
     }
   }
 
@@ -155,6 +157,7 @@ export class AppHeader implements OnInit {
     const notifContainer = this.elementRef.nativeElement.querySelector('.notifications-menu-container');
     const userMenuContainer = this.elementRef.nativeElement.querySelector('.user-menu-container');
     const searchContainer = this.elementRef.nativeElement.querySelector('.header-search');
+    const mobileSearchOverlay = this.elementRef.nativeElement.querySelector('.mobile-search-overlay');
 
     if (this.showNotifications() && notifContainer && !notifContainer.contains(target)) {
       this.showNotifications.set(false);
@@ -167,6 +170,23 @@ export class AppHeader implements OnInit {
     if (this.showSearchResults() && searchContainer && !searchContainer.contains(target)) {
       this.showSearchResults.set(false);
     }
+
+    if (this.isMobileSearchOpen() && mobileSearchOverlay && !mobileSearchOverlay.contains(target) && !target.closest('.mobile-search-btn')) {
+      this.closeMobileSearch();
+    }
+  }
+
+  public openMobileSearch(): void {
+    this.isMobileSearchOpen.set(true);
+    setTimeout(() => {
+      const input = this.elementRef.nativeElement.querySelector('.mobile-search-input') as HTMLInputElement;
+      input?.focus();
+    }, 60);
+  }
+
+  public closeMobileSearch(): void {
+    this.isMobileSearchOpen.set(false);
+    this.clearSearch();
   }
 
   protected onSearchInput(event: Event): void {
@@ -193,6 +213,7 @@ export class AppHeader implements OnInit {
       event.stopPropagation();
     }
     this.showSearchResults.set(false);
+    this.isMobileSearchOpen.set(false);
     this.router.navigate(['/catechumenes'], {
       queryParams: { id: cat.id, matricule: cat.matricule }
     });

@@ -132,7 +132,7 @@
       <div class="kpi-card warning">
         <div class="kpi-icon"><i class="bi bi-door-open-fill"></i></div>
         <div class="kpi-body">
-          <span class="kpi-val">{{ b.synthese.classes }}</span>
+          <span class="kpi-val">{{ totalClassesCount() }}</span>
           <span class="kpi-title">Classes de Catéchèse</span>
           <span class="kpi-sub">{{ b.synthese.sections }} sections / {{ b.synthese.niveaux }} niveaux</span>
         </div>
@@ -316,6 +316,7 @@
                 <th class="text-center">Effectif Inscrit</th>
                 <th class="text-center">Admis / Promus</th>
                 <th class="text-center">Ajournés</th>
+                <th class="text-center">Abandons</th>
                 <th class="text-center">En attente</th>
                 <th class="text-end">Taux de Réussite</th>
               </tr>
@@ -332,6 +333,7 @@
                   <td class="text-center">{{ p.effectif_inscrit }}</td>
                   <td class="text-center text-success font-bold">{{ p.admis }}</td>
                   <td class="text-center text-danger">{{ p.ajournes }}</td>
+                  <td class="text-center text-warning font-bold">{{ p.abandons ?? p.abandon ?? 0 }}</td>
                   <td class="text-center text-muted">{{ p.en_attente }}</td>
                   <td class="text-end">
                     <span class="success-pill">
@@ -368,24 +370,62 @@
         </div>
       </app-card>
 
-      <!-- Par Classe -->
-      <app-card title="Effectifs et Occupation des Classes">
-        <div class="classes-report-list">
-          @for (cl of b.effectifs.par_classe; track cl.classe_id) {
-            <div class="class-report-item">
-              <div class="cl-info">
-                <span class="cl-name">{{ cl.classe_nom }}</span>
-                <span class="cl-sub">{{ cl.niveau_nom }} — {{ cl.section_nom }}</span>
+      <!-- Effectif par Classe de Catéchèse (Identique au Tableau de Bord) -->
+      <app-card title="Effectif par Classe de Catéchèse">
+        <span card-actions class="card-count-badge">
+          <i class="bi bi-door-open-fill"></i>
+          {{ totalClassesCount() }} classe(s)
+        </span>
+        <div class="classes-occupation-list">
+          @for (cl of displayedClasses(); track cl.classe_id) {
+            <div class="class-occ-item">
+              <div class="class-occ-header">
+                <span class="class-title">
+                  {{ cl.classe_nom }}
+                  @if (cl.niveau_nom && cl.section_nom) {
+                    <small>({{ cl.niveau_nom }} - {{ cl.section_nom }})</small>
+                  } @else if (cl.niveau_nom || cl.section_nom) {
+                    <small>({{ cl.niveau_nom || cl.section_nom }})</small>
+                  }
+                </span>
+                <span class="class-numbers">
+                  <strong>{{ cl.effectif }}</strong>
+                  @if (cl.capacite_max) {
+                    / {{ cl.capacite_max }} élèves
+                  } @else {
+                    élève(s)
+                  }
+                </span>
               </div>
-              <div class="cl-metrics">
-                <span class="cl-count"><strong>{{ cl.effectif }}</strong> élève(s)</span>
-                @if (cl.taux_remplissage !== undefined) {
-                  <span class="cl-taux">{{ cl.taux_remplissage }}%</span>
-                }
+              <div class="class-occ-track">
+                <div
+                  class="class-occ-fill"
+                  [style.width.%]="cl.pourcentage !== undefined ? cl.pourcentage : getClassOccupancy(cl.effectif, cl.capacite_max)"
+                  [class.full]="(cl.pourcentage || getClassOccupancy(cl.effectif, cl.capacite_max)) >= 95"
+                  [class.medium]="(cl.pourcentage || getClassOccupancy(cl.effectif, cl.capacite_max)) < 95 && (cl.pourcentage || getClassOccupancy(cl.effectif, cl.capacite_max)) >= 75"
+                ></div>
               </div>
             </div>
+          } @empty {
+            <p class="empty-hint">Aucune classe répertoriée pour cette année pastorale.</p>
           }
         </div>
+
+        @if (totalClassesCount() > 5) {
+          <button
+            type="button"
+            class="btn-toggle-view"
+            (click)="toggleShowAllClasses()"
+          >
+            @if (showAllClasses()) {
+              <i class="bi bi-chevron-up"></i>
+              <span>Voir moins</span>
+            } @else {
+              <i class="bi bi-chevron-down"></i>
+              <span>Voir plus (+{{ totalClassesCount() - 5 }})</span>
+            }
+          </button>
+        }
       </app-card>
     </div>
 

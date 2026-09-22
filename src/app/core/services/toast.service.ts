@@ -18,6 +18,14 @@ export class ToastService {
   public readonly toasts = this._toasts.asReadonly();
 
   public show(type: ToastType, title: string, message: string, duration = 4000): void {
+    // Eviter d'empiler plusieurs toasts identiques simultanement
+    const isDuplicate = this._toasts().some(
+      t => t.title === title && t.message === message
+    );
+    if (isDuplicate) {
+      return;
+    }
+
     const id = `toast-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
     const newToast: ToastMessage = { id, type, title, message, duration };
 

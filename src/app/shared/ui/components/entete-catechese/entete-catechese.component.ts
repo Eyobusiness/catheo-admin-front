@@ -23,6 +23,7 @@ export class EnteteCatecheseComponent implements OnInit {
   public readonly anneePastorale = input<string>('');
   public readonly classeNom = input<string>('');
   public readonly showBorder = input<boolean>(true);
+  public readonly logoSize = input<'sm' | 'md' | 'lg'>('lg');
 
   public ngOnInit(): void {
     if (!this.paroisseConfig()?.nom_paroisse && !this.paroisseConfig()?.nom) {

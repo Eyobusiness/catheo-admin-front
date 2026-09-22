@@ -1,0 +1,96 @@
+<div class="notes-grid-viewport">
+  <!-- En-tête -->
+  <div class="page-top-nav">
+    <a routerLink="/animateur/evaluations" class="back-link-btn">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+      <span>Évaluations</span>
+    </a>
+    <h1 class="page-title">Saisie des Notes</h1>
+  </div>
+
+  @if (isLoading()) {
+    <div class="loading-state-card">
+      <div class="spinner-primary"></div>
+      <!-- <p>Chargement de la grille des notes...</p> -->
+    </div>
+  }
+
+  @else {
+    <!-- Carte récapitulative de l'évaluation -->
+    <div class="eval-header-card">
+      <div class="card-pills">
+        <span class="type-pill">{{ evaluation()?.type || 'Devoir' }}</span>
+        <span class="bareme-pill">Barème : / {{ bareme() }}</span>
+        <span class="coef-pill">Coef : × {{ evaluation()?.coefficient || 1 }}</span>
+      </div>
+
+      <h2 class="eval-name">{{ evaluation()?.nom }}</h2>
+
+      <!-- Barre d'avancement -->
+      <div class="progress-bar-wrap">
+        <div class="progress-info">
+          <span>Avancement de la saisie</span>
+          <strong>{{ statsSaisie().evalues }} / {{ statsSaisie().total }} noté(s)</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Liste de Saisie Mobile -->
+    <div class="students-notes-list">
+      @for (row of rows(); track row.catechumene_id) {
+        <article class="note-row-card" [class.card-has-error]="!!row.error">
+          <div class="student-info-col">
+            <span class="student-name">{{ row.nom }} {{ row.prenoms }}</span>
+            <span class="student-mat">{{ row.matricule || 'N/A' }}</span>
+          </div>
+
+          <div class="note-input-col">
+            <div class="input-with-bareme">
+              <input
+                type="text"
+                inputmode="decimal"
+                [value]="row.note !== null ? row.note : ''"
+                (input)="onNoteInput(row, $any($event.target).value)"
+                placeholder="—"
+                class="note-field"
+                [class.field-error]="!!row.error"
+              />
+              <span class="bareme-label">/ {{ bareme() }}</span>
+            </div>
+            @if (row.error) {
+              <span class="row-error-msg">{{ row.error }}</span>
+            }
+          </div>
+        </article>
+      } @empty {
+        <div class="empty-box">
+          <p>Aucun catéchumène trouvé pour cette classe.</p>
+        </div>
+      }
+    </div>
+
+    <!-- Bouton d'enregistrement -->
+    <div class="save-footer-area">
+      <button
+        type="button"
+        class="save-notes-btn"
+        [disabled]="isSaving() || rows().length === 0"
+        (click)="saveNotes()"
+      >
+        @if (isSaving()) {
+          <span class="spinner-white"></span>
+          <span>Enregistrement des notes...</span>
+        } @else {
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+            <polyline points="7 3 7 8 15 8"></polyline>
+          </svg>
+          <span>Enregistrer les notes</span>
+        }
+      </button>
+    </div>
+  }
+</div>

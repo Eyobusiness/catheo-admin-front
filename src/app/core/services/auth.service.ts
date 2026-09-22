@@ -1,4 +1,4 @@
-﻿import { Injectable, computed, inject, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, catchError, of, tap, throwError } from 'rxjs';
@@ -297,6 +297,12 @@ export class AuthService {
       }
     } catch {}
 
+    // Effacer l'ancienne annee de travail pour forcer l'annee active de la nouvelle paroisse connectee
+    try {
+      localStorage.removeItem('catheo_working_annee_id');
+      localStorage.removeItem('catheo_working_annee');
+    } catch {}
+
     // Demarrer la surveillance d'inactivite
     this.inactivityService.startTracking();
   }
@@ -314,6 +320,8 @@ export class AuthService {
       localStorage.removeItem(MENUS_KEY);
       localStorage.removeItem('menus');
       localStorage.removeItem('catheo_paroisse_favicon');
+      localStorage.removeItem('catheo_working_annee_id');
+      localStorage.removeItem('catheo_working_annee');
     } catch {}
   }
 

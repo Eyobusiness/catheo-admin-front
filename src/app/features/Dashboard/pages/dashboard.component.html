@@ -18,18 +18,18 @@
 
     <!-- Actions -->
     <div class="topbar-controls">
-      <app-button
+      <!-- <app-button
         variant="primary"
         size="md"
         icon="file-earmark-pdf"
         (clicked)="printRapportAnnuel()"
       >
         Rapport Annuel (PDF)
-      </app-button>
+      </app-button> -->
 
       <app-button
-        variant="ghost"
-        size="md"
+        variant="secondary"
+        size="md"  
         icon="arrow-clockwise"
         [loading]="isLoading()"
         (clicked)="refreshData()"

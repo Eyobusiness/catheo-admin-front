@@ -1,0 +1,155 @@
+<div class="dashboard-mobile-view">
+  <!-- 1. Salutation Pastorale -->
+  <section class="welcome-header">
+    <div class="welcome-text">
+      <span class="greeting-prefix">Espace Animateur</span>
+      <h1 class="greeting-title">Bonjour {{ displayName() }} 👋</h1>
+    </div>
+    <div class="welcome-badge">
+      <span class="pulse-dot"></span>
+      <span class="badge-text">Actif</span>
+    </div>
+  </section>
+
+  <!-- 2. État de Chargement -->
+  @if (isLoading()) {
+    <div class="loading-state-card">
+      <div class="spinner-primary"></div>
+      <!-- <p>Chargement des informations de votre classe...</p> -->
+    </div>
+  }
+
+  <!-- 3. Cas Sans Affectation (HTTP 404) -->
+  @else if (hasNoAffectation()) {
+    <section class="no-affectation-card" role="alert">
+      <div class="card-icon-wrap warning-icon">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+      </div>
+      <h2 class="card-title">Aucune affectation active</h2>
+      <p class="card-message">
+        Vous n'avez pas encore d'affectation active pour l'année catéchétique en cours. Veuillez contacter la coordination.
+      </p>
+      <button type="button" class="retry-btn" (click)="reload()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+        </svg>
+        <span>Actualiser</span>
+      </button>
+    </section>
+  }
+
+  <!-- 4. Erreur Éventuelle de Connexion -->
+  @else if (errorMessage()) {
+    <section class="error-state-card">
+      <p class="error-text">{{ errorMessage() }}</p>
+      <button type="button" class="retry-btn" (click)="reload()">
+        <span>Réessayer</span>
+      </button>
+    </section>
+  }
+
+  <!-- 5. Carte Héroïque Principale : MA CLASSE -->
+  @else if (classe()) {
+    <section class="hero-classe-card">
+      <div class="card-top-bar">
+        <span class="classe-kicker">Ma Classe</span>
+        @if (anneePastorale()) {
+          <span class="annee-tag">{{ anneePastorale()?.libelle }}</span>
+        }
+      </div>
+
+      <div class="classe-main-info">
+        <div class="classe-titles">
+          <h2 class="classe-name">{{ classe()?.nom }}</h2>
+          <p class="classe-hierarchy">
+            {{ section()?.nom }} • {{ niveau()?.nom }}
+          </p>
+        </div>
+
+        <div class="effectif-badge-box">
+          <span class="effectif-number">{{ effectif() }}</span>
+          <span class="effectif-label">Catéchumènes</span>
+        </div>
+      </div>
+
+      <!-- <div class="card-actions">
+        <a routerLink="/animateur/ma-classe" class="classe-detail-btn">
+          <span>Voir les détails de la classe</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </a>
+      </div> -->
+    </section>
+  }
+
+  <!-- 5.5 Carte d'installation PWA -->
+  <app-pwa-install-button displayMode="banner-card" />
+
+  <!-- 6. Section des Accès Rapides (Tuiles Tactiles) -->
+  <section class="quick-actions-section">
+    <h3 class="section-heading">ACTIONS RAPIDES</h3>
+
+    <div class="tiles-grid">
+      <!-- Tuile Catéchumènes -->
+      <a routerLink="/animateur/catechumenes" class="action-tile tile-blue">
+        <div class="tile-icon-box">
+          <span class="tile-icon">👥</span>
+        </div>
+        <div class="tile-content">
+          <h4 class="tile-title">Catéchumènes</h4>
+          <span class="tile-desc">Liste & Fiches élèves</span>
+        </div>
+      </a>
+
+      <!-- Tuile Présences / Appel -->
+      <a routerLink="/animateur/presences" class="action-tile tile-emerald">
+        <div class="tile-icon-box">
+          <span class="tile-icon">✓</span>
+        </div>
+        <div class="tile-content">
+          <h4 class="tile-title">Appel</h4>
+          <span class="tile-desc">Pointage présences</span>
+        </div>
+      </a>
+
+      <!-- Tuile Évaluations & Notes -->
+      <a routerLink="/animateur/evaluations" class="action-tile tile-indigo">
+        <div class="tile-icon-box">
+          <span class="tile-icon">📝</span>
+        </div>
+        <div class="tile-content">
+          <h4 class="tile-title">Notes</h4>
+          <span class="tile-desc">Saisie des devoirs</span>
+        </div>
+      </a>
+
+      <!-- Tuile Séances -->
+      <a routerLink="/animateur/seances" class="action-tile tile-amber">
+        <div class="tile-icon-box">
+          <span class="tile-icon">📅</span>
+        </div>
+        <div class="tile-content">
+          <h4 class="tile-title">Séances</h4>
+          <span class="tile-desc">Calendrier de classe</span>
+        </div>
+      </a>
+
+      <!-- Tuile Bilan Annuel -->
+      <a routerLink="/animateur/bilan" class="action-tile tile-rose">
+        <div class="tile-icon-box">
+          <span class="tile-icon">📊</span>
+        </div>
+        <div class="tile-content">
+          <h4 class="tile-title">Bilan Annuel</h4>
+          <span class="tile-desc">Délibérations & fin d'année</span>
+        </div>
+      </a>
+    </div>
+  </section>
+</div>

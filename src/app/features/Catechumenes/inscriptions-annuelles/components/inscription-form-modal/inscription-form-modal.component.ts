@@ -322,7 +322,10 @@ export class InscriptionFormModalComponent {
     this.isSubmitting.set(true);
 
     const val = this.nouvelleForm.getRawValue();
-    const currentAnnee = this.annees().find(a => a.est_active) || (this.annees().length > 0 ? this.annees()[0] : null);
+    const workingAnneeId = typeof window !== 'undefined' ? localStorage.getItem('catheo_working_annee_id') : null;
+    const currentAnnee = (workingAnneeId ? this.annees().find(a => a.id === workingAnneeId) : null)
+      || this.annees().find(a => a.est_active || a.statut === 'active')
+      || (this.annees().length > 0 ? this.annees()[0] : null);
 
     const catechumeneData: CreateCatechumeneDto = {
       nom: val.nom.trim(),
@@ -349,6 +352,10 @@ export class InscriptionFormModalComponent {
       nom_parrain: val.nom_parrain ? val.nom_parrain.trim() : undefined,
       telephone_parrain: val.telephone_parrain ? val.telephone_parrain.trim() : undefined,
       ceb_id: val.ceb_id || undefined,
+      section_id: val.section_id || undefined,
+      niveau_id: val.niveau_id || undefined,
+      classe_id: val.classe_id || undefined,
+      annee_catechese_id: currentAnnee ? currentAnnee.id : undefined,
       statut: 'actif'
     };
 
@@ -396,7 +403,10 @@ export class InscriptionFormModalComponent {
     this.isSubmitting.set(true);
 
     const val = this.reinscriptionForm.getRawValue();
-    const currentAnnee = this.annees().find(a => a.est_active) || (this.annees().length > 0 ? this.annees()[0] : null);
+    const workingAnneeId = typeof window !== 'undefined' ? localStorage.getItem('catheo_working_annee_id') : null;
+    const currentAnnee = (workingAnneeId ? this.annees().find(a => a.id === workingAnneeId) : null)
+      || this.annees().find(a => a.est_active || a.statut === 'active')
+      || (this.annees().length > 0 ? this.annees()[0] : null);
 
     const updateCatechumeneData: UpdateCatechumeneDto = {
       telephone: val.telephone ? val.telephone.trim() : undefined,

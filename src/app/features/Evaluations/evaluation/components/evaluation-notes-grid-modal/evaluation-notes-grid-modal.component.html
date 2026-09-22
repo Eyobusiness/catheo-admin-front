@@ -78,6 +78,16 @@
       </div>
     </div>
 
+    @if (isLocked()) {
+      <div class="alert alert-warning d-flex align-items-center gap-2 m-3 mb-0" role="alert" style="background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 12px 16px; border-radius: 8px;">
+        <i class="bi bi-lock-fill fs-5" style="color: #dc2626;"></i>
+        <div>
+          <strong>PÉRIODE CLÔTURÉE / BILAN VALIDÉ :</strong>
+          <span> {{ lockMessage }}</span>
+        </div>
+      </div>
+    }
+
     <!-- Body / Table -->
     <div class="modal-body p-0">
       @if (isLoading()) {
@@ -127,6 +137,7 @@
                         [class.is-invalid]="row.isInvalid"
                         [class.has-value]="row.note_obtenue !== null"
                         [value]="row.rawInput"
+                        [disabled]="isLocked()"
                         (input)="onNoteChange(row, $any($event.target).value)"
                         (keydown)="onNoteKeyDown($event, idx)"
                         placeholder="—"
@@ -154,11 +165,12 @@
                       type="text"
                       class="appreciation-field"
                       [(ngModel)]="row.appreciation"
+                      [disabled]="isLocked()"
                       placeholder="Observation facultative..."
                     />
                   </td>
                   <td class="col-action text-center">
-                    @if (row.note_obtenue !== null || row.rawInput !== '') {
+                    @if ((row.note_obtenue !== null || row.rawInput !== '') && !isLocked()) {
                       <button
                         type="button"
                         class="btn-clear-note"
@@ -199,7 +211,7 @@
           type="button"
           class="btn btn-primary"
           (click)="submitNotes()"
-          [disabled]="isSubmitting() || hasValidationErrors() || rows().length === 0"
+          [disabled]="isSubmitting() || hasValidationErrors() || rows().length === 0 || isLocked()"
         >
           @if (isSubmitting()) {
             <span class="spinner-border spinner-border-sm me-2"></span>

@@ -61,6 +61,14 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.avatar-box img.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
 .avatar-box.is-female {
@@ -87,16 +95,35 @@
   gap: 0.25rem;
 }
 
-.birth-cell {
-  display: flex;
-  flex-direction: column;
-  font-size: 0.8125rem;
-  color: var(--neutral-700);
+.class-pill, .level-pill, .unassigned-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  width: fit-content;
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
 }
 
-.birth-place {
-  font-size: 0.75rem;
+.class-pill {
+  background: rgba(147, 51, 234, 0.1);
+  color: #9333ea;
+  border: 1px solid rgba(147, 51, 234, 0.2);
+}
+
+.level-pill {
+  background: var(--primary-50);
+  color: var(--primary-700);
+  border: 1px solid var(--primary-200);
+}
+
+.unassigned-pill {
+  background: var(--neutral-100);
   color: var(--neutral-500);
+  border: 1px solid var(--neutral-200);
+  font-style: italic;
 }
 
 .contact-meta {

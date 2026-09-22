@@ -1,0 +1,316 @@
+:host {
+  display: block;
+}
+
+.catechumenes-viewport {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+}
+
+.page-top-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.back-link-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--primary-600, #0284c7);
+  text-decoration: none;
+  padding: 0.375rem 0.5rem;
+  border-radius: var(--radius-md, 10px);
+  background: var(--neutral-100, #f1f5f9);
+}
+
+.title-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.page-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--neutral-900, #0f172a);
+  margin: 0;
+}
+
+.count-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--primary-700, #0369a1);
+  background: var(--primary-50, #eff6ff);
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-full, 9999px);
+}
+
+.filters-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.search-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 0.875rem;
+  color: var(--neutral-400, #94a3b8);
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  height: 44px;
+  padding: 0 1rem 0 2.625rem;
+  border-radius: var(--radius-md, 10px);
+  border: 1.5px solid var(--border-color, #e2e8f0);
+  background: #ffffff;
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color var(--transition-fast, 150ms);
+}
+
+.search-input:focus {
+  border-color: var(--primary-600, #0284c7);
+}
+
+.pills-filter {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+}
+
+.pill-btn {
+  padding: 0.375rem 0.75rem;
+  border-radius: var(--radius-full, 9999px);
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: var(--neutral-100, #f1f5f9);
+  color: var(--neutral-600, #475569);
+  border: none;
+  white-space: nowrap;
+  transition: all var(--transition-fast, 150ms);
+}
+
+.pill-btn.active {
+  background: var(--primary-600, #0284c7);
+  color: #ffffff;
+}
+
+.students-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.student-card {
+  background: #ffffff;
+  border-radius: var(--radius-lg, 14px);
+  padding: 1rem;
+  border: 1px solid var(--border-color, #e2e8f0);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.student-main {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+.student-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--primary-100, #dbeafe);
+  color: var(--primary-700, #0369a1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9375rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.student-avatar.avatar-f {
+  background: #fce7f3;
+  color: #db2777;
+}
+
+.student-info {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.student-name {
+  font-size: 0.9375rem;
+  font-weight: 800;
+  color: var(--neutral-900, #0f172a);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.student-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-top: 0.25rem;
+}
+
+.meta-tag {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 0.15rem 0.4rem;
+  border-radius: var(--radius-sm, 6px);
+}
+
+.matricule-tag {
+  background: var(--neutral-100, #f1f5f9);
+  color: var(--neutral-700, #334155);
+  font-family: var(--font-family-mono);
+}
+
+.sexe-tag {
+  background: var(--primary-50, #eff6ff);
+  color: var(--primary-700, #0369a1);
+}
+
+.sexe-tag.tag-f {
+  background: #fdf2f8;
+  color: #be185d;
+}
+
+.student-phones-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+}
+
+.phone-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.phone-role-badge {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 0.1rem 0.375rem;
+  border-radius: var(--radius-sm, 6px);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.badge-eleve {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.badge-parent {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.phone-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--neutral-800, #1e293b);
+  text-decoration: none;
+  padding: 0.15rem 0.35rem;
+  border-radius: var(--radius-sm, 6px);
+  background: var(--neutral-50, #f8fafc);
+  border: 1px solid var(--border-color, #e2e8f0);
+  transition: all var(--transition-fast, 150ms);
+}
+
+.phone-link:hover,
+.phone-link:active {
+  background: var(--primary-50, #eff6ff);
+  color: var(--primary-700, #0369a1);
+  border-color: var(--primary-200, #bfdbfe);
+}
+
+.phone-text {
+  font-family: var(--font-family-mono, monospace);
+}
+
+.no-phone-hint {
+  font-size: 0.75rem;
+  color: var(--neutral-400, #94a3b8);
+  font-style: italic;
+}
+
+.student-footer {
+  border-top: 1px solid var(--border-color, #e2e8f0);
+  padding-top: 0.625rem;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.call-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-decoration: none;
+  padding: 0.4rem 0.7rem;
+  border-radius: var(--radius-md, 10px);
+  transition: all var(--transition-fast, 150ms);
+}
+
+.btn-call-eleve {
+  color: var(--primary-700, #0369a1);
+  background: var(--primary-50, #eff6ff);
+  border: 1px solid var(--primary-200, #bfdbfe);
+}
+
+.btn-call-eleve:hover,
+.btn-call-eleve:active {
+  background: var(--primary-100, #dbeafe);
+}
+
+.btn-call-parent {
+  color: #854d0e;
+  background: #fefce8;
+  border: 1px solid #fef08a;
+}
+
+.btn-call-parent:hover,
+.btn-call-parent:active {
+  background: #fef9c3;
+}
+
+.empty-search-box {
+  background: #ffffff;
+  border-radius: var(--radius-lg, 14px);
+  padding: 2rem 1.25rem;
+  text-align: center;
+  color: var(--neutral-500, #64748b);
+  font-size: 0.875rem;
+  border: 1px solid var(--border-color, #e2e8f0);
+}

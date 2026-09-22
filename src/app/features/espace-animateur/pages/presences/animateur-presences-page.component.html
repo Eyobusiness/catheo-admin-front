@@ -1,0 +1,146 @@
+<div class="presences-viewport">
+  <!-- En-tête -->
+  <div class="page-top-nav">
+    <a routerLink="/animateur/dashboard" class="back-link-btn">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+      <span>Accueil</span>
+    </a>
+    <h1 class="page-title">Prise d'Appel</h1>
+  </div>
+
+  <!-- Sélecteur de Séance -->
+  <section class="seance-selector-box">
+    <label for="seanceSelect" class="box-label">Séance de catéchèse</label>
+    @if (classeSeances().length > 0) {
+      <select
+        id="seanceSelect"
+        [value]="selectedSeanceId()"
+        (change)="selectSeance($any($event.target).value)"
+        class="seance-select"
+      >
+        @for (s of classeSeances(); track s.id) {
+          <option [value]="s.id">
+            {{ s.date_seance }} — {{ s.titre }} ({{ s.heure_debut }} - {{ s.heure_fin }})
+          </option>
+        }
+      </select>
+    } @else {
+      <div class="no-seance-warn">
+        <span>Aucune séance planifiée trouvée pour votre classe.</span>
+        <a routerLink="/animateur/seances" class="create-seance-link">Créer une séance</a>
+      </div>
+    }
+  </section>
+
+  @if (selectedSeance()) {
+    @if (isCurrentSeanceLocked()) {
+      <div class="lock-alert-banner" style="background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 14px 16px; border-radius: 10px; margin-bottom: 16px; display: flex; align-items: flex-start; gap: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.04);">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.2" style="flex-shrink: 0; margin-top: 2px;">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+        <div>
+          <div style="font-weight: 700; font-size: 0.95rem; margin-bottom: 2px;">PÉRIODE CLÔTURÉE / BILAN VALIDÉ</div>
+          <div style="font-size: 0.875rem; line-height: 1.4;">{{ lockMessage }}</div>
+        </div>
+      </div>
+    }
+
+    <!-- Barre de statistiques et d'action rapide -->
+    <div class="live-summary-bar">
+      <div class="counters-wrap">
+        <div class="counter-chip present-chip">
+          <span class="chip-num">{{ totalPresents() }}</span>
+          <span class="chip-text">Présent(s)</span>
+        </div>
+        <div class="counter-chip absent-chip">
+          <span class="chip-num">{{ totalAbsents() }}</span>
+          <span class="chip-text">Absent(s)</span>
+        </div>
+      </div>
+
+      <button type="button" class="all-present-btn" [disabled]="isCurrentSeanceLocked()" (click)="setAllPresents()">
+        <span>✓ Tous présents</span>
+      </button>
+    </div>
+
+    <!-- Liste d'Appel des Catéchumènes Mobile -->
+    <div class="call-list">
+      @for (row of presencesRows(); track row.catechumene_id) {
+        <article class="call-row">
+          <div class="student-meta">
+            <div class="call-avatar" [class.avatar-f]="row.sexe === 'F'">
+              {{ (row.nom.charAt(0) + (row.prenoms ? row.prenoms.charAt(0) : '')).toUpperCase() }}
+            </div>
+            <div class="name-block">
+              <span class="name-text">{{ row.nom }} {{ row.prenoms }}</span>
+              <div class="presence-meta-sub">
+                <span class="mat-text">{{ row.matricule || 'N/A' }}</span>
+                @if (row.telephone) {
+                  <a [href]="'tel:' + row.telephone" class="presence-tel-link tel-eleve" title="Appeler l'élève">
+                    <span>📱 {{ row.telephone }}</span>
+                  </a>
+                }
+                @if (row.telephone_parent) {
+                  <a [href]="'tel:' + row.telephone_parent" class="presence-tel-link tel-parent" title="Appeler le parent">
+                    <span>👨‍👩‍👧 {{ row.telephone_parent }}</span>
+                  </a>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- Boutons tactiles Présent / Absent -->
+          <div class="presence-toggle-group">
+            <button
+              type="button"
+              class="toggle-btn btn-p"
+              [class.active]="row.statut_presence === 'present'"
+              [disabled]="isCurrentSeanceLocked()"
+              (click)="togglePresence(row, 'present')"
+            >
+              ✓ Présent
+            </button>
+            <button
+              type="button"
+              class="toggle-btn btn-a"
+              [class.active]="row.statut_presence === 'absent'"
+              [disabled]="isCurrentSeanceLocked()"
+              (click)="togglePresence(row, 'absent')"
+            >
+              ✗ Absent
+            </button>
+          </div>
+        </article>
+      } @empty {
+        <div class="empty-box">
+          <p>Aucun catéchumène inscrit pour faire l'appel.</p>
+        </div>
+      }
+    </div>
+
+    <!-- Bouton Enregistrer Fixé ou en bas de page -->
+    <div class="submit-call-area">
+      <button
+        type="button"
+        class="save-call-btn"
+        [disabled]="isSaving() || presencesRows().length === 0 || isCurrentSeanceLocked()"
+        (click)="savePresences()"
+      >
+        @if (isSaving()) {
+          <span class="spinner-white"></span>
+          <span>Enregistrement de l'appel...</span>
+        } @else {
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+            <polyline points="7 3 7 8 15 8"></polyline>
+          </svg>
+          <span>Enregistrer l'appel ({{ presencesRows().length }} élèves)</span>
+        }
+      </button>
+    </div>
+  }
+</div>

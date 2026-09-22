@@ -81,6 +81,9 @@ export class AffectationsPageComponent implements OnInit {
     return list.filter(i =>
       (i.catechumene?.nom && i.catechumene.nom.toLowerCase().includes(q)) ||
       (i.catechumene?.prenoms && i.catechumene.prenoms.toLowerCase().includes(q)) ||
+      (i.catechumene?.matricule && i.catechumene.matricule.toLowerCase().includes(q)) ||
+      ((i.catechumene as any)?.code_catechumene && (i.catechumene as any).code_catechumene.toLowerCase().includes(q)) ||
+      ((i as any).matricule && (i as any).matricule.toLowerCase().includes(q)) ||
       (i.code_inscription && i.code_inscription.toLowerCase().includes(q)) ||
       (i.classe?.nom && i.classe.nom.toLowerCase().includes(q))
     );

@@ -193,15 +193,26 @@
           </select>
         </div>
 
-        <div class="form-group full-width">
-          <label class="form-label" for="cat_photo">URL Photo d'identité</label>
-          <input
-            id="cat_photo"
-            type="url"
-            formControlName="photo_url"
-            class="form-control"
-            placeholder="https://..."
-          />
+        <!-- Photo de profil du catéchumène (Widget conforme à la capture) -->
+        <div class="photo-upload-container full-width">
+          <div class="photo-preview-box">
+            @if (photoPreview()) {
+              <img [src]="photoPreview()" alt="Photo de profil" class="photo-img-preview" />
+              <button type="button" class="btn-remove-photo" (click)="removePhoto()" title="Supprimer la photo">
+                <i class="bi bi-x"></i>
+              </button>
+            } @else {
+              <div class="photo-placeholder">
+                <i class="bi bi-person-fill"></i>
+              </div>
+            }
+          </div>
+          <label class="photo-upload-btn">
+            <i class="bi bi-cloud-arrow-up-fill"></i>
+            <span>Charger une photo</span>
+            <input type="file" accept="image/png, image/jpeg, image/jpg, image/webp" (change)="onPhotoFileChange($event)" hidden />
+          </label>
+          <span class="photo-help">Format JPG, PNG (Max 2 Mo)</span>
         </div>
       </div>
     }
