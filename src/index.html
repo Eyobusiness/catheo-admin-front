@@ -38,7 +38,7 @@
           }
         }
         var path = window.location && window.location.pathname ? window.location.pathname : '/';
-        var isBrandRoute = path.startsWith('/auth') || path.startsWith('/login') || path.startsWith('/preinscription-publique') || path.startsWith('/preinscriptions/campagne');
+        var isBrandRoute = path.includes('/auth') || path.includes('/login') || path.includes('/preinscription-publique') || path.includes('/preinscriptions/campagne');
         var cachedFavicon = localStorage.getItem('catheo_paroisse_favicon');
         if (cachedFavicon && !isBrandRoute) {
           var link = document.querySelector("link[rel*='icon']");

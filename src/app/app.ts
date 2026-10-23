@@ -10,6 +10,7 @@ import { WorkingAnneeModalComponent } from './shared/ui/components/dialogs/worki
 import { AuthService } from './core/services/auth.service';
 import { ThemeService } from './core/services/theme.service';
 import { PwaInstallService } from './core/services/pwa-install.service';
+import { isPublicRoute } from './core/utils/route-context';
 
 const FAVICON_STORAGE_KEY = 'catheo_paroisse_favicon';
 
@@ -20,26 +21,6 @@ function getInitialUrl(): string {
   return '/';
 }
 
-function isAnimateurPortalRoute(url: string): boolean {
-  return (
-    url === '/animateur' ||
-    url.startsWith('/animateur/') ||
-    url === '/espace-animateur' ||
-    url.startsWith('/espace-animateur/')
-  );
-}
-
-function isPublicRoute(url: string): boolean {
-  return (
-    url === '/' ||
-    url === '' ||
-    url.startsWith('/auth') ||
-    url.startsWith('/login') ||
-    isAnimateurPortalRoute(url) ||
-    url.startsWith('/preinscription-publique') ||
-    url.startsWith('/preinscriptions/campagne')
-  );
-}
 
 @Component({
   selector: 'app-root',

@@ -48,7 +48,7 @@ export class SacrementsService {
   // --- REQUÊTES SPÉCIFIQUES BACKEND PAR SACREMENT SELON LES CONDITIONS PASTORALES ---
 
   public fetchCandidatsBapteme(filters: Record<string, string> = {}): Observable<any> {
-    let params = new HttpParams();
+    let params = new HttpParams().set('per_page', '1000');
     Object.entries(filters).forEach(([k, v]) => {
       if (v) params = params.set(k, v);
     });
@@ -62,7 +62,7 @@ export class SacrementsService {
   }
 
   public fetchCandidatsPremiereCommunion(filters: Record<string, string> = {}): Observable<any> {
-    let params = new HttpParams();
+    let params = new HttpParams().set('per_page', '1000');
     Object.entries(filters).forEach(([k, v]) => {
       if (v) params = params.set(k, v);
     });
@@ -76,7 +76,7 @@ export class SacrementsService {
   }
 
   public fetchCandidatsConfirmation(filters: Record<string, string> = {}): Observable<any> {
-    let params = new HttpParams();
+    let params = new HttpParams().set('per_page', '1000');
     Object.entries(filters).forEach(([k, v]) => {
       if (v) params = params.set(k, v);
     });
@@ -90,7 +90,7 @@ export class SacrementsService {
   }
 
   public fetchExceptions(filters: Record<string, string> = {}): Observable<any> {
-    let params = new HttpParams();
+    let params = new HttpParams().set('per_page', '1000');
     Object.entries(filters).forEach(([k, v]) => {
       if (v) params = params.set(k, v);
     });

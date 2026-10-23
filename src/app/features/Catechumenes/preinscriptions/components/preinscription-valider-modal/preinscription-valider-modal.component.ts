@@ -27,7 +27,7 @@ export class PreinscriptionValiderModalComponent {
   protected readonly form = new FormGroup({
     niveau_id: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     classe_id: new FormControl('', { nonNullable: true }),
-    frais_payes: new FormControl<boolean>(true, { nonNullable: true }),
+    frais_payes: new FormControl<boolean>(false, { nonNullable: true }),
     notes_validation: new FormControl('', { nonNullable: true })
   });
 
@@ -45,7 +45,7 @@ export class PreinscriptionValiderModalComponent {
         this.form.setValue({
           niveau_id: defaultNiv,
           classe_id: '',
-          frais_payes: item.frais_payes ?? true,
+          frais_payes: item.frais_payes ?? false,
           notes_validation: item.notes_validation || ''
         });
       }

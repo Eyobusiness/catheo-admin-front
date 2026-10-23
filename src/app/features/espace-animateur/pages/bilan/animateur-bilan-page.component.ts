@@ -63,7 +63,7 @@ export class AnimateurBilanPageComponent implements OnInit {
 
   protected readonly anneeLibelle = computed(() => {
     const a = this.annee();
-    return a ? a.libelle : '2025-2026';
+    return a ? a.libelle : `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`;
   });
 
   // Statut de verrouillage : vrai une fois validé par l'animateur ou l'admin

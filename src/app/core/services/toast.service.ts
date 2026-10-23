@@ -16,8 +16,19 @@ export interface ToastMessage {
 export class ToastService {
   private readonly _toasts = signal<ToastMessage[]>([]);
   public readonly toasts = this._toasts.asReadonly();
+  private lastSessionExpiredTimestamp = 0;
 
   public show(type: ToastType, title: string, message: string, duration = 4000): void {
+    // Eviter d'empiler plusieurs notifications de session expirée consécutivement
+    if (title === 'Session expirée') {
+      const now = Date.now();
+      const hasActiveSessionExpiredToast = this._toasts().some(t => t.title === 'Session expirée');
+      if (hasActiveSessionExpiredToast || now - this.lastSessionExpiredTimestamp < 8000) {
+        return;
+      }
+      this.lastSessionExpiredTimestamp = now;
+    }
+
     // Eviter d'empiler plusieurs toasts identiques simultanement
     const isDuplicate = this._toasts().some(
       t => t.title === title && t.message === message

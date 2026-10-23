@@ -134,16 +134,23 @@ export class CatechumeneService {
 
   // Reactive Signals
   public readonly catechumenes = signal<CatechumeneDto[]>([]);
+  public readonly totalCount = signal<number>(0);
   public readonly parrains = signal<ParrainMarraineDto[]>([]);
   public readonly isLoading = signal<boolean>(false);
 
   // --- CATECHUMENES CRUD ---
 
-  public getAll(): Observable<CatechumeneDto[]> {
+  public getAll(params?: Record<string, string>): Observable<CatechumeneDto[]> {
     this.isLoading.set(true);
-    return this.http.get<any>(this.baseUrl).pipe(
+    const queryParams: Record<string, string> = {
+      per_page: '1000',
+      ...(params || {})
+    };
+    return this.http.get<any>(this.baseUrl, { params: queryParams }).pipe(
       tap(res => {
         const raw = extractArrayData(res);
+        const total = res?.meta?.total ?? (res?.data?.total ?? raw.length);
+        this.totalCount.set(total);
         const normalized: CatechumeneDto[] = raw.map(normalizeCatechumene);
         this.catechumenes.set(normalized);
         this.isLoading.set(false);
@@ -287,7 +294,7 @@ export class CatechumeneService {
     );
   }
 
-  public create(dto: CreateCatechumeneDto, cebObj?: any): Observable<CatechumeneDto> {
+  public create(dto: CreateCatechumeneDto, cebObj?: any, options?: { silent?: boolean }): Observable<CatechumeneDto> {
     this.isLoading.set(true);
 
     // Nettoyer le payload pour ne pas envoyer des chaînes vides
@@ -299,6 +306,7 @@ export class CatechumeneService {
       statut: dto.statut || 'actif'
     };
 
+    if ((dto as any).sans_inscription) payload['sans_inscription'] = true;
     if (dto.lieu_naissance?.trim()) payload['lieu_naissance'] = dto.lieu_naissance.trim();
     if (dto.telephone?.trim()) payload['telephone'] = dto.telephone.trim();
     if (dto.domicile?.trim()) payload['domicile'] = dto.domicile.trim();
@@ -338,7 +346,9 @@ export class CatechumeneService {
           created_at: item?.created_at || new Date().toISOString()
         };
         this.addOrUpdateCatechumeneLocal(created);
-        this.toastService.success('Catéchumène Enregistré', `${created.nom} ${created.prenoms} a été ajouté(e) au registre.`);
+        if (!options?.silent) {
+          this.toastService.success('Catéchumène Enregistré', `${created.nom} ${created.prenoms} a été ajouté(e) au registre.`);
+        }
         return created;
       }),
       catchError((err: HttpErrorResponse) => {
@@ -519,12 +529,22 @@ export class CatechumeneService {
 
   private addOrUpdateCatechumeneLocal(item: CatechumeneDto): void {
     this.catechumenes.update(list => {
+      const exists = list.some(c => c.id === item.id);
+      if (!exists) {
+        this.totalCount.update(c => c + 1);
+      }
       const updatedList = list.filter(c => c.id !== item.id);
       return [item, ...updatedList];
     });
   }
 
   private removeCatechumeneLocal(id: string): void {
-    this.catechumenes.update(list => list.filter(c => c.id !== id));
+    this.catechumenes.update(list => {
+      const exists = list.some(c => c.id === id);
+      if (exists) {
+        this.totalCount.update(c => Math.max(0, c - 1));
+      }
+      return list.filter(c => c.id !== id);
+    });
   }
 }

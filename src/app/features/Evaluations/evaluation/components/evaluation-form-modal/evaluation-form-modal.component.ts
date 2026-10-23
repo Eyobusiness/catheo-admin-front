@@ -45,6 +45,7 @@ export class EvaluationFormModalComponent implements OnInit {
   public readonly niveaux = this.niveauService.niveaux;
   public readonly activeAnnee = this.anneeService.activeAnnee;
   public readonly isSubmitting = signal(false);
+  public readonly submitError = signal<string | null>(null);
 
   // Filtres en cascade du modal : aucun élément sélectionné par défaut en mode création
   public readonly modalSectionId = signal<string>('');
@@ -54,7 +55,12 @@ export class EvaluationFormModalComponent implements OnInit {
     const secId = this.modalSectionId();
     const all = this.niveaux();
     if (!secId) return all;
-    return all.filter(n => String(n.section_id) === String(secId) || String(n.section?.id) === String(secId));
+    return all.filter(n => 
+      String(n.id) === String(secId) ||
+      String(n.section_id) === String(secId) || 
+      String(n.section?.id) === String(secId) ||
+      String(n.section?.uuid) === String(secId)
+    );
   });
 
   public readonly modalAvailableClasses = computed(() => {
@@ -63,10 +69,18 @@ export class EvaluationFormModalComponent implements OnInit {
     let list = this.classes();
 
     if (secId) {
-      list = list.filter(c => String(c.niveau?.section_id) === String(secId) || String(c.niveau?.section?.id) === String(secId));
+      list = list.filter(c => 
+        String(c.niveau?.section_id) === String(secId) || 
+        String(c.niveau?.section?.id) === String(secId) ||
+        String(c.niveau?.section?.uuid) === String(secId)
+      );
     }
     if (nivId) {
-      list = list.filter(c => String(c.niveau_id) === String(nivId) || String(c.niveau?.id) === String(nivId));
+      list = list.filter(c => 
+        String(c.niveau_id) === String(nivId) || 
+        String(c.niveau?.id) === String(nivId) ||
+        String(c.niveau?.uuid) === String(nivId)
+      );
     }
     return list;
   });
@@ -194,6 +208,7 @@ export class EvaluationFormModalComponent implements OnInit {
 
     const val = this.evalForm.getRawValue();
     const active = this.activeAnnee();
+    this.submitError.set(null);
     this.isSubmitting.set(true);
 
     let selectedModuleLibelle: string | undefined;
@@ -228,8 +243,10 @@ export class EvaluationFormModalComponent implements OnInit {
           this.isSubmitting.set(false);
           this.saved.emit(updated);
         },
-        error: () => {
+        error: (err) => {
           this.isSubmitting.set(false);
+          const msg = err?.error?.message || err?.error?.error || 'Erreur lors de la mise à jour de l\'évaluation.';
+          this.submitError.set(msg);
         }
       });
     } else {
@@ -257,8 +274,10 @@ export class EvaluationFormModalComponent implements OnInit {
           this.isSubmitting.set(false);
           this.saved.emit(created);
         },
-        error: () => {
+        error: (err) => {
           this.isSubmitting.set(false);
+          const msg = err?.error?.message || err?.error?.error || 'Erreur lors de la création de l\'évaluation.';
+          this.submitError.set(msg);
         }
       });
     }

@@ -12,6 +12,7 @@ import {
 } from '../models/configuration.model';
 import { ToastService } from '../../../../core/services/toast.service';
 import { environment } from '../../../../environments/environment';
+import { isPublicRoute } from '../../../../core/utils/route-context';
 
 function extractObjectData(res: any): any {
   if (!res) return null;
@@ -754,12 +755,7 @@ export class ConfigurationService {
     }
 
     const path = window.location.pathname || '';
-    return (
-      path.startsWith('/auth') ||
-      path.startsWith('/login') ||
-      path.startsWith('/preinscription-publique') ||
-      path.startsWith('/preinscriptions/campagne')
-    );
+    return isPublicRoute(path) && !path.includes('/animateur');
   }
 
   private setFaviconInDom(iconUrl: string): void {

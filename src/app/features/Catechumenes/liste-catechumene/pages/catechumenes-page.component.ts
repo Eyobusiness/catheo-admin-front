@@ -85,8 +85,9 @@ export class CatechumenesPageComponent implements OnInit {
   // Stats
   protected readonly stats = computed(() => {
     const list = this.catechumenes();
+    const realTotal = Math.max(this.catechumeneService.totalCount(), list.length);
     return {
-      total: list.length,
+      total: realTotal,
       actifs: list.filter(c => c.statut === 'actif').length,
       baptises: list.filter(c => c.est_baptise).length,
       confirmes: list.filter(c => !!c.date_confirmation).length,

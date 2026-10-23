@@ -28,6 +28,7 @@ export class AnimateurService {
 
   // Reactive state signals
   public readonly animateurs = signal<Animateur[]>([]);
+  public readonly totalCount = signal<number>(0);
 
   public readonly isLoading = signal<boolean>(false);
 
@@ -37,9 +38,11 @@ export class AnimateurService {
 
   public getAll(): Observable<Animateur[]> {
     this.isLoading.set(true);
-    return this.http.get<any>(this.baseUrl).pipe(
+    return this.http.get<any>(this.baseUrl, { params: { per_page: '1000' } }).pipe(
       tap(res => {
         const raw = extractArrayData(res);
+        const total = res?.meta?.total ?? (res?.data?.total ?? raw.length);
+        this.totalCount.set(total);
         if (raw.length > 0) {
           const normalized: Animateur[] = raw.map((item: any) => ({
             id: item.id || item.uuid,

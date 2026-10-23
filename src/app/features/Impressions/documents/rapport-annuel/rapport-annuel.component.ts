@@ -57,6 +57,14 @@ export class RapportAnnuelComponent {
     return p?.doyenne || '';
   });
 
+  public readonly communeAdresse = computed(() => {
+    const p = this.paroisseConfig();
+    const commune = p?.commune || p?.ville || '';
+    const adresse = p?.adresse || '';
+    if (commune && adresse) return `${commune} - ${adresse}`;
+    return commune || adresse || '';
+  });
+
   public readonly logoParoisse = computed(() => {
     const p = this.paroisseConfig();
     return p?.logo_paroisse_url || p?.logo_paroisse || p?.logo_url || '';

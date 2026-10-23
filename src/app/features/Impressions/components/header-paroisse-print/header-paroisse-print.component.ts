@@ -57,6 +57,14 @@ export class HeaderParoissePrintComponent {
     return p?.adresse || '';
   });
 
+  public readonly communeAdresse = computed(() => {
+    const p = this.paroisseConfig();
+    const commune = p?.commune || p?.ville || '';
+    const adresse = p?.adresse || '';
+    if (commune && adresse) return `${commune} - ${adresse}`;
+    return commune || adresse || '';
+  });
+
   public readonly email = computed(() => {
     const p = this.paroisseConfig();
     return p?.email || '';

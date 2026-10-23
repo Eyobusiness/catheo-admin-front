@@ -192,6 +192,12 @@
   gap: 0.625rem;
 }
 
+.auth-alert-box.warning {
+  background-color: #fffbeb;
+  border-color: #fde68a;
+  color: #b45309;
+}
+
 .login-form {
   display: flex;
   flex-direction: column;

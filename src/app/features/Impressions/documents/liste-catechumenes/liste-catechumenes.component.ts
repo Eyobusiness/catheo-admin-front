@@ -30,6 +30,19 @@ export class ListeCatechumenesComponent {
     return this.data()?.entete?.diocese || this.paroisseConfig()?.diocese || '';
   });
 
+  public readonly doyenne = computed(() => {
+    return this.data()?.entete?.doyenne || this.paroisseConfig()?.doyenne || '';
+  });
+
+  public readonly communeAdresse = computed(() => {
+    const e = this.data()?.entete;
+    const p = this.paroisseConfig();
+    const commune = e?.commune || e?.ville || p?.commune || p?.ville || '';
+    const adresse = e?.adresse || p?.adresse || '';
+    if (commune && adresse) return `${commune} - ${adresse}`;
+    return commune || adresse || '';
+  });
+
   public readonly logoParoisse = computed(() => {
     return this.data()?.entete?.logo_paroisse_url || this.data()?.entete?.logo_url || this.paroisseConfig()?.logo_paroisse_url || this.paroisseConfig()?.logo_paroisse || '';
   });

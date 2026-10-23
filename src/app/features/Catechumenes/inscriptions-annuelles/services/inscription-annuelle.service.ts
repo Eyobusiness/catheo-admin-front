@@ -33,13 +33,20 @@ export class InscriptionAnnuelleService {
 
   // Reactive state signals
   public readonly inscriptions = signal<InscriptionAnnuelleDto[]>([]);
+  public readonly totalCount = signal<number>(0);
   public readonly isLoading = signal<boolean>(false);
 
-  public getAll(): Observable<InscriptionAnnuelleDto[]> {
+  public getAll(params?: Record<string, any>): Observable<InscriptionAnnuelleDto[]> {
     this.isLoading.set(true);
-    return this.http.get<any>(this.baseUrl).pipe(
+    const queryParams: Record<string, string> = {
+      per_page: '1000',
+      ...(params || {})
+    };
+    return this.http.get<any>(this.baseUrl, { params: queryParams }).pipe(
       tap(res => {
         const raw = extractArrayData(res);
+        const total = res?.meta?.total ?? (res?.data?.total ?? raw.length);
+        this.totalCount.set(total);
         const normalized: InscriptionAnnuelleDto[] = raw.map((item: any) => {
           const isFraisPayes = (
             item.frais_inscription_payes === true ||
@@ -129,7 +136,7 @@ export class InscriptionAnnuelleService {
       catechumene_id: dto.catechumene_id,
       annee_catechese_id: dto.annee_catechese_id,
       niveau_id: dto.niveau_id,
-      statut_inscription: dto.statut_inscription || (dto.classe_id ? 'valide' : 'en_attente'),
+      statut_inscription: dto.statut_inscription || 'en_attente',
       frais_inscription_payes: dto.frais_inscription_payes ?? false,
       date_inscription: dto.date_inscription || new Date().toISOString().substring(0, 10)
     };
@@ -151,7 +158,7 @@ export class InscriptionAnnuelleService {
           id: realId ? String(realId) : `ins-${Date.now()}`,
           code_inscription: item?.code_inscription || `INS-${new Date().getFullYear()}-${Math.floor(100 + Math.random() * 900)}`,
           date_inscription: dto.date_inscription || item?.date_inscription || new Date().toISOString().substring(0, 10),
-          statut_inscription: item?.statut_inscription || (dto.classe_id ? 'valide' : 'en_attente'),
+          statut_inscription: item?.statut_inscription || dto.statut_inscription || 'en_attente',
           frais_inscription_payes: item?.frais_inscription_payes ?? dto.frais_inscription_payes ?? false,
           observation: dto.observation || item?.observation,
           catechumene: item?.catechumene || context?.catechumene,
@@ -268,12 +275,22 @@ export class InscriptionAnnuelleService {
 
   private addOrUpdateLocal(item: InscriptionAnnuelleDto): void {
     this.inscriptions.update(list => {
+      const exists = list.some(i => i.id === item.id);
+      if (!exists) {
+        this.totalCount.update(c => c + 1);
+      }
       const updatedList = list.filter(i => i.id !== item.id);
       return [item, ...updatedList];
     });
   }
 
   private removeLocal(id: string): void {
-    this.inscriptions.update(list => list.filter(i => i.id !== id));
+    this.inscriptions.update(list => {
+      const exists = list.some(i => i.id === id);
+      if (exists) {
+        this.totalCount.update(c => Math.max(0, c - 1));
+      }
+      return list.filter(i => i.id !== id);
+    });
   }
 }

@@ -1,6 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs';
+import { isAnimateurPortalRoute } from '../utils/route-context';
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
@@ -104,9 +105,7 @@ export class PwaInstallService {
   public updateManifestForPath(path: string): void {
     if (typeof document === 'undefined') return;
 
-    const isAnim =
-      path.startsWith('/animateur') ||
-      path.startsWith('/espace-animateur');
+    const isAnim = isAnimateurPortalRoute(path);
 
     this.isAnimateurRoute.set(isAnim);
 

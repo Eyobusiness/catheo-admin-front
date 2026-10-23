@@ -1,4 +1,4 @@
-﻿import { inject } from '@angular/core';
+import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { InactivityService } from '../services/inactivity.service';
@@ -9,8 +9,8 @@ export const authGuard: CanActivateFn = () => {
   const router = inject(Router);
 
   if (authService.isAuthenticated()) {
-    if (inactivityService.isExpired()) {
-      inactivityService.handleTimeout(() => authService.clearSession());
+    if (inactivityService.isExpired('admin')) {
+      inactivityService.handleTimeout(() => authService.clearSession(), 'admin');
       return false;
     }
     return true;
@@ -28,8 +28,8 @@ export const permissionGuard: CanActivateFn = (route, state) => {
     return router.createUrlTree(['/auth/login']);
   }
 
-  if (inactivityService.isExpired()) {
-    inactivityService.handleTimeout(() => authService.clearSession());
+  if (inactivityService.isExpired('admin')) {
+    inactivityService.handleTimeout(() => authService.clearSession(), 'admin');
     return false;
   }
 

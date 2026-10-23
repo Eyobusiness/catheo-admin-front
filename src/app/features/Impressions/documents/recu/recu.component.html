@@ -10,14 +10,16 @@
         }
         <h1 class="t-church-name">{{ nomParoisse() | uppercase }}</h1>
         @if (diocese()) {
-          <p class="t-diocese">{{ diocese() | uppercase }}</p>
+          <p class="t-diocese">{{ diocese() }}</p>
         }
-        <p class="t-dept">COMMISSION DIOCÉSAINE DE CATÉCHÈSE</p>
+        @if (doyenne()) {
+          <p class="t-dept">{{ doyenne() }}</p>
+        }
         @if (localisation()) {
           <p class="t-contact">{{ localisation() }}</p>
         }
         @if (telephone()) {
-          <p class="t-contact">Tél : {{ telephone() }}</p>
+          <p class="t-contact">{{ telephone() }}</p>
         }
       </div>
 

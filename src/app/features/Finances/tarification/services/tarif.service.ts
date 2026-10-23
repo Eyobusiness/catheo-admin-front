@@ -39,7 +39,7 @@ export class TarifService {
   public getAll(typeTarif?: TypeTarif): Observable<TarifDto[]> {
     this.isLoading.set(true);
 
-    let params = new HttpParams();
+    let params = new HttpParams().set('per_page', '1000');
     if (typeTarif) {
       params = params.set('type_tarif', typeTarif);
     }

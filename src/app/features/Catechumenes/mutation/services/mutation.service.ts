@@ -37,7 +37,7 @@ export class MutationCatechumeneService {
 
   public getAll(): Observable<MutationCatechumeneDto[]> {
     this.isLoading.set(true);
-    return this.http.get<any>(this.baseUrl).pipe(
+    return this.http.get<any>(this.baseUrl, { params: { per_page: '1000' } }).pipe(
       tap(res => {
         const raw = extractArrayData(res);
         const normalized: MutationCatechumeneDto[] = raw.map((item: any) => ({

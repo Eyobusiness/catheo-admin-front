@@ -9,10 +9,16 @@
       </div>
 
       <div class="header-center-col">
-        @if (diocese()) {
-          <div class="doc-diocese">{{ diocese() | uppercase }}</div>
-        }
         <h1 class="doc-parish-title">{{ nomParoisse() | uppercase }}</h1>
+        @if (diocese()) {
+          <div class="doc-diocese">{{ diocese() }}</div>
+        }
+        @if (doyenne()) {
+          <div class="doc-doyenne">{{ doyenne() }}</div>
+        }
+        @if (communeAdresse()) {
+          <div class="doc-contacts">{{ communeAdresse() }}</div>
+        }
         <div class="doc-doc-title">REGISTRE & LISTE OFFICIELLE DES CATÉCHUMÈNES</div>
         <div class="doc-sub-filter">
           <span>Année Pastorale : <strong>{{ anneePastorale() }}</strong></span>

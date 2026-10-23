@@ -20,6 +20,13 @@
           <p class="form-subtitle">Accédez à votre espace d'administration pastorale</p>
         </div>
 
+        @if (isSessionExpired()) {
+          <div class="auth-alert-box warning">
+            <i class="bi bi-clock-history"></i>
+            <span>Votre session a expiré après 30 minutes d'inactivité. Veuillez vous reconnecter.</span>
+          </div>
+        }
+
         @if (generalErrorMessage()) {
           <div class="auth-alert-box">
             <i class="bi bi-exclamation-octagon-fill"></i>

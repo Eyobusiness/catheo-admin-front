@@ -19,8 +19,8 @@
           </option>
         }
       </select>
-      @if (availableAnimateurs().length === 0 && !isEditing()) {
-        <span class="field-info-notice">Tous les catéchistes enregistrés sont déjà affectés à une classe.</span>
+      @if (availableAnimateurs().length === 0) {
+        <span class="field-info-notice">Aucun catéchiste enregistré dans la paroisse.</span>
       }
       @if (form.controls.animateur_id.touched && form.controls.animateur_id.invalid) {
         <span class="field-error">Veuillez sélectionner un catéchiste.</span>

@@ -3,8 +3,8 @@
   "name": "Cathéo - Gestion Paroissiale & Catéchèse",
   "short_name": "Cathéo",
   "description": "Plateforme complète de gestion paroissiale, de catéchèse et d'animation pastorale.",
-  "start_url": "/",
-  "scope": "/",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "orientation": "any",
   "background_color": "#ffffff",
@@ -72,14 +72,14 @@
       "name": "Administration",
       "short_name": "Admin",
       "description": "Accéder au tableau de bord administrateur",
-      "url": "/",
+      "url": "./",
       "icons": [{ "src": "icons/icon-96x96.png", "sizes": "96x96" }]
     },
     {
       "name": "Espace Animateur",
       "short_name": "Animateur",
       "description": "Accéder à l'espace catéchiste et prise d'appel",
-      "url": "/animateur/dashboard",
+      "url": "./animateur/dashboard",
       "icons": [{ "src": "icons/icon-96x96.png", "sizes": "96x96" }]
     }
   ]

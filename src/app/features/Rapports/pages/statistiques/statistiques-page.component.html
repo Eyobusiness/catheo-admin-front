@@ -29,8 +29,9 @@
     <div class="filter-group">
       <label class="filter-label">Année pastorale :</label>
       <select class="filter-select" [ngModel]="filterAnnee()" (ngModelChange)="filterAnnee.set($event)">
-        <option value="2025-2026">2025-2026 (En cours)</option>
-        <option value="2024-2025">2024-2025 (Précédente)</option>
+        @for (a of annees(); track a.id) {
+          <option [value]="a.libelle">{{ a.libelle }} {{ a.est_active ? '(En cours)' : '' }}</option>
+        }
       </select>
     </div>
 
@@ -125,7 +126,7 @@
           <i class="bi bi-patch-check-fill text-warning"></i>
           <h4>Progression des Sacrements d'Initiation</h4>
         </div>
-        <span class="card-tag">Année 2025-2026</span>
+        <span class="card-tag">Année {{ filterAnnee() }}</span>
       </div>
 
       <div class="sacrements-progress-list">

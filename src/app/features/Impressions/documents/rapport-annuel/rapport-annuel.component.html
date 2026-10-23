@@ -9,13 +9,16 @@
       </div>
 
       <div class="header-center-col">
+        <h1 class="doc-parish-title">{{ nomParoisse() | uppercase }}</h1>
         @if (diocese()) {
-          <div class="doc-diocese">{{ diocese() | uppercase }}</div>
+          <div class="doc-diocese">{{ diocese() }}</div>
         }
         @if (doyenne()) {
-          <div class="doc-doyenne">{{ doyenne() | uppercase }}</div>
+          <div class="doc-doyenne">{{ doyenne() }}</div>
         }
-        <h1 class="doc-parish-title">{{ nomParoisse() | uppercase }}</h1>
+        @if (communeAdresse()) {
+          <div class="doc-service-title">{{ communeAdresse() }}</div>
+        }
         <div class="doc-service-title">COMMISSION PASTORALE DE CATÉCHÈSE</div>
       </div>
 

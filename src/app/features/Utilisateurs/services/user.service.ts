@@ -50,7 +50,7 @@ export class UserService {
    */
   public getUsers(
     page: number = 1,
-    perPage: number = 15,
+    perPage: number = 1000,
     search?: string,
     statut?: string,
     profilId?: string

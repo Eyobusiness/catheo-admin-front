@@ -3,8 +3,8 @@
   "name": "Cathéo - Espace Animateur",
   "short_name": "Cathéo Anim",
   "description": "Application mobile pastorale pour les catéchistes et animateurs Cathéo : gestion de classe, appel et évaluations.",
-  "start_url": "/animateur/dashboard",
-  "scope": "/",
+  "start_url": "./animateur/dashboard",
+  "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#f8fafc",
@@ -72,28 +72,28 @@
       "name": "Prise d'Appel",
       "short_name": "Appel",
       "description": "Faire l'appel de présence des catéchumènes",
-      "url": "/animateur/presences",
+      "url": "./animateur/presences",
       "icons": [{ "src": "icons/icon-96x96.png", "sizes": "96x96" }]
     },
     {
       "name": "Mes Catéchumènes",
       "short_name": "Élèves",
       "description": "Consulter les fiches et coordonnées des catéchumènes",
-      "url": "/animateur/catechumenes",
+      "url": "./animateur/catechumenes",
       "icons": [{ "src": "icons/icon-96x96.png", "sizes": "96x96" }]
     },
     {
       "name": "Ma Classe",
       "short_name": "Classe",
       "description": "Détails de la classe et effectifs",
-      "url": "/animateur/ma-classe",
+      "url": "./animateur/ma-classe",
       "icons": [{ "src": "icons/icon-96x96.png", "sizes": "96x96" }]
     },
     {
       "name": "Évaluations",
       "short_name": "Notes",
       "description": "Saisie et consultation des notes d'évaluations",
-      "url": "/animateur/evaluations",
+      "url": "./animateur/evaluations",
       "icons": [{ "src": "icons/icon-96x96.png", "sizes": "96x96" }]
     }
   ]

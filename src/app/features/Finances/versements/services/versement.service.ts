@@ -51,7 +51,7 @@ export class VersementCureService {
   public getAll(statut?: StatutVersement, search?: string): Observable<VersementCureDto[]> {
     this.isLoading.set(true);
 
-    let params = new HttpParams();
+    let params = new HttpParams().set('per_page', '1000');
     if (statut) params = params.set('statut', statut);
     if (search) params = params.set('search', search);
 

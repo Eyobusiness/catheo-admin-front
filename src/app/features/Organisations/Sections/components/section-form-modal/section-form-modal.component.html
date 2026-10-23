@@ -23,13 +23,20 @@
 
       <div class="form-group">
         <label class="form-label" for="code">Code <span class="required">*</span></label>
-        <input
+        <select
           id="code"
-          type="text"
           formControlName="code"
           class="form-control"
-          placeholder="Code"
-        />
+          (change)="onCodeChange($event)"
+        >
+          <option value="" disabled>Sélectionner un code...</option>
+          @for (option of sectionCodes; track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+          @if (customCode()) {
+            <option [value]="customCode()">{{ customCode() }}</option>
+          }
+        </select>
         @if (form.controls.code.touched && form.controls.code.invalid) {
           <span class="field-error">Le code est obligatoire.</span>
         }

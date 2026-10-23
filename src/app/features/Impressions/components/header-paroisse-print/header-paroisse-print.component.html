@@ -11,26 +11,23 @@
 
     <!-- Bloc d'en-tête paroissial centré -->
     <div class="parish-info-center">
-      @if (diocese()) {
-        <h3 class="line-diocese">{{ diocese() | uppercase }}</h3>
-      }
-      @if (cure()) {
-        <h4 class="line-cure">{{ cure() | uppercase }}</h4>
-      }
-      @if (doyenne()) {
-        <h4 class="line-doyenne">{{ doyenne() | uppercase }}</h4>
-      }
       @if (nomParoisse()) {
         <h2 class="line-paroisse">{{ nomParoisse() | uppercase }}</h2>
       }
-      @if (adresse()) {
-        <p class="line-contact">{{ adresse() }}</p>
+      @if (diocese()) {
+        <h3 class="line-diocese">{{ diocese() }}</h3>
       }
-      @if (email()) {
-        <p class="line-contact">Email : {{ email() }}</p>
+      @if (doyenne()) {
+        <h4 class="line-doyenne">{{ doyenne() }}</h4>
+      }
+      @if (communeAdresse()) {
+        <p class="line-contact">{{ communeAdresse() }}</p>
       }
       @if (telephone()) {
-        <p class="line-contact">TEL. {{ telephone() }}</p>
+        <p class="line-contact">{{ telephone() }}</p>
+      }
+      @if (email()) {
+        <p class="line-contact">{{ email() }}</p>
       }
     </div>
 

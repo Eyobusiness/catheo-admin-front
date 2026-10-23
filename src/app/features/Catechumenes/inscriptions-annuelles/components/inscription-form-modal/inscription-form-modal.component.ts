@@ -313,6 +313,7 @@ export class InscriptionFormModalComponent {
   // --- SOUMISSIONS ---
 
   public submitNouvelle(): void {
+    if (this.isSubmitting() || this.isLoading()) return;
     if (this.nouvelleForm.invalid) {
       this.nouvelleForm.markAllAsTouched();
       return;
@@ -356,8 +357,9 @@ export class InscriptionFormModalComponent {
       niveau_id: val.niveau_id || undefined,
       classe_id: val.classe_id || undefined,
       annee_catechese_id: currentAnnee ? currentAnnee.id : undefined,
-      statut: 'actif'
-    };
+      statut: 'actif',
+      sans_inscription: true
+    } as any;
 
     const inscriptionData: CreateInscriptionAnnuelleDto = {
       catechumene_id: '', // Sera affecté après création
@@ -391,6 +393,7 @@ export class InscriptionFormModalComponent {
   }
 
   public submitReinscription(): void {
+    if (this.isSubmitting() || this.isLoading()) return;
     const cat = this.foundCatechumene();
     if (!cat) return;
 
@@ -451,6 +454,7 @@ export class InscriptionFormModalComponent {
   }
 
   public submitEdit(): void {
+    if (this.isSubmitting() || this.isLoading()) return;
     const item = this.inscriptionToEdit();
     if (!item) return;
 

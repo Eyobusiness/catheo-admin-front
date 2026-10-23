@@ -5,30 +5,31 @@
 .ma-classe-viewport {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 0.875rem;
 }
 
 .page-top-nav {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 .back-link-btn {
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   font-weight: 700;
   color: var(--primary-600, #0284c7);
   text-decoration: none;
-  padding: 0.375rem 0.5rem;
-  border-radius: var(--radius-md, 10px);
+  padding: 0.35rem 0.5rem;
+  min-height: 36px;
+  border-radius: var(--radius-md, 8px);
   background: var(--neutral-100, #f1f5f9);
 }
 
 .page-title {
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   font-weight: 800;
   color: var(--neutral-900, #0f172a);
   margin: 0;
@@ -37,80 +38,84 @@
 .classe-summary-card {
   background: linear-gradient(135deg, #0284c7 0%, #075985 100%);
   color: #ffffff;
-  border-radius: var(--radius-xl, 20px);
-  padding: 1.5rem 1.25rem;
-  box-shadow: var(--shadow-md);
+  border-radius: var(--radius-lg, 16px);
+  padding: 1rem;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.25);
 }
 
 .badge-row {
   display: flex;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
+  gap: 0.375rem;
+  margin-bottom: 0.5rem;
 }
 
 .annee-pill {
-  font-size: 0.6875rem;
+  font-size: 0.65rem;
   font-weight: 700;
-  padding: 0.2rem 0.5rem;
+  padding: 0.15rem 0.45rem;
   background: rgba(255, 255, 255, 0.25);
   border-radius: var(--radius-full, 9999px);
 }
 
 .role-pill {
-  font-size: 0.6875rem;
+  font-size: 0.65rem;
   font-weight: 700;
-  padding: 0.2rem 0.5rem;
+  padding: 0.15rem 0.45rem;
   background: var(--success-500, #10b981);
   border-radius: var(--radius-full, 9999px);
 }
 
 .class-hero-title {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 800;
-  margin: 0 0 0.25rem 0;
+  margin: 0 0 0.15rem 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .hierarchy-text {
-  font-size: 0.875rem;
-  color: rgba(255, 255, 255, 0.85);
-  margin: 0 0 1.25rem 0;
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0 0 0.875rem 0;
 }
 
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 0.5rem;
-  background: rgba(255, 255, 255, 0.15);
-  padding: 0.75rem;
-  border-radius: var(--radius-lg, 14px);
+  gap: 0.35rem;
+  background: rgba(255, 255, 255, 0.18);
+  padding: 0.5rem;
+  border-radius: var(--radius-md, 10px);
   text-align: center;
 }
 
 .stat-val {
   display: block;
-  font-size: 1.35rem;
+  font-size: 1.2rem;
   font-weight: 800;
   line-height: 1.1;
 }
 
 .stat-lbl {
-  font-size: 0.625rem;
+  font-size: 0.5625rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  opacity: 0.85;
+  opacity: 0.9;
 }
 
 .fast-action-bar {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 .fast-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.875rem 0.5rem;
+  padding: 0.65rem 0.5rem;
+  min-height: 42px;
   border-radius: var(--radius-md, 10px);
   font-size: 0.8125rem;
   font-weight: 700;
@@ -160,16 +165,16 @@
 .cat-card {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.625rem;
   background: #ffffff;
-  padding: 0.75rem 1rem;
+  padding: 0.625rem 0.75rem;
   border-radius: var(--radius-md, 10px);
   border: 1px solid var(--border-color, #e2e8f0);
 }
 
 .cat-avatar {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   background: var(--primary-100, #dbeafe);
   color: var(--primary-700, #0369a1);
@@ -177,7 +182,7 @@
   align-items: center;
   justify-content: center;
   font-weight: 800;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   flex-shrink: 0;
 }
 
@@ -190,10 +195,12 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  flex: 1;
+  min-width: 0;
 }
 
 .cat-name {
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 700;
   color: var(--neutral-900, #0f172a);
   white-space: nowrap;
@@ -205,29 +212,30 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 0.5rem;
-  font-size: 0.75rem;
+  gap: 0.35rem;
+  font-size: 0.6875rem;
   color: var(--neutral-500, #64748b);
-  margin-top: 0.25rem;
+  margin-top: 0.15rem;
 }
 
 .cat-mat {
   font-family: var(--font-family-mono);
   font-weight: 600;
   background: var(--neutral-100, #f1f5f9);
-  padding: 0.1rem 0.35rem;
+  padding: 0.1rem 0.3rem;
   border-radius: var(--radius-sm, 6px);
 }
 
 .cat-tel-link {
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
-  font-size: 0.75rem;
+  gap: 0.2rem;
+  font-size: 0.6875rem;
   font-weight: 600;
   text-decoration: none;
-  padding: 0.15rem 0.4rem;
+  padding: 0.15rem 0.35rem;
   border-radius: var(--radius-sm, 6px);
+  white-space: nowrap;
   transition: all var(--transition-fast, 150ms);
 }
 

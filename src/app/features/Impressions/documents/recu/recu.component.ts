@@ -36,6 +36,11 @@ export class RecuComponent {
     return p?.diocese || "ARCHIDIOCÈSE D'ABIDJAN";
   });
 
+  public readonly doyenne = computed(() => {
+    const p = this.paroisseConfig();
+    return p?.doyenne || '';
+  });
+
   public readonly localisation = computed(() => {
     const p = this.paroisseConfig();
     const parts = [p?.commune || p?.ville, p?.adresse].filter(Boolean);

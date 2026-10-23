@@ -36,7 +36,8 @@ export class AuthService {
   public readonly currentUser = signal<User | null>(this.getStoredUser());
   public readonly accessibleMenus = signal<MenuItem[]>(this.getStoredMenus());
   public readonly isLoading = signal<boolean>(false);
-  public readonly isAuthenticated = computed(() => !!this.token());
+  public readonly isLoggingOut = signal<boolean>(false);
+  public readonly isAuthenticated = computed(() => !this.isLoggingOut() && !!this.token());
 
   constructor() {
     // 1. Charger les menus stockes en local
@@ -44,9 +45,8 @@ export class AuthService {
 
     // 2. Si un token est present, verifier l'inactivite et charger les informations
     if (this.token()) {
-      if (this.inactivityService.isExpired()) {
-        this.clearSession();
-        this.inactivityService.handleTimeout();
+      if (this.inactivityService.isExpired('admin')) {
+        this.inactivityService.handleTimeout(() => this.clearSession(), 'admin');
       } else {
         this.inactivityService.startTracking();
         this.getMe().subscribe({
@@ -58,7 +58,7 @@ export class AuthService {
 
   private getStoredToken(): string | null {
     try {
-      if (this.inactivityService && this.inactivityService.isExpired()) {
+      if (this.inactivityService && this.inactivityService.isExpired('admin')) {
         return null;
       }
       return localStorage.getItem(TOKEN_KEY) || localStorage.getItem('token');
@@ -156,21 +156,17 @@ export class AuthService {
   }
 
   public logout(): Observable<void> {
-    this.isLoading.set(true);
-    this.inactivityService.stopTracking();
+    this.inactivityService.markManualLogout('admin');
+
+    // 1. Nettoyage de session et redirection immediates :
+    // Tout (sidebar, header ET le corps de page) disparait et bascule simultanement sans decalage
+    this.clearSession();
+    this.router.navigate(['/auth/login']);
+    this.toastService.info('Déconnexion', 'Vous avez été déconnecté.');
+
+    // 2. Invalidation du token Sanctum cote backend en arriere-plan
     return this.http.post<void>(`${this.baseUrl}/logout`, {}).pipe(
-      tap(() => {
-        this.isLoading.set(false);
-        this.clearSession();
-        this.router.navigate(['/auth/login']);
-        this.toastService.info('Deconnexion', 'Vous avez ete deconnecte.');
-      }),
-      catchError(() => {
-        this.isLoading.set(false);
-        this.clearSession();
-        this.router.navigate(['/auth/login']);
-        return of(void 0);
-      })
+      catchError(() => of(void 0))
     );
   }
 
@@ -303,7 +299,8 @@ export class AuthService {
       localStorage.removeItem('catheo_working_annee');
     } catch {}
 
-    // Demarrer la surveillance d'inactivite
+    // Demarrer la surveillance d'inactivite pour l'espace admin (Web & PWA)
+    this.inactivityService.recordActivity(true, 'admin');
     this.inactivityService.startTracking();
   }
 
@@ -311,7 +308,7 @@ export class AuthService {
     this.token.set(null);
     this.currentUser.set(null);
     this.accessibleMenus.set([]);
-    this.inactivityService.stopTracking();
+    this.inactivityService.clearActivity('admin');
     try {
       localStorage.removeItem(TOKEN_KEY);
       localStorage.removeItem('token');

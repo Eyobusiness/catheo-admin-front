@@ -3,8 +3,8 @@
   "name": "Cathéo - Administration Paroissiale",
   "short_name": "Cathéo Admin",
   "description": "Portail d'administration pour la gestion paroissiale et catéchétique Cathéo.",
-  "start_url": "/",
-  "scope": "/",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "orientation": "any",
   "background_color": "#ffffff",
@@ -72,28 +72,28 @@
       "name": "Tableau de Bord",
       "short_name": "Dashboard",
       "description": "Vue générale de la paroisse",
-      "url": "/",
+      "url": "./",
       "icons": [{ "src": "icons/icon-96x96.png", "sizes": "96x96" }]
     },
     {
       "name": "Catéchumènes",
       "short_name": "Élèves",
       "description": "Liste et gestion des catéchumènes",
-      "url": "/catechumenes",
+      "url": "./catechumenes",
       "icons": [{ "src": "icons/icon-96x96.png", "sizes": "96x96" }]
     },
     {
       "name": "Prise de Présences",
       "short_name": "Séances",
       "description": "Séances et registre de présences",
-      "url": "/seances",
+      "url": "./seances",
       "icons": [{ "src": "icons/icon-96x96.png", "sizes": "96x96" }]
     },
     {
       "name": "Finances Paroissiales",
       "short_name": "Finances",
       "description": "Gestion des frais et versements",
-      "url": "/finances",
+      "url": "./finances",
       "icons": [{ "src": "icons/icon-96x96.png", "sizes": "96x96" }]
     }
   ]

@@ -40,6 +40,8 @@ export interface MenuTreeItem {
 export interface ProfilItem {
   id: string; // UUID
   uuid: string;
+  paroisse_configuration_id?: number | string | null;
+  paroisse_id?: number | string | null;
   nom: string;
   name?: string;
   code: string;

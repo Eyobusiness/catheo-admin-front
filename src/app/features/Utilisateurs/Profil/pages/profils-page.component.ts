@@ -8,6 +8,7 @@ import { ProfilTableComponent } from '../components/profil-table/profil-table.co
 import { ProfilFormModalComponent } from '../components/profil-form-modal/profil-form-modal.component';
 import { ProfilDeleteModalComponent } from '../components/profil-delete-modal/profil-delete-modal.component';
 import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-profils-page',
@@ -26,6 +27,7 @@ import { HasPermissionDirective } from '../../../../shared/directives/has-permis
 })
 export class ProfilsPageComponent {
   protected readonly profilService = inject(ProfilService);
+  private readonly authService = inject(AuthService);
 
   // State signals
   protected readonly profils = this.profilService.profilsList;
@@ -53,6 +55,11 @@ export class ProfilsPageComponent {
       p.code !== 'SUPER_ADMIN' &&
       p.code?.toLowerCase() !== 'super_admin'
     );
+
+    const userParoisseId = this.authService.currentUser()?.['paroisse_configuration_id'] || this.authService.currentUser()?.paroisse_id;
+    if (userParoisseId) {
+      list = list.filter(p => !p.paroisse_configuration_id || Number(p.paroisse_configuration_id) === Number(userParoisseId));
+    }
 
     if (status) {
       list = list.filter(p => p.statut_code === status || p.statut?.toLowerCase() === status.toLowerCase());

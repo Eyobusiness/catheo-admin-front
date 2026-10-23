@@ -92,10 +92,10 @@
         </div>
       </div>
 
-      @if (b.synthese_finale.resume) {
+      @if (resumeText()) {
         <div class="hero-comment-box">
           <i class="bi bi-chat-quote-fill quote-icon"></i>
-          <p class="hero-resume-text">{{ b.synthese_finale.resume }}</p>
+          <p class="hero-resume-text">{{ resumeText() }}</p>
         </div>
       }
     </section>

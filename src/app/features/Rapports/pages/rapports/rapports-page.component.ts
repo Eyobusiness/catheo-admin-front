@@ -84,6 +84,16 @@ export class RapportsPageComponent implements OnInit {
     return list.slice(0, 5);
   });
 
+  public readonly resumeText = computed(() => {
+    const raw = this.bilanData()?.synthese_finale?.resume;
+    if (!raw) return '';
+    const realCount = this.totalClassesCount();
+    if (realCount > 0 && raw.includes('0 classe(s)')) {
+      return raw.replace('0 classe(s)', `${realCount} classe(s)`);
+    }
+    return raw;
+  });
+
   public toggleShowAllClasses(): void {
     this.showAllClasses.update(val => !val);
   }

@@ -22,6 +22,13 @@
     </div>
 
     <form [formGroup]="evalForm" (ngSubmit)="onSubmit()" class="modal-body form-grid">
+      @if (submitError()) {
+        <div class="col-12 alert alert-danger d-flex align-items-center mb-3">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          <div>{{ submitError() }}</div>
+        </div>
+      }
+
       <!-- Titre -->
       <div class="form-group col-12">
         <label class="form-label">Titre de l'évaluation <span class="required">*</span></label>

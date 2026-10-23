@@ -38,36 +38,22 @@ export class AffectationFormModalComponent {
 
   protected readonly availableAnimateurs = computed(() => {
     const allAnim = this.animateurs();
-    const existing = this.existingAffectations();
     const isEdit = this.isEditing();
     const currentEdit = this.affectationToEdit();
     const currentEditAnimId = String(currentEdit?.animateur_id || currentEdit?.animateur?.id || '');
 
-    let list: Animateur[];
-    if (isEdit) {
-      // In edit mode: all registered animators are available so the user can change or keep
-      list = [...allAnim];
-      // Guarantee current animator is in the list
-      if (currentEdit?.animateur && currentEditAnimId) {
-        const found = list.some(a => String(a.id) === currentEditAnimId);
-        if (!found) {
-          list.unshift({
-            id: currentEditAnimId,
-            nom: currentEdit.animateur.nom || 'Catéchiste',
-            prenoms: currentEdit.animateur.prenoms || '',
-            sexe: currentEdit.animateur.sexe || 'M',
-            statut: 'actif'
-          } as Animateur);
-        }
+    const list = [...allAnim];
+    if (isEdit && currentEdit?.animateur && currentEditAnimId) {
+      const found = list.some(a => String(a.id) === currentEditAnimId);
+      if (!found) {
+        list.unshift({
+          id: currentEditAnimId,
+          nom: currentEdit.animateur.nom || 'Catéchiste',
+          prenoms: currentEdit.animateur.prenoms || '',
+          sexe: currentEdit.animateur.sexe || 'M',
+          statut: 'actif'
+        } as Animateur);
       }
-    } else {
-      // In create mode: exclude animators already assigned
-      const assignedIds = new Set(
-        existing
-          .map(a => String(a.animateur_id || a.animateur?.id || ''))
-          .filter(id => !!id)
-      );
-      list = allAnim.filter(anim => !assignedIds.has(String(anim.id)));
     }
 
     return list;
@@ -115,8 +101,6 @@ export class AffectationFormModalComponent {
       const open = this.isOpen();
       const item = this.affectationToEdit();
       const isEdit = this.isEditing();
-      const anims = this.availableAnimateurs();
-      const clss = this.availableClasses();
 
       if (!open) {
         this.previousIsOpen = false;
@@ -127,7 +111,10 @@ export class AffectationFormModalComponent {
       const justOpened = !this.previousIsOpen;
       this.previousIsOpen = true;
 
-      if (justOpened || !this.hasInitializedForCurrentOpen) {
+      if (justOpened) {
+        const anims = this.availableAnimateurs();
+        const clss = this.availableClasses();
+
         if (isEdit && item) {
           const rawAnimId = String(
             item.animateur_id ||
@@ -139,7 +126,7 @@ export class AffectationFormModalComponent {
             a => String(a.id) === rawAnimId ||
             (item.animateur && a.nom === item.animateur.nom && a.prenoms === item.animateur.prenoms)
           );
-          const animId = foundAnim ? String(foundAnim.id) : (rawAnimId || (anims.length > 0 ? String(anims[0].id) : ''));
+          const animId = foundAnim ? String(foundAnim.id) : (rawAnimId || '');
 
           const rawClsId = String(
             item.classe_id ||
@@ -151,7 +138,7 @@ export class AffectationFormModalComponent {
             c => String(c.id) === rawClsId ||
             (item.classe && c.nom === item.classe.nom)
           );
-          const clsId = foundCls ? String(foundCls.id) : (rawClsId || (clss.length > 0 ? String(clss[0].id) : ''));
+          const clsId = foundCls ? String(foundCls.id) : (rawClsId || '');
 
           const roleVal = String(item.role || (item as any).role_animateur || 'principal').toLowerCase().trim();
           const finalRole = roleVal.includes('assist')
@@ -165,20 +152,17 @@ export class AffectationFormModalComponent {
             classe_id: clsId,
             role: finalRole
           });
-
-          if (animId && clsId) {
-            this.hasInitializedForCurrentOpen = true;
-          }
-        } else if (!isEdit && justOpened) {
+          this.hasInitializedForCurrentOpen = true;
+        } else if (!isEdit) {
           this.form.reset({
-            animateur_id: anims.length > 0 ? String(anims[0].id) : '',
-            classe_id: clss.length > 0 ? String(clss[0].id) : '',
+            animateur_id: '',
+            classe_id: '',
             role: 'principal'
           });
           this.hasInitializedForCurrentOpen = true;
         }
       }
-    }, { allowSignalWrites: true });
+    });
   }
 
   protected onClose(): void {

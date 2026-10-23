@@ -49,17 +49,22 @@ export class OperationFinanciereService {
   private readonly paiementUrl = `${environment.apiUrl}/paiements`;
 
   public readonly operations = signal<OperationPaiementDto[]>([]);
+  public readonly totalCount = signal<number>(0);
   public readonly isLoading = signal<boolean>(false);
 
   public getAll(statut?: StatutOperation, catechumeneId?: string, search?: string): Observable<OperationPaiementDto[]> {
     this.isLoading.set(true);
 
-    let params = new HttpParams();
+    let params = new HttpParams().set('per_page', '1000');
     if (statut) params = params.set('statut', statut);
     if (catechumeneId) params = params.set('catechumene_id', catechumeneId);
     if (search) params = params.set('search', search);
 
     return this.http.get<unknown>(this.baseUrl, { params }).pipe(
+      tap((res: any) => {
+        const total = res?.meta?.total ?? (res?.data?.total ?? extractArrayData(res).length);
+        this.totalCount.set(total);
+      }),
       map(res => extractArrayData(res).map(item => this.normalizeOperation(item))),
       tap(operations => {
         this.operations.set(operations);

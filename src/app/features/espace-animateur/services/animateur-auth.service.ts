@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { Observable, catchError, of, tap, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ToastService } from '../../../core/services/toast.service';
+import { InactivityService } from '../../../core/services/inactivity.service';
 import {
   AnimateurChangePasswordDto,
   AnimateurForgotPasswordDto,
@@ -27,6 +28,7 @@ export class AnimateurAuthService {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
+  private readonly inactivityService = inject(InactivityService);
 
   private readonly baseUrl = `${environment.apiUrl}/animateur`;
 
@@ -36,7 +38,8 @@ export class AnimateurAuthService {
   public readonly currentAnnee = signal<any | null>(this.getStoredAnnee());
   public readonly menus = signal<any[]>(this.getStoredMenus());
   public readonly isLoading = signal<boolean>(false);
-  public readonly isAuthenticated = computed(() => !!this.token());
+  public readonly isLoggingOut = signal<boolean>(false);
+  public readonly isAuthenticated = computed(() => !this.isLoggingOut() && !!this.token());
 
   // Nom d'affichage pastoral convivial
   public readonly displayName = computed(() => {
@@ -51,16 +54,24 @@ export class AnimateurAuthService {
   });
 
   constructor() {
-    // Si un token animateur est présent au démarrage ou après un refresh F5, actualiser le profil
+    // Si un token animateur est present au demarrage ou apres un refresh F5, verifier l'inactivite et actualiser le profil
     if (this.token()) {
-      this.getMe().subscribe({
-        error: () => {}
-      });
+      if (this.inactivityService.isExpired('animateur')) {
+        this.inactivityService.handleTimeout(() => this.clearSession(), 'animateur');
+      } else {
+        this.inactivityService.startTracking();
+        this.getMe().subscribe({
+          error: () => {}
+        });
+      }
     }
   }
 
   private getStoredToken(): string | null {
     try {
+      if (this.inactivityService && this.inactivityService.isExpired('animateur')) {
+        return null;
+      }
       if (typeof window !== 'undefined' && window.localStorage) {
         return localStorage.getItem(TOKEN_KEY);
       }
@@ -238,20 +249,15 @@ export class AnimateurAuthService {
    * Déconnexion Animateur via POST /api/v1/animateur/logout
    */
   public logout(): Observable<void> {
-    this.isLoading.set(true);
+    this.inactivityService.markManualLogout('animateur');
+
+    // Nettoyage et redirection immediates
+    this.clearSession();
+    this.router.navigate(['/animateur/login']);
+    this.toastService.info('Déconnexion', 'Vous avez été déconnecté de votre espace catéchiste.');
+
     return this.http.post<void>(`${this.baseUrl}/logout`, {}).pipe(
-      tap(() => {
-        this.isLoading.set(false);
-        this.clearSession();
-        this.router.navigate(['/animateur/login']);
-        this.toastService.info('Déconnexion', 'Vous avez été déconnecté de votre espace catéchiste.');
-      }),
-      catchError(() => {
-        this.isLoading.set(false);
-        this.clearSession();
-        this.router.navigate(['/animateur/login']);
-        return of(void 0);
-      })
+      catchError(() => of(void 0))
     );
   }
 
@@ -387,6 +393,10 @@ export class AnimateurAuthService {
         localStorage.setItem(MENUS_KEY, JSON.stringify(menus));
       }
     } catch {}
+
+    // Initialiser l'activite et demarrer la surveillance d'inactivite pour l'animateur (Web & PWA)
+    this.inactivityService.recordActivity(true, 'animateur');
+    this.inactivityService.startTracking();
   }
 
   /**
@@ -398,6 +408,7 @@ export class AnimateurAuthService {
     this.profile.set(null);
     this.currentAnnee.set(null);
     this.menus.set([]);
+    this.inactivityService.clearActivity('animateur');
     try {
       localStorage.removeItem(TOKEN_KEY);
       localStorage.removeItem(PROFILE_KEY);

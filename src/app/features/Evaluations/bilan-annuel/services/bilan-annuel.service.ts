@@ -1,9 +1,10 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, of, tap } from 'rxjs';
 import { BilanAnnuelItem, DecisionStatus } from '../models/bilan-annuel.model';
 import { environment } from '../../../../environments/environment';
 import { ToastService } from '../../../../core/services/toast.service';
+import { AnneeCatecheseService } from '../../../../core/services/annee-catechese.service';
 
 @Injectable({
   providedIn: 'root'
@@ -13,8 +14,15 @@ export class BilanAnnuelService {
   private readonly toastService = inject(ToastService);
   private readonly decisionsUrl = `${environment.apiUrl}/decisions-fin-annee`;
 
-  // Listes pour rétrocompatibilité
-  public readonly anneesPastorales = signal<string[]>(['2025-2026', '2026-2027', '2027-2028']);
+  private readonly anneeService = inject(AnneeCatecheseService);
+
+  // Listes dynamiques
+  public readonly anneesPastorales = computed<string[]>(() => {
+    const list = this.anneeService.annees();
+    if (list.length > 0) return list.map(a => a.libelle);
+    const curr = new Date().getFullYear();
+    return [`${curr - 1}-${curr}`, `${curr}-${curr + 1}`, `${curr + 1}-${curr + 2}`];
+  });
   public readonly sectionsList = signal<string[]>(['Enfants', 'Jeunes', 'Adultes']);
   public readonly niveauxList = signal<string[]>(['1ère Année', '2ème Année', '3ème Année', '4ème Année', '5ème Année']);
   public readonly classesList = signal<string[]>([

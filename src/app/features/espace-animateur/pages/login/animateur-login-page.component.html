@@ -4,8 +4,20 @@
     <div class="login-header">
       <img [src]="brandLogoUrl" alt="Logo Catheo" class="login-logo" />
       <h1 class="login-title">Espace Animateur</h1>
-      <p class="login-subtitle">Connectez-vous pour accéder à votre classe et vos catéchumènes</p>
+      <p class="login-subtitle">Connectez-vous pour accéder à votre classe</p>
     </div>
+
+    <!-- Alerte session expirée -->
+    @if (isSessionExpired()) {
+      <div class="login-alert warning-alert" role="alert">
+        <svg class="alert-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <span>Votre session a expiré après 30 minutes d'inactivité. Veuillez vous reconnecter.</span>
+      </div>
+    }
 
     <!-- Alertes d'erreurs serveur -->
     @if (generalErrorMessage()) {
@@ -48,6 +60,9 @@
         }
         @if (serverErrors()?.['telephone']) {
           <span class="field-error">{{ serverErrors()!['telephone'][0] }}</span>
+        }
+        @if (serverErrors()?.['numero']) {
+          <span class="field-error">{{ serverErrors()!['numero'][0] }}</span>
         }
       </div>
 
@@ -126,7 +141,7 @@
     <!-- Pied de page connexion -->
     <div class="login-footer">
       <a routerLink="/auth/login" class="admin-switch-link">
-        Accès Administration & Paroisse →
+        Accès Administration →
       </a>
     </div>
   </div>

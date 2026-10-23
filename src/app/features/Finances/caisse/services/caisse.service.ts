@@ -65,7 +65,7 @@ export class CaisseService {
   ): Observable<CaisseMouvementDto[]> {
     this.isLoading.set(true);
 
-    let params = new HttpParams();
+    let params = new HttpParams().set('per_page', '1000');
     if (typeMouvement) params = params.set('type_mouvement', typeMouvement);
     if (search) params = params.set('search', search);
     if (dateDebut) params = params.set('date_debut', dateDebut);

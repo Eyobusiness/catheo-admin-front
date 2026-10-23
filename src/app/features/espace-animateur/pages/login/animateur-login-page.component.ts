@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AnimateurAuthService } from '../../services/animateur-auth.service';
 
 @Component({
@@ -13,12 +13,16 @@ import { AnimateurAuthService } from '../../services/animateur-auth.service';
 export class AnimateurLoginPageComponent {
   private readonly authService = inject(AnimateurAuthService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   protected readonly isLoading = this.authService.isLoading;
   protected readonly brandLogoUrl = 'logo/catheo.png';
   protected readonly showPassword = signal<boolean>(false);
   protected readonly serverErrors = signal<Record<string, string[]> | null>(null);
   protected readonly generalErrorMessage = signal<string | null>(null);
+  protected readonly isSessionExpired = signal<boolean>(
+    this.route.snapshot.queryParamMap.get('reason') === 'inactivity'
+  );
 
   protected readonly loginForm = new FormGroup({
     telephone: new FormControl('', {

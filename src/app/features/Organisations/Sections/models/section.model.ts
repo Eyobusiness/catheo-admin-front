@@ -1,5 +1,6 @@
 export interface Section {
   id: string;
+  uuid?: string;
   nom: string;
   code: string;
   description?: string;

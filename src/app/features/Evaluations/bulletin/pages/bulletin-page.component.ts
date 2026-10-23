@@ -139,7 +139,7 @@ export class BulletinPageComponent implements OnInit {
 
   public readonly currentAnneePastorale = computed<string>(() => {
     const active = this.activeAnnee();
-    return active ? active.libelle : '2025-2026';
+    return active ? active.libelle : `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`;
   });
 
   // Statut de validation officielle

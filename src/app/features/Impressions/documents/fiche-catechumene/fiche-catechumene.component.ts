@@ -35,12 +35,19 @@ export class FicheCatechumeneComponent {
     return p?.doyenne || '';
   });
 
+  public readonly communeAdresse = computed(() => {
+    const p = this.paroisseConfig();
+    const commune = p?.commune || p?.ville || '';
+    const adresse = p?.adresse || '';
+    if (commune && adresse) return `${commune} - ${adresse}`;
+    return commune || adresse || '';
+  });
+
   public readonly contactsParoisse = computed(() => {
     const p = this.paroisseConfig();
     const parts: string[] = [];
     if (p?.telephone) parts.push(`Tél : ${p.telephone}`);
     if (p?.email) parts.push(`Email : ${p.email}`);
-    if (p?.adresse || p?.commune) parts.push(p.adresse || p.commune || '');
     return parts.join(' • ');
   });
 

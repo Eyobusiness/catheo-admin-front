@@ -68,6 +68,7 @@ export class PreinscriptionService {
   private readonly baseUrl = `${environment.apiUrl}/preinscriptions`;
 
   public readonly preinscriptions = signal<PreinscriptionDto[]>([]);
+  public readonly totalCount = signal<number>(0);
   public readonly isLoading = signal<boolean>(false);
 
   public getAll(anneeId?: string): Observable<PreinscriptionDto[]> {
@@ -80,7 +81,14 @@ export class PreinscriptionService {
       url += '?annee_catechese_id=all';
     }
 
+    const separator = url.includes('?') ? '&' : '?';
+    url += `${separator}per_page=1000`;
+
     return this.http.get<unknown>(url).pipe(
+      tap((res: any) => {
+        const total = res?.meta?.total ?? (res?.data?.total ?? extractArrayData(res).length);
+        this.totalCount.set(total);
+      }),
       map(res => extractArrayData(res).map(item => this.normalizePreinscription(item))),
       tap(preinscriptions => {
         this.preinscriptions.set(preinscriptions);

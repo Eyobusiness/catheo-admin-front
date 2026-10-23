@@ -88,17 +88,31 @@ export class InscriptionsAnnuellesPageComponent implements OnInit {
     if (ops.length === 0) return list;
 
     return list.map(ins => {
-      if (ins.frais_inscription_payes) return ins;
       const catId = ins.catechumene_id || ins.catechumene?.id;
       const insId = ins.id;
-      const hasPaidOp = ops.some(op => {
-        const matchId = (op.inscription_annuelle_id && op.inscription_annuelle_id === insId) ||
+      const matchedOps = ops.filter(op => {
+        return (op.inscription_annuelle_id && op.inscription_annuelle_id === insId) ||
           (catId && (op.catechumene_id === catId || (op.catechumene as any)?.id === catId));
-        if (!matchId) return false;
-        return op.statut === 'paye' || op.montant_restant === 0 || (op.montant_paye > 0 && op.montant_paye >= (op.montant_total || op.montant || 0));
       });
 
-      return hasPaidOp ? { ...ins, frais_inscription_payes: true } : ins;
+      if (matchedOps.length > 0) {
+        const hasPaidOp = matchedOps.some(op =>
+          op.statut === 'paye' || op.montant_restant === 0 || (op.montant_paye > 0 && op.montant_paye >= (op.montant_total || op.montant || 0))
+        );
+        const hasPendingOp = matchedOps.some(op =>
+          (op.statut === 'en_attente' || op.statut === 'partiellement_paye') &&
+          (!op.montant_paye || op.montant_paye < (op.montant_total || op.montant || 0))
+        );
+
+        if (hasPendingOp && !hasPaidOp) {
+          return { ...ins, frais_inscription_payes: false };
+        }
+        if (hasPaidOp) {
+          return { ...ins, frais_inscription_payes: true };
+        }
+      }
+
+      return ins;
     });
   });
 
@@ -136,8 +150,9 @@ export class InscriptionsAnnuellesPageComponent implements OnInit {
   // Stats
   protected readonly stats = computed(() => {
     const list = this.enrichedInscriptions();
+    const realTotal = Math.max(this.inscriptionService.totalCount(), list.length);
     return {
-      total: list.length,
+      total: realTotal,
       valides: list.filter(i => i.statut_inscription === 'valide').length,
       enAttenteClasse: list.filter(i => !i.classe_id && !i.classe?.id).length,
       fraisPayes: list.filter(i => i.frais_inscription_payes).length
@@ -371,6 +386,7 @@ export class InscriptionsAnnuellesPageComponent implements OnInit {
     ceb?: Ceb;
     mouvement?: Mouvement;
   }): void {
+    if (this.isSaving()) return;
     this.isSaving.set(true);
     if (!event.catechumeneData.section_id && event.section?.id) {
       event.catechumeneData.section_id = event.section.id;
@@ -381,7 +397,9 @@ export class InscriptionsAnnuellesPageComponent implements OnInit {
     if (!event.catechumeneData.classe_id && event.classe?.id) {
       event.catechumeneData.classe_id = event.classe.id;
     }
-    this.catechumeneService.create(event.catechumeneData, event.ceb).subscribe({
+    (event.catechumeneData as any).sans_inscription = true;
+
+    this.catechumeneService.create(event.catechumeneData, event.ceb, { silent: true }).subscribe({
       next: (createdCat) => {
         const workingAnneeId = typeof window !== 'undefined' ? localStorage.getItem('catheo_working_annee_id') : null;
         const currentAnnee = (workingAnneeId ? this.annees().find(a => a.id === workingAnneeId) : null)
@@ -427,6 +445,7 @@ export class InscriptionsAnnuellesPageComponent implements OnInit {
     ceb?: Ceb;
     mouvement?: Mouvement;
   }): void {
+    if (this.isSaving()) return;
     this.isSaving.set(true);
     const workingAnneeId = typeof window !== 'undefined' ? localStorage.getItem('catheo_working_annee_id') : null;
     const currentAnnee = (workingAnneeId ? this.annees().find(a => a.id === workingAnneeId) : null)
@@ -469,6 +488,7 @@ export class InscriptionsAnnuellesPageComponent implements OnInit {
     ceb?: Ceb;
     mouvement?: Mouvement;
   }): void {
+    if (this.isSaving()) return;
     this.isSaving.set(true);
 
     if (this.isEditing() && this.selectedItem()) {
